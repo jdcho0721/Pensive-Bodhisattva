@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>반가사유: 사유의소리</title>
     <style>
-        body { margin: 0; background: #000; color: white; font-family: 'Pretendard', sans-serif; overflow: hidden; }
+        body { margin: 0; background: #000; color: white; font-family: 'Pretendard', sans-serif; overflow: hidden; touch-action: manipulation; }
         #game-container { 
             position: relative; width: 100vw; height: 100vh; 
             background: url('반가-로뎅.png') no-repeat center center; 
@@ -105,8 +105,9 @@
         { title: "기획 의도", text: "시각 너머의 깊은 영성을 소리로 체감하게 하는 접근성의 미학을 통해 진정한 마음의 휴식을 선사하고자 합니다." }
     ];
 
-    // 자막 박스 클릭 이벤트 리스너
-    subBox.addEventListener('click', () => {
+    // 자막 박스 클릭 및 터치 이벤트 리스너 추가
+    function handleSubtitleAction(e) {
+        if (e) e.preventDefault();
         if (onSubtitleNext) {
             const next = onSubtitleNext;
             onSubtitleNext = null; // 초기화
@@ -116,7 +117,10 @@
             subBox.style.display = 'none';
             stopAllPlayback();
         }
-    });
+    }
+
+    subBox.addEventListener('click', handleSubtitleAction);
+    subBox.addEventListener('touchstart', handleSubtitleAction);
 
     function playIntroduction() {
         stopAllPlayback();
@@ -125,14 +129,11 @@
         function nextIntro() {
             if (i < introData.length) {
                 const item = introData[i];
-                // 자막 클릭 시 다음으로 넘어가도록 콜백 설정
                 showSubtitle(`<b>${item.title}</b><br>${item.text}`, "white", () => {
                     i++;
                     nextIntro();
                 });
-                speak(`${item.title}. ${item.text}`, () => {
-                    // 음성이 끝났을 때 자동으로 넘기지 않고 대기 (클릭 유도)
-                });
+                speak(`${item.title}. ${item.text}`);
             } else {
                 subBox.style.display = 'none';
             }
@@ -144,7 +145,7 @@
         stopAllPlayback();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         
-        const guideText = "이 전시는 3단계로 구성됩니다. 1단계에서는 조각의 부위(얼굴, 상체, 하체)를 클릭하여 철학적 의미와 소리를 감상하세요. 반가사유상은 각 부위를 세 번 클릭하면 고유의 사운드가 재생됩니다. 2단계에서는 두 조각의 머리를 클릭해 대화를 나눌 수 있으며, 3단계에서는 모든 번뇌를 씻어내는 정적의 시간을 갖습니다.";
+        const guideText = "이 전시는 3단계로 구성됩니다. 1단계에서는 조각의 부위(얼굴, 상체, 하체)를 클릭하거나 터치하여 철학적 의미와 소리를 감상하세요. 반가사유상은 각 부위를 세 번 클릭하면 고유의 사운드가 재생됩니다. 2단계에서는 두 조각의 머리를 선택해 대화를 나눌 수 있으며, 3단계에서는 모든 번뇌를 씻어내는 정적의 시간을 갖습니다.";
         
         showSubtitle(`<b>전시 관람 가이드</b><br>${guideText}`, "white");
         speak(guideText);
@@ -224,7 +225,8 @@
         svg.innerHTML = '';
     }
 
-    function handleInteraction(id) {
+    function handleInteraction(id, e) {
+        if (e) e.preventDefault();
         stopAllPlayback();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const key = id.replace(/-/g, '_');
@@ -280,7 +282,6 @@
             if (line.speaker === 'rodin_head') drawCircle(26, 30, 45, line.color);
             else drawCircle(77, 28, 55, line.color);
             
-            // 대화 모드에서도 자막 클릭 시 다음 대화로 넘어가도록 설정
             showSubtitle(`<b>${line.name}</b><br>${line.text}`, line.color, () => {
                 handleDialogue(line.speaker === 'rodin_head' ? 'maitreya-head' : 'rodin-head');
             });
@@ -330,7 +331,7 @@
         subBox.innerHTML = html;
         subBox.style.display = 'inline-block';
         subBox.style.borderColor = borderColor;
-        onSubtitleNext = nextCallback; // 다음 동작 등록
+        onSubtitleNext = nextCallback; 
     }
 
     function drawCircle(cx, cy, r, color) { svg.innerHTML = `<circle cx="${cx}%" cy="${cy}%" r="${r}" stroke="${color}" stroke-width="4" fill="rgba(255,215,0,0.15)" />`; }
@@ -353,7 +354,9 @@
     }
 
     ['rodin-head', 'rodin-torso', 'maitreya-head', 'maitreya-torso', 'maitreya-legs'].forEach(id => {
-        document.getElementById(id).addEventListener('click', () => handleInteraction(id));
+        const el = document.getElementById(id);
+        el.addEventListener('click', (e) => handleInteraction(id, e));
+        el.addEventListener('touchstart', (e) => handleInteraction(id, e));
     });
 </script>
 </body>
