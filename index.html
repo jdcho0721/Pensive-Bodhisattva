@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>반가사유: 사유의소리</title>
+    <style>
+        body { margin: 0; background: #000; color: white; font-family: 'Pretendard', sans-serif; overflow: hidden; }
+        #game-container { 
+            position: relative; width: 100vw; height: 100vh; 
+            background: url('반가-로뎅.png') no-repeat center center; 
+            background-size: cover;
+            transition: all 5s ease-in-out;
+        }
+        #shape-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .hotspot { position: absolute; cursor: pointer; z-index: 10; border-radius: 50%; }
+        .hotspot:hover { background: rgba(255, 215, 0, 0.1); }
+
+        /* 버튼 그룹 */
+        .btn-group {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; z-index: 30;
+        }
+
+        .action-btn {
+            padding: 12px 25px; background: rgba(212, 175, 55, 0.9); color: black;
+            border: 2px solid white; border-radius: 30px; font-weight: bold; 
+            cursor: pointer; font-size: 1rem; transition: 0.3s;
+        }
+        .action-btn:hover { background: white; border-color: gold; }
+        #intro-btn { background: rgba(255, 255, 255, 0.2); color: white; }
+        #intro-btn:hover { background: white; color: black; }
+
+        #subtitle-overlay {
+            position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
+            width: 75%; text-align: center; pointer-events: none; z-index: 20;
+        }
+        .subtitle-text {
+            background: rgba(0, 0, 0, 0.85); color: gold; padding: 25px 35px;
+            border-radius: 15px; font-size: 1.4rem; line-height: 1.7;
+            display: none; border: 2px solid gold; animation: slideUp 0.4s;
+            word-break: keep-all; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .purifying { filter: brightness(3) white-balance(2) grayscale(1) blur(5px); opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="btn-group">
+    <button id="intro-btn" class="action-btn" onclick="playIntroduction()">전시 소개 보기</button>
+    <button id="guide-btn" class="action-btn" onclick="playGuide()">사용법 보기</button>
+    <button id="mode-btn" class="action-btn" onclick="toggleMode()">2단계: 대화 모드로 전환</button>
+</div>
+
+<div id="game-container">
+    <svg id="shape-svg"></svg>
+    <div id="subtitle-overlay"><div id="sub-box" class="subtitle-text"></div></div>
+
+    <div id="rodin-head" class="hotspot" style="top: 15%; left: 25%; width: 100px; height: 100px;"></div>
+    <div id="rodin-torso" class="hotspot" style="top: 35%; left: 18%; width: 120px; height: 150px;"></div>
+    <div id="maitreya-head" class="hotspot" style="top: 15%; right: 18%; width: 100px; height: 100px;"></div>
+    <div id="maitreya-torso" class="hotspot" style="top: 30%; right: 18%; width: 150px; height: 180px;"></div>
+    <div id="maitreya-legs" class="hotspot" style="top: 50%; right: 15%; width: 200px; height: 150px;"></div>
+</div>
+
+<script>
+    const svg = document.getElementById('shape-svg');
+    const subBox = document.getElementById('sub-box');
+    const container = document.getElementById('game-container');
+    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    let currentMode = 1; 
+    let dialogueIndex = 0;
+    let clickTimer = null;
+    let selectedScript = null;
+    // 부위별 클릭 횟수 관리를 위해 객체로 변경[cite: 15]
+    let maitreyaClickCounts = { head: 0, torso: 0, legs: 0 }; 
+    let currentAudioFile = null;
+
+    function stopAllPlayback() {
+        window.speechSynthesis.cancel();
+        if (audioCtx) {
+            audioCtx.close().then(() => {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            });
+        }
+        if (currentAudioFile) {
+            currentAudioFile.pause();
+            currentAudioFile.currentTime = 0;
+            currentAudioFile = null;
+        }
+    }
+
+    const introData = [
+     { title: "공(空)의 공명: 로댕과 반가사유상", text: "본 전시는 서양의 '존재적 고뇌'와 동양의 '자비로운 사유'가 만나는 지점을 다룹니다." },
+    { title: "서양의 미의식: 수축과 중력", text: "로댕은 육체적 긴장과 역삼각형의 무게감을 통해 진리를 향한 치열한 투쟁을 보여줍니다." },
+    { title: "동양의 미의식: 확장과 이행", text: "반가사유상은 우주로 퍼져나가는 원과 언제든 일어설 수 있는 '이행'의 자세로 해방과 초월을 상징합니다." },
+    { title: "휴마톨로지 (Humartology)", text: "이러한 미의식의 차이를 사운드스케이프로 변환하여 시각 너머의 영성을 체감하게 합니다." },
+        { title: "3단계의 여정", text: "1단계 조우, 2단계 공명의 대화, 그리고 3단계 여일을 통해 번뇌를 씻어내는 감각의 해방을 경험하시기 바랍니다." },
+        { title: "기획 의도", text: "시각 너머의 깊은 영성을 소리로 체감하게 하는 접근성의 미학을 통해 진정한 마음의 휴식을 선사하고자 합니다." },
+ 
+    ];
+
+    function playIntroduction() {
+        stopAllPlayback();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        let i = 0;
+        function nextIntro() {
+            if (i < introData.length) {
+                const item = introData[i];
+                showSubtitle(`<b>${item.title}</b><br>${item.text}`, "white");
+                speak(`${item.title}. ${item.text}`, () => {
+                    i++;
+                    setTimeout(nextIntro, 1000);
+                });
+            } else {
+                setTimeout(() => { subBox.style.display = 'none'; }, 2000);
+            }
+        }
+        nextIntro();
+    }
+
+    // 사용법 보기 기능 추가
+    function playGuide() {
+        stopAllPlayback();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        const guideText = "이 전시는 3단계로 구성됩니다. 1단계에서는 조각의 부위를 클릭하여 철학적 의미와 소리를 감상하세요. 반가사유상은 세 번 클릭하면 고유의 사운드가 재생됩니다. 2단계에서는 두 조각의 머리를 클릭해 대화를 나눌 수 있으며, 3단계에서는 모든 번뇌를 씻어내는 정적의 시간을 갖습니다.";
+        
+        showSubtitle(`<b>전시 관람 가이드</b><br>${guideText}`, "white");
+        speak(guideText);
+    }
+
+    const stage1Data = {
+        rodin_head: {
+            philosophy: "로댕의 고뇌: 수축된 원. '나는 누구인가.' 존재의 무게에 짓눌려 안으로 굽어드는 수축된 고뇌의 소리입니다.",
+            poetry: "나는 누구인가, 이 번뇌의 무게를 어찌할 것인가. 고뇌가 원이 되어 가슴 속으로 파고드네.",
+            draw: () => drawCircle(26, 30, 40, '#ff4500'),
+            sound: null
+        },
+        rodin_torso: {
+            philosophy: "로댕: 역삼각형의 압박. 중력이 육체를 끌어내리는 존재적 불안을 형상화했습니다. 대지로 가라앉는 무게감은 피할 수 없는 생의 고통을 의미합니다.",
+            poetry: "상체는 중력의 압박을 받는 역삼각형. 무거운 중력이 선율이 되어 대지로 가라앉네.",
+            draw: () => drawPolygon("26,35 18,55 34,55", '#ff4500'),
+            sound: null
+        },
+        maitreya_head: {
+            philosophy: "상단 (원): 얼굴은 잔잔한 미소를 띠고 있으며, 오른쪽 손가락 끝이 부드럽게 오른쪽 뺨에 살짝 맞닿아 깊은 사유에 잠긴 모습입니다. 이는 로댕의 '수축하는 원'과 대비되는 '확장과 순환의 원'입니다. 모든 번뇌가 소멸하고 우주와 하나가 되는 무한한 평화의 울림을 강조했습니다.",
+            poetry: "살포시 감은 눈과 입가에 걸린 자비로운 미소, 뺨에 닿은 손가락 끝에서 은은한 옥적의 숨결이 우주로 확장되고, 맥놀이하는 종소리가 모든 번뇌를 씻어내네.",
+            draw: () => drawCircle(77, 28, 50, 'gold'),
+            sound: () => {
+                currentAudioFile = new Audio('상단.mp3'); 
+                currentAudioFile.play();
+            }
+        },
+        maitreya_torso: {
+            philosophy: "중단 (삼각형): 상체는 가슴을 펴고 당당하면서도 유연한 곡선을 그리며, 왼쪽 손은 오른쪽 발목을 가볍게 짚고 있습니다. 로댕의 눌린 역삼각형과 대비되는 '안정적이고 자비로운 정삼각형'입니다. 대금과 가야금의 선율이 인간의 마음을 따뜻하게 감싸는 조화의 공간입니다.",
+            poetry: "어깨에서 흘러내린 곡선이 현을 튕기는 손끝의 진동이 되고, 오음계의 리듬이 되어 치유의 선율로 피어나네.",
+            draw: () => drawPolygon("77,28 68,55 86,55", 'gold'),
+            sound: () => {
+                currentAudioFile = new Audio('중단.mp3'); // 중단부 사운드 보강[cite: 15]
+                currentAudioFile.play();
+            }
+        },
+        maitreya_legs: {
+            philosophy: "하단 (사각형): 오른쪽 다리를 왼쪽 무릎 위에 올린 '반가'의 자세입니다. 왼쪽 다리는 아래로 내려 언제든 중생을 향해 일어날 수 있는 이행의 상태를 의미합니다. 로댕의 대지로 가라앉는 무게와 대비되는 흔들림 없는 사유의 기반입니다.",
+            poetry: "반가좌를 튼 굳건한 무릎과 대지를 딛는 발바닥에서 느껴지는 단단한 질감을 청각화했습니다. 범종의 낮은 진동이 천 년의 무게감을 손끝에서 뇌리로 전달하며 깊은 평온으로 안내합니다.",
+            draw: () => drawPolygon("68,65 86,65 86,85 68,85", 'gold'),
+            sound: () => {
+                currentAudioFile = new Audio('하단.mp3');
+                currentAudioFile.play();
+            }
+        }
+    };
+
+    const rodinFirstScript = [
+        { speaker: 'rodin_head', name: '로댕', text: "당신은 어찌하여 그토록 평온한 미소를 짓고 있습니까? 내 머릿속은 존재의 고통으로 터질 것만 같은데.", color: '#ff4500' },
+        { speaker: 'maitreya_head', name: '반가사유상', text: "나 역시 그대처럼 깊은 고뇌 속에 있었소. 하지만 비움으로써 비로소 채워지는 진리를 보았지.", color: 'gold' },
+        { speaker: 'rodin_head', name: '로댕', text: "비운다는 것... 그것은 나처럼 육체를 쥐어짜는 고통보다 더 어려운 일인 것 같군요.", color: '#ff4500' },
+        { speaker: 'maitreya_head', name: '반가사유상', text: "고통을 쥐는 손을 놓아보시오. 그러면 그대 안의 무한한 허공이 보일 것이오.", color: 'gold' }
+    ];
+
+    const maitreyaFirstScript = [
+        { speaker: 'maitreya_head', name: '반가사유상', text: "먼 곳에서 온 나그네여, 무엇이 그대의 어깨를 그토록 무겁게 짓누르고 있소?", color: 'gold' },
+        { speaker: 'rodin_head', name: '로댕', text: "생각의 사슬입니다. 인간의 삶과 죽음, 그 끝없는 모순을 형상화하려니 숨이 가빠오는군요.", color: '#ff4500' },
+        { speaker: 'maitreya_head', name: '반가사유상', text: "모순 또한 삶의 결이라오. 팽팽한 긴장을 풀고 잠시 내면의 소리에 귀를 기울여 보시오.", color: 'gold' },
+        { speaker: 'rodin_head', name: '로댕', text: "나의 정 끝에 서린 날카로움이 당신의 자비로운 선율 앞에 무뎌지는 기분이 듭니다.", color: '#ff4500' }
+    ];
+
+    function toggleMode() {
+        stopAllPlayback();
+        if (currentMode === 1) {
+            currentMode = 2;
+            document.getElementById('mode-btn').innerText = "3단계: 해방 모드로 전환";
+        } else if (currentMode === 2) {
+            currentMode = 3;
+            startStage3();
+            return;
+        } else {
+            location.reload();
+        }
+        dialogueIndex = 0;
+        selectedScript = null;
+        subBox.style.display = 'none';
+        svg.innerHTML = '';
+    }
+
+    function handleInteraction(id) {
+        stopAllPlayback();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const key = id.replace(/-/g, '_');
+        
+        if (currentMode === 1) {
+            // 사유상 부위 통합 클릭 로직 (상/중/하단 모두 3단계 적용)[cite: 15]
+            if (key.startsWith('maitreya')) {
+                const part = key.split('_')[1];
+                maitreyaClickCounts[part]++;
+                
+                if (maitreyaClickCounts[part] === 1) {
+                    executeStage1(key, 'philosophy');
+                } else if (maitreyaClickCounts[part] === 2) {
+                    executeStage1(key, 'poetry');
+                } else if (maitreyaClickCounts[part] === 3) {
+                    const item = stage1Data[key];
+                    item.draw();
+                    const label = part === 'head' ? '상단' : (part === 'torso' ? '중단' : '하단');
+                    showSubtitle(`<b>[사운드 재생]</b><br>${label}: 고유의 진동이 시작됩니다.`, "gold");
+                    if (item.sound) item.sound();
+                    maitreyaClickCounts[part] = 0;
+                }
+                return;
+            }
+
+            if (clickTimer == null) {
+                clickTimer = setTimeout(() => { executeStage1(key, 'philosophy'); clickTimer = null; }, 300);
+            } else {
+                clearTimeout(clickTimer); clickTimer = null;
+                executeStage1(key, 'poetry');
+            }
+        } else if (currentMode === 2) {
+            handleDialogue(key);
+        }
+    }
+
+    function executeStage1(key, mode) {
+        const item = stage1Data[key];
+        if(!item) return;
+        item.draw();
+        // 사유상 부위는 3번째 클릭 시에만 사운드 재생하도록 변경되었으므로 여기서 sound() 호출 제외[cite: 15]
+        const title = mode === 'philosophy' ? '[철학적 사유]' : '[사운드 에크프라시스]';
+        showSubtitle(`<b>${title}</b><br>${mode === 'philosophy' ? item.philosophy : item.poetry}`, key.includes('rodin') ? '#ff4500' : 'gold');
+        speak(mode === 'philosophy' ? item.philosophy : item.poetry);
+    }
+
+    function handleDialogue(key) {
+        if (key !== 'rodin_head' && key !== 'maitreya_head') return;
+        if (selectedScript === null) {
+            if (key === 'rodin_head') selectedScript = rodinFirstScript;
+            else if (key === 'maitreya_head') selectedScript = maitreyaFirstScript;
+        }
+        const line = selectedScript[dialogueIndex];
+        if (key === line.speaker) {
+            if (line.speaker === 'rodin_head') drawCircle(26, 30, 45, line.color);
+            else drawCircle(77, 28, 55, line.color);
+            showSubtitle(`<b>${line.name}</b><br>${line.text}`, line.color);
+            speak(line.text);
+            if (dialogueIndex === 1) playSillaSoundscape();
+            dialogueIndex = (dialogueIndex + 1) % selectedScript.length;
+        }
+    }
+
+    function startStage3() {
+        stopAllPlayback();
+        document.getElementById('mode-btn').innerText = "다시 시작하기";
+        document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
+        container.classList.add('purifying');
+        showSubtitle("<b>여일: 나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰(초월과 멈춤)로 이어지는 단계입니다. </b><br>모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.", "white");
+        speak("여일: 나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰(초월과 멈춤)로 이어지는 단계입니다. 모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.");
+        const now = audioCtx.currentTime;
+        const masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
+        [55, 110, 220, 440].forEach((f) => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, now);
+            g.gain.setValueAtTime(0, now);
+            g.gain.linearRampToValueAtTime(0.1, now + 5);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 15);
+            osc.connect(g).connect(masterGain);
+            osc.start(now); osc.stop(now + 15);
+        });
+        setTimeout(() => {
+            container.style.filter = "brightness(1) grayscale(0)";
+            container.style.background = "white";
+            svg.innerHTML = "";
+            showSubtitle("<b>[정적]</b><br>비어있기에 비로소 평온합니다.", "black");
+        }, 15000);
+    }
+
+    function speak(text, callback) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'ko-KR';
+        if (callback) u.onend = callback;
+        window.speechSynthesis.speak(u);
+    }
+
+    function showSubtitle(html, borderColor) {
+        subBox.innerHTML = html;
+        subBox.style.display = 'inline-block';
+        subBox.style.borderColor = borderColor;
+    }
+
+    function drawCircle(cx, cy, r, color) { svg.innerHTML = `<circle cx="${cx}%" cy="${cy}%" r="${r}" stroke="${color}" stroke-width="4" fill="rgba(255,215,0,0.15)" />`; }
+    function drawPolygon(points, color) {
+        const formatted = points.split(' ').map(p => { const [x, y] = p.split(','); return `${x}% ${y}%`; }).join(' ');
+        svg.innerHTML = `<polygon points="${formatted}" stroke="${color}" stroke-width="4" fill="rgba(255,215,0,0.15)" />`;
+    }
+
+    function playSillaSoundscape() {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        [60, 61.5].forEach(f => {
+            const bell = audioCtx.createOscillator();
+            const bGain = audioCtx.createGain();
+            bell.frequency.setValueAtTime(f, now);
+            bGain.gain.linearRampToValueAtTime(0.2, now + 2); bGain.gain.exponentialRampToValueAtTime(0.001, now + 15);
+            bell.connect(bGain).connect(audioCtx.destination);
+            bell.start(now); bell.stop(now + 15);
+        });
+    }
+
+    ['rodin-head', 'rodin-torso', 'maitreya-head', 'maitreya-torso', 'maitreya-legs'].forEach(id => {
+        document.getElementById(id).addEventListener('click', () => handleInteraction(id));
+    });
+</script>
+</body>
+</html>
