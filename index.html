@@ -2,23 +2,36 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <title>반가사유: 사유의 소리 (Humartology Edition)</title>
     <style>
         body { margin: 0; background: #000; color: white; font-family: 'Pretendard', sans-serif; overflow: hidden; touch-action: manipulation; }
         #game-container { 
             position: relative; width: 100vw; height: 100vh; 
             background: url('반가-로뎅.png') no-repeat center center; 
-            background-size: cover;
+            background-size: contain;
             transition: all 5s ease-in-out;
         }
         #shape-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-        .hotspot { position: absolute; cursor: pointer; z-index: 10; border-radius: 50%; }
+
+      .hotspot { 
+    position: absolute; 
+    cursor: pointer; 
+    z-index: 10; 
+    -webkit-tap-highlight-color: rgba(212, 175, 55, 0.3); /* 터치 시 반투명 황금색 피드백 */
+}
+
         .hotspot:hover { background: rgba(255, 215, 0, 0.1); }
 
         /* 버튼 그룹 */
         .btn-group {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: env(safe-area-inset-top, 20px); 
+           left: 50%; transform: translateX(-50%);
             display: flex; gap: 15px; z-index: 30;
+width: 95%; justify-content: center;
         }
 
         .action-btn {
@@ -72,15 +85,26 @@
 </div>
 
 <div id="game-container">
-    <div id="mirror-guide"><div class="guide-circle"></div><h2 id="mirror-text" style="color: gold; text-shadow: 2px 2px 5px black;">자세와 미소를 따라 하세요</h2></div>
+    
+<div id="mirror-guide">
+    <svg width="150" height="150" viewBox="0 0 150 150" style="display: block; margin: 0 auto;">
+        <circle cx="75" cy="75" r="60" stroke="rgba(212, 175, 55, 0.3)" stroke-width="8" fill="none" stroke-dasharray="10,5" />
+        <circle id="gauge-progress" cx="75" cy="75" r="60" stroke="gold" stroke-width="8" fill="none" 
+                stroke-dasharray="376.99" stroke-dashoffset="376.99" 
+                stroke-linecap="round" style="transition: stroke-dashoffset 0.8s ease; transform: rotate(-90deg); transform-origin: center;" />
+    </svg>
+    <div id="mirror-text">체화 단계를 시작합니다</div>
+</div>
+
     <svg id="shape-svg"></svg>
     <div id="subtitle-overlay"><div id="sub-box" class="subtitle-text"></div></div>
 
-    <div id="rodin-head" class="hotspot" style="top: 15%; left: 25%; width: 100px; height: 100px;"></div>
-    <div id="rodin-torso" class="hotspot" style="top: 35%; left: 18%; width: 120px; height: 150px;"></div>
-    <div id="maitreya-head" class="hotspot" style="top: 15%; right: 18%; width: 100px; height: 100px;"></div>
-    <div id="maitreya-torso" class="hotspot" style="top: 30%; right: 18%; width: 150px; height: 180px;"></div>
-    <div id="maitreya-legs" class="hotspot" style="top: 50%; right: 15%; width: 200px; height: 150px;"></div>
+<div id="rodin-head" class="hotspot" style="top: 18%; left: 15%; width: 25%; height: 18%;"></div>
+<div id="rodin-torso" class="hotspot" style="top: 36%; left: 10%; width: 30%; height: 25%;"></div>
+<div id="maitreya-head" class="hotspot" style="top: 15%; right: 13%; width: 25%; height: 20%;"></div>
+<div id="maitreya-torso" class="hotspot" style="top: 35%; right: 10%; width: 35%; height: 28%;"></div>
+<div id="maitreya-legs" class="hotspot" style="top: 60%; right: 10%; width: 40%; height: 25%;"></div>
+
 </div>
 
 <script>
@@ -88,7 +112,12 @@
     const subBox = document.getElementById('sub-box');
     const container = document.getElementById('game-container');
     const mirrorGuide = document.getElementById('mirror-guide');
-    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let audioCtx;
+
+function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
 
     let currentMode = 1; 
     let dialogueIndex = 0;
@@ -155,6 +184,7 @@
     subBox.addEventListener('click', handleSubtitleAction);
 
     function playIntroduction() {
+initAudio();
         stopAllPlayback();
         let i = 0;
         function nextIntro() {
@@ -168,6 +198,7 @@
     }
 
     function playGuide() {
+initAudio();
         stopAllPlayback();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const guideText = "이 전시는 네 단계로 구성됩니다. 첫번째 단계(조우)에서는 조각의 부위를 터치하여 철학적 사유를 감상하세요. 두번째 단계(공명)에서는 두 조각이 서로 대화를 나눕니다. 세번째 단계(체화)에서는 먼저 로댕의 고뇌하는 자세를 따라한 뒤, 반가사유상의 자세와 자비로운 미소를 체화해 봅니다. 마지막 단계(승화)에서는 고뇌가 평온으로 승화되는 물아일체의 순간을 경험합니다.";
@@ -176,6 +207,7 @@
     }
 
     function toggleMode() {
+initAudio();
         stopAllPlayback();
         currentPartInStage3 = null;
         
@@ -199,7 +231,7 @@
 
     function startStage3RodinSequence() {
         mirrorGuide.style.display = 'block';
-        document.getElementById('mirror-text').innerText = "로댕의 부위부터 따라 하세요";
+    //    document.getElementById('mirror-text').innerText = "로댕의 부위부터 따라 하세요";
         handleStage3Interaction('rodin_head');
     }
 
@@ -239,6 +271,7 @@
 
     window.confirmStage3Part = function(part) {
         mirrorCheck[part] = true;
+updateCentralGauge(); // [수정] YES 클릭 시 실시간으로 게이지 업데이트
         stopAllPlayback();
         currentPartInStage3 = null;
         
@@ -259,6 +292,7 @@
     };
 
     function handleInteraction(id, e) {
+initAudio();
         const key = id.replace(/-/g, '_');
         
         if (currentMode === 3) {
@@ -301,38 +335,59 @@
         }
     }
 
-    function startStageFinal() {
+function startStageFinal() {
         mirrorGuide.style.display = 'none';
         document.getElementById('mode-btn').innerText = "다시 시작";
         
         const msg = "로댕의 치열한 사유(긴장)가 반가사유상의 자비로운 미소(이완)로 승화되었습니다. 이제 자세를 3분간 유지하며 몸에서 일어나는 변화를 관찰하십시오. 마지막으로 지금 느낀 '몸의 감각'을 한 단어로 마음속에 새겨보십시오. 당신과 유물의 경계가 사라진 '여일'의 순간입니다.";
         
+        // 자막 표시
         showSubtitle(`<b>여일(餘一): 고뇌에서 해탈로</b><br>${msg}`, "white");
         
-        // 음성 안내 및 종료 후 비디오 팝업 로직
+        // 음성 안내 설정
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(msg);
         u.lang = 'ko-KR';
+        u.rate = 0.9;
+
+        // 음성 안내가 끝나면 비디오 재생
         u.onend = function() {
+            // 기존 비디오 팝업이 있다면 제거
+            const oldPopup = document.getElementById('video-overlay');
+            if (oldPopup) oldPopup.remove();
+
             const videoPopup = document.createElement('div');
+            videoPopup.id = 'video-overlay';
             videoPopup.style.position = 'fixed';
             videoPopup.style.top = '0'; videoPopup.style.left = '0';
             videoPopup.style.width = '100vw'; videoPopup.style.height = '100vh';
-            videoPopup.style.backgroundColor = 'rgba(0,0,0,0.9)'; videoPopup.style.zIndex = '1000';
+            videoPopup.style.backgroundColor = 'rgba(0,0,0,0.95)'; videoPopup.style.zIndex = '2000';
             videoPopup.style.display = 'flex'; videoPopup.style.justifyContent = 'center'; videoPopup.style.alignItems = 'center';
             videoPopup.style.flexDirection = 'column';
             
+            // 비디오 태그 생성 (자동 재생 및 전체 화면 최적화)
             videoPopup.innerHTML = `
-                <video id="final-video" width="80%" height="auto" controls autoplay>
-                    <source src="Echoes_of_the_Void.mp4" type="video/mp4">
-                    브라우저가 비디오를 지원하지 않습니다.
-                </video>
-                <button onclick="this.parentElement.remove()" style="margin-top:20px; padding:10px 30px; background:gold; color:black; border:none; border-radius:20px; font-weight:bold; cursor:pointer;">닫기</button>
+                <div style="position:relative; width:90%; max-width:800px;">
+                    <video id="final-video" width="100%" height="auto" controls autoplay playsinline style="border: 2px solid gold; border-radius: 10px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);">
+                        <source src="Echoes_of_the_Void.mp4" type="video/mp4">
+                        브라우저가 비디오를 지원하지 않습니다.
+                    </video>
+                    <button onclick="this.closest('#video-overlay').remove()" style="position:absolute; top:-40px; right:0; background:none; border:1px solid white; color:white; cursor:pointer; padding:5px 10px; border-radius:5px;">닫기 ✕</button>
+                </div>
+                <p style="color:gold; margin-top:20px; font-size:1.1rem; letter-spacing:1px;">사유의 울림을 끝까지 감상해보세요.</p>
             `;
             document.body.appendChild(videoPopup);
+
+            // 강제 재생 시도 (일부 모바일 대응)
+            const video = document.getElementById('final-video');
+            video.play().catch(error => {
+                console.log("자동 재생이 차단되었습니다. 사용자의 조작이 필요합니다.");
+            });
         };
+
         window.speechSynthesis.speak(u);
         
+        // 배경 사운드 (사인파) 생성
         const now = audioCtx.currentTime;
         const masterGain = audioCtx.createGain();
         masterGain.connect(audioCtx.destination);
@@ -348,6 +403,7 @@
             osc.connect(g).connect(masterGain);
             osc.start(now); osc.stop(now + 18);
         });
+
         currentMode = 5; 
     }
 
@@ -379,10 +435,38 @@
         svg.innerHTML = `<polygon points="${formatted}" stroke="${color}" stroke-width="4" fill="rgba(255,215,0,0.1)" />`;
     }
 
-    ['rodin-head', 'rodin-torso', 'maitreya-head', 'maitreya-torso', 'maitreya-legs'].forEach(id => {
-        const el = document.getElementById(id);
-        el.addEventListener('click', (e) => handleInteraction(id, e));
+ ['rodin-head', 'rodin-torso', 'maitreya-head', 'maitreya-torso', 'maitreya-legs'].forEach(id => {
+    const el = document.getElementById(id);
+    
+    // 1. 마우스 클릭 대응
+    el.addEventListener('click', (e) => {
+        initAudio(); // 오디오 엔진 활성화 (모바일 필수)
+        handleInteraction(id, e);
     });
+
+    // 2. 스마트폰 터치 대응 (반응 속도 개선 및 줌 방지)
+    el.addEventListener('touchstart', (e) => {
+        e.preventDefault(); // 화면 흔들림 및 줌 방지
+        initAudio(); // 터치하는 순간 오디오 잠금 해제
+        handleInteraction(id, e);
+    }, { passive: false });
+});
+
+
+// [추가] 게이지 실선 업데이트 함수
+function updateCentralGauge() {
+    const gauge = document.getElementById('gauge-progress');
+    if (!gauge) return;
+    const totalParts = 5;
+    const completedCount = Object.values(mirrorCheck).filter(v => v === true).length;
+    
+    // 반지름 60 기준 둘레: 2 * Math.PI * 60 = 약 376.99
+    const circumference = 2 * Math.PI * 60; 
+    const offset = circumference - (completedCount / totalParts) * circumference;
+    
+    gauge.style.strokeDashoffset = offset;
+}
+
 </script>
 </body>
 </html>
