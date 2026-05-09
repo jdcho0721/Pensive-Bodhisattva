@@ -27,7 +27,7 @@
 
 .btn-group {
     position: absolute; 
-    top: calc(env(safe-area-inset-top, 0px) + 70px); 
+    top: calc(env(safe-area-inset-top, 0px) + 75px); 
     left: 50%; 
     transform: translateX(-50%);
     display: flex; 
@@ -63,7 +63,7 @@
     text-align: center;
     z-index: 100; 
     margin: 0;
-    font-size: 2.0rem;
+    font-size: 2.1rem;
     color: gold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     font-weight: bold;
@@ -188,19 +188,19 @@ function initAudio() {
             philosophy: "상단 (원): 얼굴은 잔잔한 미소를 띠고 있으며, 오른쪽 손가락 끝이 부드럽게 오른쪽 뺨에 살짝 맞닿아 깊은 사유에 잠긴 모습입니다. 이는 로댕의 '수축하는 원'과 대비되는 '확장과 순환의 원'입니다.",
             poetry: "살포시 감은 눈과 입가에 걸린 자비로운 미소, 뺨에 닿은 손가락 끝에서 은은한 옥적의 숨결이 우주로 확장되고, 맥놀이하는 종소리가 모든 번뇌를 씻어내네.",
             draw: () => drawCircle(77, 28, 50, 'gold'),
-            sound: () => { currentAudioFile = new Audio('상단.mp3'); currentAudioFile.play(); }
+            sound: () => { currentAudioFile = new Audio('Where_Bamboo_Bends.mp4'); currentAudioFile.play(); }
         },
         maitreya_torso: {
             philosophy: "중단 (삼각형): 상체는 가슴을 펴고 당당하면서도 유연한 곡선을 그리며, 왼쪽 손은 오른쪽 발목을 가볍게 짚고 있습니다. 로댕의 눌린 역삼각형과 대비되는 '안정적이고 자비로운 정삼각형'입니다.",
             poetry: "어깨에서 흘러내린 곡선이 현을 튕기는 손끝의 진동이 되고, 오음계의 리듬이 되어 치유의 선율로 피어나네.",
             draw: () => drawPolygon("77,28 68,55 86,55", 'gold'),
-            sound: () => { currentAudioFile = new Audio('중단.mp3'); currentAudioFile.play(); }
+            sound: () => { currentAudioFile = new Audio('손끝에_맺힌_온기.mp4'); currentAudioFile.play(); }
         },
         maitreya_legs: {
             philosophy: "하단 (사각형): 오른쪽 다리를 왼쪽 무릎 위에 올린 '반가'의 자세입니다. 왼쪽 다리는 아래로 내려 언제든 중생을 향해 일어날 수 있는 이행의 상태를 의미합니다.",
             poetry: "반가좌를 튼 굳건한 무릎과 대지를 딛는 발바닥에서 느껴지는 단단한 질감을 청각화했습니다. 범종의 낮은 진동이 천 년의 무게감을 손끝에서 뇌리로 전달하며 깊은 평온으로 안내합니다.",
             draw: () => drawPolygon("68,65 86,65 86,85 68,85", 'gold'),
-            sound: () => { currentAudioFile = new Audio('하단.mp3'); currentAudioFile.play(); }
+            sound: () => { currentAudioFile = new Audio('Beneath_the_Temple_Floor.mp4'); currentAudioFile.play(); }
         }
     };
 
@@ -278,31 +278,131 @@ function initAudio() {
         speak(guideText);
     }
 
-    function toggleMode() {
+
+function toggleMode() {
         initAudio();
         stopAllPlayback();
         currentPartInStage3 = null;
 
-        if (currentMode === 5 || document.getElementById('mode-btn').innerText === "다시 시작") {
-            location.reload(); 
+        const modeBtn = document.getElementById('mode-btn');
+
+        // [수정] 단계 4 상태에서 버튼을 클릭하면 단계 1로 리셋
+        // (기존 '다시 시작' 버튼 체크 로직을 단계 4 체크로 통합)
+        if (currentMode === 4 || currentMode === 5 || modeBtn.innerText === "다시 시작") {
+            currentMode = 1;
+            dialogueIndex = 0;
+            selectedScript = null;
+            maitreyaClickCounts = { head: 0, torso: 0, legs: 0 };
+            mirrorCheck = { rodin_head: false, rodin_torso: false, head: false, torso: false, legs: false };
+            
+            container.classList.remove('purifying', 'total-silence');
+            document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'block');
+            mirrorGuide.style.display = 'none';
+            svg.innerHTML = '';
+            subBox.style.display = 'none';
+            
+            modeBtn.innerText = "단계 1: 조우";
+            modeBtn.disabled = false;
             return;
         }
 
+        // 단계별 순차 전환
         if (currentMode === 1) {
             currentMode = 2;
-            document.getElementById('mode-btn').innerText = "단계 2: 공명의 대화";
+            modeBtn.innerText = "단계 2: 공명의 대화";
         } else if (currentMode === 2) {
             currentMode = 3; 
+            modeBtn.innerText = "단계 3: 체화";
+            modeBtn.disabled = false; 
             startStage3RodinSequence();
-            document.getElementById('mode-btn').innerText = "단계 3: 체화";
-            document.getElementById('mode-btn').disabled = true;
-        } else if (currentMode === 4) { 
-            startStageFinal();
+        } else if (currentMode === 3) {
+            currentMode = 4;
+            startStageFinal(); 
         }
-        dialogueIndex = 0;
-        selectedScript = null;
+        
         svg.innerHTML = '';
     }
+
+    function startStageFinal() {
+        initAudio();
+        stopAllPlayback();
+        mirrorGuide.style.display = 'none';
+        document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
+        
+        // 여일 단계 진입 즉시 버튼 텍스트 변경
+        const modeBtn = document.getElementById('mode-btn');
+        modeBtn.innerText = "단계 4: 여일(餘一)";
+        modeBtn.disabled = true; // 연출 도중 클릭 방지
+
+        setTimeout(() => {
+            container.classList.add('purifying');
+        }, 7000); 
+
+        const msg = "여일(餘一): 나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰로 이어지는 단계입니다. 모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.";
+        showSubtitle(`<b>여일(餘一): 고뇌에서 해탈로</b><br>${msg}`, "white");
+        speak(msg);
+
+        const now = audioCtx.currentTime;
+        const masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
+        
+        [55, 110, 220, 440].forEach((f) => {
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, now);
+            g.gain.setValueAtTime(0, now);
+            g.gain.linearRampToValueAtTime(0.08, now + 3);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 15);
+            osc.connect(g).connect(masterGain);
+            osc.start(now); 
+            osc.stop(now + 15);
+        });
+
+        // [수정] 15초 후 최종 정적이 흐를 때, 버튼 텍스트를 바꾸지 않고 활성화만 시킴
+        setTimeout(() => {
+            container.classList.remove('purifying');
+            container.classList.add('total-silence');
+            svg.innerHTML = "";
+            showSubtitle("<b>[정적]</b><br>비어있기에 비로소 평온합니다. 당신이 곧 우주입니다.", "black");
+            
+            // 텍스트는 그대로 두고, 클릭만 가능하게 변경하여 리셋 기능 수행
+            modeBtn.innerText = "단계 4: 여일(餘一)"; 
+            modeBtn.disabled = false;
+        }, 15000);
+    }
+
+
+    window.confirmStage3Part = function(part) {
+        mirrorCheck[part] = true;
+        updateCentralGauge();
+        stopAllPlayback();
+
+        if (mirrorCheck.rodin_head && mirrorCheck.rodin_torso && mirrorCheck.head && mirrorCheck.torso && mirrorCheck.legs) {
+            const finalQuestion = "모든 자세를 체화하셨습니다. 생각하는 사람의 고뇌가 반가사유상의 미소를 통해 마음의 평화로 승화되었음을 느끼셨나요?";
+            
+            // 모든 미션 완료 시 버튼을 활성화하여 사용자가 클릭할 수 있게 함
+            const modeBtn = document.getElementById('mode-btn');
+            modeBtn.disabled = false; 
+
+            // 자막 클릭으로도 4단계 진입 가능
+            showSubtitle(`<b>3단계 미션 완료</b><br>${finalQuestion}`, "white", () => {
+                if(currentMode !== 4) { // 이미 버튼으로 진입하지 않았다면
+                    currentMode = 4;
+                    modeBtn.innerText = "단계 4: 여일(餘一)";
+                    startStageFinal(); 
+                }
+            });
+            speak(finalQuestion);
+
+            setTimeout(() => {
+                mirrorGuide.style.display = 'none';
+            }, 2000);
+            
+        } else {
+            document.getElementById('mirror-text').innerText = "다음 부위를 선택하여 따라하세요";
+        }
+    };
+
 
     function handleInteraction(id, e) {
         initAudio();
@@ -437,54 +537,7 @@ window.confirmStage3Part = function(part) {
         }
     };
 
-    /* [업그레이드] 4단계: 정적 및 승화 과정 통합 */
-    function startStageFinal() {
-        initAudio();
-        stopAllPlayback();
-        mirrorGuide.style.display = 'none';
-        document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
-        
-        const modeBtn = document.getElementById('mode-btn');
-        modeBtn.innerText = "다시 시작";
-        modeBtn.disabled = true;
-
- // 수정: 7초 후에 화면 정화 효과(밝아짐 및 블러) 추가
-    setTimeout(() => {
-        container.classList.add('purifying');
-    }, 7000); 
-    // --------------------------
-
-        const msg = "여일(餘一): 나와 유물의 경계가 사라지고,  체화된 경험이 깊은 성찰로 이어지는 단계입니다.  모든 번뇌가 빛으로 씻겨 나갑니다.  침묵 속의 평온을 느끼세요.";
-        showSubtitle(`<b>여일(餘一): 고뇌에서 해탈로</b><br>${msg}`, "white");
-        speak(msg);
-
-        // 저주파 발진음(Oscillator) 생성 - 명상 효과
-        const now = audioCtx.currentTime;
-        const masterGain = audioCtx.createGain();
-        masterGain.connect(audioCtx.destination);
-        
-        [55, 110, 220, 440].forEach((f) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.frequency.setValueAtTime(f, now);
-            g.gain.setValueAtTime(0, now);
-            g.gain.linearRampToValueAtTime(0.08, now + 3);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 15);
-            osc.connect(g).connect(masterGain);
-            osc.start(now); 
-            osc.stop(now + 15);
-        });
-
-        // 15초 후 완전한 정적과 흰색 화면 전환
-        setTimeout(() => {
-            container.classList.remove('purifying');
-            container.classList.add('total-silence');
-            svg.innerHTML = "";
-            showSubtitle("<b>[정적]</b><br>비어있기에 비로소 평온합니다. 당신이 곧 우주입니다.", "black");
-            modeBtn.disabled = false;
-            currentMode = 5;
-        }, 15000);
-    }
+ 
 
     function showSubtitle(html, borderColor, nextCallback = null) {
         subBox.innerHTML = html; subBox.style.display = 'inline-block';
