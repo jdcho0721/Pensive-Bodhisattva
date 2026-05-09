@@ -26,14 +26,17 @@
 
         .hotspot:hover { background: rgba(255, 215, 0, 0.1); }
 
-        /* 버튼 그룹 */
-        .btn-group {
-            position: absolute; top: env(safe-area-inset-top, 20px); 
-           left: 50%; transform: translateX(-50%);
-            display: flex; gap: 15px; z-index: 30;
-width: 95%; justify-content: center;
-        }
-
+.btn-group {
+    position: absolute; 
+    top: calc(env(safe-area-inset-top, 0px) + 65px); /* 타이틀과의 간격 확보 */
+    left: 50%; 
+    transform: translateX(-50%);
+    display: flex; 
+    gap: 10px; 
+    z-index: 90;
+    width: 95%; 
+    justify-content: center;
+}
         .action-btn {
             padding: 12px 25px; background: rgba(212, 175, 55, 0.9); color: black;
             border: 2px solid white; border-radius: 30px; font-weight: bold; 
@@ -42,6 +45,24 @@ width: 95%; justify-content: center;
         .action-btn:hover { background: white; border-color: gold; }
         #intro-btn { background: rgba(255, 255, 255, 0.2); color: white; }
         #intro-btn:hover { background: white; color: black; }
+
+/* 타이틀 스타일: 가장 위에 보이도록 z-index 조정 */
+#main-title {
+    position: absolute;
+    top: calc(env(safe-area-inset-top, 0px) + 15px); /* 상단 여백 */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    text-align: center;
+    z-index: 100; /* 버튼보다 높은 우선순위 */
+    margin: 0;
+    font-size: 1.6rem;
+    color: gold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    font-weight: bold;
+    pointer-events: none; /* 타이틀이 버튼 클릭을 방해하지 않도록 설정 */
+}
+
 
         #subtitle-overlay {
             position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%);
@@ -77,6 +98,7 @@ width: 95%; justify-content: center;
     </style>
 </head>
 <body>
+<h1 id="main-title">반가사유: 사유의 소리 </h1>
 
 <div class="btn-group">
     <button id="intro-btn" class="action-btn" onclick="playIntroduction()">전시 소개 보기</button>
@@ -136,7 +158,7 @@ function initAudio() {
     }
 
     const introData = [
-        { title: "공(空)의 공명: 로댕과 반가사유상", text: "본 전시는 서양의 '존재적 고뇌'와 동양의 '자비로운 사유'가 만나는 지점을 다룹니다." },
+        { title: "공(空)의 공명: 로댕의 생각하는 사람과 반가사유상", text: "본 전시는 서양의 '존재적 고뇌'와 동양의 '자비로운 사유'가 만나는 지점을 다룹니다." },
         { title: "작가 소개: 조준동 (Jun Dong Cho)", text: "성균관대학교 명예교수이자 휴마톨로지(Humartology)의 주창자로, 기술에 인간의 감성과 예술적 가치를 녹여내는 연구를 이어오고 있습니다. Copyright © 2026 조준동(Jun Dong Cho). All Rights Reserved." },
         { title: "철학: 물아일체(物我 일체)", text: "예술을 보는 것이 아니라, 감상자의 신체를 인터페이스 삼아 그 시대의 정신과 직접 접속하는 '체화된 인지'를 지향합니다." }
     ];
@@ -201,7 +223,7 @@ initAudio();
 initAudio();
         stopAllPlayback();
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const guideText = "이 전시는 네 단계로 구성됩니다. 첫번째 단계(조우)에서는 조각의 부위를 터치하여 철학적 사유를 감상하세요. 두번째 단계(공명)에서는 두 조각이 서로 대화를 나눕니다. 세번째 단계(체화)에서는 먼저 로댕의 고뇌하는 자세를 따라한 뒤, 반가사유상의 자세와 자비로운 미소를 체화해 봅니다. 마지막 단계(승화)에서는 고뇌가 평온으로 승화되는 물아일체의 순간을 경험합니다.";
+        const guideText = "이 전시는 네 단계로 구성됩니다. 첫번째 단계(조우)에서는 조각의 부위를 터치하여 철학적 사유를 감상하세요. 두번째 단계(공명)에서는 두 조각이 서로 대화를 나눕니다. 세번째 단계(체화)에서는 먼저 로댕의 생각하는 사람의 고뇌하는 자세를 따라한 뒤, 반가사유상의 자세와 자비로운 미소를 체화해 봅니다. 마지막 단계(승화)에서는 고뇌가 평온으로 승화되는 물아일체의 순간을 경험합니다.";
         showSubtitle(`<b>전시 관람 가이드</b><br>${guideText}`, "white");
         speak(guideText);
     }
@@ -210,8 +232,16 @@ initAudio();
 initAudio();
         stopAllPlayback();
         currentPartInStage3 = null;
-        
-        if (currentMode === 1) {
+
+if (currentMode === 5 || document.getElementById('mode-btn').innerText === "다시 시작") {
+        location.reload(); 
+        return;
+    }
+
+        if (currentMode === 0) {
+        currentMode = 1;
+        startStage1();
+       } else if (currentMode === 1) {
             currentMode = 2;
             document.getElementById('mode-btn').innerText = "단계 2: 공명의 대화";
         } else if (currentMode === 2) {
@@ -231,7 +261,7 @@ initAudio();
 
     function startStage3RodinSequence() {
         mirrorGuide.style.display = 'block';
-    //    document.getElementById('mirror-text').innerText = "로댕의 부위부터 따라 하세요";
+    //    document.getElementById('mirror-text').innerText = "로댕의 생각하는 사람의 부위부터 따라 하세요";
         handleStage3Interaction('rodin_head');
     }
 
@@ -240,8 +270,8 @@ initAudio();
         currentPartInStage3 = part;
         
         const content = {
-            rodin_head: { text: "로댕의 '생각하는 사람'의 얼굴 표정을 보세요. 깊은 고뇌에 빠져 미간을 찌푸린 채 입술을 굳게 다물고 있습니다. 이제 그 표정을 따라해 보세요.", color: "#ff4500", label: "로댕의 고뇌" },
-            rodin_torso: { text: "이번에는 로댕의 웅크린 자세입니다. 온몸의 근육을 수축시키고 몸을 웅크려 존재의 무게를 견디는 강렬한 긴장을 몸으로 느껴보세요. 이제 따라해 보세요.", color: "#ff4500", label: "로댕의 긴장" },
+            rodin_head: { text: "로댕의 '생각하는 사람'의 얼굴 표정을 보세요. 깊은 고뇌에 빠져 미간을 찌푸린 채 입술을 굳게 다물고 있습니다. 이제 그 표정을 따라해 보세요.", color: "#ff4500", label: "로댕의 생각하는 사람의 고뇌" },
+            rodin_torso: { text: "이번에는 생각하는 사람의 웅크린 자세입니다. 온몸의 근육을 수축시키고 몸을 웅크려 존재의 무게를 견디는 강렬한 긴장을 몸으로 느껴보세요. 이제 따라해 보세요.", color: "#ff4500", label: "생각하는 사람의 긴장" },
             head: { text: "입가에 잔잔한 미소를 지으며 오른쪽 손가락 끝을 뺨에 살짝 대보세요. 비움으로써 채워지는 자비의 미소입니다. 이제 따라해 보세요.", color: "gold", label: "반가사유 미소" },
             torso: { text: "가슴을 펴고 당당하면서도 유연하게 상체의 긴장을 풀어보세요. 인간의 마음을 따뜻하게 감싸는 조화의 공간입니다. 이제 따라해 보세요.", color: "gold", label: "반가사유 가슴" },
             legs: { text: "오른쪽 다리를 왼쪽 무릎 위에 올리세요. 불균형 속의 균형, '중용'을 몸으로 경험합니다. 이제 따라해 보세요.", color: "gold", label: "반가사유 반가" }
@@ -253,8 +283,8 @@ initAudio();
         if (part === 'head' || part === 'torso' || part === 'legs') {
             if (!mirrorCheck.rodin_head || !mirrorCheck.rodin_torso) {
                 currentPartInStage3 = null;
-                showSubtitle(`<b>안내</b><br>먼저 로댕의 두 부위를 모두 따라 하셔야 합니다.`, "white");
-                speak("먼저 로댕의 두 부위를 모두 따라 하셔야 합니다.");
+                showSubtitle(`<b>안내</b><br>먼저 생각하는 사람의 두 부위를 모두 따라 하셔야 합니다.`, "white");
+                speak("먼저 생각하는 사람의 두 부위를 모두 따라 하셔야 합니다.");
                 return;
             }
         }
@@ -277,7 +307,7 @@ updateCentralGauge(); // [수정] YES 클릭 시 실시간으로 게이지 업�
         
         if (mirrorCheck.rodin_head && mirrorCheck.rodin_torso && mirrorCheck.head && mirrorCheck.torso && mirrorCheck.legs) {
             currentMode = 4;
-            const finalQuestion = "모든 자세를 체화하셨습니다. 로댕의 고뇌가 반가사유상의 미소를 통해 마음의 평화로 승화되었음을 느끼셨나요?";
+            const finalQuestion = "모든 자세를 체화하셨습니다. 생각하는 사람의 고뇌가 반가사유상의 미소를 통해 마음의 평화로 승화되었음을 느끼셨나요?";
             showSubtitle(`<b>3단계 미션 완료</b><br>${finalQuestion}`, "white");
             speak(finalQuestion);
             
@@ -337,9 +367,14 @@ initAudio();
 
 function startStageFinal() {
         mirrorGuide.style.display = 'none';
-        document.getElementById('mode-btn').innerText = "다시 시작";
+
+    const modeBtn = document.getElementById('mode-btn');
+    modeBtn.innerText = "다시 시작"; // 버튼 텍스트 변경
+    modeBtn.disabled = false;      // 버튼 활성화
+
+   //     document.getElementById('mode-btn').innerText = "다시 시작";
         
-        const msg = "로댕의 치열한 사유(긴장)가 반가사유상의 자비로운 미소(이완)로 승화되었습니다. 이제 자세를 3분간 유지하며 몸에서 일어나는 변화를 관찰하십시오. 마지막으로 지금 느낀 '몸의 감각'을 한 단어로 마음속에 새겨보십시오. 당신과 유물의 경계가 사라진 '여일'의 순간입니다.";
+        const msg = "생각하는 사람의 치열한 사유(긴장)가 반가사유상의 자비로운 미소(이완)로 승화되었습니다. 이제 자세를 3분간 유지하며 몸에서 일어나는 변화를 관찰하십시오. 마지막으로 지금 느낀 '몸의 감각'을 한 단어로 마음속에 새겨보십시오. 당신과 유물의 경계가 사라진 '여일'의 순간입니다.";
         
         // 자막 표시
         showSubtitle(`<b>여일(餘一): 고뇌에서 해탈로</b><br>${msg}`, "white");
@@ -349,67 +384,66 @@ function startStageFinal() {
         const u = new SpeechSynthesisUtterance(msg);
         u.lang = 'ko-KR';
         u.rate = 0.9;
+   // 음성이 끝난 후 오디오 재생 로직
+    u.onend = function() {
+        playEchoesAudio();
+    };
 
-        // 음성 안내가 끝나면 비디오 재생
-        u.onend = function() {
-            // 기존 비디오 팝업이 있다면 제거
-            const oldPopup = document.getElementById('video-overlay');
-            if (oldPopup) oldPopup.remove();
+    window.speechSynthesis.speak(u);
 
-            const videoPopup = document.createElement('div');
-            videoPopup.id = 'video-overlay';
-            videoPopup.style.position = 'fixed';
-            videoPopup.style.top = '0'; videoPopup.style.left = '0';
-            videoPopup.style.width = '100vw'; videoPopup.style.height = '100vh';
-            videoPopup.style.backgroundColor = 'rgba(0,0,0,0.95)'; videoPopup.style.zIndex = '2000';
-            videoPopup.style.display = 'flex'; videoPopup.style.justifyContent = 'center'; videoPopup.style.alignItems = 'center';
-            videoPopup.style.flexDirection = 'column';
-            
-            // 비디오 태그 생성 (자동 재생 및 전체 화면 최적화)
-            videoPopup.innerHTML = `
-                <div style="position:relative; width:90%; max-width:800px;">
-                    <video id="final-video" width="100%" height="auto" controls autoplay playsinline style="border: 2px solid gold; border-radius: 10px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);">
-                        <source src="Echoes_of_the_Void.mp4" type="video/mp4">
-                        브라우저가 비디오를 지원하지 않습니다.
-                    </video>
-                    <button onclick="this.closest('#video-overlay').remove()" style="position:absolute; top:-40px; right:0; background:none; border:1px solid white; color:white; cursor:pointer; padding:5px 10px; border-radius:5px;">닫기 ✕</button>
-                </div>
-                <p style="color:gold; margin-top:20px; font-size:1.1rem; letter-spacing:1px;">사유의 울림을 끝까지 감상해보세요.</p>
-            `;
-            document.body.appendChild(videoPopup);
+    // [참고] 만약 설명창을 클릭하면 즉시 음악으로 넘어가게 하고 싶다면
+    onSubtitleNext = () => {
+        window.speechSynthesis.cancel();
+        playEchoesAudio();
+    };
 
-            // 강제 재생 시도 (일부 모바일 대응)
-            const video = document.getElementById('final-video');
-            video.play().catch(error => {
-                console.log("자동 재생이 차단되었습니다. 사용자의 조작이 필요합니다.");
-            });
-        };
+    // 배경 명상음 (Oscillator) 생성
+    playMeditationSound();
 
-        window.speechSynthesis.speak(u);
-        
-        // 배경 사운드 (사인파) 생성
-        const now = audioCtx.currentTime;
-        const masterGain = audioCtx.createGain();
-        masterGain.connect(audioCtx.destination);
-        
-        [55, 110, 440, 880].forEach((f, idx) => {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.frequency.setValueAtTime(f, now);
-            g.gain.setValueAtTime(0, now);
-            const volume = f < 200 ? 0.08 : 0.04;
-            g.gain.linearRampToValueAtTime(volume, now + 3);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 18);
-            osc.connect(g).connect(masterGain);
-            osc.start(now); osc.stop(now + 18);
-        });
+    currentMode = 5; 
+}
 
-        currentMode = 5; 
-    }
+
+// 오디오 오버레이 및 재생 함수 분리
+function playEchoesAudio() {
+    const oldOverlay = document.getElementById('audio-overlay');
+    if (oldOverlay) oldOverlay.remove();
+
+    const audioOverlay = document.createElement('div');
+    audioOverlay.id = 'audio-overlay';
+    audioOverlay.style.position = 'fixed';
+    audioOverlay.style.top = '0'; audioOverlay.style.left = '0';
+    audioOverlay.style.width = '100vw'; audioOverlay.style.height = '100vh';
+    audioOverlay.style.backgroundColor = 'rgba(0,0,0,0.85)'; audioOverlay.style.zIndex = '2000';
+    audioOverlay.style.display = 'flex'; audioOverlay.style.justifyContent = 'center'; audioOverlay.style.alignItems = 'center';
+    audioOverlay.style.flexDirection = 'column';
+    audioOverlay.style.cursor = 'pointer';
+    
+    audioOverlay.innerHTML = `
+        <div style="text-align:center;">
+            <div class="guide-circle" style="width:150px; height:150px; border-color:gold;"></div>
+            <p style="color:gold; margin-top:20px; font-size:1.4rem; letter-spacing:2px; font-weight:bold;">사유의 울림 (Echoes of the Void)</p>
+            <p style="color:white; opacity:0.7; margin-top:10px;">화면을 클릭하면 원래 화면으로 돌아갑니다.</p>
+            <audio id="final-audio" autoplay>
+                <source src="Echoes_of_the_Void.mp3" type="audio/mpeg">
+            </audio>
+        </div>
+    `;
+    
+    audioOverlay.onclick = function() {
+        const audio = document.getElementById('final-audio');
+        if (audio) { audio.pause(); audio.currentTime = 0; }
+        audioOverlay.remove();
+    };
+
+    document.body.appendChild(audioOverlay);
+    const audio = document.getElementById('final-audio');
+    audio.play().catch(e => console.log("Audio Playback Blocked"));
+}
 
     const stage1Data = {
-        rodin_head: { philosophy: "로댕의 고뇌: 수축하는 원. '나는 누구인가'라는 존재적 압박을 담고 있습니다.", draw: () => drawCircle(26, 30, 40, '#ff4500') },
-        rodin_torso: { philosophy: "로댕: 역삼각형의 압박. 중력이 육체를 끌어내리는 존재적 불안을 형상화했습니다.", draw: () => drawPolygon("26,35 18,55 34,55", '#ff4500') },
+        rodin_head: { philosophy: "생각하는 사람의 고뇌: 수축하는 원. '나는 누구인가'라는 존재적 압박을 담고 있습니다.", draw: () => drawCircle(26, 30, 40, '#ff4500') },
+        rodin_torso: { philosophy: "생각하는 사람: 역삼각형의 압박. 중력이 육체를 끌어내리는 존재적 불안을 형상화했습니다.", draw: () => drawPolygon("26,35 18,55 34,55", '#ff4500') },
         maitreya_head: { philosophy: "반가사유상의 미소: 확장하는 원. 비움으로써 채워지는 자비의 미소입니다.", draw: () => drawCircle(77, 28, 50, 'gold') },
         maitreya_torso: { philosophy: "중단: 안정적이고 자비로운 정삼각형. 인간의 마음을 따뜻하게 감싸는 조화의 공간입니다.", draw: () => drawPolygon("77,28 68,55 86,55", 'gold') },
         maitreya_legs: { philosophy: "하단: 언제든 중생을 향해 일어날 수 있는 이행의 상태를 의미합니다.", draw: () => drawPolygon("68,65 86,65 86,85 68,85", 'gold') }
