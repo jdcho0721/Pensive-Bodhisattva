@@ -140,6 +140,26 @@
 </head>
 <body>
 
+<!-- ══════════════════════════════════════════════════
+     사운드 트랙 매핑
+     rodin-head    : The_Silent_Weight_of_Stone  (돌의 침묵 — 고뇌하는 머리)
+     rodin-torso   : The_Weight_of_Bronze        (청동의 무게 — 뒤틀린 몸통)
+     rodin-legs    : Bearing_the_Bedrock         (대지를 짊어짐 — 발)
+     maitreya-head : 손끝에_맺힌_온기            (손가락이 뺨에 닿는 온기)
+     maitreya-torso: Where_Bamboo_Bends          (대나무의 유연함 — 상체)
+     maitreya-legs : Beneath_the_Temple_Floor    (사원 바닥의 고요 — 하체)
+     stage-2 공명  : Echoes_of_the_Void          (공(空)의 메아리 — 두 조각상 대화)
+     finale        : Sacred_Morning              (신성한 아침 — 4단계 명상)
+     ══════════════════════════════════════════════════ -->
+<audio id="snd-rodin-head"     src="The_Silent_Weight_of_Stone.mp4" preload="auto"></audio>
+<audio id="snd-rodin-torso"    src="The_Weight_of_Bronze.mp4"       preload="auto"></audio>
+<audio id="snd-rodin-legs"     src="Bearing_the_Bedrock.mp4"        preload="auto"></audio>
+<audio id="snd-maitreya-head"  src="손끝에_맺힌_온기.mp4"            preload="auto"></audio>
+<audio id="snd-maitreya-torso" src="Where_Bamboo_Bends.mp4"         preload="auto"></audio>
+<audio id="snd-maitreya-legs"  src="Beneath_the_Temple_Floor.mp4"   preload="auto"></audio>
+<audio id="snd-void"           src="Echoes_of_the_Void.mp4"         preload="auto" loop></audio>
+<audio id="snd-finale"         src="Sacred_Morning.mp4"             preload="auto" loop></audio>
+
 <!-- ── 작품 소개 / 사용법 오버레이 ── -->
 <div id="info-overlay" class="info-page-overlay" onclick="closeInfoOverlay(event)">
     <div class="info-page-content" onclick="event.stopPropagation()">
@@ -175,7 +195,7 @@
 <div id="finale-overlay">
     <canvas id="finale-canvas"></canvas>
     <div id="finale-text">침묵 속에서<br>당신은 이미 완전합니다<br>無</div>
-    <button id="finale-restart" onclick="location.reload()">처음으로 돌아가기</button>
+    <button id="finale-restart" onclick="resetGame()">처음으로 돌아가기</button>
 </div>
 
 <div id="game-container">
@@ -230,20 +250,10 @@
         masterGain = audioCtx.createGain();
         masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
         masterGain.connect(audioCtx.destination);
-        startDrone();
+        // startDrone 제거 — 저주파 "웅" 소리 원인
     }
 
-    function startDrone() {
-        if (backgroundDrone) return;
-        backgroundDrone = audioCtx.createOscillator();
-        const droneGain = audioCtx.createGain();
-        backgroundDrone.type = 'sine';
-        backgroundDrone.frequency.setValueAtTime(65.41, audioCtx.currentTime); // C2 저주파 침묵의 진동
-        droneGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-        backgroundDrone.connect(droneGain);
-        droneGain.connect(masterGain);
-        backgroundDrone.start();
-    }
+    function startDrone() { /* 드론 비활성화 */ }
 
     function playResonanceSound(freq, type, duration) {
         if (!audioCtx) initAudio();
@@ -266,7 +276,88 @@
         if (currentOsc) { try { currentOsc.stop(); } catch(e){} currentOsc = null; }
         if (drumInterval) { clearInterval(drumInterval); drumInterval = null; }
         window.speechSynthesis.cancel();
+        _stopMp4All();
     }
+
+    // ── MP4 사운드트랙 제어 ──────────────────────────────
+    const _mp4Ids = [
+        'snd-rodin-head','snd-rodin-torso','snd-rodin-legs',
+        'snd-maitreya-head','snd-maitreya-torso','snd-maitreya-legs',
+        'snd-void','snd-finale'
+    ];
+    let _mp4FadeTimer = null;
+
+    function _stopMp4All() {
+        if (_mp4FadeTimer) { clearTimeout(_mp4FadeTimer); _mp4FadeTimer = null; }
+        _mp4Ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.pause();
+            el.currentTime = 0;
+            el.volume = 1;
+        });
+    }
+
+    // vol: 최종 음량(0~1), autostop: 몇 초 후 페이드아웃 (0=비활성)
+    function _playMp4(id, vol, autostopSec) {
+        _stopMp4All();
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.volume = 0;
+        el.currentTime = 0;
+        el.play().catch(() => {});
+        // 페이드인 (0.6초)
+        let v = 0;
+        const step = vol / 12;
+        const fi = setInterval(() => {
+            v = Math.min(v + step, vol);
+            el.volume = v;
+            if (v >= vol) clearInterval(fi);
+        }, 50);
+        // 자동 페이드아웃
+        if (autostopSec > 0) {
+            _mp4FadeTimer = setTimeout(() => _fadeOutMp4(el), autostopSec * 1000);
+        }
+    }
+
+    function _fadeOutMp4(el) {
+        if (!el || el.paused) return;
+        const fo = setInterval(() => {
+            el.volume = Math.max(el.volume - 0.05, 0);
+            if (el.volume <= 0) { clearInterval(fo); el.pause(); el.currentTime = 0; }
+        }, 80);
+    }
+
+    // ── 해설 중 MP4 볼륨 덕킹 + 오실레이터 자동 정지 ──
+    // 해설 시작 시 MP4를 낮추고(duck), 해설 종료 후 원래 볼륨으로 복원
+    // 복원 뒤 osc(오실레이터)도 함께 정지해 "웅" 소리 제거
+    function _duckForSpeech(text, mp4El, fullVol, osc) {
+        const DUCK_VOL = 0.05; // 해설 중 배경음 볼륨
+
+        // 볼륨 덕킹
+        if (mp4El && !mp4El.paused) {
+            mp4El.volume = DUCK_VOL;
+        }
+
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'ko-KR';
+        msg.onend = () => {
+            // 해설 종료: 볼륨 복원
+            if (mp4El && !mp4El.paused) {
+                let v = DUCK_VOL;
+                const restore = setInterval(() => {
+                    v = Math.min(v + 0.04, fullVol);
+                    mp4El.volume = v;
+                    if (v >= fullVol) clearInterval(restore);
+                }, 60);
+            }
+            // 오실레이터 정지 — "웅" 소리 차단
+            if (osc) { try { osc.stop(); } catch(e){} }
+            if (drumInterval) { clearInterval(drumInterval); drumInterval = null; }
+        };
+        window.speechSynthesis.speak(msg);
+    }
+    // ────────────────────────────────────────────────────
 
     // --- [2] 인터랙션 매핑 정보 데이터 명세 ---
     // 기본 음향 설정 (시나리오와 무관하게 공통 적용)
@@ -353,7 +444,7 @@
         currentPartInStage3 = null;
 
         if (currentMode === 4 || modeBtn.innerText === "다시 시작") {
-            location.reload();
+            resetGame();
             return;
         }
 
@@ -417,7 +508,9 @@
 
         mainTitle.innerText = data.title;
         showSubtitle(`<b>${data.title}</b><p>${data.text}</p>`, "white");
-        speak(data.text);
+
+        // ── 부위별 MP4 사운드트랙 재생 (15초 후 자동 페이드아웃) ──
+        _playMp4('snd-' + id, id.includes('rodin') ? 0.25 : 0.2, 15);
 
         const isRodin = id.includes('rodin');
         if (isRodin) {
@@ -435,6 +528,11 @@
         currentOsc.connect(bGain);
         bGain.connect(masterGain);
         currentOsc.start();
+
+        // ── 해설 중 MP4 볼륨 덕킹: 낮추고 → 해설 끝나면 복원 후 오실레이터 정지 ──
+        const mp4El = document.getElementById('snd-' + id);
+        const fullVol = id.includes('rodin') ? 0.25 : 0.2;
+        _duckForSpeech(data.text, mp4El, fullVol, currentOsc);
     }
 
     // --- [5] 2단계: 사유 시나리오 구동 핵심 아키텍처 ---
@@ -505,6 +603,10 @@
 
         if (isRodin) { triggerDrum(); } else { triggerBell(); }
         drawPulseEffect(isRodin);
+
+        // ── 2단계: 공(空)의 메아리 — 두 조각상의 대화 배경음 ──
+        // (첫 화자 로댕 발화 시작 시 한 번만 켜고, 릴레이 내내 유지)
+        if (depth === 1 && isRodin) { _playMp4('snd-void', 0.15, 0); }
 
         // 현재 시나리오의 정밀 프롬프트 명세 적용
         const spec = scenarioPrompts[selectedScenarioId] || scenarioPrompts[1];
@@ -751,9 +853,12 @@ ${JSON.stringify(dialogueSessionData)}
         mainTitle.innerText = "사유의 완성 (Humartology)";
         
         // 1. 마무리 첫 번째 메시지
-        const firstMsg = "나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰로 이어지는 단계입니다. 모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.";
+        const firstMsg = "나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰로 이어집니다. 모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.";
         showSubtitle(`<b>단계 4: 여일(餘一)</b><p>${firstMsg}</p>`, "gold");
         speak(firstMsg);
+
+        // ── 4단계 피날레: Sacred Morning — 신성한 아침, 루프 재생 ──
+        _playMp4('snd-finale', 0.2, 0);
         
  
         
@@ -916,6 +1021,27 @@ async function fetchAITalk(prompt) {
 
                     <li><b>4단계: 여일 (Oneness)</b><br>
                     모든 번뇌가 빛으로 정화되며 마무리됩니다. 화면이 서서히 fade out되고, 고요한 빈 공간에서 원이 천천히 회전하는 명상 화면으로 전환됩니다.</li>
+                </ul>
+
+                <h3>사운드 감상법</h3>
+                <p>각 단계와 부위마다 작품의 철학적 분위기에 맞게 선별된 음악이 자동 재생됩니다.</p>
+                <ul>
+                    <li><b>로댕 — 머리:</b> <em>The Silent Weight of Stone</em><br>
+                    돌의 침묵 같은 무게감이 고뇌하는 머리의 내면을 감쌉니다.</li>
+                    <li><b>로댕 — 상체:</b> <em>The Weight of Bronze</em><br>
+                    청동의 육중한 질감이 뒤틀린 근육과 실존적 고통을 소리로 빚어냅니다.</li>
+                    <li><b>로댕 — 하체:</b> <em>Bearing the Bedrock</em><br>
+                    대지를 짊어지는 소리, 발이 땅을 움켜쥐는 장면과 공명합니다.</li>
+                    <li><b>반가사유상 — 머리:</b> <em>손끝에 맺힌 온기</em><br>
+                    손가락이 뺨에 살포시 닿는 온기, 사유상의 핵심 찰나를 담았습니다.</li>
+                    <li><b>반가사유상 — 상체:</b> <em>Where Bamboo Bends</em><br>
+                    대나무처럼 유연하게 흐르는 상체의 곡선과 비움의 미학이 어우러집니다.</li>
+                    <li><b>반가사유상 — 하체:</b> <em>Beneath the Temple Floor</em><br>
+                    사원 바닥의 고요함이 반가좌의 안착과 해탈의 감각을 전합니다.</li>
+                    <li><b>2단계 공명:</b> <em>Echoes of the Void</em><br>
+                    두 조각상의 AI 철학 대화가 이어지는 동안 공(空)의 메아리가 배경을 채웁니다.</li>
+                    <li><b>4단계 여일:</b> <em>Sacred Morning</em><br>
+                    모든 번뇌가 빛으로 씻긴 뒤, 신성한 아침의 여운이 명상 화면을 감쌉니다.</li>
                 </ul>
 
                 <h3>기타 조작법</h3>
