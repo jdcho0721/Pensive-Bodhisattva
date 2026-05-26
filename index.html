@@ -58,8 +58,8 @@
 
         /* ── 챗봇 ── */
         #chatbot-container {
-            position: absolute; bottom: 100px; right: 20px;
-            width: 320px; height: 420px; z-index: 100;
+            position: absolute; bottom: 50px; right: 20px;
+            width: 275px; height: 320px; z-index: 100;
             display: none; /* 3단계 이후에만 표시 */
             flex-direction: column;
             background: rgba(0,0,0,0.92); border: 2px solid gold;
@@ -373,10 +373,12 @@
             avatarModeActive = false; 
             currentMode = 3; 
             modeBtn.innerText = "단계 3: 체화";
+            document.getElementById('chatbot-container').style.display = 'none';
             showSubtitle("<b>3단계: 체화(Embodiment)</b><br>이제 조각상의 자세를 직접 따라하며 마음을 느껴보세요.", "white");
             startStage3Sequence(); 
         } else if (currentMode === 3) {
             currentMode = 4;
+            document.getElementById('chatbot-container').style.display = 'none';
             startStageFinal(); 
         }
     }
@@ -753,18 +755,13 @@ ${JSON.stringify(dialogueSessionData)}
         showSubtitle(`<b>단계 4: 여일(餘一)</b><p>${firstMsg}</p>`, "gold");
         speak(firstMsg);
         
-        // 2. 6.5초 뒤 두 번째 메시지
-        setTimeout(() => {
-            const secondMsg = "조만간 다가올 모바일 촉각 전시회에서 당신이 남긴 사유의 기록은 입체적 사운드스케이프와 실시간 촉각 패턴으로 변환되어 다른 감상자들에게 공유됩니다. 인간과 예술, 그리고 기술의 결합이 완성되었습니다.";
-            showSubtitle(`<b>최종 단계: 여일(餘一)</b><p>${secondMsg}</p>`, "gold");
-            speak(secondMsg);
-        }, 8000);
+ 
         
         // 3. 14초 뒤 fade out → 원 회전 마무리 화면
         setTimeout(() => {
             subBox.style.display = 'none';
             triggerFinaleSequence();
-        }, 14000);
+        }, 10000);
         
         modeBtn.innerText = "다시 시작";
     }
