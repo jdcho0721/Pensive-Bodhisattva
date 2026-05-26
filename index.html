@@ -481,9 +481,9 @@ const soundMap = {
     'rodin-head':     { freq:110, soundType:'sawtooth' },
     'rodin-torso':    { freq:130, soundType:'sawtooth' },
     'rodin-legs':     { freq:90,  soundType:'sawtooth' },
-    'maitreya-head':  { freq:440, soundType:'sine' },
-    'maitreya-torso': { freq:392, soundType:'sine' },
-    'maitreya-legs':  { freq:349, soundType:'sine' }
+    'maitreya-head':  { freq:440, soundType:'triangle' },
+    'maitreya-torso': { freq:392, soundType:'triangle' },
+    'maitreya-legs':  { freq:349, soundType:'triangle' }
 };
 
 const stage1ScenarioData = {
@@ -616,7 +616,8 @@ function toggleMode() {
         modeBtn.innerText = "단계 3 → 4";
         document.getElementById('chatbot-container').style.display = 'flex';
         showSubtitle("<b>3단계: 체화(Embodiment)</b><p>조각상의 자세를 신체로 따라하며 마음을 느껴보세요.</p>", 'white');
-        speak("3단계 체화입니다. 아래 버튼으로 신체 부위를 선택하세요.", () => startStage3Sequence());
+        speak("3단계 체화입니다. 아래 버튼으로 신체 부위를 선택하세요.");
+        startStage3Sequence();
 
     } else if (currentMode === 3) {
         currentMode = 4;
@@ -656,7 +657,7 @@ function handleInteraction(id) {
     const sound = soundMap[id];
     if (!data || !sound) return;
 
-    mainTitle.textContent = data.title;
+
     showSubtitle(`<b>${data.title}</b><p>${data.text}</p>`, 'white');
 
     _playMp4('snd-' + id, id.includes('rodin') ? 0.25 : 0.2, 16);
@@ -932,7 +933,6 @@ function startStageFinal() {
     mirrorGuide.style.display = 'none';
     document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
 
-    mainTitle.textContent = "여일 (餘一)";
     const firstMsg = "나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰로 이어집니다. 모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.";
     showSubtitle(`<b>단계 4: 여일(餘一)</b><p>${firstMsg}</p>`, 'gold');
     speak(firstMsg);
@@ -1100,7 +1100,8 @@ const infoData = {
                 <li><b>1단계: 조우 (Encounter)</b><br>
                 상단에서 시나리오(① 생성과 소멸 / ② 실존과 초월 / ③ 문명과 침묵)를 선택하세요. 이후 조각상의 각 부위(머리·상체·하체)를 터치하면 해당 주제의 철학적 해설과 사운드가 흐릅니다. <b>골전도 이어폰</b>을 착용하면 소리가 신체를 직접 울립니다.</li>
                 <li><b>2단계: 공명 (Resonance)</b><br>
-                우측 버튼으로 단계를 전환하세요. AI가 두 조각상의 영혼을 담아 번갈아 철학 대화를 나눕니다. 시나리오 버튼으로 주제를 선택하면 시작됩니다.</li>
+                우측 버튼으로 단계를 전환하세요. AI가 두 조각상의 영혼을 담아 번갈아 철학 대화를 나눕니다. 시나리오 버튼으로 주제를 선택하면 시작됩니다.<br>
+                <span style="color:#aaa;font-size:0.88em;">✦ <b>대화 방식 안내:</b> 두 조각상은 단순히 상대의 말에 즉각 반응하는 것이 아니라, 지금까지 오간 대화 전체를 기억하며 흐름을 이어받습니다. 로댕과 반가사유상이 총 4번 교번하는 동안 각자의 페르소나(실존적 고뇌 vs. 자비와 비움)를 유지하면서 앞선 발언을 의식한 연속적인 철학 대담을 펼칩니다.</span></li>
                 <li><b>3단계: 체화 (Embodiment)</b><br>
                 조각상의 자세를 신체로 따라 하는 단계입니다. 머리·상체·하체 버튼을 선택해 안내대로 자세를 취하세요. 20초 명상 후 번뇌를 입력하면 두 조각상이 AI로 릴레이 위로 대화를 건넵니다.</li>
                 <li><b>4단계: 여일 (Oneness)</b><br>
