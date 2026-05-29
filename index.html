@@ -614,7 +614,7 @@ function toggleMode() {
         avatarModeActive = false;
         currentMode = 3;
         modeBtn.innerText = "단계 3 → 4";
-        document.getElementById('chatbot-container').style.display = 'flex';
+        document.getElementById('chatbot-container').style.display = 'none';
         showSubtitle("<b>3단계: 체화(Embodiment)</b><p>조각상의 자세를 신체로 따라하며 마음을 느껴보세요.</p>", 'white');
         speak("3단계 체화입니다. 아래 버튼으로 신체 부위를 선택하세요.");
         startStage3Sequence();
@@ -792,11 +792,88 @@ const mirrorCoords = {
     legs:  { r_left:'6%',  r_top:'55%', r_w:'28%', r_h:'32%', m_left:'60%', m_top:'52%', m_w:'30%', m_h:'35%', label:"하체: 중력과 초월의 안착" }
 };
 
+// ══════════════════════════════════════════════════════
+// ── [8] 3단계: 체화 (수정됨) ──
+// ══════════════════════════════════════════════════════
+
+// 3단계 시퀀스 시작 함수
 function startStage3Sequence() {
     document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
-    document.getElementById('stage3-scenario-group').style.display = 'flex';
+    document.getElementById('stage3-scenario-group').style.display = 'none'; // 버튼 그룹 숨김
     mirrorGuide.style.display = 'block';
-    selectStage3Part('head');
+    
+    // 연속 흐름 시작 (0: head, 1: torso, 2: legs)
+    runStage3Sequence(0);
+}
+
+// 부위별 연속 실행 로직
+async function runStage3Sequence(stepIndex) {
+    const steps = ['head', 'torso', 'legs'];
+    if (stepIndex >= steps.length) return;
+
+    const partKey = steps[stepIndex];
+    const delayTime = (stepIndex === 2) ? 15000 : 10000; // legs일 때 15초, 나머지는 10초
+
+    const coords = mirrorCoords[partKey];
+    const instructions = {
+        head: "로댕의 '생각하는 사람'의 얼굴 표정을 지어 보세요. 깊은 고뇌에 빠져 미간을 찌푸린 채 입술을 굳게 다물고 있습니다. 이제 그 표정을 따라해 보세요. 다음은 반가사유상의 미소를 따라해 보세요. 입가에 잔잔한 미소를 지으며 오른쪽 손가락 끝을 뺨에 살짝 대보세요. 비움으로써 채워지는 자비의 미소입니다. 이제 따라해 보세요.",
+        torso: "이번에는 생각하는 사람의 웅크린 자세입니다. 온몸의 근육을 수축시키고 몸을 웅크려 존재의 무게를 견디는 강렬한 긴장을 몸으로 느껴보세요. 이제 따라해 보세요. 다음은 반가사유상의 상체를 따라해 보세요. 가슴을 펴고 당당하면서도 유연하게 상체의 긴장을 풀어보세요. 일순간에 숨을 내쉬며 척추를 우아한 곡선으로 유연하게 이완하십시오. 인간의 마음을 따뜻하게 감싸는 조화의 공간입니다. 이제 따라해 보세요.",
+        legs: "이번에는 생각하는 사람의 하체를 따라해 보세요. 발가락으로 대지를 강하게 움켜쥐며 현실의 무게를 느낍니다. 오른쪽 다리를 왼쪽 무릎 위에 가볍게 올려 불균형 속의 균형, 즉 '중용'을 몸으로 경험합니다. 따라해 보세요."
+    };
+
+    // UI 업데이트 및 거울 가이드 표시
+    mirrorGuide.innerHTML = `
+        <div class="mirror-box active" style="left:${coords.r_left};top:${coords.r_top};width:${coords.r_w};height:${coords.r_h};">Rodin</div>
+        <div class="mirror-box active" style="left:${coords.m_left};top:${coords.m_top};width:${coords.m_w};height:${coords.m_h};">Maitreya</div>
+    `;
+
+    showSubtitle(`<b>체화 학습: ${coords.label}</b><p>${instructions[partKey]}</p>`, 'white');
+
+    // 음성 해설 재생
+    speak(instructions[partKey], () => {
+        // 음성 종료 후 delayTime 대기
+        setTimeout(() => {
+            if (stepIndex < steps.length - 1) {
+                // 다음 부위로 진행
+                runStage3Sequence(stepIndex + 1);
+            } else {
+                // 마지막 부위 완료 후 체화 완성 UI 표시
+                showStage3CompletionUI();
+            }
+        }, delayTime);
+    });
+}
+
+// 체화 완성 UI 표시 함수
+function showStage3CompletionUI() {
+    stopAllPlayback();
+    initAudio();
+    subBox.innerHTML = `
+        <div style="text-align:center;pointer-events:auto;">
+            <span style="color:var(--gold);font-weight:bold;font-size:1.1rem;display:block;margin-bottom:10px;font-family:'Cinzel Decorative',serif;">[체화 완성 — 사유의 문이 열렸습니다]</span>
+            <p style="margin:0 0 14px;font-size:0.9rem;color:#ddd;line-height:1.65;">
+                신체의 연결이 끝났습니다.<br>지금 당신의 마음을 짓누르는 고민이나 번뇌는 무엇입니까?<br>
+                입력하시면 두 조각상이 릴레이 위로를 건넵니다.
+            </p>
+            <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
+                <input id="stage3-trouble-input" type="text"
+                    placeholder="예: 미래에 대한 불안, 인간관계의 피로..."
+                    style="width:62%;padding:9px 14px;border:1.5px solid var(--gold);border-radius:18px;background:#0a0a0a;color:#fff;font-size:0.88rem;font-family:'Noto Serif KR',serif;"
+                    onclick="event.stopPropagation();" />
+                <button class="confirm-btn" id="stage3-submit-btn" style="margin-top:0;padding:9px 20px;font-size:0.88rem;">공명하기</button>
+            </div>
+        </div>`;
+    subBox.style.display = 'block';
+    subBox.style.pointerEvents = 'auto';
+
+    document.getElementById('stage3-submit-btn').onclick = function(e) {
+        if (e) e.stopPropagation();
+        const troubleText = document.getElementById('stage3-trouble-input').value.trim();
+        if (!troubleText) { alert("두 조각상과 연동할 고민을 입력해 주십시오."); return; }
+        stage3UserTrouble = troubleText;
+        stage3DialogueSessionData = [];
+        executeStage3AIRelay('rodin', stage3UserTrouble);
+    };
 }
 
 function selectStage3Part(partKey) {
@@ -815,46 +892,49 @@ function selectStage3Part(partKey) {
     `;
 
     const instructions = {
-        head:  "오른손을 뺨에 대고 고개를 무겁게 숙여 로댕과 일치시킨 후, 손가락을 가볍게 뺨에 얹고 부드러운 미소로 반가사유상과 연결되십시오.",
-        torso: "온몸의 근육을 강하게 수축하여 내면의 긴장을 극대화한 후, 일순간에 숨을 내쉬며 척추를 우아한 곡선으로 유연하게 이완하십시오.",
-        legs:  "발가락으로 대지를 강하게 움켜쥐며 현실의 무게를 느낀 후, 오른쪽 다리를 왼쪽 무릎 위에 가볍게 얹어 초월의 상태를 모사하십시오."
+        head: "로댕의 '생각하는 사람'의 얼굴 표정을 지어 보세요. 깊은 고뇌에 빠져 미간을 찌푸린 채 입술을 굳게 다물고 있습니다. 이제 그 표정을 따라해 보세요. 다음은 반가사유상의 미소를 따라해 보세요. 입가에 잔잔한 미소를 지으며 오른쪽 손가락 끝을 뺨에 살짝 대보세요. 비움으로써 채워지는 자비의 미소입니다. 이제 따라해 보세요.",
+        torso: "이번에는 생각하는 사람의 웅크린 자세입니다. 온몸의 근육을 수축시키고 몸을 웅크려 존재의 무게를 견디는 강렬한 긴장을 몸으로 느껴보세요. 이제 따라해 보세요. 다음은 반가사유상의 상체를 따라해 보세요. 가슴을 펴고 당당하면서도 유연하게 상체의 긴장을 풀어보세요. 일순간에 숨을 내쉬며 척추를 우아한 곡선으로 유연하게 이완하십시오. 인간의 마음을 따뜻하게 감싸는 조화의 공간입니다. 이제 따라해 보세요.",
+        legs: "이번에는 생각하는 사람의 하체를 따라해 보세요. 발가락으로 대지를 강하게 움켜쥐며 현실의 무게를 느낍니다. 오른쪽 다리를 왼쪽 무릎 위에 가볍게 올려 불균형 속의 균형, 즉 '중용'을 몸으로 경험합니다. 따라해 보세요."
     };
+
     const instruction = instructions[partKey];
     showSubtitle(`<b>체화 학습: ${coords.label}</b><p>${instruction}</p>`, 'white');
-    speak(instruction);
 
-    if (stage3Timeout) clearTimeout(stage3Timeout);
-    stage3Timeout = setTimeout(() => {
-        stopAllPlayback();
-        initAudio();
-        subBox.innerHTML = `
-            <div style="text-align:center;pointer-events:auto;">
-                <span style="color:var(--gold);font-weight:bold;font-size:1.1rem;display:block;margin-bottom:10px;font-family:'Cinzel Decorative',serif;">[체화 완성 — 사유의 문이 열렸습니다]</span>
-                <p style="margin:0 0 14px;font-size:0.9rem;color:#ddd;line-height:1.65;">
-                    신체의 연결이 끝났습니다.<br>지금 당신의 마음을 짓누르는 고민이나 번뇌는 무엇입니까?<br>
-                    입력하시면 두 조각상이 릴레이 위로를 건넵니다.
-                </p>
-                <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
-                    <input id="stage3-trouble-input" type="text"
-                        placeholder="예: 미래에 대한 불안, 인간관계의 피로..."
-                        style="width:62%;padding:9px 14px;border:1.5px solid var(--gold);border-radius:18px;background:#0a0a0a;color:#fff;font-size:0.88rem;font-family:'Noto Serif KR',serif;"
-                        onclick="event.stopPropagation();" />
-                    <button class="confirm-btn" id="stage3-submit-btn" style="margin-top:0;padding:9px 20px;font-size:0.88rem;">공명하기</button>
-                </div>
-            </div>`;
-        subBox.style.display = 'block';
-        subBox.style.pointerEvents = 'auto';
+    // 음성 해설 종료 후 3초 뒤에 UI를 표시하는 로직
+    speak(instruction, () => {
+        if (stage3Timeout) clearTimeout(stage3Timeout);
+        stage3Timeout = setTimeout(() => {
+            stopAllPlayback();
+            initAudio();
+            subBox.innerHTML = `
+                <div style="text-align:center;pointer-events:auto;">
+                    <span style="color:var(--gold);font-weight:bold;font-size:1.1rem;display:block;margin-bottom:10px;font-family:'Cinzel Decorative',serif;">[체화 완성 — 사유의 문이 열렸습니다]</span>
+                    <p style="margin:0 0 14px;font-size:0.9rem;color:#ddd;line-height:1.65;">
+                        신체의 연결이 끝났습니다.<br>지금 당신의 마음을 짓누르는 고민이나 번뇌는 무엇입니까?<br>
+                        입력하시면 두 조각상이 릴레이 위로를 건넵니다.
+                    </p>
+                    <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
+                        <input id="stage3-trouble-input" type="text"
+                            placeholder="예: 미래에 대한 불안, 인간관계의 피로..."
+                            style="width:62%;padding:9px 14px;border:1.5px solid var(--gold);border-radius:18px;background:#0a0a0a;color:#fff;font-size:0.88rem;font-family:'Noto Serif KR',serif;"
+                            onclick="event.stopPropagation();" />
+                        <button class="confirm-btn" id="stage3-submit-btn" style="margin-top:0;padding:9px 20px;font-size:0.88rem;">공명하기</button>
+                    </div>
+                </div>`;
+            subBox.style.display = 'block';
+            subBox.style.pointerEvents = 'auto';
 
-        document.getElementById('stage3-trouble-input').addEventListener('click', e => e.stopPropagation());
-        document.getElementById('stage3-submit-btn').onclick = function(e) {
-            if (e) e.stopPropagation();
-            const troubleText = document.getElementById('stage3-trouble-input').value.trim();
-            if (!troubleText) { alert("두 조각상과 연동할 고민을 입력해 주십시오."); return; }
-            stage3UserTrouble = troubleText;
-            stage3DialogueSessionData = [];
-            executeStage3AIRelay('rodin', stage3UserTrouble);
-        };
-    }, 20000);
+            document.getElementById('stage3-trouble-input').addEventListener('click', e => e.stopPropagation());
+            document.getElementById('stage3-submit-btn').onclick = function(e) {
+                if (e) e.stopPropagation();
+                const troubleText = document.getElementById('stage3-trouble-input').value.trim();
+                if (!troubleText) { alert("두 조각상과 연동할 고민을 입력해 주십시오."); return; }
+                stage3UserTrouble = troubleText;
+                stage3DialogueSessionData = [];
+                executeStage3AIRelay('rodin', stage3UserTrouble);
+            };
+        }, 3000); // 3초 지연
+    });
 }
 
 async function executeStage3AIRelay(speakerKey, userTroubleText) {
@@ -1103,7 +1183,7 @@ const infoData = {
                 우측 버튼으로 단계를 전환하세요. AI가 두 조각상의 영혼을 담아 번갈아 철학 대화를 나눕니다. 시나리오 버튼으로 주제를 선택하면 시작됩니다.<br>
                 <span style="color:#aaa;font-size:0.88em;">✦ <b>대화 방식 안내:</b> 두 조각상은 단순히 상대의 말에 즉각 반응하는 것이 아니라, 지금까지 오간 대화 전체를 기억하며 흐름을 이어받습니다. 로댕과 반가사유상이 총 4번 교번하는 동안 각자의 페르소나(실존적 고뇌 vs. 자비와 비움)를 유지하면서 앞선 발언을 의식한 연속적인 철학 대담을 펼칩니다.</span></li>
                 <li><b>3단계: 체화 (Embodiment)</b><br>
-                조각상의 자세를 신체로 따라 하는 단계입니다. 머리·상체·하체 버튼을 선택해 안내대로 자세를 취하세요. 20초 명상 후 번뇌를 입력하면 두 조각상이 AI로 릴레이 위로 대화를 건넵니다.</li>
+                조각상의 자세를 신체로 따라 하는 단계입니다. 머리·상체·하체 버튼을 선택해 안내대로 자세를 취하세요. 명상 후 번뇌를 입력하면 두 조각상이 AI로 릴레이 위로 대화를 건넵니다.</li>
                 <li><b>4단계: 여일 (Oneness)</b><br>
                 모든 번뇌가 빛으로 정화됩니다. 화면이 서서히 fade out되고, 고요한 빈 공간에서 원이 천천히 회전하는 명상 화면으로 전환됩니다.</li>
             </ul>
@@ -1240,6 +1320,8 @@ const chatKnowledgeBase = {
 
 // ── 초기화 ──
 window.onload = () => setMode(1);
+
+
 </script>
 </body>
 </html>
