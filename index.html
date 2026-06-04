@@ -37,12 +37,12 @@
         /* ── 핫스팟 ── */
         .hotspot { position: absolute; cursor: pointer; z-index: 10; -webkit-tap-highlight-color: rgba(212,175,55,0.3); border-radius: 50%; }
         .hotspot:hover { background: rgba(212,175,55,0.08); }
-        #rodin-head    { top:25%; left:16%; width:14%; height:14%; }
-        #rodin-torso   { top:40%; left:10%; width:25%; height:25%; border-radius:40%; }
+        #rodin-head    { top:15%; left:16%; width:14%; height:14%; }
+        #rodin-torso   { top:30%; left:10%; width:25%; height:25%; border-radius:40%; }
         #rodin-legs    { top:56%; left:8%;  width:26%; height:30%; border-radius:30%; }
-        #maitreya-head { top:21%; left:69%; width:14%; height:14%; }
-        #maitreya-torso{ top:36%; left:64%; width:24%; height:26%; border-radius:40%; }
-        #maitreya-legs { top:43%; left:62%; width:28%; height:33%; border-radius:30%; }
+        #maitreya-head { top:11%; left:69%; width:14%; height:14%; }
+        #maitreya-torso{ top:26%; left:64%; width:24%; height:26%; border-radius:40%; }
+        #maitreya-legs { top:53%; left:62%; width:28%; height:33%; border-radius:30%; }
 
         /* ── UI 레이어 ── */
         #ui-layer { 
@@ -419,10 +419,6 @@
 </div>
 
 <script>
-
-
-
-
 // ══════════════════════════════════════════════════════
 // ── [0] 웹 오디오 코어 시스템 ──
 // ══════════════════════════════════════════════════════
@@ -643,7 +639,7 @@ function toggleMode() {
     stopAllPlayback();
     currentPartInStage3 = null;
 
-    if (currentMode === 4 ) {
+    if (currentMode === 4 || modeBtn.innerText === "다시 시작") {
         resetGame(); return;
     }
 
@@ -738,8 +734,7 @@ function selectScenario(num) {
         return;
     }
 
-    // 2단계에서만 AI 시나리오 대화 시작
-    if (currentMode !== 2) return;
+    // 2단계: AI 시나리오 대화 시작
     dialogueSessionData = [];
     avatarModeActive = true;
     if (num === 1) startScenarioRun("생성과 소멸");
@@ -815,7 +810,7 @@ async function triggerScenarioNode(speaker, depth) {
             if (depth < 4) {
                 setTimeout(() => triggerScenarioNode(isRodin ? 'maitreya' : 'rodin', depth + 1), 1200);
             } else {
-                setTimeout(() => finishStage2(), 500);   
+                finishStage2();
             }
         });
     } catch(e) {
@@ -835,7 +830,7 @@ function finishStage2() {
 // ── [8] 3단계: 체화 — 거울 명상 + AI 릴레이 위로 ──
 // ══════════════════════════════════════════════════════
 const mirrorCoords = {
-    head:  { r_left:'12%', r_top:'27%', r_w:'20%', r_h:'18%', m_left:'66%', m_top:'23%',  m_w:'20%', m_h:'18%', label:"머리: 사유의 무게를 일치시키기" },
+    head:  { r_left:'12%', r_top:'12%', r_w:'20%', r_h:'18%', m_left:'66%', m_top:'8%',  m_w:'20%', m_h:'18%', label:"머리: 사유의 무게를 일치시키기" },
     torso: { r_left:'8%',  r_top:'30%', r_w:'26%', r_h:'25%', m_left:'63%', m_top:'26%', m_w:'26%', m_h:'26%', label:"상체: 수축과 비움의 정렬" },
     legs:  { r_left:'6%',  r_top:'55%', r_w:'28%', r_h:'32%', m_left:'60%', m_top:'52%', m_w:'30%', m_h:'35%', label:"하체: 중력과 초월의 안착" }
 };
@@ -862,7 +857,7 @@ function _stage3AdvanceTo(stepIndex) {
     // TTS 중단 + 타이머 취소 후 다음 스텝(또는 완료)으로 이동
     window.speechSynthesis.cancel();
     if (_stage3SkipTimeout) { clearTimeout(_stage3SkipTimeout); _stage3SkipTimeout = null; }
-    if (stepIndex < 6) {
+ if (stepIndex < 6) {
         runStage3Sequence(stepIndex);
     } else {
         showStage3CompletionUI();
@@ -965,6 +960,7 @@ async function runStage3Sequence(stepIndex) {
         }, delayTime);
     });
 }
+
 
 // 체화 완성 UI 표시 함수
 function showStage3CompletionUI() {
@@ -1137,6 +1133,7 @@ function startStageFinal() {
     speak(firstMsg);
     _playMp4('snd-finale', 0.2, 0);
     modeBtn.innerText = "다시 시작";
+
 }
 
 function triggerFinaleSequence() {
@@ -1478,12 +1475,10 @@ document.addEventListener('touchstart', _onFirstGesture, true);
 // ── 초기화 ──
 window.onload = () => setMode(1);
 
-  // WebSocket 연결은 depth_camera_injector.js 에서 처리됩니다.
-
 
 </script>
 
+<script src="depth_camera_injector.js"></script>
 
-    <script src="depth_camera_injector.js"></script>
 </body>
 </html>
