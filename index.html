@@ -311,7 +311,7 @@
         <button onclick="setChatCategory('사유명상')" style="padding:3px 9px;background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;font-size:0.7rem;cursor:pointer;">사유명상</button>
     </div>
     <div id="chat-messages">
-        <div style="margin-bottom:10px;color:var(--gold);font-size:0.86rem;line-height:1.6;">조각상: 당신의 깊은 고민이나 궁금증을 물어보세요.<br>사유의 길을 함께 찾겠습니다.</div>
+        <div style="margin-bottom:10px;color:var(--gold);font-size:0.86rem;line-height:1.6;">조각상에게 물어보세요.<br>사유의 길을 함께 찾겠습니다.</div>
     </div>
     <div style="padding:8px;display:flex;gap:5px;background:rgba(255,255,255,0.04);border-top:1px solid var(--gold-dim);">
         <input type="text" id="chat-input" style="flex:1;border-radius:8px;border:1px solid var(--gold-dim);padding:8px 10px;outline:none;font-size:0.82rem;background:#0a0a0a;color:#fff;font-family:'Noto Serif KR',serif;" placeholder="질문을 입력하세요..." onkeydown="if(event.key==='Enter')handleChat()">
@@ -1133,7 +1133,8 @@ function startStageFinal() {
     speak(firstMsg);
     _playMp4('snd-finale', 0.2, 0);
     modeBtn.innerText = "다시 시작";
-
+// 추가 확인: 아래 함수가 호출되고 있는지 확인하십시오.
+    triggerFinaleSequence();
 }
 
 function triggerFinaleSequence() {
