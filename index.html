@@ -1,1485 +1,1204 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>침묵의 공명: 고뇌와 자비의 조우 (Humartology Edition)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --gold: #d4af37;
-            --gold-light: rgba(212,175,55,0.85);
-            --gold-dim: rgba(212,175,55,0.3);
-            --rodin-color: #e05533;
-            --maitreya-color: #d4af37;
-            --bg: #000;
-            --surface: rgba(10,10,10,0.92);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>전시실 1 · 조우(만나기) — 침묵의 공명</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════════════════
+   전시실 1 · 소개(0~2단계) + 세부(3단계) — 단일 화면/단일 UI 통합판
+   ── 배경 이미지(반가-로댕.png)는 입장부터 끝까지 단 한 번도
+      바뀌거나 잘리지 않는다. 0단계부터 3단계(각 부위 설명)까지
+      전부 같은 #stage 위에서 진행되고, 그 위에 골드빛 스팟만 옮겨
+      다니며 지금 이야기하는 대상을 짚어준다.
+   ── 자막·버튼(다시 듣기 / 다음)도 0~3단계 전체가 하나의 UI를
+      공유한다(단계별로 각자 다른 상자를 쓰지 않는다).
+   ── 3단계가 끝나(반가사유상까지 다 들으면) "전시실 2로 이동"을
+      클릭하게 하지 않는다. 대신 "다음 전시 단계로 이동하세요"라고
+      화면과 음성으로 안내만 하고, 잠시 후 다시 로댕부터 반복
+      (loop)한다 — 관람객이 실제로 몸을 옮겨야 다음 전시실로
+      넘어가는 구조이기 때문이다.
+   ══════════════════════════════════════════════════════ */
+:root{
+    --gold:#d4af37; --gold-light:rgba(212,175,55,.85); --gold-dim:rgba(212,175,55,.3);
+    --rodin-color:#f4a460; --maitreya-color:#d4af37; --bg:#000;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Serif KR',serif;overflow:hidden;}
 
-        * { box-sizing: border-box; }
-        body { 
-            margin: 0; background: #000; color: white; 
-            font-family: 'Noto Serif KR', 'Pretendard', serif; 
-            overflow: hidden; touch-action: manipulation; 
-        }
+/* ── 배경(0단계부터 끝까지 동일) ── */
+#stage{position:fixed;inset:0;background:url('반가-로댕.png') no-repeat center center;background-size:contain;filter:brightness(.62);transition:filter 2s ease;}
+/* v8.1 — 참가자 지적 반영: 처음 두 조각상을 비추는 안개 같은 빛의 투명도를 낮추어(알파값 조정) 조각상이 더 선명하고 뚜렷하게 보이도록 수정함 */
+#spotlight-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
+    background:
+        radial-gradient(circle at 23% 46%, rgba(255,241,209,.38) 0%, rgba(255,241,209,.2) 15%, rgba(255,241,209,.06) 26%, transparent 40%),
+        radial-gradient(circle at 75% 40%, rgba(255,241,209,.35) 0%, rgba(255,241,209,.18) 15%, rgba(255,241,209,.06) 26%, transparent 40%);
+}
 
-        /* ── 게임 컨테이너 ── */
-        #game-container { 
-            position: relative; width: 100vw; height: 100vh; 
-            background: url('반가-로댕.png') no-repeat center center; 
-            background-size: contain;
-            transition: opacity 2.5s ease-in-out;
-        }
+/* v7 — room2와 동일한 이유(청각장애 그룹 사용성 평가 발견)로 추가.
+   자세한 근거는 room2-touch-interaction.html의 #mood-overlay 주석 참고.
+   v11 — room2와 동일하게, 반복 펄스 애니메이션(계속 밝아졌다 어두워지길
+   반복)을 제거하고 고정된 밝기로 바꿨다. room2는 참가자 지적("하이라이트가
+   눈에 거슬린다 / 깜박거림을 없애 달라")을 받고 이미 이렇게 고쳤는데,
+   room1은 그 수정이 이식되지 않아 계속 깜박이고 있었다 — 색으로 전하려던
+   정서적 정보(따뜻함/차분함)는 그대로 남기고, 계속 움직이는 느낌만 없앤다. */
+#mood-overlay{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity 1.4s ease;}
+#mood-overlay.mood-rodin{opacity:1;background:radial-gradient(ellipse at 28% 55%, rgba(226,110,55,.16), transparent 62%);}
+#mood-overlay.mood-maitreya{opacity:1;background:radial-gradient(ellipse at 74% 50%, rgba(212,175,55,.14), transparent 66%);}
+#stage.lit{filter:brightness(1);}
+/* v16 — 참가자 지적: "안개가 낀 것처럼 뿌옇다." 원인은 그라데이션이 중심(0%)
+   에서도 이미 불투명도 .12(12% 검은 막)로 시작하고 있었다는 점이다 — 진짜
+   비네트(가장자리만 어두워지는 효과)라면 중심은 완전히 투명해야 하는데,
+   화면 전체에 옅은 회색 막이 균일하게 덮인 것처럼 보인 것이다. 중심을
+   완전히 투명(0)으로 바꾸고, 어두워지는 지점을 가장자리 쪽으로 밀어
+   중앙은 또렷하고 가장자리만 자연스럽게 어두워지도록 고쳤다. */
+#veil{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 80%,rgba(0,0,0,.85) 100%);pointer-events:none;}
 
-        /* ── 핫스팟 ── */
-        .hotspot { position: absolute; cursor: pointer; z-index: 10; -webkit-tap-highlight-color: rgba(212,175,55,0.3); border-radius: 50%; }
-        .hotspot:hover { background: rgba(212,175,55,0.08); }
-        #rodin-head    { top:15%; left:16%; width:14%; height:14%; }
-        #rodin-torso   { top:30%; left:10%; width:25%; height:25%; border-radius:40%; }
-        #rodin-legs    { top:56%; left:8%;  width:26%; height:30%; border-radius:30%; }
-        #maitreya-head { top:11%; left:69%; width:14%; height:14%; }
-        #maitreya-torso{ top:26%; left:64%; width:24%; height:26%; border-radius:40%; }
-        #maitreya-legs { top:53%; left:62%; width:28%; height:33%; border-radius:30%; }
+/* 조각상 단위(넓은 범위) 스포트라이트 — Focus(2단계)와 Detail(3단계)의
+   "지금 이 조각상 차례" 표시에 공용으로 쓰인다. */
+.spot-wide{position:fixed; border-radius:50%; pointer-events:none; transition:all .9s ease; opacity:0;
+      background:radial-gradient(circle, rgba(212,175,55,.28) 0%, rgba(212,175,55,0) 70%);}
+.spot-wide.show{opacity:1;}
+/* 부위 단위(좁은 범위) 하이라이트 — 3단계에서 지금 설명 중인 정확한
+   부위(귀·미소·손가락 등)를 짚어준다. */
+#detail-spot{position:fixed; width:64px; height:64px; margin:-32px 0 0 -32px; border-radius:50%;
+    pointer-events:none; opacity:0; transition:left .9s ease, top .9s ease, opacity .5s ease;
+    background:radial-gradient(circle, rgba(212,175,55,.6) 0%, rgba(212,175,55,0) 72%);
+    box-shadow:0 0 0 2px rgba(212,175,55,.6) inset, 0 0 26px rgba(212,175,55,.35);}
+#detail-spot.show{opacity:1;}
+/* 부위 펄스 — index.html의 drawPulseEffect를 간결화한 버전.
+   지금 말하는 조각상의 색으로, 지금 설명 중인 정확한 부위에서만
+   짧게 원이 번져나갔다 사라진다(반복하지 않음 — 간결함 우선). */
+#effect-svg{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:16;}
 
-        /* ── UI 레이어 ── */
-        #ui-layer { 
-            position: absolute; top:0; left:0; width:100%; height:100%; 
-            pointer-events: none; z-index: 20; 
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)) 16px; 
-        }
+/* 대화 화자 표시 — 지금 말하는 조각상이 로댕인지 반가사유상인지 */
+#speaker-tag{font-size:.78rem; letter-spacing:.08em; margin-bottom:6px; font-family:'Cinzel Decorative',serif; opacity:0; transition:opacity .4s ease;}
+#speaker-tag.show{opacity:1;}
+#speaker-tag.rodin{color:var(--rodin-color);}
+#speaker-tag.maitreya{color:var(--maitreya-color);}
 
-        /* ── 헤더 ── */
-        #header-group { display: flex; justify-content: space-between; align-items: flex-start; pointer-events: auto; gap: 8px; }
-        
-        .header-btn { 
-            background: rgba(0,0,0,0.7); 
-            border: 1px solid var(--gold-dim); 
-            color: var(--gold); 
-            padding: 9px 16px; border-radius: 22px; 
-            font-family: 'Noto Serif KR', serif;
-            font-size: 0.82rem; font-weight: 600; 
-            backdrop-filter: blur(10px); cursor: pointer; 
-            transition: all 0.25s; white-space: nowrap;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-        }
-        .header-btn:active, .header-btn:hover { background: var(--gold); color: #000; }
-        
-        #main-title { 
-            font-family: 'Cinzel Decorative', serif;
-            font-size: clamp(0.65rem, 1.8vw, 1rem); 
-            color: var(--gold); 
-            text-align: center;
-            text-shadow: 0 0 20px rgba(212,175,55,0.6);
-            letter-spacing: 0.06em;
-            background: rgba(0,0,0,0.5); 
-            padding: 8px 14px; border-radius: 12px; 
-            backdrop-filter: blur(6px);
-            border: 1px solid var(--gold-dim);
-            flex: 1; margin: 0 8px;
-        }
+/* ── 상단: 단계 표시 ── */
+#eyebrow{position:fixed; top:calc(18px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+    font-family:'Cinzel Decorative',serif; letter-spacing:.16em; font-size:.72rem; color:var(--gold-dim); text-transform:uppercase; text-align:center;}
+#stage-badge{position:fixed; top:calc(50px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+    display:flex; gap:6px; align-items:center; z-index:30;}
+#stage-badge .dot{width:10px;height:10px;border-radius:50%;background:rgba(212,175,55,.25);transition:all .3s;cursor:pointer;border:none;padding:0;}
+#stage-badge .dot:hover{background:rgba(212,175,55,.6);transform:scale(1.2);}
+#stage-badge .dot.on{background:var(--gold);box-shadow:0 0 8px var(--gold);transform:scale(1.2);}
 
-        /* ── 인터랙션 흐름 영역 ── */
-        #interaction-flow-group { width: 100%; pointer-events: none; }
-        
-        #ai-scenario-group, #stage3-scenario-group { 
-            display: none; gap: 8px; justify-content: center; 
-            margin-bottom: 12px; pointer-events: auto; flex-wrap: wrap; 
-        }
-        
-        .scenario-btn { 
-            background: rgba(15,15,15,0.88); 
-            border: 1px solid rgba(100,100,100,0.5); 
-            color: #bbb; padding: 9px 16px; border-radius: 18px; 
-            font-family: 'Noto Serif KR', serif;
-            font-size: 0.8rem; cursor: pointer; 
-            transition: all 0.3s; 
-            backdrop-filter: blur(8px);
-        }
-        .scenario-btn.active { 
-            background: var(--gold); color: #000; 
-            border-color: var(--gold); font-weight: bold; 
-            box-shadow: 0 0 16px rgba(212,175,55,0.5); 
-        }
+/* ── 하단: 공용 자막/컨트롤(0~3단계 전체가 공유) ── */
+#caption-wrap{position:fixed; left:0; right:0; bottom:0; padding:28px 24px calc(28px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top, rgba(0,0,0,.95) 40%, rgba(0,0,0,0)); z-index:25; cursor:pointer;}
+#caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
+#caption{font-size:clamp(1.05rem,3.6vw,1.5rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all; min-height:3.2em;}
+/* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
+   표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
+   완전히 숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다.
+   실제 외부 출처(로댕뮤지엄·강우방·전준엽 등)가 있는 문장에만 채워지고,
+   기획팀 자체 큐레이션 문장에는 비워둔다(=출처 없음, 사실 그대로). */
+#source-tag{
+    font-size:.72rem; color:rgba(212,175,55,.55); text-align:center; max-width:640px;
+    margin:6px auto 0; min-height:1em; word-break:keep-all; letter-spacing:.02em;
+}
+#caption b{color:var(--gold-light); font-weight:600;}
+#next-stage-tag{
+    display:none; max-width:640px; margin:10px auto 0; text-align:center;
+    font-size:.85rem; color:var(--gold-light); letter-spacing:.04em;
+    border-top:1px solid var(--gold-dim); padding-top:10px;
+}
+#next-stage-tag.show{display:block;}
+#controls{display:flex; gap:10px; justify-content:center; margin-top:18px; flex-wrap:wrap;}
+.btn{background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'Noto Serif KR',serif;
+     min-height:44px; display:inline-flex; align-items:center; justify-content:center; /* WCAG 2.5.5 */
+     font-size:.9rem; letter-spacing:.06em; padding:11px 22px; border-radius:30px; cursor:pointer; transition:all .25s;}
+.btn:hover,.btn:focus-visible{background:rgba(212,175,55,.14);}
+.btn.primary{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
+.btn.primary:hover{box-shadow:0 0 18px rgba(212,175,55,.5);}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 
-        /* ── 자막 박스 ── */
-        #subtitle-box { 
-            background: rgba(5,5,5,0.9); 
-            border: 1px solid var(--gold-dim); 
-            border-radius: 20px; padding: 20px 24px; 
-            min-height: 60px; display: none; pointer-events: auto; 
-            box-shadow: 0 8px 30px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.08);
-            backdrop-filter: blur(16px); 
-            text-align: left; 
-            max-width: 680px; margin: 0 auto; width: 95%;
-            animation: slideUp 0.3s ease-out;
-        }
-        @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-        #subtitle-box b { 
-            font-size: 1.05rem; display: block; 
-            margin-bottom: 6px; letter-spacing: 0.02em; 
-            font-family: 'Cinzel Decorative', serif;
-        }
-        #subtitle-box p { margin: 0; font-size: 0.95rem; line-height: 1.7; color: #ccc; word-break: keep-all; }
+#intro-gate{position:fixed; inset:0; z-index:50; background:#000; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:36px; text-align:center; padding:32px;}
+#intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.1rem,3.5vw,2.1rem);letter-spacing:.1em;line-height:1.5;margin:0;text-shadow:0 0 30px rgba(212,175,55,.5);}
+#intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.85rem,1.8vw,1.05rem);word-break:keep-all;}
+#intro-gate .btn{font-size:clamp(0.85rem,1.4vw,1rem);padding:10px 22px;}
+#skiplink{position:fixed;top:8px;left:8px;background:#000;color:var(--gold);padding:8px 14px;transform:translateY(-200%);transition:transform .2s;z-index:100;}
+#skiplink:focus{transform:translateY(0);}
 
-        /* ── 거울 가이드 ── */
-        #mirror-guide-container { 
-            position: absolute; top:0; left:0; width:100%; height:100%; 
-            pointer-events: none; z-index: 2; display: none; 
-        }
-        .mirror-box { 
-            position: absolute; border: 2px dashed rgba(255,255,255,0.2); 
-            background: rgba(255,255,255,0.02); 
-            border-radius: 12px; 
-            display: flex; justify-content: center; align-items: center; 
-            color: rgba(255,255,255,0.35); font-size: 0.78rem; font-weight: 500; 
-            transition: all 0.5s ease; 
-        }
-        .mirror-box.active { 
-            border-color: var(--gold); background: rgba(212,175,55,0.06); 
-            color: var(--gold); 
-            box-shadow: inset 0 0 20px rgba(212,175,55,0.12), 0 0 20px rgba(212,175,55,0.1); 
-        }
-
-        /* ── SVG 레이어 ── */
-        #shape-svg { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 5; }
-
-        /* ── 작품 소개 / 사용법 오버레이 ── */
-        .info-page-overlay {
-            position: fixed; top:0; left:0; width:100vw; height:100vh;
-            background: rgba(0,0,0,0.96); z-index: 300; display: none;
-            justify-content: center; align-items: center;
-            padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px) 20px;
-        }
-        .info-page-content {
-            background: rgba(8,8,8,0.99); 
-            border: 1px solid var(--gold-dim);
-            border-radius: 20px; width: 92%; max-width: 680px; max-height: 84vh;
-            overflow-y: auto; padding: 32px 28px;
-            box-shadow: 0 0 60px rgba(212,175,55,0.2); 
-            animation: slideUp 0.35s ease-out;
-            scrollbar-width: thin; scrollbar-color: var(--gold) rgba(0,0,0,0.3);
-        }
-        .info-page-content::-webkit-scrollbar { width: 5px; }
-        .info-page-content::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 8px; }
-        .info-page-title { 
-            font-family: 'Cinzel Decorative', serif;
-            font-size: 1.3rem; color: var(--gold); 
-            margin: 0 0 18px; text-align: center; 
-            border-bottom: 1px solid var(--gold-dim); padding-bottom: 14px; 
-        }
-        .info-page-body { font-size: 0.95rem; line-height: 1.9; color: #ccc; word-break: keep-all; }
-        .info-page-body h3 { color: #e8c84a; margin: 20px 0 8px; font-size: 1rem; letter-spacing: 0.03em; }
-        .info-page-body p, .info-page-body li { color: #bbb; margin-bottom: 8px; }
-        .info-page-body ul { padding-left: 16px; }
-        .close-info-btn {
-            display: block; width: 100%; margin-top: 24px; padding: 13px 0;
-            background: var(--gold); color: #000; border: none; border-radius: 12px;
-            font-family: 'Noto Serif KR', serif;
-            font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.25s;
-        }
-        .close-info-btn:hover { background: #fff; }
-
-        /* ── 챗봇 ── */
-        #chatbot-container {
-            position: absolute; bottom: 100px; right: 30px;
-            width: 300px; height: 300px; z-index: 100;
-            display: none; flex-direction: column;
-            background: rgba(4,4,4,0.95); 
-            border: 1px solid var(--gold);
-            border-radius: 16px; overflow: hidden;
-            box-shadow: 0 6px 30px rgba(0,0,0,0.7), 0 0 30px rgba(212,175,55,0.1);
-        }
-        @media (max-width: 1100px) { #chatbot-container { right: auto !important; left: 12px !important; bottom: 90px !important; } }
-        @media (max-width: 600px)  { #chatbot-container { width: calc(100% - 24px) !important; left: 12px !important; bottom: 100px !important; height: 340px !important; } }
-        #chat-messages { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.86rem; line-height: 1.5; scrollbar-width: thin; scrollbar-color: var(--gold) rgba(0,0,0,0.3); }
-        #chat-messages::-webkit-scrollbar { width: 4px; }
-        #chat-messages::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
-
-        /* ── 4단계 피날레 ── */
-        #finale-overlay {
-            position: fixed; top:0; left:0; width:100vw; height:100vh;
-            background: #000; z-index: 500; display: none;
-            justify-content: center; align-items: center; flex-direction: column;
-            opacity: 0; transition: opacity 2.5s ease-in-out;
-        }
-        #finale-overlay.visible { opacity: 1; }
-        #finale-canvas { display: block; }
-        #finale-text {
-            position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
-            text-align: center; color: var(--gold-light);
-            font-family: 'Cinzel Decorative', serif;
-            font-size: clamp(0.85rem, 2.2vw, 1.2rem);
-            letter-spacing: 0.15em; line-height: 2.2;
-            opacity: 0; transition: opacity 3s ease-in-out 1.5s;
-            pointer-events: none; white-space: nowrap;
-        }
-        #finale-text.visible { opacity: 1; }
-        #finale-restart {
-            position: absolute; bottom: 6%; left: 50%; transform: translateX(-50%);
-            background: transparent; border: 1px solid var(--gold-dim);
-            color: var(--gold-light); padding: 11px 30px; border-radius: 25px;
-            font-family: 'Noto Serif KR', serif;
-            font-size: 0.88rem; cursor: pointer; letter-spacing: 0.08em;
-            opacity: 0; transition: opacity 2s ease-in-out 5s, border-color 0.3s, color 0.3s;
-        }
-        #finale-restart.visible { opacity: 1; }
-        #finale-restart:hover { border-color: var(--gold); color: var(--gold); }
-
-        /* ── 확인 버튼 공통 ── */
-        .confirm-btn { 
-            background: var(--gold); color: #000; border: none; 
-            padding: 11px 26px; border-radius: 24px; 
-            font-family: 'Noto Serif KR', serif;
-            font-size: 0.95rem; font-weight: 700; cursor: pointer; 
-            margin-top: 14px; 
-            box-shadow: 0 4px 14px rgba(212,175,55,0.4); 
-            transition: transform 0.2s; 
-        }
-        .confirm-btn:active { transform: scale(0.96); }
-
-        /* ── 탐색 힌트 오버레이 ── */
-        #explore-hint {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            pointer-events: none; z-index: 8; text-align: center;
-            animation: fadeHint 4s ease-in-out 2s forwards;
-        }
-        @keyframes fadeHint {
-            0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; }
-        }
-        .hint-label {
-            display: inline-block; background: rgba(0,0,0,0.75);
-            border: 1px solid var(--gold-dim); color: var(--gold);
-            font-size: 0.78rem; padding: 6px 14px; border-radius: 20px;
-            letter-spacing: 0.06em; margin: 4px;
-            backdrop-filter: blur(8px);
-        }
-
-        /* ── 스테이지 배지 ── */
-        .stage-badge {
-            display: inline-flex; align-items: center; gap: 5px;
-            font-size: 0.7rem; letter-spacing: 0.05em; opacity: 0.7;
-            color: var(--gold);
-        }
-        .stage-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
-    </style>
+/* ══════════════════════════════════════════════════════
+   작품·작가 소개 / 저작권 — 공통 정보 오버레이
+   ══════════════════════════════════════════════════════ */
+#info-btn{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; z-index:45;
+    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 38px→44px */
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.95rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+}
+#info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+/* v31 — room2와 동일한 위치로 통일: 쉬운 문장으로 듣기/속도 버튼을
+   화면 하단 컨트롤 행에서 ⓘ 버튼 옆(상단 좌측)으로 옮긴다. room2의
+   #speed-btn/#easy-mode-btn과 같은 자리(top:12px, left:64px/148px)를
+   그대로 사용해, 두 전시실을 오가는 방문객이 같은 위치에서 같은
+   기능을 찾을 수 있게 한다. */
+#btn-speed{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:64px; z-index:45;
+    height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem;
+    backdrop-filter:blur(8px); white-space:nowrap;
+}
+#btn-easy-mode{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:148px; z-index:45;
+    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem;
+    backdrop-filter:blur(8px); white-space:nowrap;
+}
+#btn-easy-mode[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
+#info-overlay{
+    position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
+    display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
+    padding:calc(60px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
+}
+#info-overlay.show{display:flex;}
+#info-card{max-width:520px; width:100%; color:#ddd; line-height:1.85; font-size:.92rem; word-break:keep-all;}
+#info-card h2{font-family:'Cinzel Decorative',serif; color:var(--gold); letter-spacing:.1em; font-size:1.15rem; margin:0 0 22px; text-align:center;}
+#info-card h3{ color:var(--gold-light); font-size:.98rem; margin:26px 0 10px; letter-spacing:.03em; border-bottom:1px solid var(--gold-dim); padding-bottom:6px; }
+#info-card p{ margin:0 0 12px; color:#ccc; }
+#info-card p.label{ color:var(--gold-light); font-weight:700; margin-bottom:4px; }
+/* v32 — 참가자 요청: 내레이션 옆 작은 출처 표시(예: [22, 26])가 실제로
+   어떤 문헌인지 찾아볼 수 있는 버튼을 작품 소개 안에 별도로 둔다. */
+#refs-toggle-btn{
+    display:block; margin:18px 0 4px; padding:8px 14px; background:transparent;
+    border:1px solid var(--gold-dim); color:var(--gold-light); font-size:.82rem;
+    cursor:pointer; border-radius:4px;
+}
+#refs-toggle-btn:hover, #refs-toggle-btn:focus-visible{background:rgba(212,175,55,.12);}
+#refs-list{display:none; margin:10px 0 0; padding:14px 16px; background:rgba(212,175,55,.06); border:1px solid var(--gold-dim);}
+#refs-list.show{display:block;}
+#refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
+#refs-list p b{color:var(--gold-light);}
+#info-card .copyright{ margin-top:28px; padding-top:18px; border-top:1px solid var(--gold-dim); font-size:.78rem; color:#888; }
+#info-close{display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
+    font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px; border-radius:26px; cursor:pointer;}
+#info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+#copyright-tag{position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
+    font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;}
+</style>
 </head>
 <body>
 
-<!-- ── 사운드트랙 매핑 ──
-     rodin-head    : The_Silent_Weight_of_Stone
-     rodin-torso   : The_Weight_of_Bronze
-     rodin-legs    : Bearing_the_Bedrock
-     maitreya-head : 손끝에_맺힌_온기
-     maitreya-torso: Where_Bamboo_Bends
-     maitreya-legs : Beneath_the_Temple_Floor
-     stage-2 공명  : Echoes_of_the_Void
-     finale        : Sacred_Morning
-─────────────────────────────────────────── -->
-<audio id="snd-rodin-head"     src="The_Silent_Weight_of_Stone.mp4" preload="auto"></audio>
-<audio id="snd-rodin-torso"    src="The_Weight_of_Bronze.mp4"       preload="auto"></audio>
-<audio id="snd-rodin-legs"     src="Bearing_the_Bedrock.mp4"        preload="auto"></audio>
-<audio id="snd-maitreya-head"  src="손끝에_맺힌_온기.mp4"            preload="auto"></audio>
-<audio id="snd-maitreya-torso" src="Where_Bamboo_Bends.mp4"         preload="auto"></audio>
-<audio id="snd-maitreya-legs"  src="Beneath_the_Temple_Floor.mp4"   preload="auto"></audio>
-<audio id="snd-void"           src="Echoes_of_the_Void.mp4"         preload="auto" loop></audio>
-<audio id="snd-finale"         src="Sacred_Morning.mp4"             preload="auto" loop></audio>
+<a href="#controls" id="skiplink">본문 바로가기</a>
 
-<!-- ── 작품 소개 / 사용법 오버레이 ── -->
-<div id="info-overlay" class="info-page-overlay" onclick="closeInfoOverlay(event)">
-    <div class="info-page-content" onclick="event.stopPropagation()">
-        <h2 id="info-overlay-title" class="info-page-title"></h2>
-        <div id="info-overlay-body" class="info-page-body"></div>
-        <button class="close-info-btn" onclick="closeInfoOverlay(null)">닫기</button>
-    </div>
-</div>
+<!-- ── 작품·작가 소개 / 저작권 ── -->
+<button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
+<button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
+<button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장으로 듣기: 꺼짐</button>
+<div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
+    <div id="info-card">
+        <h2>작품·작가 소개</h2>
 
-<!-- ── 챗봇: 사유의 상담소 ── -->
-<div id="chatbot-container">
-    <div style="background:var(--gold);color:#000;padding:10px 14px;font-weight:bold;font-family:'Cinzel Decorative',serif;text-align:center;display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;">
-        <span>✦ 사유의 상담소</span>
-        <button onclick="document.getElementById('chatbot-container').style.display='none'" style="background:none;border:none;color:#000;font-weight:bold;cursor:pointer;font-size:1.1rem;line-height:1;">✕</button>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;background:rgba(12,12,12,0.98);border-bottom:1px solid var(--gold-dim);">
-        <button onclick="setChatCategory('전체')"   style="padding:3px 9px;background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;font-size:0.7rem;cursor:pointer;">전체</button>
-        <button onclick="setChatCategory('작품론')" style="padding:3px 9px;background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;font-size:0.7rem;cursor:pointer;">작품론</button>
-        <button onclick="setChatCategory('비교철학')" style="padding:3px 9px;background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;font-size:0.7rem;cursor:pointer;">비교철학</button>
-        <button onclick="setChatCategory('예술기법')" style="padding:3px 9px;background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;font-size:0.7rem;cursor:pointer;">예술기법</button>
-        <button onclick="setChatCategory('사유명상')" style="padding:3px 9px;background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid var(--gold-dim);border-radius:10px;font-size:0.7rem;cursor:pointer;">사유명상</button>
-    </div>
-    <div id="chat-messages">
-        <div style="margin-bottom:10px;color:var(--gold);font-size:0.86rem;line-height:1.6;">조각상에게 물어보세요.<br>사유의 길을 함께 찾겠습니다.</div>
-    </div>
-    <div style="padding:8px;display:flex;gap:5px;background:rgba(255,255,255,0.04);border-top:1px solid var(--gold-dim);">
-        <input type="text" id="chat-input" style="flex:1;border-radius:8px;border:1px solid var(--gold-dim);padding:8px 10px;outline:none;font-size:0.82rem;background:#0a0a0a;color:#fff;font-family:'Noto Serif KR',serif;" placeholder="질문을 입력하세요..." onkeydown="if(event.key==='Enter')handleChat()">
-        <button onclick="handleChat()" style="background:var(--gold);border:none;padding:6px 13px;border-radius:8px;font-weight:bold;cursor:pointer;font-family:'Noto Serif KR',serif;">전송</button>
-    </div>
-</div>
+        <h3>전시소개</h3>
+        <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
+        <p>모두를 위한 전시, 조각상을 만지다 — 손끝으로 완성하는 두 조각상의 대화, 반가사유상과 생각하는 사람.</p>
+        <p>눈을 넘어서 손끝과 귀로 완성하는 전시입니다. 국보 금동미륵보살반가사유상과 로댕의 &lt;생각하는 사람&gt;을, 실물보다 작은 촉각 복제품과 촉각 및 음성 해설로 만나 보세요.</p>
+        <p class="label">전시 일정 및 장소</p>
+        <p>9.10(목)–9.12(토) 2026 세계국가유산산업전 · 경주화백컨벤션센터<br>9.20(일)–9.21(월) 국회의원회관 2층 로비</p>
 
-<!-- ── 4단계 피날레 ── -->
-<div id="finale-overlay">
-    <canvas id="finale-canvas"></canvas>
-    <div id="finale-text">침묵 속에서<br>당신은 이미 완전합니다<br>無</div>
-    <button id="finale-restart" onclick="resetGame()">처음으로 돌아가기</button>
-</div>
+        <p class="label">왜 이 전시가 다른가</p>
+        <p>대부분의 박물관 전시는 '본다'는 것을 전제로 설계돼 있습니다. 이 전시는 반대로 시작합니다 — 시각장애인 방문객이 스크린리더 없이도, 동행 없이도 혼자서 끝까지 관람을 완결할 수 있도록, 촉각 복제 조각상·음성 내레이션·터치 기반 AI 챗봇을 중심에 두고 설계했습니다.</p>
+        <p>동양의 반가사유상과 서양의 &lt;생각하는 사람&gt;을 나란히 놓아, '힘든 마음'과 '따뜻한 마음'이라는 두 가지 태도를 비교하는 2개 전시실로 구성됩니다.</p>
+        <p class="label">전시실 1 · 조우</p>
+        <p>로댕의 생각하는 사람·반가사유상 복제 청동 조각상(50cm 높이)을 두 손으로 직접 만지며 형태와 자세, 그리고 음성 큐레이션으로 의미를 먼저 파악합니다. 시각장애인을 위한 피라미드 구조로 된 음성해설 기법을 써서, 작은 전체 청동상을 먼저 만져보며 각 부분의 형태와 의미를 큐레이션했고, 큰 청동상을 만지면서는 그 부위의 심미적 내용과 철학적 소고를 로댕과 반가사유상을 연구한 학자들의 글에서 따와 대화 형식으로 들을 수 있게 했습니다.</p>
+        <p class="label">전시실 2 · 사유 및 체화</p>
+        <p>두 조각상(90cm 높이)의 부위(이마, 손, 발 등)를 손끝으로 짚으면 그 자리의 의미를 음성으로 들려주고, 궁금한 점은 AI 챗봇에게 자유롭게 물어볼 수 있습니다. 또한 조각상의 모습을 따라하며, 손끝을 넘어 온몸으로 작품을 체감합니다.</p>
 
-<!-- ── 진입 인트로 오버레이 ── -->
-<div id="intro-splash" style="
-    position:fixed;top:0;left:0;width:100vw;height:100vh;
-    background:#000;z-index:999;
-    display:flex;flex-direction:column;
-    justify-content:center;align-items:center;
-    gap:32px;
-    padding:40px 24px;
-    box-sizing:border-box;
-">
-    <div style="
-        font-family:'Cinzel Decorative',serif;
-        color:#d4af37;
-        font-size:clamp(1.1rem,3vw,1.9rem);
-        letter-spacing:0.12em;
-        text-align:center;
-        text-shadow:0 0 30px rgba(212,175,55,0.5);
-        line-height:1.7;
-    ">
-        침묵의 공명<br>
-        <span style="font-size:0.55em;letter-spacing:0.08em;color:rgba(212,175,55,0.7);">Resonance of Silence</span>
-    </div>
-    <div style="
-        font-family:'Noto Serif KR',serif;
-        color:#888;font-size:0.85rem;
-        text-align:center;line-height:1.9;
-        max-width:320px;word-break:keep-all;
-    ">
-        고뇌와 자비의 조우<br>
-        <span style="font-size:0.9em;color:#555;">Humartology Edition · 2026</span>
-    </div>
-    <button id="intro-start-btn" onclick="startExperience()" style="
-        background:transparent;
-        border:1px solid rgba(212,175,55,0.6);
-        color:#d4af37;
-        font-family:'Noto Serif KR',serif;
-        font-size:1rem;letter-spacing:0.15em;
-        padding:14px 44px;border-radius:40px;
-        cursor:pointer;
-        transition:all 0.3s;
-        box-shadow:0 0 20px rgba(212,175,55,0.15);
-    " onmouseover="this.style.background='rgba(212,175,55,0.12)'" onmouseout="this.style.background='transparent'">
-        사유를 시작합니다
-    </button>
-</div>
+        <p class="label">전시 기획/제작팀</p>
+        <p>전시 총괄 및 디지털 인터랙션 — 조준동 (성균관대 명예교수)<br>청동 복제품 제작 및 전시 준비 — 김호용 (Wipco 대표)<br>장애인 접근성 — 육근해 (장애인 문화 복지 연구소 대표)</p>
 
-<!-- ── 메인 게임 컨테이너 ── -->
-<div id="game-container">
-    <svg id="shape-svg"></svg>
-    <div id="mirror-guide-container"></div>
+        <p class="label">접근성 특징</p>
+        <p><b>WCAG 2.1 AA 준수</b> — 웹 접근성 국제 표준을 준수해 설계됐습니다.<br>
+        <b>스크린리더 완벽 지원</b> — TalkBack·VoiceOver를 지원해 모든 화면 정보를 음성으로 안내합니다.<br>
+        <b>실물 촉각 복제품</b> — 물리적 촉각 조각상과 모바일 음성 안내가 실시간으로 함께 진행됩니다.<br>
+        <b>AI 음성 대화</b> — 궁금한 점을 자유롭게 묻고 답을 들을 수 있는 AI 챗봇을 탑재했습니다.</p>
 
-    <div id="explore-hint" style="display:none;">
-        <div class="hint-label">← 로댕의 머리를 터치하세요</div>
-        <div class="hint-label">반가사유상을 터치하세요 →</div>
-    </div>
+        <h3>작품 소개</h3>
+        <p class="label">작품명 — 《침묵의 공명 — 조우 (만나기)》</p>
+        <p>이 전시는 두 개의 조각상, 금동미륵보살반가사유상과 로댕의 &lt;생각하는 사람&gt;을 나란히 놓아 '힘든 마음'과 '따뜻한 마음'이라는 두 가지 태도를 비교합니다. 반가사유상은 부드러운 곡선으로 괴로운 마음을 내려놓은 편안함을, &lt;생각하는 사람&gt;은 긴장한 근육으로 사람이 살아가며 짊어진 무거운 마음을 표현합니다.</p>
+        <p class="label">금동미륵보살반가사유상 (金銅彌勒菩薩半跏思惟像)</p>
+        <p>삼국시대(6~7세기)에 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 국립중앙박물관이 소장한 국보급 반가사유상들(국보 제78호, 제83호)이 대표적인 예로 꼽힙니다.</p>
+        <p class="label">금동미륵보살반가사유상 — 제작자 미상</p>
+        <p>삼국시대 장인의 손에서 태어난 것으로 추정될 뿐, 개별 작가의 이름은 전해지지 않습니다.</p>
+        <p class="label">&lt;생각하는 사람&gt; (Le Penseur)</p>
+        <p>프랑스 조각가 오귀스트 로댕이 1880년경 &lt;지옥의 문&gt; 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.</p>
+        <p class="label">오귀스트 로댕 (Auguste Rodin, 1840~1917)</p>
+        <p>프랑스의 조각가. &lt;칼레의 시민&gt;, &lt;지옥의 문&gt; 등을 남겼으며, 인체의 사실적 표현과 표면의 거친 질감으로 근대 조각의 새 장을 열었다고 평가받는다.</p>
 
-    <div class="hotspot" id="rodin-head"></div>
-    <div class="hotspot" id="rodin-torso"></div>
-    <div class="hotspot" id="rodin-legs"></div>
-    <div class="hotspot" id="maitreya-head"></div>
-    <div class="hotspot" id="maitreya-torso"></div>
-    <div class="hotspot" id="maitreya-legs"></div>
+        <h3>작가 소개</h3>
+        <p class="label">조준동 (趙浚東)</p>
+        <p>기획·연출 · 성균관대학교 전자전기공학부 명예교수</p>
+        <p>학력 — 성균관대학교 전자공학 학사, New York (Poly) University 컴퓨터공학 석사, 노스웨스턴 대학교(Northwestern University) 컴퓨터공학 박사</p>
+        <p>주요 경력 — 성균관대학교 일반대학원 휴먼ICT융합학과 창설</p>
+        <p>학술 성과 — 1993년 제30회 국제 설계 자동화 컨퍼런스(DAC)에서 클록 라우팅 알고리즘에 관한 논문으로 최우수 논문상 수상</p>
+        <p>주요 관심사 — 인간-컴퓨터 상호작용(HCI), UX 디자인, 멀티모달 인터페이스 개발. 인문학·예술·기술을 결합한 '휴마트올로지(Humartology)'라는 개념을 창안하여, 기술과 예술을 접목한 디지털 인터랙티브 아트 작품을 제작하고 있습니다.</p>
 
-    <div id="ui-layer">
-        <div id="header-group">
-            <div style="display:flex;flex-direction:column;gap:6px;">
-                <button class="header-btn" onclick="openInfoOverlay('intro')">작품 소개</button>
-                <button class="header-btn" onclick="openInfoOverlay('guide')">사용법</button>
-            </div>
-            <div id="main-title">침묵의 공명</div>
-            <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-                <button class="header-btn" id="reset-btn" onclick="resetGame()">다시 조우</button>
-                <button class="header-btn" id="mode-btn" onclick="toggleMode()">단계 1: 조우</button>
-            </div>
+        <h3>Humartology란?</h3>
+        <p>Human + Art + Technology의 융합을 뜻하는 개념입니다. 조준동 교수(성균관대)가 연구하는 분야로, 기술이 인간의 감성·철학·예술과 만날 때 어떤 새로운 가치가 생겨나는지 탐구합니다. 이 작품은 그 철학을 디지털 경험으로 구현한 것입니다.</p>
+
+        <h3>전시 철학 (Humartology)</h3>
+        <p>인간(Human)·예술(Art)·기술(Technology)의 유기적 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
+
+        <h3>이용 방법</h3>
+        <p>스크린 앞 의자에 앉아 "시작할게요"를 누르면 내레이션이 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다). 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
+        <p>화면 아래 <b>다시 듣기</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다.</p>
+        <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
+
+        <div class="copyright">
+            <p><b>저작권 안내</b></p>
+            <p>© 2026 조준동 · Humartology Lab. All rights reserved.</p>
+            <p>금동미륵보살반가사유상 원본 소장: 국립중앙박물관</p>
+            <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
 
-        <div id="interaction-flow-group">
-            <div id="ai-scenario-group" style="display:flex;">
-                <button class="scenario-btn" onclick="selectScenario(1)">① 생성과 소멸</button>
-                <button class="scenario-btn" onclick="selectScenario(2)">② 실존과 초월</button>
-                <button class="scenario-btn" onclick="selectScenario(3)">③ 문명과 침묵</button>
-            </div>
-            <div id="stage3-scenario-group">
-                <button class="scenario-btn" id="s3-btn-1" onclick="selectStage3Part('head')">머리 사유</button>
-                <button class="scenario-btn" id="s3-btn-2" onclick="selectStage3Part('torso')">상체 비움</button>
-                <button class="scenario-btn" id="s3-btn-3" onclick="selectStage3Part('legs')">하체 안착</button>
-            </div>
-            <div id="subtitle-box"></div>
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false">참고문헌 보기</button>
+        <div id="refs-list" role="region" aria-label="참고문헌 목록">
+            <p><b>[22]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
+            <p><b>[26]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
+            <p><b>[27]</b> B. Vujanović, Rethinking Rodin's Thinker, Decorative Arts Society Journal 43 (2019) 61–71.</p>
+            <p><b>[34]</b> Musée Rodin, The Gates of Hell, collection notice, meudon.musee-rodin.fr, accessed 2026.</p>
+            <p><b>[35]</b> Musée Rodin, The Thinker, collection notice, musee-rodin.fr, accessed 2026.</p>
+            <p><b>[36]</b> W.B. Kang, Wonyung-gwa-Johwa [원융과 조화], Youlhwadang, Seoul, 1990.</p>
+            <p><b>[37]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
         </div>
+        <button id="info-close" onclick="closeInfo()">닫기</button>
+    </div>
+</div>
+<div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
+
+<!-- 진입 게이트 -->
+<div id="intro-gate">
+    <h1>침묵의 공명<br><span style="font-size:.55em;color:rgba(212,175,55,.7);">전시실 1 · 조우 (만나기)</span></h1>
+    <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 동양의 반가사유상과 서양의 생각하는 사람을 처음 마주하는 이 시간이 곧 그 조우입니다.</p>
+    <p>스크린 앞 의자에 편히 앉아주세요.<br>손이 닿는 곳에 두 조각상의 복제품이 놓여 있습니다 — 로댕과 반가사유상 모두 실물보다 작은 크기입니다. 이야기를 들으며 편하게 만져보세요.<br>같은 화면 위에서 전체 구도부터 각 부위의 세부까지 이어서 들려드립니다.</p>
+    <button class="btn primary" onclick="enterRoom()">앉았습니다, 시작할게요</button>
+</div>
+
+<!-- ── 배경(0단계부터 끝까지 동일하게 유지) ── -->
+<div id="stage"></div>
+<div id="spotlight-overlay" aria-hidden="true"></div>
+<div id="mood-overlay" aria-hidden="true"></div>
+<div id="veil"></div>
+<audio id="snd-void" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
+<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
+<audio id="snd-rodin" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
+<div class="spot-wide" id="spot"></div>
+<div id="detail-spot"></div>
+<svg id="effect-svg"></svg>
+
+<div id="eyebrow">전시실 1 · 소개</div>
+<div id="stage-badge">
+    <button class="dot" data-i="0" aria-label="0단계 오리엔테이션으로 이동" onclick="jumpToStage(0)"></button>
+    <button class="dot" data-i="1" aria-label="1단계 전체 구도로 이동" onclick="jumpToStage(1)"></button>
+    <button class="dot" data-i="2" aria-label="2단계 자세와 위치로 이동" onclick="jumpToStage(2)"></button>
+    <button class="dot" data-i="3" aria-label="3단계 대화로 이동" onclick="jumpToStage(3)"></button>
+</div>
+
+<!-- ── 공용 자막/컨트롤 — 0단계부터 3단계까지 계속 이 하나만 쓴다 ── -->
+<div id="caption-wrap" onclick="onCaptionAreaClick(event)">
+    <div id="speaker-tag"></div>
+    <div id="caption-tag">오리엔테이션</div>
+    <div id="caption" role="status" aria-live="polite">&nbsp;</div>
+    <div id="source-tag" aria-hidden="true"></div>
+    <div id="next-stage-tag">다음 전시 단계로 이동하세요.</div>
+    <div id="controls">
+        <button class="btn" id="btn-back" onclick="onBackClick()">← 뒤로</button>
+        <button class="btn" id="btn-pause" onclick="onPauseClick()">잠깐 멈춤</button>
+        <button class="btn" id="btn-replay" onclick="onReplayClick()">다시 듣기</button>
     </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// ── [0] 웹 오디오 코어 시스템 ──
-// ══════════════════════════════════════════════════════
-let audioCtx = null, masterGain = null, currentOsc = null, drumInterval = null;
+const LAYERS = [
+{ tag:'0 · 오리엔테이션',
+    lines:[
+        { text:"이 전시는 《침묵의 공명》입니다.", wide:null },
+        { text:"동양의 반가사유상과, 서양 로댕의 생각하는 사람이 나누는, 침묵의 대화를 감각을 열고 경험합니다.", wide:'both' },
+        { text:"먼저 두 조각상이 무엇인지부터 짧게 소개해드리겠습니다.", wide:'both' },
+        { text:"반가사유상은 삼국시대, 6에서 7세기 무렵 만들어진 불교 조각입니다.", wide:'maitreya', source:"출처: [22, 26]" },
+        { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
+          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"출처: [22, 26]" },
+        { text:"생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년 무렵 처음 만든 조각입니다.", wide:'rodin', source:"출처: Vujanović [27]" },
+        { text:"원래 지옥의 문 상단부 인물로 제작됐다가, 1904년 독립된 대형 청동상으로 다시 만들어졌습니다.", wide:'rodin', source:"출처: Vujanović [27]" },
+        { text:"처음엔 약 70센티미터 크기로, '시인'이라는 이름의 조각이었습니다. 신곡을 쓴 단테가, 지옥의 여러 층을 내려다보며 자신의 시상에 몰두한 모습이었습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
+        { text:"그래서 이 조각은 처음부터, 고통받는 육체이자 동시에 시로써 그 고통을 넘어서려는 자유로운 사상가이기도 했습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
+        { text:"지옥의 문에는 지옥에서 고통받는 인간의 형상 200여 점이 서로 뒤엉켜 있으며, 그들의 정념과 야수성, 고뇌를 표현하고 있습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [34]" },
+        { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", wide:'rodin' },
+        { text:"이 자세는 카르포가 조각한 우골리노, 그리고 미켈란젤로가 조각한 로렌초 데 메디치의 좌상에서 많은 영향을 받았습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
+        { text:"반가사유상은 부드러운 곡선으로, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.",
+          wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya' },
+        { text:"로댕의 생각하는 사람은 근육질의 단단한 면으로, 그 힘든 마음 자체를 표현했습니다.",
+          wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin' },
+        { text:"서로 다른 길을 걸었지만, 두 조각상 모두 깊이 사유하는 인간의 몸짓이라는 점에서는 같습니다.", wide:'both' },
+        { text:"지금 손이 닿는 곳에는, 두 조각상의 복제품이 놓여 있습니다.", wide:'both' },
+        { text:"왼쪽은 로댕, 오른쪽은 반가사유상 — 여기 전시된 로댕과 반가사유상은 실물보다 작은 크기입니다.", wide:'both' },
+        { text:"이어지는 이야기를 들으며, 두 손으로 편하게 전체 형태를 만져보셔도 좋습니다.", wide:'both' },
+        { text:"이제 두 조각상이 놓인 장면을, 전체에서 세부 순서로 들려드리겠습니다.", wide:'both' }
+    ]},
+{ tag:'1단계 · Global — 전체 구도',
+    lines:[
+        { text:"어둡고 고요한 전시실입니다.", wide:null },
+        { text:"금빛 조명 두 줄기가, 두 조각상만을 은은히 비추고 있습니다.", wide:'both' },
+        { text:"왼쪽에는 그을린 듯 어두운 청동빛의 로댕이 앉아 있습니다.", wide:'rodin' },
+        { text:"오른쪽에는 잘 익은 꿀처럼 진한 금빛의 반가사유상이 앉아 있습니다.", wide:'maitreya' },
+        { text:"두 조각상은 같은 공간 안에, 나란히 놓여 있습니다.", wide:'both' },
+        { text:"멀리서 넓게 보면 두 조각상이 한 화면에 들어오고, 가까이 다가가면 각자의 표정이 따로 보이기 시작합니다.", wide:'both' },
+        { text:"공기는 무겁지 않고, 향 냄새가 옅게 감도는 듯 고요합니다.", wide:'both' }
+    ]},
+{ tag:'2단계 · Focus — 자세와 위치',
+    lines:[
+        { text:"왼쪽, 로댕의 생각하는 사람을 먼저 가까이서 보겠습니다.", wide:'rodin' },
+        { text:"몸을 앞으로 깊이 웅크리고, 오른쪽 팔꿈치를 왼쪽 무릎에 괴고 있습니다.",
+          wide:'rodin', detail:{x:32, y:41.0}, speaker:'rodin' },
+        { text:"구부린 손등이 턱을 떠받치고, 시선은 아래 대지를 향합니다.",
+          wide:'rodin', detail:{x:32, y:41.0}, speaker:'rodin' },
+        { text:"오른쪽, 반가사유상으로 건너가 가까이서 보겠습니다.", wide:'maitreya' },
+        { text:"오른발을 들어 왼쪽 무릎 위에 가만히 얹은, 반가 자세입니다.",
+          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya' },
+        { text:"뺨에 오른손 손가락 두 개가 살짝 닿아 있습니다.",
+          wide:'maitreya', detail:{x:72.5, y:35.5}, speaker:'maitreya' },
+        { text:"두 조각상 사이, 그 빈 중앙 공간이 이 전시의 진짜 무대입니다.",
+          wide:'both', detail:{x:50, y:45.0}, speaker:'both' }
+    ]}
+];
 
-function initAudio() {
-    if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    masterGain = audioCtx.createGain();
-    masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    masterGain.connect(audioCtx.destination);
+const DIALOGUE = [
+{ speaker:'rodin', label:'로댕 · 생각하는 사람', part:'머리',
+  intro:"먼저 로댕이, 자신의 얼굴에 새겨진 사유를 건넵니다.",
+  introSimple:"로댕이 먼저 이야기합니다.",
+  lines:[
+    "'생각하는 사람'은 무수한 고통을 지나온 자가 마침내 자신의 존재를 응시하는 얼굴처럼 보입니다.",
+    "잔뜩 찌푸린 눈썹과 무겁게 내리깐 눈은, 언젠가 스러질 존재라는 사실 앞에서 인간이 피할 수 없이 갖는 두려움이 사유를 더 깊게 만든다는 것을 보여주는 듯합니다.",
+    "하나의 물음이 또 다른 물음을 낳고, 그 물음들이 사슬처럼 이어져 마음을 옥죄는 고독한 인간의 얼굴입니다."
+  ],
+  linesSimple:[
+    "이 얼굴은 힘든 일을 많이 겪은 사람의 얼굴입니다.",
+    "눈썹을 찌푸리고 눈을 내리깔았습니다. 언젠가 죽는다는 두려움이 생각을 더 깊게 만듭니다.",
+    "질문이 질문을 낳습니다. 그 질문들이 마음을 무겁게 누릅니다."
+  ],
+  spots:[{x:32, y:30}, {x:32, y:30}]},
+{ speaker:'maitreya', label:'반가사유상', part:'머리',
+  intro:"그 말에 반가사유상이, 자신의 얼굴로 화답합니다.",
+  introSimple:"반가사유상이 이어서 이야기합니다.",
+  lines:[
+    "금동미륵보살반가사유상은 어린 나이에 이미 생의 고통을 마주했던 한 왕자가, 그 아픔을 딛고 모든 존재를 따뜻하게 보살피고자 했던 마음을 담고 있습니다.",
+    "뺨에 가만히 닿은 손끝에는, 죽음이 끝이 아니라 자연의 순환 가운데 하나임을 아는 자의 평온한 미소가 서려 있는 듯합니다.",
+    "생각이 잦아드는 그 순간 찾아오는 마음의 자유를, 근심을 모두 내려놓은 이 미소가 말없이 전합니다.",
+    "모든 소리가 멈춘 뒤에야 들리는 진짜 소리가 있다는 듯, 뺨에 닿은 손가락은 세상의 소란을 가만히 막아주고 있습니다.",
+    "화가 전준엽은 이 미소를, 모나리자의 미소를 뛰어넘는 신비로운 미소라고 평했습니다.",
+    "그가 보기에 이 얼굴은 군더더기 없이 흐르는 선으로 다듬어져 있으며, 어디에도 걸리거나 막히지 않는 맑은 생각의 상태를 담고 있습니다."
+  ],
+  linesSimple:[
+    "이 조각상은 어린 왕자의 이야기를 담고 있습니다. 왕자는 힘든 일을 겪었지만, 모든 사람을 따뜻하게 돌보고 싶어 했습니다.",
+    "손끝이 뺨에 살짝 닿아 있습니다. 얼굴에는 평온한 미소가 있습니다.",
+    "걱정을 다 내려놓으면 마음이 자유로워집니다. 이 미소가 그 마음을 보여줍니다.",
+    "손가락이 뺨에 닿아, 시끄러운 세상을 잠시 막아주는 듯합니다.",
+    "화가 전준엽은 이 미소가 모나리자보다 신비롭다고 말했습니다.",
+    "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다."
+  ],
+  sources:["출처: [22, 26]", null, null, null, "출처: 전준엽 [37]", "출처: 전준엽 [37]"],
+  spots:[{x:75, y:30.0}, {x:75, y:35.5}, {x:75, y:33.5}, {x:75, y:33.0}]},
+{ speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
+  intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
+  introSimple:"로댕이 몸통 이야기를 합니다.",
+  lines:[
+    "팽팽하게 당겨진 근육은, '살아있다는 것' 자체가 감당해야 가야 할 무게라는 사실을 온몸으로 증언합니다.",
+    "'나는 누구이며 왜 여기 있는가' — 답을 알 수 없는 물음이 근육 하나하나를 팽팽하게 조여왔습니다."
+  ],
+  linesSimple:[
+    "근육이 팽팽하게 당겨져 있습니다. 살아가는 것도 힘든 일이라는 뜻입니다.",
+    "'나는 누구일까' 하는 질문이 몸을 긴장하게 만들었습니다."
+  ],
+  spots:[{x:21, y:40.0}, {x:23, y:45.0}]},
+{ speaker:'maitreya', label:'반가사유상', part:'몸통',
+  intro:"반가사유상이, 고요한 상체로 화답합니다.",
+  introSimple:"반가사유상이 몸통 이야기를 합니다.",
+  lines:[
+    "꽃이 지고 다시 피어나듯 부드럽게 흘러내리는 상체의 선은, 태어남과 사라짐이 둘이 아니라 하나로 이어진 것임을 말해줍니다.",
+    "무엇도 붙들지 않으려는 마음이 몸에 깃들면 이토록 편안한 곡선이 된다는 듯, 상체는 세상의 무거운 짐을 모두 내려놓고 있습니다.",
+    "미술사학자 강우방은 이렇게 둥글고 조화로운 형태를 '원융과 조화'라 이름 붙였습니다. 날카로운 각이 아니라, 서로 다른 부분들이 하나로 둥글게 어우러지는 데서 나오는 아름다움입니다.",
+    "이 아름다움을 학문적으로 처음 밝혀낸 것은 황수영 박사였습니다. 그의 초기 연구는 삼국시대 반가사유상이 왜 이토록 균형 잡힌 조형미를 갖는지를 하나씩 풀어냈습니다."
+  ],
+  linesSimple:[
+    "몸의 선이 부드럽게 흘러내립니다. 태어남과 사라짐이 이어져 있다는 뜻입니다.",
+    "아무것도 붙잡지 않는 마음이 이런 편안한 곡선을 만듭니다. 몸이 짐을 다 내려놓았습니다.",
+    "학자 강우방은 이런 둥근 모양을 '원융과 조화'라고 불렀습니다. 각지지 않고 둥글게 어우러지는 아름다움입니다.",
+    "황수영 박사는 이 아름다움을 처음 학문적으로 밝혀낸 학자입니다."
+  ],
+  sources:[null, null, "출처: 강우방 [36]", "출처: 황수영 [26]"],
+  spots:[{x:74, y:43.0}, {x:76, y:45.0}]},
+{ speaker:'rodin', label:'로댕 · 생각하는 사람', part:'다리',
+  intro:"마지막으로 로댕이, 땅을 딛은 발의 사유를 건넵니다.",
+  introSimple:"로댕이 마지막으로 발 이야기를 합니다.",
+  lines:[
+    "흙에서 태어나 다시 흙으로 돌아간다는 사실을 아는 듯, 무겁게 대지를 딛고 선 발은 삶에 대한 마지막 집착을 드러냅니다.",
+    "더 높은 곳을 꿈꾸면서도 결코 땅을 벗어날 수 없는 인간의 한계가, 대지를 움켜쥔 발가락에 그대로 새겨져 있습니다.",
+    "스스로 만든 기술과 문명으로부터도 좀처럼 자유로워지지 못하는 오늘의 인간의 모습이, 땅을 떠나지 못하는 이 무거운 발에 담겨 있습니다."
+  ],
+  linesSimple:[
+    "발이 땅을 무겁게 딛고 있습니다. 흙에서 태어나 흙으로 돌아간다는 뜻입니다.",
+    "더 높이 오르고 싶어도, 우리는 땅을 떠날 수 없습니다. 발가락이 땅을 꽉 움켜쥐고 있습니다.",
+    "우리가 만든 기술에 오히려 매인 오늘의 모습이, 이 무거운 발에 담겨 있습니다."
+  ],
+  spots:[{x:22, y:67.0}, {x:23, y:67.0}, {x:25, y:67.0}]},
+{ speaker:'maitreya', label:'반가사유상', part:'다리',
+  intro:"반가사유상이, 편안히 앉은 다리로 화답합니다.",
+  introSimple:"반가사유상이 마지막으로 다리 이야기를 합니다.",
+  lines:[
+    "가볍게 다리를 얹은 이 편안한 자세는, 나고 죽음을 거듭하는 삶 속에서도 흔들리지 않는 마음이 다다르는 평정을 가리킵니다.",
+    "'나'라는 좁은 틀을 벗어날 때 만나는 자유로운 마음을, 어디에도 걸림 없는 이 자세가 온몸으로 보여줍니다.",
+    "가만히 멈추어야만 얻어지는 자유가 있다는 것을, 기계도 속도도 닿지 못하는 이 고요한 자세가 아주 오랜 시간이 흐른 지금도 전하고 있습니다."
+  ],
+  linesSimple:[
+    "다리를 가볍게 얹은 편안한 자세입니다. 흔들리지 않는 마음이 다다르는 평온함입니다.",
+    "'나'라는 틀을 벗어나면 마음이 자유로워집니다. 이 편안한 자세가 그 자유를 보여줍니다.",
+    "가만히 멈출 때만 얻는 자유가 있습니다. 이 고요한 자세가 오랜 시간이 지나도 그 자유를 전합니다."
+  ],
+  spots:[{x:73, y:51.0}, {x:73, y:51.0}, {x:73, y:51.0}]}
+];
+
+let phase = 'screen'; 
+let layerIdx = 0, lineIdx = 0;
+let turnIdx = 0, dLineIdx = -1; // 초기값을 -1로 두어 intro부터 시작되도록 보완
+let announcing = false; 
+
+let isPaused = false;
+let pausedContext = null;
+let easyMode = false;
+
+let autoTimer = null;   
+let speechGen = 0;      
+const LINE_PAUSE_MS  = 700;   
+const LAYER_PAUSE_MS = 2000;  
+
+const captionEl = document.getElementById('caption');
+const sourceEl = document.getElementById('source-tag');
+const tagEl = document.getElementById('caption-tag');
+const speakerTagEl = document.getElementById('speaker-tag');
+const nextStageTag = document.getElementById('next-stage-tag');
+const stageEl = document.getElementById('stage');
+const spotEl = document.getElementById('spot');
+const detailSpotEl = document.getElementById('detail-spot');
+const effectSvg = document.getElementById('effect-svg');
+const badgeDots = document.querySelectorAll('#stage-badge .dot');
+const eyebrowEl = document.getElementById('eyebrow');
+const btnReplay = document.getElementById('btn-replay');
+const btnPause = document.getElementById('btn-pause');
+
+function onCaptionAreaClick(e){
+    if(e.target.closest('#controls')) return;
+    onNextClick();
 }
 
-function playResonanceSound(freq, type, duration) {
-    if (!audioCtx) initAudio();
-    const osc = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    g.gain.setValueAtTime(0.28, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(g); g.connect(masterGain);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
+let _autoEnterTimer = setTimeout(enterRoom, 60000);
+function enterRoom(){
+    clearTimeout(_autoEnterTimer);
+    document.getElementById('intro-gate').style.display='none';
+    stageEl.classList.add('lit');
+    speak('전시실 1, 소개를 시작합니다. 편안히 들어주세요.', ()=> playLayer(0));
+    startAmbientSound();
 }
 
-function triggerBell() { playResonanceSound(523.25, 'sine', 3.5); }
-function triggerDrum() { playResonanceSound(80, 'triangle', 0.8); }
-
-function stopAllPlayback() {
-    if (currentOsc) { try { currentOsc.stop(); } catch(e){} currentOsc = null; }
-    if (drumInterval) { clearInterval(drumInterval); drumInterval = null; }
-    window.speechSynthesis.cancel();
-    _stopMp4All();
+const AMBIENT_VOLUME = 0.18;
+function startAmbientSound(){
+    const el = document.getElementById('snd-void');
+    if(!el) return;
+    el.volume = 0;
+    el.loop = true;
+    const p = el.play();
+    if(p && typeof p.catch === 'function'){
+        p.catch(e => console.warn('[앰비언트] 자동재생 차단:', e.message));
+    }
+    let v = 0;
+    const fadeIn = setInterval(()=>{
+        v = Math.min(AMBIENT_VOLUME, v + 0.01);
+        el.volume = v;
+        if(v >= AMBIENT_VOLUME) clearInterval(fadeIn);
+    }, 60);
 }
 
-// ── MP4 사운드트랙 제어 ──
-const _mp4Ids = ['snd-rodin-head','snd-rodin-torso','snd-rodin-legs','snd-maitreya-head','snd-maitreya-torso','snd-maitreya-legs','snd-void','snd-finale'];
-let _mp4FadeTimer = null;
+const STATUE_SOUND_VOLUME = 0.18;
+const _statueFadeTimers = {};   
+let _currentStatueSound = null; 
 
-function _stopMp4All() {
-    if (_mp4FadeTimer) { clearTimeout(_mp4FadeTimer); _mp4FadeTimer = null; }
-    _mp4Ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.pause(); el.currentTime = 0; el.volume = 1;
-    });
+const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15] };
+function hapticPulse(type){
+    try{ if(navigator.vibrate) navigator.vibrate(HAPTIC_PATTERNS[type] || 15); }catch(e){}
 }
 
-function _playMp4(id, vol, autostopSec) {
-    _stopMp4All();
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.volume = 0; el.currentTime = 0;
-    el.play().catch(() => {});
-    let v = 0; const step = vol / 12;
-    const fi = setInterval(() => { v = Math.min(v + step, vol); el.volume = v; if (v >= vol) clearInterval(fi); }, 50);
-    if (autostopSec > 0) { _mp4FadeTimer = setTimeout(() => _fadeOutMp4(el), autostopSec * 1000); }
-}
-
-function _fadeOutMp4(el) {
-    if (!el || el.paused) return;
-    const fo = setInterval(() => {
-        el.volume = Math.max(el.volume - 0.05, 0);
-        if (el.volume <= 0) { clearInterval(fo); el.pause(); el.currentTime = 0; }
-    }, 80);
-}
-
-function _duckForSpeech(text, mp4El, fullVol, osc) {
-    const DUCK_VOL = 0.04;
-    if (mp4El && !mp4El.paused) mp4El.volume = DUCK_VOL;
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'ko-KR';
-    msg.onend = () => {
-        if (mp4El && !mp4El.paused) {
-            let v = DUCK_VOL;
-            const restore = setInterval(() => { v = Math.min(v + 0.04, fullVol); mp4El.volume = v; if (v >= fullVol) clearInterval(restore); }, 60);
+function _fadeStatueAudio(el, target){
+    if(!el) return;
+    if(_statueFadeTimers[el.id]){ clearInterval(_statueFadeTimers[el.id]); _statueFadeTimers[el.id] = null; }
+    if(target > 0 && el.paused){
+        el.volume = 0;
+        const p = el.play();
+        if(p && typeof p.catch === 'function'){
+            p.catch(e => console.warn('[조각상 사운드] 자동재생 차단:', e.message));
         }
-        if (osc) { try { osc.stop(); } catch(e){} }
-        if (drumInterval) { clearInterval(drumInterval); drumInterval = null; }
-    };
-    window.speechSynthesis.speak(msg);
-}
-
-// ── TTS 함수 ──
-function speak(text, onEnd) {
-    window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'ko-KR';
-    if (onEnd) msg.onend = onEnd;
-    window.speechSynthesis.speak(msg);
-}
-
-function speakSpatial(text, speaker, onEnd) {
-    window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'ko-KR';
-    msg.rate = 0.95;
-    if (onEnd) msg.onend = onEnd;
-    window.speechSynthesis.speak(msg);
-}
-
-// ══════════════════════════════════════════════════════
-// ── [1] 사운드 맵 및 1단계 시나리오 데이터 ──
-// ══════════════════════════════════════════════════════
-const soundMap = {
-    'rodin-head':     { freq:110, soundType:'sawtooth' },
-    'rodin-torso':    { freq:130, soundType:'sawtooth' },
-    'rodin-legs':     { freq:90,  soundType:'sawtooth' },
-    'maitreya-head':  { freq:440, soundType:'triangle' },
-    'maitreya-torso': { freq:392, soundType:'triangle' },
-    'maitreya-legs':  { freq:349, soundType:'triangle' }
-};
-
-const stage1ScenarioData = {
-    1: {
-        'rodin-head':     { title:"로댕: 소멸을 응시하는 머리", text:"깊게 파인 미간과 무겁게 내려앉은 눈꺼풀 속에서 인간은 자신이 언젠가 사라질 존재임을 직감하며, 그 공포가 사유의 원천이 됩니다." },
-        'rodin-torso':    { title:"로댕: 생(生)의 무게를 짊어진 몸통", text:"탄생의 고통과 소멸의 예감 사이에서 뒤틀린 근육은, 살아있음 그 자체가 이미 사라짐을 향한 여정임을 온몸으로 웅변합니다." },
-        'rodin-legs':     { title:"로댕: 대지에 묶인 유한한 발", text:"흙에서 왔으나 다시 흙으로 돌아가야 하는 운명을 아는 듯, 무거운 발은 대지를 움켜쥐며 덧없는 존재의 마지막 집착을 드러냅니다." },
-        'maitreya-head':  { title:"반가사유상: 순환을 아는 머리", text:"뺨에 살포시 얹힌 손가락 끝에는 죽음이 끝이 아니라 우주적 순환의 한 고리임을 아는 자의 고요한 미소가 담겨 있습니다." },
-        'maitreya-torso': { title:"반가사유상: 생멸을 품은 상체", text:"꽃이 지고 다시 피듯, 느슨하게 흘러내리는 상체의 선은 생성과 소멸이 둘이 아닌 하나의 흐름임을 형태로 노래합니다." },
-        'maitreya-legs':  { title:"반가사유상: 윤회 위에 앉은 하체", text:"가볍게 얹힌 반가의 자세는 죽음과 탄생의 수레바퀴 위에서 흔들리지 않는 영혼이 이르는 해탈의 좌표를 가리킵니다." }
-    },
-    2: {
-        'rodin-head':     { title:"로댕: 생각의 감옥에 갇힌 머리", text:"한 생각이 또 다른 생각을 낳고, 그 생각의 사슬이 의식을 옥죄는 감옥이 되어 버린 고독한 사유자의 얼굴이 여기 있습니다." },
-        'rodin-torso':    { title:"로댕: 자아의 무게를 견디는 몸통", text:"나는 누구인가, 왜 존재하는가 — 그 답 없는 물음이 근육 하나하나를 비틀며 실존적 이중성의 고통을 육체에 새겨 놓았습니다." },
-        'rodin-legs':     { title:"로댕: 실존의 굴레에 묶인 발", text:"초월을 꿈꾸면서도 현실의 중력에서 벗어나지 못하는 인간의 한계가, 대지를 움켜쥔 발가락의 긴장 속에 고스란히 응결되어 있습니다." },
-        'maitreya-head':  { title:"반가사유상: 비움으로 자유로운 머리", text:"생각을 생각하기를 멈추는 순간 찾아오는 공(空)의 자유를, 모든 번뇌를 내려놓은 보살의 미소가 말없이 전하고 있습니다." },
-        'maitreya-torso': { title:"반가사유상: 집착을 내려놓은 상체", text:"무집착(無執着)의 철학이 육체에 깃들면 이처럼 우아한 곡선이 된다는 듯, 상체는 세상의 무게를 모두 흘려보내고 있습니다." },
-        'maitreya-legs':  { title:"반가사유상: 무아(無我)에 이른 하체", text:"자아라는 감옥을 부수고 나면 닿는 무아(無我)의 경지를, 천지 어디에도 걸림이 없는 반가의 자세가 온몸으로 구현합니다." }
-    },
-    3: {
-        'rodin-head':     { title:"로댕: 소음에 지친 머리", text:"기계의 굉음과 데이터의 홍수가 밀려드는 현대 문명 속에서, 인간 본연의 내면 목소리를 잃어버린 자의 피로가 이 미간에 새겨져 있습니다." },
-        'rodin-torso':    { title:"로댕: 속도에 뒤틀린 몸통", text:"효율과 속도로 채워진 세계가 인간의 감성을 잠식해 가는 과정이, 한계까지 수축된 이 근육의 긴장 속에 고통스럽게 기록되어 있습니다." },
-        'rodin-legs':     { title:"로댕: 문명에 얽매인 발", text:"스스로 만들어 낸 기술 문명의 굴레에서 빠져나오지 못하는 현대인의 아이러니가, 대지를 떠나지 못하는 이 무거운 발에 담겨 있습니다." },
-        'maitreya-head':  { title:"반가사유상: 침묵을 듣는 머리", text:"모든 소음이 멎은 뒤에야 들리는 본래의 소리가 있다는 듯, 뺨에 닿은 손가락은 세상의 시끄러움을 가만히 차단하고 있습니다." },
-        'maitreya-torso': { title:"반가사유상: 고요를 품은 상체", text:"문명의 속도가 미치지 못하는 내면의 적막 속에서, 상체는 천년의 침묵을 물처럼 담아 흘려보내지 않으며 고요를 지킵니다." },
-        'maitreya-legs':  { title:"반가사유상: 정적(靜寂)에 안착한 하체", text:"멈춤만이 줄 수 있는 자유가 있음을, 기계도 속도도 닿지 않는 저 고요한 반가의 자세가 천년을 넘어 지금 여기에 전하고 있습니다." }
     }
-};
-
-// ══════════════════════════════════════════════════════
-// ── [2] 전역 상태 변수 ──
-// ══════════════════════════════════════════════════════
-let currentMode = 1;
-let selectedScenarioId = null;
-let isAIConversation = false;
-let avatarModeActive = false;
-let dialogueSessionData = [];
-let isStage3AIConversation = false;
-let stage3DialogueSessionData = [];
-let stage3UserTrouble = "";
-let currentPartInStage3 = null;
-let stage3Timeout = null;
-
-const container    = document.getElementById('game-container');
-const subBox       = document.getElementById('subtitle-box');
-const modeBtn      = document.getElementById('mode-btn');
-const mainTitle    = document.getElementById('main-title');
-const aiGroup      = document.getElementById('ai-scenario-group');
-const mirrorGuide  = document.getElementById('mirror-guide-container');
-const svg          = document.getElementById('shape-svg');
-
-// ══════════════════════════════════════════════════════
-// ── [3] UI 헬퍼 ──
-// ══════════════════════════════════════════════════════
-function showSubtitle(text, color) {
-    subBox.style.display = 'block';
-    subBox.style.color = color || 'white';
-    subBox.innerHTML = text;
-    subBox.style.animation = 'none';
-    subBox.offsetHeight; // reflow
-    subBox.style.animation = 'slideUp 0.3s ease-out';
+    const step = target > el.volume ? 0.01 : -0.01;
+    _statueFadeTimers[el.id] = setInterval(()=>{
+        let v = el.volume + step;
+        const done = (step > 0 && v >= target) || (step < 0 && v <= target);
+        if(done){
+            v = target;
+            clearInterval(_statueFadeTimers[el.id]);
+            _statueFadeTimers[el.id] = null;
+            if(target <= 0){ el.pause(); el.currentTime = 0; }
+        }
+        el.volume = Math.max(0, Math.min(1, v));
+    }, 60);
 }
 
-function drawPulseEffect(isRodin) {
-    svg.innerHTML = '';
-    const cx = isRodin ? window.innerWidth * 0.23 : window.innerWidth * 0.76;
-    const cy = window.innerHeight * 0.40;
-    let radius = 20;
-    const interval = setInterval(() => {
-        svg.innerHTML = `<circle cx="${cx}" cy="${cy}" r="${radius}" stroke="${isRodin ? '#e05533':'gold'}" stroke-width="2.5" fill="none" opacity="${1 - radius/160}"/>`;
-        radius += 4;
-        if (radius > 160) { clearInterval(interval); svg.innerHTML = ''; }
-    }, 18);
-}
-
-// ══════════════════════════════════════════════════════
-// ── [4] AI 통신 (로컬 LLM 서버) ──
-// ══════════════════════════════════════════════════════
-async function fetchAITalk(prompt) {
-    try {
-        const response = await fetch("http://localhost:1234/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: "qwen2.5-1.5b-instruct",
-                messages: [
-                    { role: "system", content: "로댕의 생각하는 사람은 실존적 고뇌와 고통을, 반가사유상은 자비와 비움, 해탈을 상징합니다. 감상자에게 품격 있는 한국어로 짧게 답하세요." },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.75,
-                max_tokens: 120
-            })
-        });
-        const data = await response.json();
-        return data.choices[0].message.content.trim();
-    } catch (e) {
-        console.error("AI 연결 오류:", e);
-        return "침묵 속에서 답을 찾고 있습니다. (서버 연결을 확인해주세요)";
+function updateStatueSound(speaker){
+    const target = (speaker === 'rodin' || speaker === 'maitreya') ? speaker : null;
+    if(target === _currentStatueSound) return;
+    _currentStatueSound = target;
+    const rodinEl = document.getElementById('snd-rodin');
+    const maitreyaEl = document.getElementById('snd-maitreya');
+    _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
+    _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
+    const moodEl = document.getElementById('mood-overlay');
+    if(moodEl){
+        moodEl.classList.toggle('mood-rodin', target === 'rodin');
+        moodEl.classList.toggle('mood-maitreya', target === 'maitreya');
     }
 }
 
-// ══════════════════════════════════════════════════════
-// ── [5] 단계 전환 로직 ──
-// ══════════════════════════════════════════════════════
-function toggleMode() {
-    initAudio();
-    stopAllPlayback();
-    currentPartInStage3 = null;
-
-    if (currentMode === 4 || modeBtn.innerText === "다시 시작") {
-        resetGame(); return;
+// ── TTS 속도 조절 — 참가자 피드백(P3, P4: "해설 TTS 속도가 빠르다") 반영.
+// 화면에 보이는 버튼으로 배속을 순환 선택하고, 지금 말하는 중인 문장이
+// 있으면 같은 지점부터 새 속도로 다시 읽어준다(굳이 처음부터 다시 듣지
+// 않도록). 스크린리더 사용자를 위해 aria-label에도 현재 배속을 반영한다.
+const SPEED_STEPS = [0.7, 0.85, 1.0, 1.2, 1.5];
+let _speedIdx = 2; // 1.0배에서 시작
+let TTS_RATE = SPEED_STEPS[_speedIdx];
+function cycleSpeed(){
+    _speedIdx = (_speedIdx + 1) % SPEED_STEPS.length;
+    TTS_RATE = SPEED_STEPS[_speedIdx];
+    const btn = document.getElementById('btn-speed');
+    if(btn){
+        btn.textContent = `속도 ${TTS_RATE}x`;
+        btn.setAttribute('aria-label', `말하기 속도, 현재 ${TTS_RATE}배`);
     }
-
-    if (currentMode === 1) {
-        currentMode = 2;
-        modeBtn.innerText = "단계 2 → 3";
-        aiGroup.style.display = 'flex';
-        selectedScenarioId = null;
-        document.querySelectorAll('#ai-scenario-group .scenario-btn').forEach(b => b.classList.remove('active'));
-        const msg = "2단계 공명의 시간입니다. 시나리오를 선택하시면 두 조각상의 AI 철학 대화가 시작됩니다.";
-        showSubtitle(`<b>2단계: 공명(Resonance)</b><p>${msg}</p>`, 'white');
-        speak(msg);
-        document.getElementById('chatbot-container').style.display = 'flex';
-
-    } else if (currentMode === 2) {
-        stopAllPlayback();
-        aiGroup.style.display = 'none';
-        avatarModeActive = false;
-        currentMode = 3;
-        modeBtn.innerText = "단계 3 → 4";
-        document.getElementById('chatbot-container').style.display = 'none';
-        showSubtitle("<b>3단계: 체화(Embodiment)</b><p>조각상의 자세를 신체로 따라하며 마음을 느껴보세요.</p>", 'white');
-        speak("3단계 체화입니다. 아래 버튼으로 신체 부위를 선택하세요.");
-        startStage3Sequence();
-
-    } else if (currentMode === 3) {
-        currentMode = 4;
-        document.getElementById('chatbot-container').style.display = 'none';
-        startStageFinal();
+    hapticPulse('turn');
+    // 지금 읽던 문장이 있으면 같은 문장을 새 속도로 이어서 다시 읽는다.
+    if(lastSpokenText){
+        speak(lastSpokenText, null, lastSpokenSpeaker);
     }
 }
 
-function setMode(n) {
-    currentMode = n;
-    if (n === 1) {
-        modeBtn.innerText = "단계 1: 조우";
-        selectedScenarioId = null;
-        aiGroup.style.display = 'flex';
-        document.querySelectorAll('#ai-scenario-group .scenario-btn').forEach(b => b.classList.remove('active'));
-        mainTitle.textContent = "침묵의 공명";
-        showSubtitle('<b>침묵의 공명 — 1단계: 조우(Encounter)</b><p>시나리오를 선택한 후, 조각상의 각 부위를 터치해 철학적 사유를 탐색하세요.</p>', 'white');
-        document.getElementById('chatbot-container').style.display = 'none';
-        // 탐색 힌트 표시
-        const hint = document.getElementById('explore-hint');
-        hint.style.display = 'block';
-        setTimeout(() => { hint.style.display = 'none'; }, 7000);
-    }
+let lastSpokenText = '';
+let lastSpokenSpeaker = null;
+
+// v21 — 참가자 지적: "뒤로/다음을 눌러도 '로댕이 말합니다 · 머리' 같은
+// 안내가 안 바뀐다." 실제로 코드를 시뮬레이션해서 확인해보니 화면 상태
+// (태그·자막)는 클릭할 때마다 정확히 바뀌고 있었다 — 문제는 음성이었다.
+// window.speechSynthesis.cancel() 직후 곧바로 .speak()를 다시 부르면,
+// 크롬 등 일부 브라우저에서 새 발화가 시작도 onend도 없이 조용히
+// 실패하는 버그가 있다. 특히 뒤로/다음을 빠르게 연달아 누르면 이 경합이
+// 자주 발생해서, 화면은 이미 다음 내용으로 넘어갔는데 소리는 이전 문장에서
+// 멈춘 채(또는 아예 안 나온 채) 남아 있게 된다 — 청각 중심으로 쓰는
+// 사용자에게는 "안 바뀐다"로 느껴질 수밖에 없다.
+// 대응: cancel() 이후 아주 짧게 시간을 두고 speak()를 부르고, 그 사이
+// 더 최신 요청이 들어오면 오래된 요청은 버린다. 또 onerror도 onend와
+// 동일하게 처리하고, 혹시라도 TTS 엔진이 완전히 응답을 멈추는 경우에
+// 대비해 문장 길이에 비례한 워치독 타이머로 강제 진행시켜, 절대
+// "완전히 멈춰서 더 이상 못 넘어가는" 상태가 되지 않도록 했다.
+function speak(text, onEnd, speaker){
+    lastSpokenText = text;
+    lastSpokenSpeaker = speaker || null;
+    const myGen = ++speechGen;
+    try{
+        window.speechSynthesis.cancel();
+        setTimeout(()=>{
+            if(myGen !== speechGen) return; // 그 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'ko-KR';
+            if(speaker==='rodin'){ u.rate = TTS_RATE; u.pitch = 0.90; }
+            else if(speaker==='maitreya'){ u.rate = TTS_RATE; u.pitch = 1.08; }
+            else { u.rate = TTS_RATE; u.pitch = 1.0; }
+            let _ended = false;
+            const finish = ()=>{ if(_ended) return; _ended = true; if(myGen===speechGen && onEnd) onEnd(); };
+            u.onend = finish;
+            u.onerror = finish;
+            window.speechSynthesis.speak(u);
+            // v31 — 참가자 지적: "해설이 끝나기 전에 화면이 빠르게 넘어간다."
+            // 원인: 이 워치독 타이머가 글자 수만으로 예상 시간을 계산하고,
+            // 실제 재생 속도(TTS_RATE)는 전혀 반영하지 않고 있었다. 속도를
+            // 느리게(0.7배 등) 맞춰 들으면 실제 음성은 그만큼 더 오래
+            // 걸리는데, 워치독은 항상 1.0배 기준의 시간에 맞춰 먼저
+            // 울려버려 — 음성이 채 끝나기도 전에 다음 문장으로 넘어가는
+            // 원인이 됐다. 지금 재생 속도로 나눠 실제 소요 시간에 맞추고,
+            // 여유 폭도 조금 더 넉넉하게 잡았다.
+            const estMs = Math.max(1800, (text.length * 220) / TTS_RATE);
+            setTimeout(()=>{ if(myGen===speechGen) finish(); }, estMs);
+        }, 60);
+    }catch(e){ if(myGen===speechGen && onEnd) setTimeout(onEnd, 1800); }
 }
 
-// ══════════════════════════════════════════════════════
-// ── [6] 1단계: 조우 — 핫스팟 인터랙션 ──
-// ══════════════════════════════════════════════════════
-function handleInteraction(id) {
-    if (!selectedScenarioId) {
-        showSubtitle('<b>시나리오를 먼저 선택해 주세요</b><p>위의 ① ② ③ 버튼 중 하나를 선택하면 각 부위의 철학적 사유가 해당 주제로 안내됩니다.</p>', '#d4af37');
-        speak("시나리오 버튼을 먼저 선택해 주세요.");
-        return;
-    }
-    stopAllPlayback();
-    const data  = stage1ScenarioData[selectedScenarioId][id];
-    const sound = soundMap[id];
-    if (!data || !sound) return;
-
-    const isRodin = id.includes('rodin');
-    const fullVol = isRodin ? 0.25 : 0.2;
-
-    // ── 0.2초 후: [voice] 음성 해설 + 자막 + 배경음(MP4) ──
-    setTimeout(() => {
-        showSubtitle(`<b>${data.title}</b><p>${data.text}</p>`, 'white');
-        _playMp4('snd-' + id, fullVol, 16);
-        const mp4El = document.getElementById('snd-' + id);
-        _duckForSpeech(data.text, mp4El, fullVol, null);
-        drawPulseEffect(isRodin);
-    }, 200);
-
-    // ── 2.0초 후: [sound] 드럼/벨 추가 재생 (오실레이터 제거됨) ──
-    setTimeout(() => {
-        if (isRodin) { triggerDrum(); drumInterval = setInterval(triggerDrum, 1200); }
-        else { triggerBell(); }
-    }, 2000);
+/* ══════════════════════════════════════════════════════
+   반응형 정렬 보정 — room2-touch-interaction.html의 fitHotspotLayer()와
+   동일한 문제를 room1도 그대로 겪는다: #stage는 background-size:contain
+   이라 뷰포트 비율이 배경 이미지(반가-로댕.png) 비율과 다르면 레터박스
+   (위아래 또는 좌우 여백)가 생기는데, 아래 세 함수(updateWideSpot·
+   updateDetailSpot·drawPartPulse)는 그동안 window.innerWidth/innerHeight를
+   그대로 곱해 스팟 위치를 계산해왔다 — 즉 레터박스 여백을 감안하지 않아,
+   창 크기나 화면 비율이 이미지 비율과 달라지면(창 리사이즈, 스마트폰
+   세로 화면 등) 스팟이 조각상 위치에서 어긋난다.
+   해결: room2와 동일하게, 배경 이미지의 실제 렌더링 사각형(레터박스를
+   뺀 순수 이미지 영역)을 계산하는 _getImageRect()를 두고, 세 함수 모두
+   window.innerWidth/innerHeight 대신 이 사각형을 기준으로 좌표를 계산한다.
+   ══════════════════════════════════════════════════════ */
+let _bgImgNatural = null; // { w, h } — 반가-로댕.png의 원본 픽셀 크기(1회 로드 후 캐시)
+function _loadBgImageNaturalSize(cb){
+    if(_bgImgNatural){ cb(_bgImgNatural); return; }
+    const img = new Image();
+    img.onload = () => { _bgImgNatural = { w: img.naturalWidth, h: img.naturalHeight }; if(cb) cb(_bgImgNatural); };
+    img.onerror = () => console.warn('[스팟 정렬] 배경 이미지 크기를 읽지 못했습니다 — 기본 배치를 유지합니다.');
+    img.src = '반가-로댕.png';
 }
-
-function selectScenario(num) {
-    if (isAIConversation) return;
-    selectedScenarioId = num;
-    document.querySelectorAll('#ai-scenario-group .scenario-btn').forEach((b, i) => b.classList.toggle('active', i + 1 === num));
-
-    if (currentMode === 1) {
-        const titles = {1:'생성과 소멸', 2:'실존과 초월', 3:'문명과 침묵'};
-        showSubtitle(`<b>시나리오 ${num}: ${titles[num]}</b><p>조각상의 각 부위를 터치해 '${titles[num]}' 주제로 풀어낸 철학적 사유를 탐색하세요.</p>`, '#d4af37');
-        speak(`시나리오 ${num} ${titles[num]}이 선택되었습니다. 조각상의 부위를 터치해 보세요.`);
-        return;
-    }
-
-    // 2단계: AI 시나리오 대화 시작
-    dialogueSessionData = [];
-    avatarModeActive = true;
-    if (num === 1) startScenarioRun("생성과 소멸");
-    else if (num === 2) startScenarioRun("실존과 초월");
-    else if (num === 3) startScenarioRun("문명과 침묵");
-}
-
-// ══════════════════════════════════════════════════════
-// ── [7] 2단계: 공명 — AI 시나리오 대화 ──
-// ══════════════════════════════════════════════════════
-const scenarioPrompts = {
-    1: {
-        title:"생성과 소멸",
-        context:"로댕이 인간의 유한성에 한탄하자 반가사유상이 우주적 순환으로 위로함",
-        rodinPersona:"유한한 생명 앞에서 절망하는 서양 조각가. 탄생과 소멸의 공포, 덧없이 사라지는 인간 존재의 비극을 무겁고 장중한 어조로 토로한다.",
-        maitreyaPersona:"생멸(生滅)을 넘어선 동양의 보살. 죽음은 끝이 아니라 우주적 순환의 한 부분임을 따뜻하고 온화한 어조로 일깨운다.",
-        rodinKeywords:"유한성, 소멸, 죽음의 공포, 덧없음",
-        maitreyaKeywords:"윤회, 우주적 순환, 비움, 해탈"
-    },
-    2: {
-        title:"실존과 초월",
-        context:"로댕이 생각의 감옥을 토로하자 반가사유상이 비움의 미학을 설파함",
-        rodinPersona:"끝없는 사유의 굴레에 갇힌 서양 조각가. 생각이 생각을 낳는 감옥에서 벗어날 수 없는 실존적 괴로움을 무겁게 고백한다.",
-        maitreyaPersona:"사유를 내려놓음으로써 자유에 이르는 동양의 보살. 집착과 번뇌를 비워내는 공(空)의 미학을 맑고 고요한 어조로 설파한다.",
-        rodinKeywords:"실존적 고뇌, 생각의 감옥, 자아의 무게",
-        maitreyaKeywords:"비움, 공(空), 무집착, 초월, 무아(無我)"
-    },
-    3: {
-        title:"문명과 침묵",
-        context:"로댕이 기술과 기계문명의 피로를 말하자 반가사유상이 내면의 고요를 권함",
-        rodinPersona:"기계와 기술 문명의 소음에 지쳐버린 서양 조각가. 속도와 효율로 채워진 세계 속 인간 감성의 소멸을 격하게 토로한다.",
-        maitreyaPersona:"문명의 소란 바깥에서 내면의 적막을 지키는 동양의 보살. 멈춤과 침묵 속에서만 들을 수 있는 본래의 소리로 부드럽게 이끈다.",
-        rodinKeywords:"기계문명, 기술의 피로, 속도, 인간성 상실",
-        maitreyaKeywords:"침묵, 고요, 내면의 소리, 멈춤, 정적(靜寂)"
-    }
-};
-
-function startScenarioRun(title) {
-    showSubtitle(`<b>시나리오: ${title}</b><p>두 거장의 영혼이 사유를 주고받기 시작합니다...</p>`, 'gold');
-    setTimeout(() => triggerScenarioNode('rodin', 1), 2000);
-}
-
-async function triggerScenarioNode(speaker, depth) {
-    if (!avatarModeActive || currentMode !== 2) return;
-    isAIConversation = true;
-    const isRodin = (speaker === 'rodin');
-    const roleName = isRodin ? "로댕" : "반가사유상";
-    const color = isRodin ? '#e05533' : 'gold';
-
-    if (isRodin) { triggerDrum(); } else { triggerBell(); }
-    drawPulseEffect(isRodin);
-    if (depth === 1 && isRodin) _playMp4('snd-void', 0.15, 0);
-
-    const spec = scenarioPrompts[selectedScenarioId] || scenarioPrompts[1];
-    const persona  = isRodin ? spec.rodinPersona  : spec.maitreyaPersona;
-    const keywords = isRodin ? spec.rodinKeywords : spec.maitreyaKeywords;
-
-    const prompt = `당신은 명작 조각 [${roleName}]의 예술적 영혼입니다.
-[이번 대화 주제]: ${spec.title}
-[시나리오 콘텍스트]: ${spec.context}
-[당신의 페르소나]: ${persona}
-[핵심 키워드 (자연스럽게 녹여낼 것)]: ${keywords}
-[현재 차례]: ${roleName} (${depth}/4)
-[이전 대화]: ${JSON.stringify(dialogueSessionData)}
-위 지침을 따라 이전 대화를 이어받아 품격 있는 한국어 딱 '한 문장'으로 답하시오. 이미 사용된 표현은 반드시 피하시오.`;
-
-    try {
-        showSubtitle(`<b>${roleName} 사유 중...</b>`, color);
-        const textResult = await fetchAITalk(prompt);
-        dialogueSessionData.push({ name: roleName, text: textResult });
-        showSubtitle(`<b>${roleName}의 공명</b><p>${textResult}</p>`, color);
-        speakSpatial(textResult, speaker, () => {
-            if (depth < 4) {
-                setTimeout(() => triggerScenarioNode(isRodin ? 'maitreya' : 'rodin', depth + 1), 1200);
-            } else {
-                finishStage2();
-            }
-        });
-    } catch(e) {
-        console.error(e);
-        finishStage2();
-    }
-}
-
-function finishStage2() {
-    isAIConversation = false;
-    const msg = "두 조각상의 공명이 완료되었습니다. 위 버튼으로 다음 단계로 나아가세요.";
-    showSubtitle(`<b>공명 완료</b><p>${msg}</p>`, 'gold');
-    speak(msg);
-}
-
-// ══════════════════════════════════════════════════════
-// ── [8] 3단계: 체화 — 거울 명상 + AI 릴레이 위로 ──
-// ══════════════════════════════════════════════════════
-const mirrorCoords = {
-    head:  { r_left:'12%', r_top:'12%', r_w:'20%', r_h:'18%', m_left:'66%', m_top:'8%',  m_w:'20%', m_h:'18%', label:"머리: 사유의 무게를 일치시키기" },
-    torso: { r_left:'8%',  r_top:'30%', r_w:'26%', r_h:'25%', m_left:'63%', m_top:'26%', m_w:'26%', m_h:'26%', label:"상체: 수축과 비움의 정렬" },
-    legs:  { r_left:'6%',  r_top:'55%', r_w:'28%', r_h:'32%', m_left:'60%', m_top:'52%', m_w:'30%', m_h:'35%', label:"하체: 중력과 초월의 안착" }
-};
-
-// ══════════════════════════════════════════════════════
-// ── [8] 3단계: 체화 (수정됨) ──
-// ══════════════════════════════════════════════════════
-
-// 3단계 시퀀스 시작 함수
-function startStage3Sequence() {
-    document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
-    document.getElementById('stage3-scenario-group').style.display = 'none'; // 버튼 그룹 숨김
-    mirrorGuide.style.display = 'block';
-    
-    // 연속 흐름 시작 (0: head, 1: torso, 2: legs)
-    runStage3Sequence(0);
-}
-
-// 부위별 연속 실행 로직
-let _stage3CurrentStep = 0;       // 현재 진행 중인 stepIndex
-let _stage3SkipTimeout = null;    // 자동 진행 타이머 (클릭 스킵용)
-
-function _stage3AdvanceTo(stepIndex) {
-    // TTS 중단 + 타이머 취소 후 다음 스텝(또는 완료)으로 이동
-    window.speechSynthesis.cancel();
-    if (_stage3SkipTimeout) { clearTimeout(_stage3SkipTimeout); _stage3SkipTimeout = null; }
- if (stepIndex < 6) {
-        runStage3Sequence(stepIndex);
+/* v15 — 참가자 요청: room1의 "배경 환경"도 room2와 같이 맞춰 달라는 요청.
+   지금까지 _getImageRect()는 스팟 좌표 계산에만 쓰였고, 정작 배경 이미지
+   자체(#stage의 background-size/position)는 고정 CSS(contain)만 쓰고
+   있었다 — room2의 fitHotspotLayer()는 이미지 자체를 살짝 축소(93%)해서
+   발끝이 자막 영역에 가리지 않게 재배치하는데, room1은 그 처리가 없었다.
+   room2와 동일한 IMAGE_SHRINK 값을 그대로 가져와 배경 이미지 자체를
+   같은 방식으로 축소·재배치하고, 스팟 좌표도 그 축소된 사각형을 기준으로
+   삼도록 통일했다 — 이제 두 방의 배경 렌더링 방식이 완전히 같다. */
+const IMAGE_SHRINK = 0.93; // room2-touch-interaction.html과 동일한 값
+function _getImageRect(){
+    const w = window.innerWidth, h = window.innerHeight;
+    if(!_bgImgNatural || !w || !h) return { x:0, y:0, w, h }; // 이미지 크기를 아직 모르면 기존 동작(뷰포트 기준)으로 폴백
+    const imgRatio = _bgImgNatural.w / _bgImgNatural.h;
+    const boxRatio = w / h;
+    let rw, rh, rx, ry;
+    if(boxRatio > imgRatio){
+        rh = h; rw = rh * imgRatio; rx = (w - rw) / 2; ry = 0;
     } else {
-        showStage3CompletionUI();
+        rw = w; rh = rw / imgRatio; rx = 0; ry = (h - rh) / 2;
+    }
+    // room2와 동일하게: 가로는 가운데 정렬 유지, 세로는 윗변 고정 —
+    // 줄어든 공간이 전부 아래쪽(발 쪽)에 생기도록 한다.
+    const sw = rw * IMAGE_SHRINK, sh = rh * IMAGE_SHRINK;
+    const sx = rx + (rw - sw) / 2;
+    const sy = ry;
+    if(stageEl){
+        stageEl.style.backgroundSize = sw + 'px ' + sh + 'px';
+        stageEl.style.backgroundPosition = sx + 'px ' + sy + 'px';
+    }
+    return { x:sx, y:sy, w:sw, h:sh };
+}
+
+// 리사이즈 중에도 "지금 보여주고 있던" 스팟을 그 즉시 새 위치로
+// 다시 맞추기 위해, 가장 최근 호출 인자를 기억해뒀다가 재적용한다.
+let _lastWideSide = null, _lastDetailPct = null;
+function _refitSpotlights(){
+    if(_lastWideSide !== undefined) updateWideSpot(_lastWideSide);
+    if(_lastDetailPct !== undefined) updateDetailSpot(_lastDetailPct);
+}
+let _fitSpotScheduled = false;
+function _scheduleRefitSpotlights(){
+    if(_fitSpotScheduled) return;
+    _fitSpotScheduled = true;
+    requestAnimationFrame(()=>{ _fitSpotScheduled = false; _refitSpotlights(); });
+}
+_loadBgImageNaturalSize(_scheduleRefitSpotlights);
+window.addEventListener('resize', _scheduleRefitSpotlights);
+window.addEventListener('orientationchange', ()=> setTimeout(_refitSpotlights, 250));
+if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', _scheduleRefitSpotlights);
+}
+
+function updateWideSpot(side){
+    _lastWideSide = side;
+    if(!side){ spotEl.classList.remove('show'); return; }
+    const rect = _getImageRect();
+    let px = 0.5, py = 0.4, pr = 0.35;
+    if(side==='maitreya'){ px = 0.75; py = 0.42; }
+    else if(side==='rodin'){ px = 0.25; py = 0.42; }
+    const x = rect.x + rect.w*px, y = rect.y + rect.h*py, r = Math.min(rect.w, rect.h)*pr;
+    spotEl.style.left = (x-r)+'px'; spotEl.style.top = (y-r)+'px';
+    spotEl.style.width = spotEl.style.height = (r*2)+'px';
+    spotEl.classList.add('show');
+}
+
+function updateDetailSpot(pct){
+    _lastDetailPct = pct;
+    if(!pct){ detailSpotEl.classList.remove('show'); return; }
+    const rect = _getImageRect();
+    detailSpotEl.style.left = (rect.x + rect.w*pct.x/100)+'px';
+    detailSpotEl.style.top  = (rect.y + rect.h*pct.y/100)+'px';
+    detailSpotEl.classList.add('show');
+}
+
+let _pulseTimer = null;
+function drawPartPulse(pct, speaker){
+    if(_pulseTimer){ clearInterval(_pulseTimer); _pulseTimer = null; }
+    if(!pct){ effectSvg.innerHTML=''; return; }
+    const rect = _getImageRect();
+    const cx = rect.x + rect.w*pct.x/100, cy = rect.y + rect.h*pct.y/100;
+    const rootStyle = getComputedStyle(document.documentElement);
+    const color = speaker==='rodin' ? rootStyle.getPropertyValue('--rodin-color').trim()
+                : speaker==='maitreya' ? rootStyle.getPropertyValue('--maitreya-color').trim()
+                : rootStyle.getPropertyValue('--gold').trim(); 
+    let r = 6;
+    _pulseTimer = setInterval(()=>{
+        effectSvg.innerHTML = `<circle cx="${cx}" cy="${cy}" r="${r}" stroke="${color}" stroke-width="2" fill="none" opacity="${1 - r/70}"/>`;
+        r += 2.4;
+        if(r > 70){ clearInterval(_pulseTimer); _pulseTimer = null; effectSvg.innerHTML=''; }
+    }, 16);
+}
+
+function playLayer(i){
+    clearTimeout(autoTimer);
+    hapticPulse('stage'); 
+    phase = 'screen';
+    layerIdx = i; lineIdx = 0;
+    updateBadgeUI();
+    eyebrowEl.textContent = '전시실 1 · 소개';
+    tagEl.textContent = LAYERS[i].tag;
+    nextStageTag.classList.remove('show');
+    detailSpotEl.classList.remove('show');
+    drawPartPulse(null);
+    speakerTagEl.classList.remove('show');
+    playLine();
+}
+
+function playLine(){
+    const layer = LAYERS[layerIdx];
+    // v22 — 참가자 스크린샷으로 확인된 버그: 뒤로가기로 단계 경계를 넘어갈
+    // 때(예: 2단계 첫 문장 → 1단계 마지막 문장) 자막은 바뀌는데 위쪽
+    // "2단계 · Focus" 태그는 그대로 남아 있었다. 원인은 이 함수가
+    // layerIdx가 바뀐 뒤에도 곧바로 호출될 수 있는데, 태그 갱신은
+    // playLayer()에만 있어서였다 — playLine()이 어떤 경로로 호출되든
+    // 항상 지금 layerIdx에 맞는 태그를 스스로 다시 써서, 호출하는 쪽이
+    // 태그 갱신을 잊어도 항상 화면과 일치하도록 한다.
+    // v24 — 같은 원인으로 또 다른 스크린샷 제보: 3단계(대화)에서 뒤로가기로
+    // 2단계 마지막 문장까지 나왔는데 "로댕이 말합니다" 화자 태그가 그대로
+    // 남아 있었다. playLayer()만 speakerTagEl 등을 정리하고 있어서, 3단계
+    // → 2단계로 곧장 playLine()을 부르는 경로에서는 빠져 있었던 것과
+    // 완전히 같은 종류의 버그다. 화면(1~2단계) 전용 UI 요소들을 전부
+    // playLine() 안에서 매번 정리해, 어떤 경로로 들어와도 항상 화면
+    // 단계에 맞는 상태만 남도록 했다 — 3단계 전용 요소(화자 태그 등)가
+    // 화면 단계로 새어 들어오는 일이 다시는 없도록.
+    tagEl.textContent = layer.tag;
+    eyebrowEl.textContent = '전시실 1 · 소개';
+    speakerTagEl.classList.remove('show');
+    nextStageTag.classList.remove('show');
+    updateBadgeUI();
+    if(lineIdx >= layer.lines.length){
+        clearTimeout(autoTimer);
+        sourceEl.textContent = '';
+        autoTimer = setTimeout(autoAdvanceLayer, LAYER_PAUSE_MS);
+        return;
+    }
+    const line = layer.lines[lineIdx];
+    captionEl.innerHTML = line.text;
+    sourceEl.textContent = line.source || '';
+    updateWideSpot(line.wide || null);
+    updateStatueSound(line.wide || null);
+    if(line.detail){
+        updateDetailSpot(line.detail);
+        drawPartPulse(line.detail, line.speaker || null);
+    } else {
+        detailSpotEl.classList.remove('show');
+        drawPartPulse(null);
+    }
+    speak(line.text, ()=>{
+        if(isPaused) return;
+        lineIdx++; clearTimeout(autoTimer); autoTimer = setTimeout(playLine, LINE_PAUSE_MS);
+    }, line.speaker || null);
+}
+
+function autoAdvanceLayer(){
+    if(isPaused) return;
+    if(layerIdx < LAYERS.length-1){
+        playLayer(layerIdx+1);
+    } else {
+        startDetailPhase(); 
     }
 }
 
-async function runStage3Sequence(stepIndex) {
-    // 6단계: 0=로댕머리, 1=반가머리, 2=로댕상체, 3=반가상체, 4=로댕하체, 5=반가하체
-    const steps = [
-        { partKey: 'head',  isRodin: true  },
-        { partKey: 'head',  isRodin: false },
-        { partKey: 'torso', isRodin: true  },
-        { partKey: 'torso', isRodin: false },
-        { partKey: 'legs',  isRodin: true  },
-        { partKey: 'legs',  isRodin: false }
-    ];
-    if (stepIndex >= steps.length) { showStage3CompletionUI(); return; }
-
-    _stage3CurrentStep = stepIndex;
-    const { partKey, isRodin } = steps[stepIndex];
-    const delayTime = 10000;
-
-    const coords = mirrorCoords[partKey];
-
-    const instructions = {
-        'head-rodin': [
-            "눈을 감으세요. 천천히 숨을 들이쉬고... 내쉬세요.",
-            "지금부터 로댕의 생각하는 사람이 됩니다.",
-            "미간을 살짝 찌푸리세요. 무언가 무거운 것을 생각하듯이.",
-            "입술을 굳게 다무세요. 고뇌의 무게를 느껴보세요.",
-            "잠시 그 표정을 유지하세요.",
-            "이제 천천히 표정을 풀어주세요."
-        ].join(' ... '),
-        'head-maitreya': [
-            "이번에는 반가사유상이 됩니다.",
-            "입가에 아주 작은 미소를 지어보세요. 억지가 아닌, 자연스럽게.",
-            "오른손 손가락 끝을 뺨에 살며시 대보세요.",
-            "비움으로써 채워지는 자비의 미소입니다. 그 고요함을 느껴보세요."
-        ].join(' ... '),
-        'torso-rodin': [
-            "눈을 감고 천천히 숨을 고르세요.",
-            "지금부터 생각하는 사람의 몸이 됩니다.",
-            "두 어깨를 앞으로 당기고 몸을 안으로 웅크리세요.",
-            "온몸의 근육을 서서히 조여보세요. 존재의 무게를 느끼듯이.",
-            "그 긴장을 잠시 유지하세요.",
-            "이제 천천히 풀겠습니다."
-        ].join(' ... '),
-        'torso-maitreya': [
-            "이번에는 반가사유상의 상체입니다.",
-            "숨을 크게 들이쉬며 가슴을 펴세요.",
-            "천천히 내쉬면서 어깨의 힘을 완전히 내려놓으세요.",
-            "척추가 부드러운 곡선을 그리듯 자연스럽게 이완됩니다. 그 고요함 속에 머무세요."
-        ].join(' ... '),
-        'legs-rodin': [
-            "이번에는 생각하는 사람의 하체입니다. 눈을 감고 발바닥이 바닥에 닿는 감각을 느껴보세요.",
-            "발가락으로 바닥을 천천히 움켜쥐세요. 현실의 무게를 딛고 서듯이.",
-            "그 긴장을 잠시 유지하세요."
-        ].join(' ... '),
-        'legs-maitreya': [
-            "이제 반가사유상의 하체를 따라합니다. 오른쪽 발을 들어 왼쪽 무릎 위에 가볍게 얹으세요.",
-            "불균형 속의 균형. 그것이 중용입니다.",
-            "흔들려도 괜찮습니다. 그 안에서 중심을 찾아보세요.",
-            "천천히 숨을 내쉬며 그 자리에 머무세요."
-        ].join(' ... ')
-    };
-
-    const instrKey = `${partKey}-${isRodin ? 'rodin' : 'maitreya'}`;
-    const instrText = instructions[instrKey];
-
-    // 거울 가이드: 해당 조각상 부위만 강조
-    const rodinBox    = `<div class="mirror-box ${isRodin  ? 'active' : ''}" style="left:${coords.r_left};top:${coords.r_top};width:${coords.r_w};height:${coords.r_h};">Rodin</div>`;
-    const maitreyaBox = `<div class="mirror-box ${!isRodin ? 'active' : ''}" style="left:${coords.m_left};top:${coords.m_top};width:${coords.m_w};height:${coords.m_h};">Maitreya</div>`;
-    mirrorGuide.innerHTML = rodinBox + maitreyaBox;
-
-    // 자막 위치: 로댕 따라할 때 → 오른쪽(반가 쪽), 반가 따라할 때 → 왼쪽(로댕 쪽)
-    const subtitleSide = isRodin ? 'right' : 'left';
-    const sculptorLabel = isRodin ? '생각하는 사람' : '반가사유상';
-    const partLabel = { head: '얼굴 표정', torso: '상체', legs: '하체' }[partKey];
-    const nextLabel = stepIndex < steps.length - 1 ? '다음 동작으로 ▶' : '완료하기 ▶';
-
-    showSubtitle(
-        `<b>${sculptorLabel} ${partLabel} 따라하기</b><p>${instrText}</p>` +
-        `<div style="margin-top:10px;font-size:0.78rem;color:rgba(212,175,55,0.6);text-align:right;letter-spacing:0.04em;">✦ 해설창을 클릭하면 ${nextLabel}</div>`,
-        'white',
-        subtitleSide
-    );
-
-    // 해설창 클릭 → 즉시 다음 단계
-    subBox.onclick = (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-        subBox.onclick = null;
-        _stage3AdvanceTo(stepIndex + 1);
-    };
-
-    // 음성 해설 재생 후 대기
-    speak(instrText, () => {
-        _stage3SkipTimeout = setTimeout(() => {
-            subBox.onclick = null;
-            _stage3AdvanceTo(stepIndex + 1);
-        }, delayTime);
+function startDetailPhase(){
+    clearTimeout(autoTimer);
+    hapticPulse('stage'); 
+    phase = 'dialogue';
+    eyebrowEl.textContent = '전시실 1 · 대화';
+    // v27 — 참가자 스크린샷으로 확인된 버그: 이 전환 문장을 말하는 동안
+    // 위쪽 태그가 직전 화면("2단계 · FOCUS")에 멈춰 있었다. 원인은 이
+    // 함수가 tagEl을 아예 갱신하지 않고 있었기 때문 — playLine()처럼
+    // 여기서도 3단계 진입임을 스스로 표시하도록 했다.
+    tagEl.textContent = '3단계 · 대화';
+    speakerTagEl.classList.remove('show');
+    updateBadgeUI();
+    // v28 — 참가자 지적: "자막이 안 보인다." 이 문장을 speak()에는 넘겼지만
+    // 정작 captionEl에는 한 번도 대입하지 않아서, 음성은 나오는데 화면
+    // 자막은 비어 있었다(또는 직전 화면 자막이 그대로 남아 있었다).
+    const introText3 = '지금부터 들려드리는 이야기는 두 조각상의 모습에서 읽어낸 해설입니다.';
+    captionEl.innerHTML = introText3;
+    speak(introText3, ()=>{
+        if(isPaused) return;
+        playTurn(0);
     });
 }
 
-
-// 체화 완성 UI 표시 함수
-function showStage3CompletionUI() {
-    subBox.onclick = null;  // 클릭 스킵 핸들러 해제
-    stopAllPlayback();
-    initAudio();
-    subBox.innerHTML = `
-        <div style="text-align:center;pointer-events:auto;">
-            <span style="color:var(--gold);font-weight:bold;font-size:1.1rem;display:block;margin-bottom:10px;font-family:'Cinzel Decorative',serif;">[체화 완성 — 사유의 문이 열렸습니다]</span>
-            <p style="margin:0 0 14px;font-size:0.9rem;color:#ddd;line-height:1.65;">
-                신체의 연결이 끝났습니다.<br>지금 당신의 마음을 짓누르는 고민이나 번뇌는 무엇입니까?<br>
-                입력하시면 두 조각상이 릴레이 위로를 건넵니다.
-            </p>
-            <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
-                <input id="stage3-trouble-input" type="text"
-                    placeholder="예: 미래에 대한 불안, 인간관계의 피로..."
-                    style="width:62%;padding:9px 14px;border:1.5px solid var(--gold);border-radius:18px;background:#0a0a0a;color:#fff;font-size:0.88rem;font-family:'Noto Serif KR',serif;"
-                    onclick="event.stopPropagation();" />
-                <button class="confirm-btn" id="stage3-submit-btn" style="margin-top:0;padding:9px 20px;font-size:0.88rem;">공명하기</button>
-            </div>
-        </div>`;
-    subBox.style.display = 'block';
-    subBox.style.pointerEvents = 'auto';
-
-    document.getElementById('stage3-submit-btn').onclick = function(e) {
-        if (e) e.stopPropagation();
-        const troubleText = document.getElementById('stage3-trouble-input').value.trim();
-        if (!troubleText) { alert("두 조각상과 연동할 고민을 입력해 주십시오."); return; }
-        stage3UserTrouble = troubleText;
-        stage3DialogueSessionData = [];
-        executeStage3AIRelay('rodin', stage3UserTrouble);
-    };
+function toggleEasyMode(){
+    easyMode = !easyMode;
+    const btn = document.getElementById('btn-easy-mode');
+    btn.textContent = easyMode ? '쉬운 문장으로 듣기: 켜짐' : '쉬운 문장으로 듣기: 꺼짐';
+    btn.setAttribute('aria-pressed', String(easyMode));
+    btn.classList.toggle('primary', easyMode);
+    if(phase === 'dialogue' && !announcing){
+        dLineIdx = Math.max(-1, dLineIdx - 1); 
+        clearTimeout(autoTimer);
+        if(dLineIdx < 0){ playTurn(turnIdx); } else { playDialogueLine(); }
+    }
 }
 
-function selectStage3Part(partKey) {
-    if (isStage3AIConversation) return;
-    stopAllPlayback();
-    currentPartInStage3 = partKey;
+function playTurn(i){
+    clearTimeout(autoTimer);
+    hapticPulse('turn'); 
+    phase = 'dialogue'; announcing = false;
+    turnIdx = i; dLineIdx = -1; 
+    eyebrowEl.textContent = '전시실 1 · 대화';
+    updateBadgeUI();
+    const t = DIALOGUE[i];
+    tagEl.textContent = '3단계 · 대화 — ' + t.label + ' · ' + t.part;
+    speakerTagEl.textContent = (t.speaker==='rodin' ? '로댕이 말합니다' : '반가사유상이 말합니다');
+    speakerTagEl.className = t.speaker;
+    speakerTagEl.classList.add('show');
+    nextStageTag.classList.remove('show');
+    detailSpotEl.classList.remove('show');
+    updateWideSpot(t.speaker); 
+    updateStatueSound(t.speaker);
+    const introText = (easyMode && t.introSimple) ? t.introSimple : t.intro;
+    captionEl.innerHTML = introText;
+    sourceEl.textContent = t.introSource || '';
+    speak(introText, ()=>{
+        if(isPaused) return;
+        clearTimeout(autoTimer);
+        autoTimer = setTimeout(playDialogueLine, LINE_PAUSE_MS);
+    }, t.speaker);
+}
 
-    document.querySelectorAll('#stage3-scenario-group .scenario-btn').forEach(b => b.classList.remove('active'));
-    const btnMap = {head:'s3-btn-1', torso:'s3-btn-2', legs:'s3-btn-3'};
-    document.getElementById(btnMap[partKey]).classList.add('active');
+function playDialogueLine(){
+    const t = DIALOGUE[turnIdx];
+    dLineIdx++;
+    if(dLineIdx >= t.lines.length){
+        clearTimeout(autoTimer);
+        sourceEl.textContent = '';
+        detailSpotEl.classList.remove('show');
+        drawPartPulse(null);
+        if(turnIdx < DIALOGUE.length-1){
+            autoTimer = setTimeout(()=> playTurn(turnIdx+1), LAYER_PAUSE_MS);
+        } else {
+            autoTimer = setTimeout(showNextStageAnnouncement, LAYER_PAUSE_MS);
+        }
+        return;
+    }
+    const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
+    captionEl.innerHTML = text;
+    sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
+    const pt = t.spots[dLineIdx];
+    updateDetailSpot(pt);              
+    drawPartPulse(pt, t.speaker);      
+    speak(text, ()=>{
+        if(isPaused) return;
+        clearTimeout(autoTimer);
+        autoTimer = setTimeout(playDialogueLine, LINE_PAUSE_MS);
+    }, t.speaker);
+}
 
-    const coords = mirrorCoords[partKey];
-    mirrorGuide.innerHTML = `
-        <div class="mirror-box active" style="left:${coords.r_left};top:${coords.r_top};width:${coords.r_w};height:${coords.r_h};">Rodin</div>
-        <div class="mirror-box active" style="left:${coords.m_left};top:${coords.m_top};width:${coords.m_w};height:${coords.m_h};">Maitreya</div>
-    `;
-
- 
-
-    const instruction = instructions[partKey];
-    showSubtitle(`<b>체화 학습: ${coords.label}</b><p>${instruction}</p>`, 'white');
-
-    // 음성 해설 종료 후 3초 뒤에 UI를 표시하는 로직
-    speak(instruction, () => {
-        if (stage3Timeout) clearTimeout(stage3Timeout);
-        stage3Timeout = setTimeout(() => {
-            stopAllPlayback();
-            initAudio();
-            subBox.innerHTML = `
-                <div style="text-align:center;pointer-events:auto;">
-                    <span style="color:var(--gold);font-weight:bold;font-size:1.1rem;display:block;margin-bottom:10px;font-family:'Cinzel Decorative',serif;">[체화 완성 — 사유의 문이 열렸습니다]</span>
-                    <p style="margin:0 0 14px;font-size:0.9rem;color:#ddd;line-height:1.65;">
-                        신체의 연결이 끝났습니다.<br>지금 당신의 마음을 짓누르는 고민이나 번뇌는 무엇입니까?<br>
-                        입력하시면 두 조각상이 릴레이 위로를 건넵니다.
-                    </p>
-                    <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
-                        <input id="stage3-trouble-input" type="text"
-                            placeholder="예: 미래에 대한 불안, 인간관계의 피로..."
-                            style="width:62%;padding:9px 14px;border:1.5px solid var(--gold);border-radius:18px;background:#0a0a0a;color:#fff;font-size:0.88rem;font-family:'Noto Serif KR',serif;"
-                            onclick="event.stopPropagation();" />
-                        <button class="confirm-btn" id="stage3-submit-btn" style="margin-top:0;padding:9px 20px;font-size:0.88rem;">공명하기</button>
-                    </div>
-                </div>`;
-            subBox.style.display = 'block';
-            subBox.style.pointerEvents = 'auto';
-
-            document.getElementById('stage3-trouble-input').addEventListener('click', e => e.stopPropagation());
-            document.getElementById('stage3-submit-btn').onclick = function(e) {
-                if (e) e.stopPropagation();
-                const troubleText = document.getElementById('stage3-trouble-input').value.trim();
-                if (!troubleText) { alert("두 조각상과 연동할 고민을 입력해 주십시오."); return; }
-                stage3UserTrouble = troubleText;
-                stage3DialogueSessionData = [];
-                executeStage3AIRelay('rodin', stage3UserTrouble);
-            };
-        }, 3000); // 3초 지연
+function showNextStageAnnouncement(){
+    announcing = true;
+    detailSpotEl.classList.remove('show');
+    drawPartPulse(null);
+    speakerTagEl.classList.remove('show');
+    updateWideSpot('both');
+    updateStatueSound(null);
+    tagEl.textContent = '3단계 · 대화 — 마침';
+    updateBadgeUI();
+    const recap = '오늘 로댕과 반가사유상은 머리, 몸통, 다리 순서로 세 번 이야기를 주고받았습니다.';
+    captionEl.innerHTML = recap;
+    sourceEl.textContent = '';
+    speak(recap, ()=>{
+        if(isPaused) return;
+        captionEl.innerHTML = '힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다.<br>오늘 준비된 이야기는 여기까지입니다.';
+        nextStageTag.classList.add('show');
+        speak('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다. 오늘 준비된 이야기는 여기까지입니다. 다음 전시 단계로 이동하세요.', ()=>{
+            if(isPaused) return;
+            clearTimeout(autoTimer);
+            autoTimer = setTimeout(restartFromBeginning, LAYER_PAUSE_MS + 1500); 
+        });
     });
 }
 
-async function executeStage3AIRelay(speakerKey, userTroubleText) {
-    if (!userTroubleText) return;
-    isStage3AIConversation = true;
-
-    const isRodin = (speakerKey === 'rodin');
-    const role  = isRodin ? "로댕 (생각하는 사람)" : "반가사유상 (미륵보살)";
-    const color = isRodin ? '#e05533' : 'gold';
-
-    const basePersona = isRodin
-        ? "실존의 고뇌, 인간의 한계, 끊임없는 사유의 고통을 짊어진 고독한 서양의 철학자"
-        : "모든 번뇌를 초월한 채 찰나와 비움, 그리고 자비로운 미소로 중생을 품는 동양의 구도자";
-
-    const promptTemplate = `귀하는 명작 [${role}]의 예술적 영혼이자 사유의 화신입니다.
-[당신의 기본 페르소나]: ${basePersona}
-[감상자가 토로한 삶의 고민]: "${userTroubleText}"
-[정밀 수행 지침]:
-1. 감상자가 토로한 고민의 깊이와 상황적 무게를 정밀하게 읽어내십시오.
-2. ${isRodin
-    ? '감상자의 고뇌에 깊이 공감하며 삶의 무게와 실존적 번뇌를 함께 아파하는 무겁고 격조 높은 철학적 문장으로 조언하십시오.'
-    : '번뇌를 부드럽게 씻어주고 마음을 비워내게 유도하는 반가사유상 특유의 자비롭고 안온한 한 문장 위로를 하십시오.'}
-3. 이전 조각상의 대화 기록이 있다면 그 흐름을 깊이 있게 이어받는 '릴레이 공명 방식'을 취하십시오.
-[현재까지 진행된 릴레이 대화]: ${JSON.stringify(stage3DialogueSessionData)}
-위 지침을 엄격히 준수하여, 격조 높고 정제된 한국어 딱 '한 문장'으로 최종 답변을 작성하십시오.`;
-
-    try {
-        showSubtitle(`<b>${role} 사유 중...</b>`, color);
-        if (isRodin) { triggerDrum(); drawPulseEffect(true); } else { triggerBell(); drawPulseEffect(false); }
-
-        const aiResponse = await fetchAITalk(promptTemplate);
-        stage3DialogueSessionData.push({ name: role, speaker: speakerKey, text: aiResponse });
-        showSubtitle(`<b>${role}의 공명</b><p>${aiResponse}</p>`, color);
-
-        speakSpatial(aiResponse, speakerKey, () => {
-            if (speakerKey === 'rodin') {
-                setTimeout(() => executeStage3AIRelay('maitreya', userTroubleText), 1500);
-            } else {
-                showSubtitle("<b>사유의 체화 완료</b><p>두 조각상의 입체적 위로가 당신의 영혼에 체화되었습니다.</p>", 'gold');
-                speak("두 조각상의 위로가 당신의 마음에 체화되었습니다.");
-                downloadLogFile(stage3DialogueSessionData);
-                isStage3AIConversation = false;
-
-                const finishBtn = document.createElement('button');
-                finishBtn.className = 'confirm-btn';
-                finishBtn.innerText = "다음 체화 동작으로 →";
-                finishBtn.onclick = function(ev) {
-                    ev.stopPropagation();
-                    if (currentPartInStage3 === 'head') selectStage3Part('torso');
-                    else if (currentPartInStage3 === 'torso') selectStage3Part('legs');
-                    else { currentMode = 4; startStageFinal(); }
-                };
-                subBox.appendChild(finishBtn);
-            }
-        });
-    } catch(e) {
-        console.error("3단계 AI 릴레이 오류:", e);
-        showSubtitle("사유의 통로가 잠시 혼잡합니다. 잠시 후 다시 공명 버튼을 눌러주십시오.", 'red');
-        isStage3AIConversation = false;
-    }
+function restartFromBeginning(){
+    announcing = false;
+    playLayer(0);
 }
 
-function downloadLogFile(data) {
-    if (!data.length) return;
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'ao.out'; a.click();
-}
-
-// ══════════════════════════════════════════════════════
-// ── [9] 4단계: 여일 — 피날레 시퀀스 ──
-// ══════════════════════════════════════════════════════
-function startStageFinal() {
-    stopAllPlayback();
-    document.getElementById('stage3-scenario-group').style.display = 'none';
-    mirrorGuide.style.display = 'none';
-    document.querySelectorAll('.hotspot').forEach(el => el.style.display = 'none');
-
-    const firstMsg = "나와 유물의 경계가 사라지고, 체화된 경험이 깊은 성찰로 이어집니다. 모든 번뇌가 빛으로 씻겨 나갑니다. 침묵 속의 평온을 느끼세요.";
-    showSubtitle(`<b>단계 4: 여일(餘一)</b><p>${firstMsg}</p>`, 'gold');
-    speak(firstMsg);
-    _playMp4('snd-finale', 0.2, 0);
-    modeBtn.innerText = "다시 시작";
-// 추가 확인: 아래 함수가 호출되고 있는지 확인하십시오.
-    triggerFinaleSequence();
-}
-
-function triggerFinaleSequence() {
-    const overlay = document.getElementById('finale-overlay');
-    const canvas  = document.getElementById('finale-canvas');
-    const text    = document.getElementById('finale-text');
-    const restart = document.getElementById('finale-restart');
-
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    overlay.style.display = 'flex';
-
-    const gc = document.getElementById('game-container');
-    gc.style.transition = 'opacity 2.5s ease-in-out';
-    gc.style.opacity = '0';
-
-    setTimeout(() => {
-        overlay.classList.add('visible');
-        text.classList.add('visible');
-        restart.classList.add('visible');
-        startFinaleCanvas(canvas);
-    }, 500);
-}
-
-function startFinaleCanvas(canvas) {
-    const ctx = canvas.getContext('2d');
-    const cx = canvas.width / 2, cy = canvas.height / 2;
-    let angle = 0, frame = 0;
-    const circles = [
-        { r:85,  speed:0.008, lineW:1.2, alpha:0.55 },
-        { r:140, speed:0.005, lineW:1.0, alpha:0.38 },
-        { r:205, speed:0.003, lineW:0.7, alpha:0.22 },
-        { r:280, speed:0.002, lineW:0.5, alpha:0.14 }
-    ];
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        circles.forEach((c, i) => {
-            const a = angle * c.speed * 300 + i * Math.PI / 4;
-            ctx.beginPath(); ctx.arc(cx, cy, c.r, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(212,175,55,${c.alpha})`; ctx.lineWidth = c.lineW; ctx.stroke();
-
-            const dotX = cx + c.r * Math.cos(a), dotY = cy + c.r * Math.sin(a);
-            const grad = ctx.createRadialGradient(dotX, dotY, 0, dotX, dotY, 8);
-            grad.addColorStop(0, `rgba(255,220,100,${c.alpha * 1.8})`);
-            grad.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.beginPath(); ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
-            ctx.fillStyle = grad; ctx.fill();
-
-            const dx2 = cx + c.r * Math.cos(a + Math.PI), dy2 = cy + c.r * Math.sin(a + Math.PI);
-            const g2 = ctx.createRadialGradient(dx2, dy2, 0, dx2, dy2, 5);
-            g2.addColorStop(0, `rgba(200,160,60,${c.alpha})`);
-            g2.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.beginPath(); ctx.arc(dx2, dy2, 5, 0, Math.PI * 2);
-            ctx.fillStyle = g2; ctx.fill();
-        });
-
-        const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
-        glow.addColorStop(0, 'rgba(212,175,55,0.18)'); glow.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.beginPath(); ctx.arc(cx, cy, 60, 0, Math.PI * 2);
-        ctx.fillStyle = glow; ctx.fill();
-
-        ctx.font = `${Math.max(32, canvas.width * 0.055)}px serif`;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillStyle = `rgba(212,175,55,${0.5 + 0.2 * Math.sin(frame * 0.018)})`;
-        ctx.fillText('無', cx, cy);
-
-        angle++; frame++;
-        requestAnimationFrame(draw);
-    }
-    draw();
-}
-
-// ══════════════════════════════════════════════════════
-// ── [10] 리셋 ──
-// ══════════════════════════════════════════════════════
-function resetGame() {
-    stopAllPlayback();
-    subBox.onclick = null;
-    if (_stage3SkipTimeout) { clearTimeout(_stage3SkipTimeout); _stage3SkipTimeout = null; }
-    if (stage3Timeout) { clearTimeout(stage3Timeout); stage3Timeout = null; }
-    isAIConversation = false; isStage3AIConversation = false;
-    avatarModeActive = false;
-    dialogueSessionData = []; stage3DialogueSessionData = [];
-
-    subBox.style.display = 'none'; subBox.innerHTML = '';
-    mirrorGuide.style.display = 'none'; mirrorGuide.innerHTML = '';
-    svg.innerHTML = '';
-    document.getElementById('stage3-scenario-group').style.display = 'none';
-    document.getElementById('chatbot-container').style.display = 'none';
-    document.querySelectorAll('.hotspot').forEach(el => el.style.display = '');
-
-    const fo = document.getElementById('finale-overlay');
-    fo.style.display = 'none'; fo.classList.remove('visible');
-    document.getElementById('finale-text').classList.remove('visible');
-    document.getElementById('finale-restart').classList.remove('visible');
-    const gc = document.getElementById('game-container');
-    gc.style.opacity = ''; gc.style.transition = '';
-
-    modeBtn.disabled = false;
-    setMode(1);
-}
-
-// ══════════════════════════════════════════════════════
-// ── [11] 이벤트 바인딩 ──
-// ══════════════════════════════════════════════════════
-['rodin-head','rodin-torso','rodin-legs','maitreya-head','maitreya-torso','maitreya-legs'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-        el.addEventListener('click', () => {
-            initAudio();
-            if (currentMode === 1) handleInteraction(id);
-        });
-    }
-});
-
-// 자막 스와이프로 닫기
-let touchStartX = 0;
-subBox.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-subBox.addEventListener('touchend', e => {
-    if (e.changedTouches[0].screenX - touchStartX > 100 && !isStage3AIConversation) subBox.style.display = 'none';
-}, { passive: true });
-
-// ══════════════════════════════════════════════════════
-// ── [12] 작품 소개 / 사용법 데이터 ──
-// ══════════════════════════════════════════════════════
-const infoData = {
-    intro: {
-        title: "침묵의 공명 — 작품 소개 및 작가",
-        html: `
-            <h3>작품명</h3>
-            <p><b>침묵의 공명: 고뇌와 자비의 조우</b><br>
-            <em>Resonance of Silence: An Encounter of Anguish and Compassion</em><br>
-            (Humartology Edition · 2026)</p>
-            <h3>전시 개요</h3>
-            <p>본 작품은 서양 실존주의의 정점인 로댕의 <b>생각하는 사람</b>과, 동양 자비 사상의 정수인 <b>금동미륵보살반가사유상</b>을 디지털 공간에서 마주 세웁니다. 두 거작은 단순히 병치되는 것이 아니라, 소리·빛·AI의 언어로 서로를 향해 말을 건네고, 감상자는 그 사이에서 자신의 번뇌를 직면합니다.</p>
-            <h3>전시와 골전도 이어폰</h3>
-            <p>실제 전시에서는 감상자가 <b>청동상과 로댕 조각상 앞</b>에 서서, 손으로 조각상의 특정 부위를 터치하듯 화면의 핫스팟을 누르면, <b>골전도 이어폰</b>을 통해 해당 부위의 철학적 사유와 음악이 머리뼈를 직접 울리며 전해집니다. 이는 소리가 귀가 아닌 신체로 직접 공명하는 '체화된 감상'의 경험입니다.</p>
-            <h3>작가 소개</h3>
-            <p><b>조준동 교수(趙浚東, Prof. Jun-Dong Cho)</b>는 기술에 인간의 감성과 철학적 깊이를 녹여내는 <b>휴마톨로지(Humartology)</b>를 연구·실천하고 있습니다. 성균관대학교 전자전기공학부 명예교수이자 국가인권위원회 위원으로서, 시각장애인 접근성을 위한 다감각 인터페이스와 인터랙티브 아트를 개척해 왔습니다.</p>
-            <h3>전시 철학 (Humartology)</h3>
-            <p>인간(Human)·예술(Art)·기술(Technology)의 유기적 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 <b>접근성의 미학</b>을 구현합니다.</p>
-            <hr style="border-color:rgba(212,175,55,0.2);margin:16px 0;">
-            <p style="font-size:0.8rem;color:#888;line-height:1.9;">
-                © 2026 조준동 (趙浚東). All rights reserved.<br>
-                금동미륵보살반가사유상 원본 소장: 국립중앙박물관<br>
-                생각하는 사람 © Auguste Rodin (공개 저작물)
-            </p>
-        `
-    },
-    guide: {
-        title: "관람 가이드 — 사용법",
-        html: `
-            <p>본 작품은 감상자의 터치와 신체 공명을 기반으로 연결된 <b>4단계의 여정</b>으로 구성됩니다.</p>
-            <h3>단계별 관람 여정</h3>
-            <ul>
-                <li><b>1단계: 조우 (Encounter)</b><br>
-                상단에서 시나리오(① 생성과 소멸 / ② 실존과 초월 / ③ 문명과 침묵)를 선택하세요. 이후 조각상의 각 부위(머리·상체·하체)를 터치하면 해당 주제의 철학적 해설과 사운드가 흐릅니다. <b>골전도 이어폰</b>을 착용하면 소리가 신체를 직접 울립니다.</li>
-                <li><b>2단계: 공명 (Resonance)</b><br>
-                우측 버튼으로 단계를 전환하세요. AI가 두 조각상의 영혼을 담아 번갈아 철학 대화를 나눕니다. 시나리오 버튼으로 주제를 선택하면 시작됩니다.<br>
-                <span style="color:#aaa;font-size:0.88em;">✦ <b>대화 방식 안내:</b> 두 조각상은 단순히 상대의 말에 즉각 반응하는 것이 아니라, 지금까지 오간 대화 전체를 기억하며 흐름을 이어받습니다. 로댕과 반가사유상이 총 4번 교번하는 동안 각자의 페르소나(실존적 고뇌 vs. 자비와 비움)를 유지하면서 앞선 발언을 의식한 연속적인 철학 대담을 펼칩니다.</span></li>
-                <li><b>3단계: 체화 (Embodiment)</b><br>
-                조각상의 자세를 신체로 따라 하는 단계입니다. 머리·상체·하체 버튼을 선택해 안내대로 자세를 취하세요. 명상 후 번뇌를 입력하면 두 조각상이 AI로 릴레이 위로 대화를 건넵니다.</li>
-                <li><b>4단계: 여일 (Oneness)</b><br>
-                모든 번뇌가 빛으로 정화됩니다. 화면이 서서히 fade out되고, 고요한 빈 공간에서 원이 천천히 회전하는 명상 화면으로 전환됩니다.</li>
-            </ul>
-            <h3>골전도 이어폰 활용</h3>
-            <p>블루투스 골전도 이어폰을 착용한 상태로 조각상 부위를 터치하면, 청각과 촉각이 동시에 자극되어 더 깊은 '체화된 감상'이 가능합니다. 실제 전시에서는 청동상 앞에 서서 같은 방식으로 경험합니다.</p>
-            <h3>기타 조작법</h3>
-            <ul>
-                <li>자막 창을 오른쪽으로 스와이프하면 닫힙니다.</li>
-                <li>'다시 조우' 버튼을 누르면 1단계부터 재시작합니다.</li>
-                <li>우측 하단 '사유의 상담소'에서 작품·철학 관련 질문을 할 수 있습니다 (2단계부터).</li>
-            </ul>
-        `
-    }
-};
-
-function openInfoOverlay(type) {
-    const data = infoData[type];
-    if (!data) return;
-    document.getElementById('info-overlay-title').innerHTML = data.title;
-    document.getElementById('info-overlay-body').innerHTML = data.html;
-    document.getElementById('info-overlay').style.display = 'flex';
-}
-function closeInfoOverlay(event) {
-    if (event && event.target !== document.getElementById('info-overlay')) return;
-    document.getElementById('info-overlay').style.display = 'none';
-}
-
-// ══════════════════════════════════════════════════════
-// ── [13] 사유의 상담소 (챗봇) ──
-// ══════════════════════════════════════════════════════
-let currentChatCategory = '전체';
-function setChatCategory(cat) {
-    currentChatCategory = cat;
-    const msgs = document.getElementById('chat-messages');
-    msgs.innerHTML += `<div style="margin:5px 0;color:#666;font-size:0.75rem;text-align:center;">— ${cat} 분야로 사유를 시작합니다 —</div>`;
-    msgs.scrollTop = msgs.scrollHeight;
-}
-
-function handleChat() {
-    const input = document.getElementById('chat-input');
-    const msgs  = document.getElementById('chat-messages');
-    const userMsg = input.value.trim();
-    if (!userMsg) return;
-
-    msgs.innerHTML += `<div style="text-align:right;margin-bottom:8px;color:#ddd;font-size:0.84rem;">나: ${userMsg}</div>`;
-    input.value = '';
-    msgs.scrollTop = msgs.scrollHeight;
-
-    let reply = "그 사유의 길은 조금 더 깊이 들어가 봐야겠네요. 다른 주제로 물어보시겠어요?";
-    for (let key in chatKnowledgeBase) {
-        if (userMsg.includes(key) || key.includes(userMsg)) { reply = chatKnowledgeBase[key]; break; }
-    }
-
-    setTimeout(() => {
-        msgs.innerHTML += `<div style="margin-bottom:10px;color:var(--gold);font-size:0.84rem;line-height:1.6;">조각상: ${reply}</div>`;
-        msgs.scrollTop = msgs.scrollHeight;
-        speak(reply);
-    }, 300);
-}
-
-const chatKnowledgeBase = {
-        // 1. 작품론
-        "반가사유상 제작 이유": "인간의 고통을 함께 나누고, 내면의 깨달음을 통해 구원의 길을 제시하고자 하는 자비의 상징으로 제작되었습니다.",
-        "생각하는 사람 제작 이유": "단테의 '신곡' 속 지옥의 참상을 바라보며 인간의 죄와 본질적 고뇌를 응시하는 인간의 모습을 형상화하기 위해 제작되었습니다.",
-        "로댕 반가사유상": "로댕은 생애 말기에 파리 기메 박물관 등에서 동양 예술을 접했으며, 반가사유상의 정적인 사유미에 깊은 영감을 받은 것으로 알려져 있습니다.",
-        "반가사유상 누구 닮았나": "특정 인물을 모델로 하기보다는, 당시 삼국시대 사람들이 염원하던 '자비로운 깨달음'의 이상적인 인간상을 반영하고 있습니다.",
-        "생각하는 사람 누구 닮았나": "로댕은 단테 알리기에리를 모델로 삼았으나, 궁극적으로는 죄를 고뇌하는 모든 인류의 초상을 담고자 했습니다.",
-        "지옥의 문": "로댕의 '생각하는 사람'은 지옥의 문을 바라보며 인간의 죄와 고통을 응시합니다. 이것이 인간성 회복의 첫걸음이기 때문입니다.",
-        "정면 얼굴": "고통의 실체를 바로 보기보다 내면의 깊은 곳으로 침잠하여 답을 구하려는 사유의 의지를 나타냅니다.",
-        "지성 표현": "지성뿐만 아니라, 육체적 고통을 감내하고 정신적 차원으로 승화하려는 인간의 총체적 의지를 표현했습니다.",
-        "미완성": "형태를 완벽하게 다듬기보다, 인간의 내면에서 분출되는 에너지를 있는 그대로 포착하려는 의도입니다.",
-        "옷": "사회적 지위나 시대적 상황을 초월한, 인간 본연의 벌거벗은 상태에서의 고뇌를 상징합니다.",
-        "고뇌 시각화": "불균형적인 근육의 팽창과 뒤틀린 등 근육을 통해 내면의 격정적인 심리 상태를 입체적으로 드러냈습니다.",
-        "빛과 어둠": "거친 청동 표면 위로 떨어지는 빛과 그림자는 인간 존재의 복잡함과 내면의 깊이를 극대화합니다.",
-        "사유 대상": "나 자신을 넘어, 우주의 이치와 중생의 고통이 어디서 오는지에 대한 근원적인 질문을 대상으로 합니다.",
-        "미소 유래": "내면의 평온을 완성한 뒤, 고통받는 이들을 이해하고 품어주는 깨달음의 상태에서 피어나는 표정입니다.",
-        "왼발": "중생의 세계를 딛고 서서, 필요할 때 언제든 고통받는 이들에게 다가가겠다는 실천적 의지를 의미합니다.",
-        "장신구": "외부의 화려함보다는 내면의 순수한 가치가 인간의 가장 큰 장엄함임을 강조하기 위해서입니다.",
-        "모나리자 비교": "모나리자의 미소가 인간적 호기심과 비밀을 품고 있다면, 반가사유상의 미소는 초월적인 자비와 구원을 상징합니다.",
-        "보관": "지혜의 빛을 상징하며, 사유를 통해 깨달음에 도달하는 과정을 시각적으로 완성합니다.",
-        "조화": "인간의 사유가 감성(예술)과 이성(기술)의 균형을 찾아가는 이상적인 상태를 뜻합니다.",
-        "한국의 미": "꾸밈없는 자연스러움과 고요함 속에 깊은 철학적 깊이를 담아내는 한국 예술의 핵심을 보여주기 때문입니다.",
-        "한 공간": "고뇌하는 인간이 사유를 통해 깨달음에 이르는 하나의 '인간적 완성 과정'을 감상하는 특별한 경험이 될 것입니다.",
-        "비례미": "인체의 사실적 묘사를 넘어, 사유하는 정신의 우아함이 가장 잘 드러나는 비례를 창조했습니다.",
-        "절제미": "많은 것을 덜어낼수록 내면의 사유는 더욱 선명해진다는 진리를 형태를 통해 증명하기 때문입니다.",
-        "자세": "로댕은 인간의 죄와 구원에 대한 성찰을 위해, 반가사유상은 우주적 평온을 위해 각기 다른 자세를 취했습니다.",
-        "시대 배경": "반가사유상은 주로 삼국시대에 제작되었으며, 인간의 고뇌를 넘어선 깨달음과 자비의 이상향을 보여줍니다.",
-
-        // 2. 비교 철학
-        "서양 고뇌 동양 자비": "로댕의 고뇌는 '지옥'이라는 외적 사건에 반응하는 인간의 실존적 긴장이며, 반가사유상의 자비는 내면의 성찰을 통해 타인의 고통을 감싸는 동양적 평온입니다.",
-        "둘 중 더 인간적인가": "고뇌하는 로댕은 우리와 닮은 '과정'의 인간성을, 사유하는 반가사유상은 도달해야 할 '지향점'의 인간성을 보여줍니다.",
-        "로댕과 반가사유상의 지향점": "로댕은 지옥의 형상을 통해 인간의 죄를 응시하고, 반가사유상은 열반의 세계를 향해 인간의 구원을 묵상합니다.",
-        "조형적 감정의 차이": "로댕은 뒤틀린 근육을 통해 격정적인 감정을, 반가사유상은 유연한 곡선을 통해 초월적인 상태를 표현합니다.",
-        "연결된 자아": "서양적 고뇌는 분리된 자아의 고민에서 출발하지만, 동양적 사유는 전체와 연결된 자아의 깨달음을 지향합니다.",
-        "갈구하는 대상": "두 조각상은 방식은 다르지만, 인간의 한계를 넘어선 궁극적 진리를 갈구한다는 점에서 본질적으로 같습니다.",
-        "지성과 지혜": "로댕은 현실을 타개하려는 '행동하는 지성'을, 반가사유상은 현상을 관조하는 '통찰하는 지혜'를 상징합니다.",
-        "고뇌와 깨달음": "고뇌가 있어야 깨달음이 옵니다. 로댕의 고뇌가 깊어질수록 반가사유상의 깨달음은 더욱 빛을 발합니다.",
-        "고독의 성격": "로댕은 세상과 단절된 고립적 고독을 보여주지만, 반가사유상은 만물과 공명하는 연결적 고독을 보여줍니다.",
-        "의지와 비움": "로댕은 자신의 실존을 증명하려는 의지를, 반가사유상은 집착을 내려놓는 비움을 통해 진리에 다가갑니다.",
-        "시선의 방향": "로댕의 시선은 아래(지옥)를 향하고, 반가사유상의 시선은 초월적인 먼 곳을 향해 있습니다.",
-        "철학적 상호보완": "로댕이 인간의 '현실'을 일깨운다면, 반가사유상은 인간의 '가능성'을 일깨워 서로 완벽하게 보완합니다.",
-
-        // 3. 예술 기법
-        "청동 금동 차이": "로댕의 청동은 근육의 격정을, 반가사유상의 금동은 내면의 신성함과 영원성을 극대화합니다.",
-        "조각상 곡선": "반가사유상의 부드러운 곡선은 인위적인 힘을 뺀 자연스러운 조화와 우주적 평화를 상징합니다.",
-        "질감의 의미": "로댕의 청동 질감은 삶의 거친 고통을, 반가사유상의 매끄러운 금동 질감은 깨달음의 정제된 평온을 의미합니다.",
-        "손가락 묘사": "반가사유상의 손가락은 아주 섬세한 각도로 뺨에 닿아 있어, 생각과 행동이 맞닿는 찰나를 보여줍니다.",
-        "공간의 활용": "반가사유상은 팔과 다리 사이의 빈 공간(여백)을 통해 보는 이의 사유가 머물 자리를 마련합니다.",
-        "금박의 기능": "금동불의 금박은 단순한 색이 아니라, 불변의 진리를 상징하며 사유의 깊이를 더해주는 도구입니다.",
-        "조형적 절제": "반가사유상의 절제미는 덜어낼수록 내면이 선명해진다는 진리를 형태를 통해 증명합니다.",
-        "선의 미와 면의 중시": "반가사유상은 유려한 곡선이 강조하는 '선의 미'를 통해 사유의 흐름을 보여주며, 생각하는 사람은 빛과 그림자가 교차하는 '면의 대비'를 통해 실존적 고뇌의 무게를 입체적으로 구현합니다.",
-        // 4. 전시 및 철학
-        "게임 만든 이유": "이 게임은 휴마톨로지 철학을 바탕으로, 바쁜 현대인들이 디지털 기술을 통해 예술과 조우하고 자신의 내면을 성찰하는 '사유의 시간'을 제공하기 위해 만들어졌습니다.",
-        "휴마톨로지": "휴마톨로지는 인간의 사유를 기술과 예술로 융합하여 인류가 더 풍요로운 정신적 가치를 향유하도록 돕는 학문입니다.",
-        "조준동 교수": "조준동 교수(趙浚東)는 이 작품들을 통해 기술 만능 시대에 잃어버린 '사유의 힘'을 되찾고, 예술을 통한 인간 본연의 존엄성을 회복하고자 합니다.",
-        "전시 목적": "단순히 조각상을 구경하는 것이 아니라, 작품과 조우하여 자신의 내면과 대화하는 성찰의 시간을 갖는 것이 목적입니다.",
-        "사유 필요성": "기술은 정보와 속도를 제공하지만 의미와 깊이는 제공하지 못합니다. 인간만이 사유를 통해 삶의 의미를 정의할 수 있기 때문에 지금 사유가 필요합니다.",
-        "존엄성": "인간의 존엄성은 소유나 능력에 있지 않고, 자신을 성찰하고 타인의 고통에 공감하는 능력에서 나옵니다.",
-        "관조": "바쁜 현대인에게 '멈춤'과 '관조'는 사치처럼 보이지만, 사실은 삶을 지탱하는 가장 중요한 에너지입니다.",
-
-        // 5. 사유 및 명상
-        "고민": "고민은 사라지는 것이 아니라, 사유를 통해 녹아드는 것입니다. 고민을 조각상에게 털어놓으며 객관화해 보세요.",
-        "비우기": "마음을 비운다는 것은 무념무상이 아닙니다. 현재의 고민을 붙잡고, 그것이 내 마음에서 어떤 형태인지 깊이 들여다보는 '관조의 과정'입니다.",
-        "고통": "오늘의 고통을 미래의 깨달음으로 전환하는 힘이 사유입니다. 이 고통이 당신을 어떤 사람으로 성장시킬지 생각해보세요.",
-        "침묵": "조각상은 답을 말해주지 않지만, 그 고요한 침묵이 당신의 내면에 숨겨진 진짜 대답을 끌어올려 줄 것입니다.",
-        "명상": "지금 이 순간, 당신의 호흡에 집중하세요. 조각상처럼 몸의 긴장을 풀고 어깨를 내리는 것, 그것이 명상의 시작입니다.",
-        "복잡": "마음이 복잡할수록 반가사유상의 부드러운 곡선을 따라 눈을 움직여 보세요.",
-        "중심": "생각의 중심을 잡으면 어떤 흔들림도 괜찮습니다. 중심은 자신의 가치관에 대한 믿음에서 옵니다.",
-        "평온": "사유의 끝에는 늘 평온이 기다립니다. 깊게 생각하고 나면 비로소 보이지 않던 해결책이 보일 것입니다.",
-        "솔직": "자기 자신에게 솔직해지는 시간이 사유입니다. 가장 두려워하는 질문을 스스로에게 던져보세요.",
-        "실천": "예술을 통해 자신을 성찰하는 것, 그것이 바로 휴마톨로지를 실천하는 당신의 오늘입니다.",
-        "침묵의 공명": "이 작품의 제목입니다. 두 거작이 아무 말 없이도 서로를 향해 건네는 무언의 공명, 그 침묵 속에서 감상자는 자신의 내면 소리를 듣게 됩니다."
-    };
-
-function startExperience() {
-    const splash = document.getElementById('intro-splash');
-    // 페이드 아웃
-    splash.style.transition = 'opacity 1.2s ease-out';
-    splash.style.opacity = '0';
-    setTimeout(() => { splash.style.display = 'none'; }, 1200);
-    // 음성 안내 재생 (사용자 제스처 이후이므로 안전)
-    playIntroNarration();
-    // 첫 제스처 리스너 제거 (이미 실행됨)
-    document.removeEventListener('click', _onFirstGesture, true);
-    document.removeEventListener('touchstart', _onFirstGesture, true);
-    introNarrationDone = true; // 중복 방지
-}
-
-// ══════════════════════════════════════════════════════
-// ── [14] 진입 음성 안내 ──
-// ══════════════════════════════════════════════════════
-const INTRO_NARRATION = "침묵의 공명에 오신 것을 환영합니다. 이 작품은 서양 실존주의의 정점인 로댕의 생각하는 사람과, 동양 자비 사상의 정수인 금동미륵보살반가사유상을 디지털 공간에서 마주 세웁니다. 두 거작은 소리, 빛, 그리고 AI의 언어로 서로를 향해 말을 건네고, 당신은 그 사이에서 자신의 번뇌를 직면합니다. 조각상의 각 부위를 터치하여 사유의 여정을 시작하세요.";
-
-let introNarrationDone = false;
-
-function playIntroNarration() {
-    if (introNarrationDone) return;
-    introNarrationDone = true;
+function jumpToStage(targetIdx){
+    // 점을 눌러 다른 단계로 건너뛰는 것은 "그 단계를 처음부터 정상적으로
+    // 재생 시작"하는 동작이므로, 뒤로/다음과 달리 이동 후 멈추지 않고
+    // 그대로 자동 재생이 이어지게 둔다 — 대신 일시정지 중이었다면 확실히
+    // 풀어준다.
+    isPaused = false;
+    btnPause.textContent = '잠깐 멈춤';
+    btnPause.classList.remove('primary');
+    clearTimeout(autoTimer);
     window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(INTRO_NARRATION);
-    msg.lang = 'ko-KR';
-    msg.rate = 0.92;
-    msg.pitch = 1.0;
-    window.speechSynthesis.speak(msg);
+    speechGen++;
+    if(targetIdx >= 0 && targetIdx < 3){
+        playLayer(targetIdx);
+    } else if(targetIdx === 3){
+        // v27 — 참가자 요청: 4번째 점을 누르면 "지금부터 들려드리는
+        // 이야기는… 읽어낸 해설입니다" 전환 화면(3단계로 올바르게 표시됨)
+        // 이 먼저 나와야 한다. startDetailPhase()의 태그 버그(위 참고)를
+        // 고쳐서 화면은 정상적으로 보여주면서도, speak() 내부에 이미 있는
+        // 워치독 타이머 덕분에 음성 이벤트가 씹혀도 결국은 진행된다.
+        startDetailPhase();
+    }
 }
 
-// 첫 번째 사용자 제스처(터치/클릭)에서 음성 안내 실행
-function _onFirstGesture() {
-    document.removeEventListener('click', _onFirstGesture, true);
-    document.removeEventListener('touchstart', _onFirstGesture, true);
-    playIntroNarration();
+function updateBadgeUI(){
+    badgeDots.forEach(d => {
+        const i = +d.dataset.i;
+        const isOn = (phase === 'screen') ? (i === layerIdx) : (i === 3);
+        d.classList.toggle('on', isOn);
+        // 웹 접근성: 4개 점은 각각 "n단계로 이동" aria-label을 갖고 있지만,
+        // 그중 "지금 어느 단계에 있는지"는 시각(금빛 점)으로만 표시되어
+        // 왔다. aria-current="step"으로 스크린리더 사용자도 Tab으로
+        // 훑을 때 현재 단계를 알 수 있게 한다.
+        if(isOn) d.setAttribute('aria-current', 'step');
+        else d.removeAttribute('aria-current');
+    });
 }
-document.addEventListener('click', _onFirstGesture, true);
-document.addEventListener('touchstart', _onFirstGesture, true);
 
-// ── 초기화 ──
-window.onload = () => setMode(1);
+function onPauseClick(){
+    if(!isPaused){
+        isPaused = true;
+        clearTimeout(autoTimer);
+        window.speechSynthesis.cancel();
+        pausedContext = { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
+        btnPause.textContent = '다시 시작';
+        btnPause.classList.add('primary');
+    } else {
+        isPaused = false;
+        btnPause.textContent = '잠깐 멈춤';
+        btnPause.classList.remove('primary');
+        if(!pausedContext){ playLayer(0); return; }
+        phase = pausedContext.phase;
+        layerIdx = pausedContext.layerIdx;
+        lineIdx = pausedContext.lineIdx;
+        turnIdx = pausedContext.turnIdx;
+        dLineIdx = pausedContext.dLineIdx;
+        announcing = pausedContext.announcing;
+        if(phase === 'screen'){
+            updateBadgeUI();
+            eyebrowEl.textContent = '전시실 1 · 소개';
+            tagEl.textContent = LAYERS[layerIdx].tag;
+            playLine();
+        } else if(announcing){
+            showNextStageAnnouncement();
+        } else {
+            playTurn(turnIdx);
+        }
+    }
+}
 
+// v18 — 참가자 요청: "뒤로가기 버튼은 바로 이전 해설창으로 돌아가도록."
+// 기존에는 layer/turn(여러 문장 묶음) 단위로만 되돌아가서, 방금 한두 문장
+// 전으로 돌아가고 싶어도 훨씬 앞(그 묶음의 첫 문장, 또는 이전 화자의
+// 인사말)까지 건너뛰어 버렸다. 아래는 화면(1~2단계)·대화(3단계) 모두에서
+// "바로 직전에 들었던 한 문장"으로 정확히 한 칸만 되돌아가도록 다시 짰다.
+// v29 — 참가자 요청으로 v25를 되돌린다: "뒤로/다음을 눌러도 자동으로
+// 일시정지되지 않고, 오직 '잠깐 멈춤' 버튼을 직접 눌렀을 때만 멈추도록."
+// v25에서는 수동으로 뒤로/다음을 누르면 한 걸음만 이동한 뒤 자동으로
+// 일시정지 상태가 되도록 했었는데, 이번 요청으로 그 부분만 제거한다 —
+// 뒤로/다음은 다시 원래대로 한 걸음 이동한 뒤 자동 재생 리듬을 그대로
+// 이어받는다. 일시정지는 이제 오직 "잠깐 멈춤" 버튼을 직접 눌렀을 때만
+// 발생한다.
 
+function onBackClick(){
+    clearTimeout(autoTimer);
+    // v23 — 참가자 요청: "해설이 진행되는 동안 다음/뒤로가기를 누르면
+    // 지금 읽고 있던 해설은 즉시 중단해야 한다." speak()도 내부에서
+    // cancel()을 부르긴 하지만, 여기서 클릭 시점에 곧바로 한 번 더 멈추고
+    // speechGen도 미리 올려서, 방금 전 클릭으로 예약돼 있던(60ms 지연
+    // 중인) 발화까지 포함해 지금 읽던 모든 소리를 확실히 끊는다.
+    window.speechSynthesis.cancel();
+    speechGen++;
+
+    if(phase === 'screen'){
+        if(lineIdx > 0){
+            lineIdx--;
+            playLine();
+        } else if(layerIdx > 0){
+            // 지금 단계의 첫 문장이면, 이전 단계의 "마지막" 문장으로 —
+            // 이전 단계의 첫 문장으로 되돌리던 기존 동작보다 자연스럽다.
+            layerIdx--;
+            lineIdx = Math.max(0, LAYERS[layerIdx].lines.length - 1);
+            playLine();
+        }
+        // 전체 첫 문장이면 더 돌아갈 곳이 없으므로 이동 없이 그대로 멈춘다.
+    } else if(announcing){
+        // "다음 전시실로" 안내 화면 → 3단계 마지막 대화 문장으로 복귀.
+        const last = DIALOGUE.length - 1;
+        playDialogueLineAt(last, Math.max(0, DIALOGUE[last].lines.length - 1));
+    } else if(dLineIdx > 0){
+        playDialogueLineAt(turnIdx, dLineIdx - 1);
+    } else if(dLineIdx === 0){
+        // 이번 화자의 도입 인사말로.
+        playTurn(turnIdx);
+    } else if(turnIdx > 0){
+        // 도입 인사말에서 더 뒤로 — 이전 화자의 마지막 문장으로.
+        const prevTurn = turnIdx - 1;
+        playDialogueLineAt(prevTurn, Math.max(0, DIALOGUE[prevTurn].lines.length - 1));
+    } else {
+        // 3단계의 첫 도입 인사말에서 더 뒤로 — 2단계 마지막 문장으로.
+        phase = 'screen';
+        layerIdx = LAYERS.length - 1;
+        lineIdx = Math.max(0, LAYERS[layerIdx].lines.length - 1);
+        playLine();
+    }
+}
+
+// onBackClick 전용 — playDialogueLine()은 항상 dLineIdx를 한 칸 앞으로
+// 진행시키는 전제로 짜여 있어(다음 문장으로 이동), "바로 이 인덱스"를
+// 보여주는 뒤로가기용으로는 그대로 못 쓴다. 표시 로직은 그대로 재사용하되
+// 인덱스를 직접 지정하는 버전을 별도로 둔다. 재생이 끝나면 원래대로
+// playDialogueLine()이 이어받아 다음 문장으로 정상 진행된다.
+function playDialogueLineAt(tIdx, dIdx){
+    clearTimeout(autoTimer);
+    phase = 'dialogue'; announcing = false;
+    turnIdx = tIdx; dLineIdx = dIdx;
+    updateBadgeUI();
+    const t = DIALOGUE[turnIdx];
+    tagEl.textContent = '3단계 · 대화 — ' + t.label + ' · ' + t.part;
+    speakerTagEl.textContent = (t.speaker==='rodin' ? '로댕이 말합니다' : '반가사유상이 말합니다');
+    speakerTagEl.className = t.speaker;
+    speakerTagEl.classList.add('show');
+    nextStageTag.classList.remove('show');
+    updateWideSpot(t.speaker);
+    updateStatueSound(t.speaker);
+    const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
+    captionEl.innerHTML = text;
+    sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
+    const pt = t.spots[dLineIdx];
+    updateDetailSpot(pt);
+    drawPartPulse(pt, t.speaker);
+    speak(text, ()=>{
+        if(isPaused) return;
+        clearTimeout(autoTimer);
+        autoTimer = setTimeout(playDialogueLine, LINE_PAUSE_MS);
+    }, t.speaker);
+}
+
+// v19 — 참가자 요청: "다음 버튼은 다음 해설창으로 넘어가는 것으로."
+// 뒤로가기를 문장 단위로 고친 것과 짝을 맞춘다. 기존에는 이 버튼이 늘
+// "다음 단계로/다음 이야기로"처럼 layer/turn 전체를 건너뛰었는데, 지금은
+// 바로 다음 한 문장으로만 넘어가고, 지금 단계·화자 턴의 마지막 문장에
+// 도달했을 때에만 다음 단계·다음 화자로 넘어간다.
+function onNextClick(){
+    clearTimeout(autoTimer);
+    // v23 — 뒤로가기와 동일한 이유: 지금 읽고 있는 해설을 즉시 중단한다.
+    window.speechSynthesis.cancel();
+    speechGen++;
+
+    if(announcing){
+        // 전체 대화가 끝난 뒤의 안내 화면 — "다음"은 처음부터 다시
+        // 재생을 시작하는 동작이라, 한 걸음 이동 후 멈추는 v25 규칙을
+        // 적용하지 않고 원래대로 자동 재생을 이어간다.
+        restartFromBeginning();
+        return;
+    }
+
+    if(phase === 'screen'){
+        const layer = LAYERS[layerIdx];
+        if(lineIdx < layer.lines.length - 1){
+            lineIdx++;
+            playLine();
+        } else if(layerIdx < LAYERS.length - 1){
+            playLayer(layerIdx + 1);
+        } else {
+            startDetailPhase();
+        }
+    } else {
+        const t = DIALOGUE[turnIdx];
+        if(dLineIdx < t.lines.length - 1){
+            playDialogueLine(); // 내부에서 dLineIdx를 하나 앞으로 진행시키고 그 문장을 보여준다
+        } else if(turnIdx < DIALOGUE.length - 1){
+            playTurn(turnIdx + 1);
+        } else {
+            dLineIdx = t.lines.length;
+            showNextStageAnnouncement();
+        }
+    }
+}
+
+function onReplayClick(){
+    if(isPaused){ isPaused = false; btnPause.textContent = '잠깐 멈춤'; btnPause.classList.remove('primary'); }
+    clearTimeout(autoTimer);
+    if(lastSpokenText){
+        speak(lastSpokenText, null, lastSpokenSpeaker);
+    } else {
+        if(phase === 'screen'){
+            playLayer(layerIdx);
+        } else if(announcing){
+            showNextStageAnnouncement();
+        } else {
+            playTurn(turnIdx);
+        }
+    }
+}
+
+let _infoLastFocused = null;
+function openInfo(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    _infoLastFocused = document.activeElement;
+    document.getElementById('info-overlay').classList.add('show');
+    document.getElementById('info-close').focus();
+    document.addEventListener('keydown', _infoDialogKeydown);
+}
+function closeInfo(){
+    document.getElementById('info-overlay').classList.remove('show');
+    document.removeEventListener('keydown', _infoDialogKeydown);
+    if(_infoLastFocused && typeof _infoLastFocused.focus === 'function'){
+        _infoLastFocused.focus();
+    }
+}
+function toggleRefsList(){
+    const list = document.getElementById('refs-list');
+    const btn = document.getElementById('refs-toggle-btn');
+    const show = !list.classList.contains('show');
+    list.classList.toggle('show', show);
+    btn.setAttribute('aria-expanded', String(show));
+    btn.textContent = show ? '참고문헌 닫기' : '참고문헌 보기';
+}
+function _infoDialogKeydown(e){
+    if(e.key === 'Escape'){ closeInfo(); return; }
+    if(e.key === 'Tab'){
+        // v32 — 참고문헌 버튼이 추가되면서 포커스 가능한 요소가 둘이
+        // 됐다. 두 버튼 사이를 순환하도록 고쳤다.
+        const focusables = [document.getElementById('refs-toggle-btn'), document.getElementById('info-close')];
+        const idx = focusables.indexOf(document.activeElement);
+        e.preventDefault();
+        if(e.shiftKey){
+            focusables[(idx <= 0 ? focusables.length - 1 : idx - 1)].focus();
+        } else {
+            focusables[(idx === -1 || idx === focusables.length - 1) ? 0 : idx + 1].focus();
+        }
+    }
+}
 </script>
-
-<script src="depth_camera_injector.js"></script>
-
 </body>
 </html>
