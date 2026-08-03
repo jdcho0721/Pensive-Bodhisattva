@@ -47,6 +47,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #mood-overlay{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity 1.4s ease;}
 #mood-overlay.mood-rodin{opacity:1;background:radial-gradient(ellipse at 28% 55%, rgba(226,110,55,.16), transparent 62%);}
 #mood-overlay.mood-maitreya{opacity:1;background:radial-gradient(ellipse at 74% 50%, rgba(212,175,55,.14), transparent 66%);}
+#mood-overlay.mood-meeting{opacity:1;background:radial-gradient(ellipse at 50% 52%, rgba(255,250,235,.16), transparent 68%);}
 #stage.lit{filter:brightness(1);}
 /* v16 — 참가자 지적: "안개가 낀 것처럼 뿌옇다." 원인은 그라데이션이 중심(0%)
    에서도 이미 불투명도 .12(12% 검은 막)로 시작하고 있었다는 점이다 — 진짜
@@ -287,9 +288,33 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="spotlight-overlay" aria-hidden="true"></div>
 <div id="mood-overlay" aria-hidden="true"></div>
 <div id="veil"></div>
-<audio id="snd-void" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
-<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
-<audio id="snd-rodin" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
+<!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
+     받은 사운드스케이프 5종을 각자 뚜렷한 역할로 나눠 배치한다.
+     v37 — 참가자 지적: "처음에 나오는 종소리가 별로다." 반가사유상 쪽
+     소리로 쓰던 Temple_Bell_at_Daybreak(종소리)를 완전히 빼고, 그
+     자리에 연꽃 소리를 대신 돌려썼다 — 이제 이 전시에서 종소리는
+     전혀 나오지 않는다.
+     ① snd-base(Where_Bamboo_Bends) — 입장부터 끝까지 항상 켜져 있는
+        아주 낮은 배경음. 대나무가 바람에 휘어지는 소리로, 어느 조각상
+        편도 들지 않는 중립적인 "이 방 자체"의 공기를 깐다.
+     ② snd-arrival(Sacred_Morning) — 오직 처음 입장하는 순간(0단계)에만
+        한 번 차올랐다가 1단계가 시작되면 다시 사라지는 "도착"의 소리.
+        전시 전체에서 단 한 번만 들리므로 특별하게 남는다.
+     ③ snd-rodin(Echoes_of_the_Void) — 로댕 차례일 때 겹쳐지는 소리.
+        메아리치는 공허가 실존적 고뇌·공허감과 어울린다.
+     ④ snd-maitreya(Lotus_at_the_Gate) — 반가사유상 차례일 때 겹쳐지는
+        소리. 연꽃은 불교 도상에서 흔히 쓰이는 상징이라 반가사유상과도
+        잘 맞는다(종소리를 뺀 자리를 대신한다).
+     ⑤ snd-meeting(Sacred_Morning) — 두 조각상이 실제로 만나는 단 한
+        지점(2단계 마지막 줄 "두 조각상 사이, 빈 중앙 공간")에서만
+        짧게 켜지는 특별한 소리. snd-arrival과 같은 파일을 돌려쓰지만,
+        둘 다 아주 드물게(각각 딱 한 번씩) 서로 겹치지 않는 순간에만
+        나오므로 소리가 겹칠 일은 없다. -->
+<audio id="snd-base" src="Where_Bamboo_Bends.mp4" preload="auto" loop></audio>
+<audio id="snd-arrival" src="Sacred_Morning.mp4" preload="auto" loop></audio>
+<audio id="snd-maitreya" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
+<audio id="snd-rodin" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
+<audio id="snd-meeting" src="Sacred_Morning.mp4" preload="auto" loop></audio>
 <div class="spot-wide" id="spot"></div>
 <div id="detail-spot"></div>
 <svg id="effect-svg"></svg>
@@ -366,7 +391,7 @@ const LAYERS = [
         { text:"뺨에 오른손 손가락 두 개가 살짝 닿아 있습니다.",
           wide:'maitreya', detail:{x:72.5, y:35.5}, speaker:'maitreya' },
         { text:"두 조각상 사이, 그 빈 중앙 공간이 이 전시의 진짜 무대입니다.",
-          wide:'both', detail:{x:50, y:45.0}, speaker:'both' }
+          wide:'both', detail:{x:50, y:45.0}, speaker:'both', meeting:true }
     ]}
 ];
 
@@ -505,11 +530,12 @@ function enterRoom(){
     stageEl.classList.add('lit');
     speak('전시실 1, 소개를 시작합니다. 편안히 들어주세요.', ()=> playLayer(0));
     startAmbientSound();
+    fadeArrivalIn();
 }
 
 const AMBIENT_VOLUME = 0.18;
 function startAmbientSound(){
-    const el = document.getElementById('snd-void');
+    const el = document.getElementById('snd-base');
     if(!el) return;
     el.volume = 0;
     el.loop = true;
@@ -556,6 +582,36 @@ function _fadeStatueAudio(el, target){
         }
         el.volume = Math.max(0, Math.min(1, v));
     }, 60);
+}
+
+// v36 — 0단계(오리엔테이션) 동안에만 한 번 차오르는 "도착"의 소리.
+// 1단계(Global)로 넘어가는 순간 fadeArrivalOut()을 호출해 조용히
+// 내려보낸다 — 전시 전체에서 이 소리가 나는 구간은 이 한 번뿐이다.
+let _arrivalStarted = false;
+function fadeArrivalIn(){
+    if(_arrivalStarted) return;
+    _arrivalStarted = true;
+    _fadeStatueAudio(document.getElementById('snd-arrival'), STATUE_SOUND_VOLUME);
+}
+function fadeArrivalOut(){
+    if(!_arrivalStarted) return;
+    _fadeStatueAudio(document.getElementById('snd-arrival'), 0);
+}
+
+// v36 — 2단계 마지막 줄("두 조각상 사이, 빈 중앙 공간이…")처럼 두
+// 조각상이 실제로 "만나는" 단 한 지점에서만 짧게 켜지는 소리.
+// room2의 triggerCenterMoment()와 같은 취지 — 로댕/반가사유상 어느
+// 쪽에도 치우치지 않는 별도의 세 번째 소리를 특별한 순간에만 쓴다.
+// (참고: wide:'both'는 "특정 조각상을 안 가리킨다"는 뜻으로 훨씬 자주
+// 쓰이므로, 그것과 헷갈리지 않도록 line.meeting이라는 별도 플래그로만
+// 켠다 — 아래 playLine()에서 이 플래그를 가진 줄에서만 호출한다.)
+let _meetingActive = false;
+function updateMeetingSound(active){
+    if(active === _meetingActive) return;
+    _meetingActive = active;
+    _fadeStatueAudio(document.getElementById('snd-meeting'), active ? STATUE_SOUND_VOLUME : 0);
+    const moodEl = document.getElementById('mood-overlay');
+    if(moodEl) moodEl.classList.toggle('mood-meeting', active);
 }
 
 function updateStatueSound(speaker){
@@ -769,6 +825,10 @@ function playLayer(i){
     detailSpotEl.classList.remove('show');
     drawPartPulse(null);
     speakerTagEl.classList.remove('show');
+    // v36 — "도착"의 소리(snd-arrival)는 0단계에서만 들리는 소리다.
+    // 1단계(Global)로 넘어가는 이 시점에 조용히 내려보내, 다시는
+    // 돌아오지 않게 한다(뒤로가기로 0단계로 되돌아가지 않는 한).
+    if(i === 1) fadeArrivalOut();
     playLine();
 }
 
@@ -805,6 +865,7 @@ function playLine(){
     sourceEl.textContent = line.source || '';
     updateWideSpot(line.wide || null);
     updateStatueSound(line.wide || null);
+    updateMeetingSound(!!line.meeting);
     if(line.detail){
         updateDetailSpot(line.detail);
         drawPartPulse(line.detail, line.speaker || null);
@@ -839,6 +900,10 @@ function startDetailPhase(){
     tagEl.textContent = '3단계 · 대화';
     speakerTagEl.classList.remove('show');
     updateBadgeUI();
+    // v36 — 2단계 마지막 줄에서 켜졌을 수 있는 "만남"의 소리를, 3단계로
+    // 넘어가는 이 시점에 확실히 꺼둔다. 그렇지 않으면 이 소리가 3단계
+    // 내내(다음 playLine() 호출이 없으므로) 계속 남아 있게 된다.
+    updateMeetingSound(false);
     // v28 — 참가자 지적: "자막이 안 보인다." 이 문장을 speak()에는 넘겼지만
     // 정작 captionEl에는 한 번도 대입하지 않아서, 음성은 나오는데 화면
     // 자막은 비어 있었다(또는 직전 화면 자막이 그대로 남아 있었다).
