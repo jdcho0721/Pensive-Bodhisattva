@@ -112,20 +112,29 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #caption-wrap { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
 }
 @media(max-width: 480px){
-  /* v55 — 참가자 요청: "TalkBack이 안 된다 / 자막 폰트가 너무 작다 /
-     나머지 버튼이 너무 크다, 반으로 줄여도 될 듯." v52에서 자막을
-     기존 값의 절반(.52~.65rem)까지 줄였더니 이번엔 너무 작아 읽기
-     어렵다는 반대 피드백을 받았다 — 자막은 다시 눈에 편한 크기로
-     올리고, 대신 버튼 쪽을 실제로 절반 정도로 줄였다(글자·좌우여백·
-     세로 높이 모두). 다만 손가락으로 누르기 어려울 만큼 작아지지
-     않도록 세로 높이는 32px 아래로는 내려가지 않게 최소값을 둔다. */
+  /* v57 — 참가자 요청: "모바일 최적화 / WCAG 2.1 AA 준수 / TalkBack 지원 /
+     뒤로·다음·멈춤·다시듣기 버튼 크기를 정확히 절반으로 줄여 화면 아래
+     한 줄에 나란히." 기존 .btn 기본값(min-height:44px, font-size:.9rem,
+     padding:11px 22px)의 정확히 절반(22px / .45rem / 5.5px 11px)으로
+     #controls 버튼만 줄였다 — #controls .btn으로 선택자를 좁혀 상단
+     ⓘ·속도·쉬운문장 버튼(각자 더 구체적인 규칙으로 이미 별도 관리됨)에는
+     영향을 주지 않는다.
+     참고: WCAG 2.1의 터치 타깃 크기 기준(2.5.5 Target Size)은 AAA
+     등급이라 AA 준수에는 영향이 없다(2.1에는 2.5.8 같은 AA 등급 최소
+     크기 기준이 없다 — 그건 WCAG 2.2에서 추가됨). 다만 이 정도로
+     작아지면 손가락으로 정확히 누르기는 쉽지 않을 수 있다는 점은
+     참고할 부분. */
   #caption{ font-size:clamp(.9rem, 3.8vw, 1.1rem); }
   #eyebrow{ font-size:.78rem; }
   #caption-tag{ font-size:.78rem; }
   #source-tag{ font-size:.76rem; }
   #speaker-tag{ font-size:.82rem; }
-  #controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
-  .btn{ font-size:.52rem; letter-spacing:0; padding:6px 6px; min-height:32px; white-space:nowrap; }
+  #controls{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  /* v58 — 참가자 요청: "한 줄에 4개는 너무 작아지니 두 줄로 바꿔 달라."
+     4개를 한 줄(nowrap)에 욱여넣으려니 글자를 극단적으로(높이 22px까지)
+     줄여야 했다. 뒤로·다음 / 멈춤·다시듣기, 2개씩 2행 그리드로 바꾸면
+     한 줄에 2개만 있으면 되므로 훨씬 넉넉한 크기로 되돌릴 수 있다. */
+  #controls .btn{ font-size:.78rem; letter-spacing:.02em; padding:10px 14px; min-height:40px; white-space:nowrap; }
   #top-controls{ flex-wrap:nowrap; gap:6px; }
   #info-btn{ width:32px; height:32px; font-size:.7rem; }
   #btn-speed, #btn-easy-mode{ height:32px; font-size:.5rem; padding:0 6px; letter-spacing:0; white-space:nowrap; }
@@ -135,8 +144,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    완전히 숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다.
    실제 외부 출처(로댕뮤지엄·강우방·전준엽 등)가 있는 문장에만 채워지고,
    기획팀 자체 큐레이션 문장에는 비워둔다(=출처 없음, 사실 그대로). */
+/* v56 — WCAG 2.1 AA 1.4.3(명도 대비) 점검: 기존 rgba(212,175,55,.55)는
+   검은 배경 위에서 명도 대비가 3.45:1로 AA 최소 기준(일반 텍스트 4.5:1)에
+   미달이었다. 같은 금색 톤을 유지하면서 알파값만 .72로 올려 대비를
+   5.1:1로 확보했다 — 시각적으로는 여전히 "옅은 금색 각주"로 보이지만,
+   저시력 사용자도 읽을 수 있는 최소 대비를 만족한다. */
 #source-tag{
-    font-size:.72rem; color:rgba(212,175,55,.55); text-align:center; max-width:640px;
+    font-size:.72rem; color:rgba(212,175,55,.72); text-align:center; max-width:640px;
     margin:6px auto 0; min-height:1em; word-break:keep-all; letter-spacing:.02em;
 }
 #caption b{color:var(--gold-light); font-weight:600;}
@@ -229,8 +243,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 <a href="#controls" id="skiplink">본문 바로가기</a>
 
-<!-- ── 작품·작가 소개 / 저작권 ── -->
-<div id="top-controls">
+<!-- ── 작품·작가 소개 / 저작권 ──
+     v59 — 참가자 요청: TalkBack의 "제스처 탐색"(스와이프로 이전/다음
+     항목 이동) 지원. 원래 #top-controls가 #intro-gate보다 DOM 순서상
+     앞에 있어서, 처음 화면에 진입한 TalkBack 사용자가 오른쪽으로
+     스와이프하면 화면엔 안 보이는(검은 진입화면 뒤에 가려진) ⓘ·속도·
+     쉬운문장 버튼이 먼저 걸리고, 정작 눈앞에 보이는 진입 안내문·
+     "시작할게요" 버튼은 한참 뒤로 밀려 있었다. inert 속성으로 진입
+     화면이 떠 있는 동안 이 버튼들을 스와이프 탐색·터치 모두에서
+     완전히 제외해, TalkBack 사용자가 첫 스와이프부터 곧장 진입
+     안내문과 시작 버튼을 만나도록 했다(enterRoom()에서 해제). -->
+<div id="top-controls" role="group" aria-label="설정" inert aria-hidden="true">
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장으로 듣기: 꺼짐</button>
@@ -360,7 +383,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <svg id="effect-svg" aria-hidden="true"></svg>
 
 <div id="eyebrow">전시실 1 · 소개</div>
-<div id="stage-badge">
+<div id="stage-badge" inert aria-hidden="true">
     <button class="dot" data-i="0" aria-label="0단계 오리엔테이션으로 이동" onclick="jumpToStage(0)"></button>
     <button class="dot" data-i="1" aria-label="1단계 전체 구도로 이동" onclick="jumpToStage(1)"></button>
     <button class="dot" data-i="2" aria-label="2단계 자세와 위치로 이동" onclick="jumpToStage(2)"></button>
@@ -368,7 +391,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 </div>
 
 <!-- ── 공용 자막/컨트롤 — 0단계부터 3단계까지 계속 이 하나만 쓴다 ── -->
-<div id="caption-wrap" onclick="onCaptionAreaClick(event)">
+<div id="caption-wrap" onclick="onCaptionAreaClick(event)" inert aria-hidden="true">
     <div id="speaker-tag"></div>
     <div id="caption-tag">오리엔테이션</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
@@ -382,7 +405,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          내레이션을 끝까지 들을 수 있게 했다(자막 영역 탭도 그대로
          남겨둬 비장애 사용자의 빠른 진행은 유지). -->
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
-    <div id="controls">
+    <div id="controls" role="group" aria-label="재생 제어">
         <button class="btn" id="btn-back" onclick="onBackClick()">← 뒤로</button>
         <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음 →</button>
         <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
@@ -576,6 +599,12 @@ let _autoEnterTimer = setTimeout(enterRoom, 6000);
 function enterRoom(){
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
+    // v59 — 진입 화면 동안 TalkBack 스와이프 탐색에서 제외해뒀던 상단
+    // 버튼·단계 점·자막 영역을 여기서 다시 활성화한다.
+    ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){ el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
+    });
     stageEl.classList.add('lit');
     speak('전시실 1, 소개를 시작합니다. 편안히 들어주세요.', ()=> playLayer(0));
     startAmbientSound();
