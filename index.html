@@ -143,14 +143,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      키워(30px→36px) 누르기 편하게 했다. */
   #controls{ display:flex; flex-wrap:nowrap; gap:6px; justify-content:center; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
   #controls .btn{ font-size:.75rem; letter-spacing:.02em; padding:9px 14px; min-height:36px; white-space:nowrap; }
-  #top-controls{ flex-wrap:nowrap; gap:6px; }
-  #info-btn{ width:32px; height:32px; font-size:.7rem; }
-  /* v64 — 참가자 요청: "속도·쉬운 문장 폰트 크기를 뒤로 버튼 크기로
-     맞추면 한 줄에 들어갈 수 있다." 라벨이 이미 짧아져 있어서(속도
-     1.0x / 쉬운 문장), 하단 #controls .btn과 같은 .75rem으로 키워도
-     ⓘ 버튼과 함께 한 줄에 들어간다. 높이도 하단 버튼과 통일해 위아래
-     버튼 크기가 시각적으로 어색하게 다르지 않도록 맞췄다. */
-  #btn-speed, #btn-easy-mode{ height:36px; font-size:.75rem; padding:0 10px; letter-spacing:.02em; white-space:nowrap; }
+  /* v65 — 참가자 보고: ".75rem으로도 실제 기기에서 속도·쉬운문장이
+     한 줄에 안 들어간다." 더 작게(.58rem) 줄이고, 시스템 글자 확대
+     설정 등으로 그래도 넘칠 경우를 대비해 #controls와 동일하게
+     overflow-x:auto 안전장치를 추가한다 — 정 안 맞으면 줄바꿈 대신
+     가로로 살짝 스크롤되어 레이아웃이 깨지지 않는다. */
+  #top-controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  #info-btn{ width:28px; height:28px; font-size:.62rem; flex-shrink:0; }
+  #btn-speed, #btn-easy-mode{ height:28px; font-size:.58rem; padding:0 6px; letter-spacing:0; white-space:nowrap; flex-shrink:0; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -363,7 +363,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="intro-gate">
     <h1>침묵의 공명<br><span style="font-size:.55em;color:rgba(212,175,55,.7);">전시실 1 · 조우 (만나기)</span></h1>
     <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다.</p>
-    <p>마주한 두 조각상 로댕과 반가사유상의  이야기를 들려드립니다.</p>
+    <p>마주한 두 조각상 로댕의 생각하는 사람과 반가사유상의  이야기를 들려드립니다.</p>
     <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 침묵의 공명 전시실 1을 시작하세요.">앉았습니다, 시작할게요</button>
 </div>
 
