@@ -209,7 +209,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      모바일에서는 32px로 줄이고, 상단 버튼 바로 아래로 더 붙인다 —
      그만큼 가운데 조각상이 보이는 영역이 넓어진다. */
   #stage-badge .dot{ width:32px; height:32px; }
-  #stage-badge { top: calc(46px + env(safe-area-inset-top)); gap:2px; }
+  #stage-badge { top: calc(36px + env(safe-area-inset-top)); gap:2px; }
   #caption-wrap { padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
 }
 @media(max-width: 480px){
@@ -251,8 +251,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #top-controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
   /* v70 — 참가자 지정 수치로 추가 축소: 높이 26px→20px, ⓘ .6rem→.45rem,
      속도·쉬운문장 .52rem→.45rem. */
-  #info-btn{ width:20px; height:20px; font-size:.45rem; flex-shrink:0; }
-  #btn-speed, #btn-easy-mode{ height:20px; font-size:.45rem; padding:0 6px; letter-spacing:0; white-space:nowrap; flex-shrink:0; }
+  /* v71 — 참가자 요청: "i/속도/쉬운 문장이 너무 작다. 뒤로/다음/멈춤과
+     같은 모양·크기로." #info-btn은 원래 원형 아이콘 버튼(border-radius
+     50%, 고정 44px)이라 하단 알약 모양 버튼과 생김새 자체가 달랐다.
+     모바일에서는 #controls .btn과 완전히 같은 모양(알약형, border-radius
+     30px)·크기(font-size .68rem, padding 7px 12px, min-height 32px)로
+     통일한다. */
+  #info-btn{ width:auto; height:auto; border-radius:30px; font-size:.68rem; padding:7px 12px; min-height:32px; flex-shrink:0; }
+  #btn-speed, #btn-easy-mode{ height:auto; min-height:32px; font-size:.68rem; padding:7px 12px; letter-spacing:.02em; white-space:nowrap; flex-shrink:0; }
 }
 
 </style>
@@ -898,13 +904,15 @@ function _getImageRect(){
     if(boxRatio > imgRatio){
         rh = h; rw = rh * imgRatio; rx = (w - rw) / 2; ry = 0;
     } else {
-        // v66 — 참가자 요청: "배경화면이 맨 위로 올라가지 않게 원래
-        // 위치로." v63에서 세로로 좁은 화면일 때 이미지를 윗변에 붙였더니
-        // (ry=0) 실제 기기에서는 이미지가 화면 맨 위, 상단 버튼 바로
-        // 아래까지 바짝 붙어 어색해 보였다. 원래대로 세로 가운데 정렬로
-        // 되돌린다 — 자막이 조각상을 가리는 문제는 이미지 위치가 아니라
-        // 아래쪽 버튼·자막 영역 자체의 크기를 줄이는 방향으로 대응한다.
-        rw = w; rh = rw / imgRatio; rx = 0; ry = (h - rh) / 2;
+        // v72 — 참가자 요청: "4단계 버튼 아래로 조각상 이미지·시각효과를
+        // 같이 끌어올려줘." v66에서 세로 가운데 정렬(50%)로 되돌렸던
+        // 것을, 완전히 윗변에 붙이는 대신(v63에서 "너무 위로 붙는다"는
+        // 불만이 있었다) 그 중간인 위쪽 25% 지점으로 절충한다 — 위쪽
+        // 여백을 줄여 이미지가 단계 점 바로 아래로 당겨져 보이면서도,
+        // 화면 맨 위에 딱 붙지는 않는다. #spotlight-overlay·#detail-spot·
+        // #effect-svg 등 시각효과는 모두 이 함수가 반환하는 사각형을
+        // 기준으로 좌표를 잡으므로, 이미지와 함께 자동으로 따라 올라간다.
+        rw = w; rh = rw / imgRatio; rx = 0; ry = (h - rh) * 0.25;
     }
     // room2와 동일하게: 가로는 가운데 정렬 유지, 세로는 윗변 고정 —
     // 줄어든 공간이 전부 아래쪽(발 쪽)에 생기도록 한다.
