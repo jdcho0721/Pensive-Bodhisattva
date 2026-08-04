@@ -151,8 +151,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      overflow-x:auto 안전장치를 추가한다 — 정 안 맞으면 줄바꿈 대신
      가로로 살짝 스크롤되어 레이아웃이 깨지지 않는다. */
   #top-controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  #info-btn{ width:28px; height:28px; font-size:.62rem; flex-shrink:0; }
-  #btn-speed, #btn-easy-mode{ height:28px; font-size:.58rem; padding:0 6px; letter-spacing:0; white-space:nowrap; flex-shrink:0; }
+  /* v68 — 참가자 요청: "뒤로·다음에서 화살표를 없애고, ⓘ·속도·쉬운문장
+     버튼 크기를 뒤로 버튼 크기로 맞추면 한 줄에 들어가지 않을까."
+     화살표(← →)를 빼 하단 3버튼 폭을 줄였고, 상단 3버튼도 #controls
+     .btn과 완전히 같은 크기(font-size:.68rem, padding:7px 12px,
+     min-height:32px)로 통일했다 — 위아래 버튼 크기가 같아 보이도록. */
+  #info-btn{ width:32px; height:32px; font-size:.72rem; flex-shrink:0; }
+  #btn-speed, #btn-easy-mode{ height:32px; font-size:.68rem; padding:7px 12px; letter-spacing:.02em; white-space:nowrap; flex-shrink:0; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -429,8 +434,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          남겨둬 비장애 사용자의 빠른 진행은 유지). -->
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
     <div id="controls" role="group" aria-label="재생 제어">
-        <button class="btn" id="btn-back" onclick="onBackClick()">← 뒤로</button>
-        <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음 →</button>
+        <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
+        <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음</button>
         <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
     </div>
 </div>
