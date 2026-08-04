@@ -112,22 +112,24 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #caption-wrap { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
 }
 @media(max-width: 480px){
-  #caption{ font-size:clamp(1.05rem, 4.6vw, 1.3rem); }
+  /* v52 — 참가자 요청: "포트레이트(세로) 모바일 화면에서, 뒤로·다음·
+     멈춤·다시 듣기 4개 버튼이 화면 아래 한 줄로 나란히 들어가고, 그
+     위 자막은 지금 폰트의 절반 크기로, 위쪽 속도·쉬운문장 버튼도
+     한 줄에 다 들어가게 글자를 줄여 달라." 네 가지를 각각 처리한다:
+     1) 자막(#caption) 글자 크기를 기존 모바일 값의 절반으로.
+     2) 하단 #controls를 flex-wrap:nowrap으로 바꿔 줄바꿈을 막고,
+        버튼 글자·여백을 줄여 4개가 한 줄에 들어가게 한다.
+     3) 상단 #top-controls도 nowrap으로 바꿔 ⓘ·속도·쉬운문장 버튼이
+        한 줄에 들어가게 하고, 속도·쉬운문장 버튼 글자도 더 줄인다. */
+  #caption{ font-size:clamp(.52rem, 2.3vw, .65rem); }
   #eyebrow{ font-size:.78rem; }
   #caption-tag{ font-size:.78rem; }
   #source-tag{ font-size:.76rem; }
   #speaker-tag{ font-size:.82rem; }
-  /* v51 — 참가자 요청: "뒤로/잠깐 멈춤/다시 듣기 등 버튼 글자가 너무
-     크다." 기존엔 모바일에서 오히려 .btn 글자 크기를 .9rem→.95rem으로
-     키우고 있었다(반대 방향 실수). 이제 모바일에서는 더 작게(.78rem)
-     줄이고 좌우 여백도 줄여, 버튼 4개가 좁은 화면에서도 부담 없이
-     들어간다. 다만 실제 탭 영역(min-height:44px, WCAG 2.5.5)은 .btn
-     공통 스타일에 그대로 남아 있어 글자만 작아지고 누르기는 여전히
-     쉽다. */
-  #controls{ gap:6px; }
-  .btn{ font-size:.78rem; letter-spacing:.02em; padding:10px 14px; }
-  #top-controls{ gap:6px; }
-  #btn-speed, #btn-easy-mode{ font-size:.72rem; }
+  #controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
+  .btn{ font-size:.64rem; letter-spacing:0; padding:9px 8px; white-space:nowrap; }
+  #top-controls{ flex-wrap:nowrap; gap:6px; }
+  #btn-speed, #btn-easy-mode{ font-size:.6rem; padding:0 8px; letter-spacing:0; white-space:nowrap; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -384,7 +386,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <div id="controls">
         <button class="btn" id="btn-back" onclick="onBackClick()">← 뒤로</button>
         <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음 →</button>
-        <button class="btn" id="btn-pause" onclick="onPauseClick()">잠깐 멈춤</button>
+        <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
         <button class="btn" id="btn-replay" onclick="onReplayClick()">다시 듣기</button>
     </div>
 </div>
@@ -1122,7 +1124,7 @@ function jumpToStage(targetIdx){
     // 그대로 자동 재생이 이어지게 둔다 — 대신 일시정지 중이었다면 확실히
     // 풀어준다.
     isPaused = false;
-    btnPause.textContent = '잠깐 멈춤';
+    btnPause.textContent = '멈춤';
     btnPause.classList.remove('primary');
     clearTimeout(autoTimer);
     window.speechSynthesis.cancel();
@@ -1163,7 +1165,7 @@ function onPauseClick(){
         btnPause.classList.add('primary');
     } else {
         isPaused = false;
-        btnPause.textContent = '잠깐 멈춤';
+        btnPause.textContent = '멈춤';
         btnPause.classList.remove('primary');
         if(!pausedContext){ playLayer(0); return; }
         phase = pausedContext.phase;
@@ -1191,11 +1193,11 @@ function onPauseClick(){
 // 인사말)까지 건너뛰어 버렸다. 아래는 화면(1~2단계)·대화(3단계) 모두에서
 // "바로 직전에 들었던 한 문장"으로 정확히 한 칸만 되돌아가도록 다시 짰다.
 // v29 — 참가자 요청으로 v25를 되돌린다: "뒤로/다음을 눌러도 자동으로
-// 일시정지되지 않고, 오직 '잠깐 멈춤' 버튼을 직접 눌렀을 때만 멈추도록."
+// 일시정지되지 않고, 오직 '멈춤' 버튼을 직접 눌렀을 때만 멈추도록."
 // v25에서는 수동으로 뒤로/다음을 누르면 한 걸음만 이동한 뒤 자동으로
 // 일시정지 상태가 되도록 했었는데, 이번 요청으로 그 부분만 제거한다 —
 // 뒤로/다음은 다시 원래대로 한 걸음 이동한 뒤 자동 재생 리듬을 그대로
-// 이어받는다. 일시정지는 이제 오직 "잠깐 멈춤" 버튼을 직접 눌렀을 때만
+// 이어받는다. 일시정지는 이제 오직 "멈춤" 버튼을 직접 눌렀을 때만
 // 발생한다.
 
 function onBackClick(){
@@ -1316,7 +1318,7 @@ function onNextClick(){
 }
 
 function onReplayClick(){
-    if(isPaused){ isPaused = false; btnPause.textContent = '잠깐 멈춤'; btnPause.classList.remove('primary'); }
+    if(isPaused){ isPaused = false; btnPause.textContent = '멈춤'; btnPause.classList.remove('primary'); }
     clearTimeout(autoTimer);
     if(lastSpokenText){
         speak(lastSpokenText, null, lastSpokenSpeaker);
