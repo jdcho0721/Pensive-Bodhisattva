@@ -129,15 +129,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #caption-tag{ font-size:.78rem; }
   #source-tag{ font-size:.76rem; }
   #speaker-tag{ font-size:.82rem; }
-  #controls{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-  /* v58 — 참가자 요청: "한 줄에 4개는 너무 작아지니 두 줄로 바꿔 달라."
-     4개를 한 줄(nowrap)에 욱여넣으려니 글자를 극단적으로(높이 22px까지)
-     줄여야 했다. 뒤로·다음 / 멈춤·다시듣기, 2개씩 2행 그리드로 바꾸면
-     한 줄에 2개만 있으면 되므로 훨씬 넉넉한 크기로 되돌릴 수 있다. */
-  #controls .btn{ font-size:.78rem; letter-spacing:.02em; padding:10px 14px; min-height:40px; white-space:nowrap; }
+  /* v61 — 참가자 요청: "뒤로·다음·멈춤·다시듣기를 다시 한 줄로, 쉬운
+     문장 버튼은 줄여서 속도 옆에 나란히 — 자막이 조각상을 덜 가리게."
+     v58에서 2행 그리드로 바꿔 자막 영역이 세로로 길어졌던 것을,
+     라벨을 줄인 "쉬운 문장: 꺼짐"(기존 "쉬운 문장으로 듣기: 꺼짐"보다
+     짧음)과 함께 다시 한 줄(nowrap)로 되돌린다. v57의 극단적인 절반
+     크기(22px)보다는 크고 v58의 2행 크기(40px)보다는 작은 중간
+     크기(30px)로 맞춰, 한 줄에 다 들어가면서도 v57보다는 누르기
+     편하도록 균형을 잡았다. */
+  #controls{ display:flex; flex-wrap:nowrap; gap:4px; justify-content:center; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
+  #controls .btn{ font-size:.66rem; letter-spacing:0; padding:7px 9px; min-height:30px; white-space:nowrap; }
   #top-controls{ flex-wrap:nowrap; gap:6px; }
   #info-btn{ width:32px; height:32px; font-size:.7rem; }
-  #btn-speed, #btn-easy-mode{ height:32px; font-size:.5rem; padding:0 6px; letter-spacing:0; white-space:nowrap; }
+  #btn-speed, #btn-easy-mode{ height:32px; font-size:.55rem; padding:0 7px; letter-spacing:0; white-space:nowrap; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -254,9 +258,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      완전히 제외해, TalkBack 사용자가 첫 스와이프부터 곧장 진입
      안내문과 시작 버튼을 만나도록 했다(enterRoom()에서 해제). -->
 <div id="top-controls" role="group" aria-label="설정" inert aria-hidden="true">
-    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
+    <!-- v60 — 참가자 보고: "속도 버튼 옆에 '개'라는 글자가 보인다."
+         원인: 정보 버튼에 쓰던 ⓘ(U+24D8, 동그라미 친 i) 기호가 일부
+         모바일 기기의 기본 폰트(Noto Serif KR)에는 포함돼 있지 않아,
+         시스템이 다른 폰트로 대체(fallback)해 그리는 과정에서 전혀
+         다른 글자처럼 보였던 것으로 보인다. 폰트 의존도가 없는 평범한
+         라틴 문자 i로 바꿔 어떤 기기·폰트에서도 항상 같은 모양으로
+         보이게 했다 — 화면낭독기가 읽는 이름은 여전히 아래 aria-label
+         ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
+    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장으로 듣기: 꺼짐</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장: 꺼짐</button>
 </div>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
@@ -426,7 +438,7 @@ const LAYERS = [
         { text:"생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년 무렵 만든 조각입니다.", wide:'rodin', source:"출처: Vujanović [27]" },
         { text:"원래 지옥의 문 상단부 인물로 제작됐다가, 1904년 독립된 대형 청동상으로 다시 만들어졌습니다.", wide:'rodin', source:"출처: Vujanović [27]" },
         { text:"처음엔 약 70센티미터 크기로, '시인'이라는 이름의 조각이었습니다. 신곡을 쓴 단테가, 지옥의 여러 층을 내려다보며 자신의 시상에 몰두한 모습이었습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
-        { text:"그래서 이 조각은 처음부터, 고문당하는 육체를 지닌 거의 저주받은 존재이면서, 동시에 시로써 그 고통을 넘어서기로 결심한 자유로운 정신의 소유자이기도 했습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
+        { text:"그래서 이 조각은 처음부터, 고문당하는 육체를 지닌 저주받은 존재이면서, 동시에 시로써 그 고통을 넘어서기로 결심한 자유로운 정신의 소유자이기도 했습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
         { text:"지옥의 문에는 지옥에서 고통받는 인간의 형상 200여 점이 서로 뒤엉켜 있으며, 그들의 정념과 야수성, 고뇌를 표현하고 있습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [34]" },
         { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", wide:'rodin' },
         { text:"이 자세는 카르포가 조각한 우골리노, 그리고 미켈란젤로가 조각한 로렌초 데 메디치의 좌상에서 많은 영향을 받았습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
@@ -1053,7 +1065,7 @@ function startDetailPhase(){
 function toggleEasyMode(){
     easyMode = !easyMode;
     const btn = document.getElementById('btn-easy-mode');
-    btn.textContent = easyMode ? '쉬운 문장으로 듣기: 켜짐' : '쉬운 문장으로 듣기: 꺼짐';
+    btn.textContent = easyMode ? '쉬운 문장: 켜짐' : '쉬운 문장: 꺼짐';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
     if(phase === 'dialogue' && !announcing){
