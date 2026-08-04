@@ -112,24 +112,23 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #caption-wrap { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
 }
 @media(max-width: 480px){
-  /* v52 — 참가자 요청: "포트레이트(세로) 모바일 화면에서, 뒤로·다음·
-     멈춤·다시 듣기 4개 버튼이 화면 아래 한 줄로 나란히 들어가고, 그
-     위 자막은 지금 폰트의 절반 크기로, 위쪽 속도·쉬운문장 버튼도
-     한 줄에 다 들어가게 글자를 줄여 달라." 네 가지를 각각 처리한다:
-     1) 자막(#caption) 글자 크기를 기존 모바일 값의 절반으로.
-     2) 하단 #controls를 flex-wrap:nowrap으로 바꿔 줄바꿈을 막고,
-        버튼 글자·여백을 줄여 4개가 한 줄에 들어가게 한다.
-     3) 상단 #top-controls도 nowrap으로 바꿔 ⓘ·속도·쉬운문장 버튼이
-        한 줄에 들어가게 하고, 속도·쉬운문장 버튼 글자도 더 줄인다. */
-  #caption{ font-size:clamp(.52rem, 2.3vw, .65rem); }
+  /* v55 — 참가자 요청: "TalkBack이 안 된다 / 자막 폰트가 너무 작다 /
+     나머지 버튼이 너무 크다, 반으로 줄여도 될 듯." v52에서 자막을
+     기존 값의 절반(.52~.65rem)까지 줄였더니 이번엔 너무 작아 읽기
+     어렵다는 반대 피드백을 받았다 — 자막은 다시 눈에 편한 크기로
+     올리고, 대신 버튼 쪽을 실제로 절반 정도로 줄였다(글자·좌우여백·
+     세로 높이 모두). 다만 손가락으로 누르기 어려울 만큼 작아지지
+     않도록 세로 높이는 32px 아래로는 내려가지 않게 최소값을 둔다. */
+  #caption{ font-size:clamp(.9rem, 3.8vw, 1.1rem); }
   #eyebrow{ font-size:.78rem; }
   #caption-tag{ font-size:.78rem; }
   #source-tag{ font-size:.76rem; }
   #speaker-tag{ font-size:.82rem; }
   #controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
-  .btn{ font-size:.64rem; letter-spacing:0; padding:9px 8px; white-space:nowrap; }
+  .btn{ font-size:.52rem; letter-spacing:0; padding:6px 6px; min-height:32px; white-space:nowrap; }
   #top-controls{ flex-wrap:nowrap; gap:6px; }
-  #btn-speed, #btn-easy-mode{ font-size:.6rem; padding:0 8px; letter-spacing:0; white-space:nowrap; }
+  #info-btn{ width:32px; height:32px; font-size:.7rem; }
+  #btn-speed, #btn-easy-mode{ height:32px; font-size:.5rem; padding:0 6px; letter-spacing:0; white-space:nowrap; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -321,14 +320,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <h1>침묵의 공명<br><span style="font-size:.55em;color:rgba(212,175,55,.7);">전시실 1 · 조우 (만나기)</span></h1>
     <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다.</p>
     <p>마주한 두 조각상 로댕과 반가사유상의  이야기를 들려드립니다.</p>
-    <button class="btn primary" onclick="enterRoom()">앉았습니다, 시작할게요</button>
+    <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 침묵의 공명 전시실 1을 시작하세요.">앉았습니다, 시작할게요</button>
 </div>
 
 <!-- ── 배경(0단계부터 끝까지 동일하게 유지) ── -->
-<div id="stage"></div>
+<div id="stage" aria-hidden="true"></div>
 <div id="spotlight-overlay" aria-hidden="true"></div>
 <div id="mood-overlay" aria-hidden="true"></div>
-<div id="veil"></div>
+<div id="veil" aria-hidden="true"></div>
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
      받은 사운드스케이프 5종을 각자 뚜렷한 역할로 나눠 배치한다.
      v37 — 참가자 지적: "처음에 나오는 종소리가 별로다." 반가사유상 쪽
@@ -356,9 +355,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <audio id="snd-maitreya" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
 <audio id="snd-rodin" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
 <audio id="snd-meeting" src="Sacred_Morning.mp4" preload="auto" loop></audio>
-<div class="spot-wide" id="spot"></div>
-<div id="detail-spot"></div>
-<svg id="effect-svg"></svg>
+<div class="spot-wide" id="spot" aria-hidden="true"></div>
+<div id="detail-spot" aria-hidden="true"></div>
+<svg id="effect-svg" aria-hidden="true"></svg>
 
 <div id="eyebrow">전시실 1 · 소개</div>
 <div id="stage-badge">
@@ -1371,6 +1370,31 @@ function _infoDialogKeydown(e){
         }
     }
 }
+
+// v54 — 참가자 요청: index.html(전북맹아학교: 추억의 앨범)에서 쓰던
+// "열려 있는 안내창을 왼쪽에서 오른쪽으로 살짝 밀면 닫힌다"는 모바일
+// 제스처를 이식한다. 다만 그 원본은 window 전체에 터치 리스너를 달아서
+// 페이지 어디서든 오른쪽 스와이프를 가로챘는데, 그렇게 하면 TalkBack이
+// 화면을 스와이프로 탐색할 때 손동작이 겹쳐 오히려 방해가 될 수 있다.
+// 여기서는 #info-overlay가 실제로 열려 있을 때, 그 안에서 일어난
+// 터치에만 반응하도록 범위를 좁혀 넣었다 — 다른 화면에서의 TalkBack
+// 스와이프 탐색에는 전혀 영향을 주지 않는다.
+(function initInfoOverlaySwipeClose(){
+    const overlay = document.getElementById('info-overlay');
+    if(!overlay) return;
+    let startX = 0, startY = 0;
+    overlay.addEventListener('touchstart', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        startX = e.changedTouches[0].screenX;
+        startY = e.changedTouches[0].screenY;
+    }, { passive:true });
+    overlay.addEventListener('touchend', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        const dx = e.changedTouches[0].screenX - startX;
+        const dy = Math.abs(e.changedTouches[0].screenY - startY);
+        if(dx > 60 && dy < 60) closeInfo(); // 오른쪽으로 스와이프 → 닫기
+    }, { passive:true });
+})();
 </script>
 </body>
 </html>
