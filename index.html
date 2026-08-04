@@ -102,60 +102,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(1rem, 3.2vw, 1.4rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
 
-/* 모바일 반응형 — 참가자 요청: 좁은 화면에서 상단 버튼이 겹치지 않고,
-   저시력 사용자가 읽기 편하도록 자막·라벨 글자 크기를 키운다. */
-@media(max-width: 768px){
-  /* v67 — 참가자 요청: "ⓘ·속도·쉬운문장 / 4단계 점+조각상 / 자막 /
-     뒤로·다음·멈춤" 네 구역이 겹치지 않게 위아래 버튼 영역을 더
-     압축한다. 4단계 점의 터치 영역(기존 44px, WCAG 2.5.5 AAA 기준)을
-     모바일에서는 32px로 줄이고, 상단 버튼 바로 아래로 더 붙인다 —
-     그만큼 가운데 조각상이 보이는 영역이 넓어진다. */
-  #stage-badge .dot{ width:32px; height:32px; }
-  #stage-badge { top: calc(46px + env(safe-area-inset-top)); gap:2px; }
-  #caption-wrap { padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
-}
-@media(max-width: 480px){
-  /* v57 — 참가자 요청: "모바일 최적화 / WCAG 2.1 AA 준수 / TalkBack 지원 /
-     뒤로·다음·멈춤·다시듣기 버튼 크기를 정확히 절반으로 줄여 화면 아래
-     한 줄에 나란히." 기존 .btn 기본값(min-height:44px, font-size:.9rem,
-     padding:11px 22px)의 정확히 절반(22px / .45rem / 5.5px 11px)으로
-     #controls 버튼만 줄였다 — #controls .btn으로 선택자를 좁혀 상단
-     ⓘ·속도·쉬운문장 버튼(각자 더 구체적인 규칙으로 이미 별도 관리됨)에는
-     영향을 주지 않는다.
-     참고: WCAG 2.1의 터치 타깃 크기 기준(2.5.5 Target Size)은 AAA
-     등급이라 AA 준수에는 영향이 없다(2.1에는 2.5.8 같은 AA 등급 최소
-     크기 기준이 없다 — 그건 WCAG 2.2에서 추가됨). 다만 이 정도로
-     작아지면 손가락으로 정확히 누르기는 쉽지 않을 수 있다는 점은
-     참고할 부분. */
-  #caption{ font-size:clamp(.9rem, 3.8vw, 1.1rem); }
-  #eyebrow{ font-size:.78rem; }
-  #caption-tag{ font-size:.78rem; }
-  #source-tag{ font-size:.76rem; }
-  #speaker-tag{ font-size:.82rem; }
-  /* v61 — 참가자 요청: "뒤로·다음·멈춤·다시듣기를 다시 한 줄로, 쉬운
-     문장 버튼은 줄여서 속도 옆에 나란히 — 자막이 조각상을 덜 가리게."
-     v58에서 2행 그리드로 바꿔 자막 영역이 세로로 길어졌던 것을,
-     라벨을 줄인 "쉬운 문장: 꺼짐"(기존 "쉬운 문장으로 듣기: 꺼짐"보다
-     짧음)과 함께 다시 한 줄(nowrap)로 되돌린다. v57의 극단적인 절반
-     크기(22px)보다는 크고 v58의 2행 크기(40px)보다는 작은 중간
-     크기(30px)로 맞춰, 한 줄에 다 들어가면서도 v57보다는 누르기
-     편하도록 균형을 잡았다. */
-  /* v62 — 참가자 요청: "다시듣기는 지우자." 버튼이 4개→3개로 줄면서
-     한 줄에 들어가는 데 여유가 더 생겼다. 그 여유만큼 버튼을 조금 더
-     키워(30px→36px) 누르기 편하게 했다. */
-  #controls{ display:flex; flex-wrap:nowrap; gap:5px; justify-content:center; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
-  #controls .btn{ font-size:.68rem; letter-spacing:.02em; padding:7px 12px; min-height:32px; white-space:nowrap; }
-  /* v65 — 참가자 보고: ".75rem으로도 실제 기기에서 속도·쉬운문장이
-     한 줄에 안 들어간다." 더 작게(.58rem) 줄이고, 시스템 글자 확대
-     설정 등으로 그래도 넘칠 경우를 대비해 #controls와 동일하게
-     overflow-x:auto 안전장치를 추가한다 — 정 안 맞으면 줄바꿈 대신
-     가로로 살짝 스크롤되어 레이아웃이 깨지지 않는다. */
-  #top-controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  /* v70 — 참가자 지정 수치로 추가 축소: 높이 26px→20px, ⓘ .6rem→.45rem,
-     속도·쉬운문장 .52rem→.45rem. */
-  #info-btn{ width:20px; height:20px; font-size:.45rem; flex-shrink:0; }
-  #btn-speed, #btn-easy-mode{ height:20px; font-size:.45rem; padding:0 6px; letter-spacing:0; white-space:nowrap; flex-shrink:0; }
-}
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
    완전히 숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다.
@@ -254,6 +200,61 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #copyright-tag{position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;}
+/* 모바일 반응형 — 참가자 요청: 좁은 화면에서 상단 버튼이 겹치지 않고,
+   저시력 사용자가 읽기 편하도록 자막·라벨 글자 크기를 키운다. */
+@media(max-width: 768px){
+  /* v67 — 참가자 요청: "ⓘ·속도·쉬운문장 / 4단계 점+조각상 / 자막 /
+     뒤로·다음·멈춤" 네 구역이 겹치지 않게 위아래 버튼 영역을 더
+     압축한다. 4단계 점의 터치 영역(기존 44px, WCAG 2.5.5 AAA 기준)을
+     모바일에서는 32px로 줄이고, 상단 버튼 바로 아래로 더 붙인다 —
+     그만큼 가운데 조각상이 보이는 영역이 넓어진다. */
+  #stage-badge .dot{ width:32px; height:32px; }
+  #stage-badge { top: calc(46px + env(safe-area-inset-top)); gap:2px; }
+  #caption-wrap { padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); }
+}
+@media(max-width: 480px){
+  /* v57 — 참가자 요청: "모바일 최적화 / WCAG 2.1 AA 준수 / TalkBack 지원 /
+     뒤로·다음·멈춤·다시듣기 버튼 크기를 정확히 절반으로 줄여 화면 아래
+     한 줄에 나란히." 기존 .btn 기본값(min-height:44px, font-size:.9rem,
+     padding:11px 22px)의 정확히 절반(22px / .45rem / 5.5px 11px)으로
+     #controls 버튼만 줄였다 — #controls .btn으로 선택자를 좁혀 상단
+     ⓘ·속도·쉬운문장 버튼(각자 더 구체적인 규칙으로 이미 별도 관리됨)에는
+     영향을 주지 않는다.
+     참고: WCAG 2.1의 터치 타깃 크기 기준(2.5.5 Target Size)은 AAA
+     등급이라 AA 준수에는 영향이 없다(2.1에는 2.5.8 같은 AA 등급 최소
+     크기 기준이 없다 — 그건 WCAG 2.2에서 추가됨). 다만 이 정도로
+     작아지면 손가락으로 정확히 누르기는 쉽지 않을 수 있다는 점은
+     참고할 부분. */
+  #caption{ font-size:clamp(.9rem, 3.8vw, 1.1rem); }
+  #eyebrow{ font-size:.78rem; }
+  #caption-tag{ font-size:.78rem; }
+  #source-tag{ font-size:.76rem; }
+  #speaker-tag{ font-size:.82rem; }
+  /* v61 — 참가자 요청: "뒤로·다음·멈춤·다시듣기를 다시 한 줄로, 쉬운
+     문장 버튼은 줄여서 속도 옆에 나란히 — 자막이 조각상을 덜 가리게."
+     v58에서 2행 그리드로 바꿔 자막 영역이 세로로 길어졌던 것을,
+     라벨을 줄인 "쉬운 문장: 꺼짐"(기존 "쉬운 문장으로 듣기: 꺼짐"보다
+     짧음)과 함께 다시 한 줄(nowrap)로 되돌린다. v57의 극단적인 절반
+     크기(22px)보다는 크고 v58의 2행 크기(40px)보다는 작은 중간
+     크기(30px)로 맞춰, 한 줄에 다 들어가면서도 v57보다는 누르기
+     편하도록 균형을 잡았다. */
+  /* v62 — 참가자 요청: "다시듣기는 지우자." 버튼이 4개→3개로 줄면서
+     한 줄에 들어가는 데 여유가 더 생겼다. 그 여유만큼 버튼을 조금 더
+     키워(30px→36px) 누르기 편하게 했다. */
+  #controls{ display:flex; flex-wrap:nowrap; gap:5px; justify-content:center; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
+  #controls .btn{ font-size:.68rem; letter-spacing:.02em; padding:7px 12px; min-height:32px; white-space:nowrap; }
+  /* v65 — 참가자 보고: ".75rem으로도 실제 기기에서 속도·쉬운문장이
+     한 줄에 안 들어간다." 더 작게(.58rem) 줄이고, 시스템 글자 확대
+     설정 등으로 그래도 넘칠 경우를 대비해 #controls와 동일하게
+     overflow-x:auto 안전장치를 추가한다 — 정 안 맞으면 줄바꿈 대신
+     가로로 살짝 스크롤되어 레이아웃이 깨지지 않는다. */
+  #top-controls{ flex-wrap:nowrap; gap:4px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  /* v70 — 참가자 지정 수치로 추가 축소: 높이 26px→20px, ⓘ .6rem→.45rem,
+     속도·쉬운문장 .52rem→.45rem. */
+  #info-btn{ width:20px; height:20px; font-size:.45rem; flex-shrink:0; }
+  #btn-speed, #btn-easy-mode{ height:20px; font-size:.45rem; padding:0 6px; letter-spacing:0; white-space:nowrap; flex-shrink:0; }
+}
+
 </style>
 </head>
 <body>
