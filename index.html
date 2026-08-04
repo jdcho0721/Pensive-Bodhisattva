@@ -86,9 +86,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     font-family:'Cinzel Decorative',serif; letter-spacing:.16em; font-size:.72rem; color:var(--gold-dim); text-transform:uppercase; text-align:center;}
 #stage-badge{position:fixed; top:calc(50px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
     display:flex; gap:6px; align-items:center; z-index:30;}
-#stage-badge .dot{width:10px;height:10px;border-radius:50%;background:rgba(212,175,55,.25);transition:all .3s;cursor:pointer;border:none;padding:0;}
-#stage-badge .dot:hover{background:rgba(212,175,55,.6);transform:scale(1.2);}
-#stage-badge .dot.on{background:var(--gold);box-shadow:0 0 8px var(--gold);transform:scale(1.2);}
+#stage-badge .dot{
+    width:44px;height:44px; /* 접근성: 시각적 점은 작지만(10px) 실제 탭 가능 영역은 WCAG 2.5.5 최소 44px */
+    border-radius:50%;background:transparent;border:none;padding:0;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;position:relative;
+}
+#stage-badge .dot::after{content:'';width:10px;height:10px;border-radius:50%;background:rgba(212,175,55,.25);transition:all .3s;}
+#stage-badge .dot:hover::after{background:rgba(212,175,55,.6);transform:scale(1.2);}
+#stage-badge .dot.on::after{background:var(--gold);box-shadow:0 0 8px var(--gold);transform:scale(1.2);}
+#stage-badge .dot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 
 /* ── 하단: 공용 자막/컨트롤(0~3단계 전체가 공유) ── */
 #caption-wrap{position:fixed; left:0; right:0; bottom:0; padding:28px 24px calc(28px + env(safe-area-inset-bottom));
@@ -96,10 +102,25 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(1rem, 3.2vw, 1.4rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
 
-/* 모바일 화면 너비가 작을 때 상단 버튼 겹침 방지 미디어쿼리 */
+/* 모바일 반응형 — 참가자 요청: 좁은 화면에서 상단 버튼이 겹치지 않고,
+   저시력 사용자가 읽기 편하도록 자막·라벨 글자 크기를 키운다.
+   #top-controls(ⓘ·속도·쉬운 문장 버튼)는 flex-wrap이라 화면이 좁으면
+   자동으로 두 줄로 줄바꿈되는데, 그 두 번째 줄과 겹치지 않도록
+   #stage-badge(단계 점)를 더 아래로 내린다. */
 @media(max-width: 768px){
-  #btn-easy-mode { left: auto; right: 12px; top: calc(64px + env(safe-area-inset-top)); }
+  #stage-badge { top: calc(108px + env(safe-area-inset-top)); }
   #caption-wrap { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
+}
+@media(max-width: 480px){
+  #caption{ font-size:clamp(1.05rem, 4.6vw, 1.3rem); }
+  #eyebrow{ font-size:.78rem; }
+  #caption-tag{ font-size:.78rem; }
+  #source-tag{ font-size:.76rem; }
+  #speaker-tag{ font-size:.82rem; }
+  #controls{ gap:8px; }
+  .btn{ font-size:.95rem; padding:12px 18px; }
+  #top-controls{ gap:6px; }
+  #btn-speed, #btn-easy-mode{ font-size:.78rem; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -137,27 +158,32 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 /* ══════════════════════════════════════════════════════
    작품·작가 소개 / 저작권 — 공통 정보 오버레이
    ══════════════════════════════════════════════════════ */
+/* v48 — 참가자 요청: "모바일에서 반응형으로, 배치를 조정해 달라."
+   기존엔 ⓘ/속도/쉬운문장 세 버튼이 각자 position:fixed + 고정 픽셀
+   left값(12/64/148px)으로 한 줄에 배치돼 있었다 — 화면이 좁거나(작은
+   폰) 시스템 글자 크기를 키운 저시력 사용자 환경에서는 버튼 폭이
+   늘어나며 서로 겹치거나 화면 밖으로 밀려날 위험이 있었다. 세 버튼을
+   #top-controls 하나의 flex 컨테이너에 담아 flex-wrap으로 감싸,
+   화면이 좁아지면 자동으로 다음 줄로 줄바꿈되며 절대 겹치지 않도록
+   했다(버튼 자체는 position:static으로 컨테이너 안 자연스러운 흐름을
+   따른다). */
+#top-controls{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; right:12px; z-index:45;
+    display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
+}
 #info-btn{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; z-index:45;
     width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72);
     border:1px solid var(--gold-dim); color:var(--gold); font-size:.95rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); flex:0 0 auto;
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
-/* v31 — room2와 동일한 위치로 통일: 쉬운 문장으로 듣기/속도 버튼을
-   화면 하단 컨트롤 행에서 ⓘ 버튼 옆(상단 좌측)으로 옮긴다. room2의
-   #speed-btn/#easy-mode-btn과 같은 자리(top:12px, left:64px/148px)를
-   그대로 사용해, 두 전시실을 오가는 방문객이 같은 위치에서 같은
-   기능을 찾을 수 있게 한다. */
 #btn-speed{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:64px; z-index:45;
     height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px); flex:0 0 auto;
 }
 #btn-easy-mode{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:148px; z-index:45;
     height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px); flex:0 0 auto;
 }
 #btn-easy-mode[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
 #info-overlay{
@@ -196,9 +222,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <a href="#controls" id="skiplink">본문 바로가기</a>
 
 <!-- ── 작품·작가 소개 / 저작권 ── -->
-<button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
-<button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
-<button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장으로 듣기: 꺼짐</button>
+<div id="top-controls">
+    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장으로 듣기: 꺼짐</button>
+</div>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
         <h2>작품·작가 소개</h2>
@@ -253,7 +281,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p>휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
 
         <h3>이용 방법</h3>
-        <p>스크린 앞 의자에 앉아 "시작할게요"를 누르면 내레이션이 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다). 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
+        <p>스크린 앞 의자에 앉아 "시작할게요"를 누르면 내레이션이 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다). 손이 닿는 곳의 조각상 복제품(로댕의 생각하는 사람과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
         <p>화면 아래 <b>다시 듣기</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다.</p>
         <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
 
@@ -282,8 +310,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <!-- 진입 게이트 -->
 <div id="intro-gate">
     <h1>침묵의 공명<br><span style="font-size:.55em;color:rgba(212,175,55,.7);">전시실 1 · 조우 (만나기)</span></h1>
-    <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 동양의 반가사유상과 서양의 생각하는 사람을 처음 마주하는 이 시간이 곧 그 조우입니다.</p>
-    <p>스크린 앞 의자에 편히 앉아주세요.<br>손이 닿는 곳에 두 조각상의 복제품이 놓여 있습니다 — 로댕과 반가사유상 모두 실물보다 작은 크기입니다. 이야기를 들으며 편하게 만져보세요.<br>같은 화면 위에서 전체 구도부터 각 부위의 세부까지 이어서 들려드립니다.</p>
+    <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다.</p>
+    <p>마주한 두 조각상 로댕의 생각하는 사람과 반가사유상의  이야기를 들려드립니다.</p>
     <button class="btn primary" onclick="enterRoom()">앉았습니다, 시작할게요</button>
 </div>
 
@@ -337,9 +365,18 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <div id="caption-tag">오리엔테이션</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
     <div id="source-tag" aria-hidden="true"></div>
-    <div id="next-stage-tag">다음 전시 단계로 이동하세요.</div>
+    <!-- v48 — 참가자 요청: TalkBack이 가능하게 해달라. 기존엔 "다음"
+         으로 넘어가는 방법이 자막 영역 전체를 탭하는 onCaptionAreaClick
+         뿐이었다 — 그 div는 role/tabindex가 없는 순수 표시 영역(자막은
+         role="status")이라, 스크린리더 사용자는 스와이프로 이 동작에
+         닿을 수 없었다. 뒤로/멈춤/다시 듣기와 나란히 실제 버튼으로
+         "다음"을 추가해 TalkBack 사용자도 스와이프+더블탭만으로 전체
+         내레이션을 끝까지 들을 수 있게 했다(자막 영역 탭도 그대로
+         남겨둬 비장애 사용자의 빠른 진행은 유지). -->
+    <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
     <div id="controls">
         <button class="btn" id="btn-back" onclick="onBackClick()">← 뒤로</button>
+        <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음 →</button>
         <button class="btn" id="btn-pause" onclick="onPauseClick()">잠깐 멈춤</button>
         <button class="btn" id="btn-replay" onclick="onReplayClick()">다시 듣기</button>
     </div>
@@ -505,7 +542,7 @@ let easyMode = false;
 
 let autoTimer = null;   
 let speechGen = 0;      
-const LINE_PAUSE_MS  = 700;   
+const LINE_PAUSE_MS  = 1100;  // v49 — 참가자 요청: "자막이 빨리 지나간다." 문장이 끝난 뒤 다음 문장으로 넘어가기 전 여백을 700ms → 1100ms로 늘려 읽을 시간을 더 준다.
 const LAYER_PAUSE_MS = 2000;  
 
 const captionEl = document.getElementById('caption');
@@ -527,7 +564,7 @@ function onCaptionAreaClick(e){
     onNextClick();
 }
 
-let _autoEnterTimer = setTimeout(enterRoom, 60000);
+let _autoEnterTimer = setTimeout(enterRoom, 6000);
 function enterRoom(){
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
@@ -683,15 +720,29 @@ let lastSpokenSpeaker = null;
 // 흔하다). 목소리 목록이 준비될 때까지 짧게 기다린 뒤에만 실제 speak()
 // 호출을 진행하도록 해서 이 경합을 없앤다. 최대 1초까지만 기다리고, 그래도
 // 준비되지 않으면 기존처럼 진행해 완전히 멈추는 일은 없도록 한다.
+// v50 — 참가자 보고: "들어가자마자 자막이 쏜살같이 계속 넘어간다."
+// 원인: 위 v32 주석대로 처음 한 번은 목소리 목록을 기다리도록 고쳤지만,
+// _voicesReadyPromise를 한번 생성하면 그 결과(목소리를 못 찾고 1초
+// 타임아웃으로 그냥 넘어간 경우까지 포함)를 영구히 캐시해 재사용했다.
+// 즉 처음 1초 안에 목소리 목록이 준비되지 않은 기기(특히 일부 모바일
+// 브라우저/웹뷰)에서는, 그 뒤로 이어지는 모든 문장이 "목소리 없음"
+// 상태로 speak()를 호출 → onerror가 거의 즉시 발생 → 곧장 다음 문장
+// 호출, 이 과정이 첫 문장부터 끝 문장까지 눈 깜짝할 사이에 반복돼
+// "쏜살같이 계속 넘어간다"로 보였다. 이제 매번 실제 목소리 목록을 먼저
+// 직접 확인하고, 이미 준비돼 있으면 캐시를 거치지 않고 곧바로 진행하며,
+// 아직 준비되지 않았을 때만 대기 Promise를 새로 만든다(성공하든
+// 타임아웃으로 넘어가든 그 결과를 영구 캐시하지 않는다) — 그래야 목소리가
+// 뒤늦게(1초 이후) 준비된 경우에도 다음 문장부터는 정상적으로 그 목소리를
+// 찾아 실제 음성으로 읽는다.
 let _voicesReadyPromise = null;
 function _ensureVoicesReady(){
+    if(window.speechSynthesis.getVoices().length > 0) return Promise.resolve();
     if(_voicesReadyPromise) return _voicesReadyPromise;
     _voicesReadyPromise = new Promise(resolve=>{
-        if(window.speechSynthesis.getVoices().length > 0){ resolve(); return; }
         let done = false;
-        const finish = ()=>{ if(done) return; done = true; resolve(); };
+        const finish = ()=>{ if(done) return; done = true; _voicesReadyPromise = null; resolve(); };
         try{ window.speechSynthesis.onvoiceschanged = finish; }catch(e){}
-        setTimeout(finish, 1000); // 안전장치: 1초 안에 목소리가 안 뜨면 그냥 진행
+        setTimeout(finish, 1000); // 안전장치: 1초 안에 목소리가 안 뜨면 일단 진행(단, 다음 문장에서 다시 확인)
     });
     return _voicesReadyPromise;
 }
@@ -710,10 +761,26 @@ function speak(text, onEnd, speaker){
             if(speaker==='rodin'){ u.rate = TTS_RATE; u.pitch = 0.90; }
             else if(speaker==='maitreya'){ u.rate = TTS_RATE; u.pitch = 1.08; }
             else { u.rate = TTS_RATE; u.pitch = 1.0; }
+            // v49 — 참가자 요청: "자막이 빨리 지나간다." 일부 기기·음성엔진은
+            // 실제 발화 속도가 사람이 자막을 읽는 속도보다 빨라서, 음성이
+            // 끝나는 이벤트(onend)가 예상보다 일찍 와버리면 자막도 그만큼
+            // 빨리 다음 문장으로 넘어갔다. estMs(글자 수 기반 "읽기에 필요한
+            // 최소 시간" 추정치)를 이제 "이 시간보다 먼저 끝나면 더 기다린다"
+            // 는 하한선으로도 함께 쓴다 — 음성이 실제로 더 오래 걸리면
+            // 원래대로 그 길이를 그대로 따르고, 음성이 더 짧게 끝나면
+            // estMs를 채울 때까지 자막을 화면에 붙잡아 둔다.
+            const startedAt = Date.now();
+            const estMs = Math.max(2200, (text.length * 260) / TTS_RATE);
             let _ended = false;
             const finish = ()=>{ if(_ended) return; _ended = true; if(myGen===speechGen && onEnd) onEnd(); };
-            u.onend = finish;
-            u.onerror = finish;
+            const finishNoEarlierThanEst = ()=>{
+                if(_ended) return;
+                const remaining = estMs - (Date.now() - startedAt);
+                if(remaining > 0){ setTimeout(()=>{ if(myGen===speechGen) finish(); }, remaining); }
+                else finish();
+            };
+            u.onend = finishNoEarlierThanEst;
+            u.onerror = finishNoEarlierThanEst;
             window.speechSynthesis.speak(u);
             // v31 — 참가자 지적: "해설이 끝나기 전에 화면이 빠르게 넘어간다."
             // 원인: 이 워치독 타이머가 글자 수만으로 예상 시간을 계산하고,
@@ -722,9 +789,10 @@ function speak(text, onEnd, speaker){
             // 걸리는데, 워치독은 항상 1.0배 기준의 시간에 맞춰 먼저
             // 울려버려 — 음성이 채 끝나기도 전에 다음 문장으로 넘어가는
             // 원인이 됐다. 지금 재생 속도로 나눠 실제 소요 시간에 맞추고,
-            // 여유 폭도 조금 더 넉넉하게 잡았다.
-            const estMs = Math.max(1800, (text.length * 220) / TTS_RATE);
-            setTimeout(()=>{ if(myGen===speechGen) finish(); }, estMs);
+            // 여유 폭도 조금 더 넉넉하게 잡았다. (v49에서 estMs 자체도
+            // 늘리고, 위 finishNoEarlierThanEst가 있으니 이 워치독은 onend가
+            // 아예 안 오는 경우에 대비한 안전망으로만 남는다.)
+            setTimeout(()=>{ if(myGen===speechGen) finish(); }, estMs + 4000);
         }, 60);
         });
     }catch(e){ if(myGen===speechGen && onEnd) setTimeout(onEnd, 1800); }
