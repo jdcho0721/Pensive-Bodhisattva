@@ -103,13 +103,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption{font-size:clamp(1rem, 3.2vw, 1.4rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
 
 /* 모바일 반응형 — 참가자 요청: 좁은 화면에서 상단 버튼이 겹치지 않고,
-   저시력 사용자가 읽기 편하도록 자막·라벨 글자 크기를 키운다.
-   #top-controls(ⓘ·속도·쉬운 문장 버튼)는 flex-wrap이라 화면이 좁으면
-   자동으로 두 줄로 줄바꿈되는데, 그 두 번째 줄과 겹치지 않도록
-   #stage-badge(단계 점)를 더 아래로 내린다. */
+   저시력 사용자가 읽기 편하도록 자막·라벨 글자 크기를 키운다. */
 @media(max-width: 768px){
-  #stage-badge { top: calc(108px + env(safe-area-inset-top)); }
-  #caption-wrap { padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); }
+  /* v64 — #top-controls가 이제 폭이 좁아도 한 줄(nowrap)에 안정적으로
+     들어가므로, 두 줄 줄바꿈을 대비해 크게 내려뒀던 #stage-badge를
+     원래 위치에 더 가깝게 다시 올렸다 — 그만큼 위쪽 여백이 줄어
+     조각상 이미지가 보이는 영역이 넓어진다. */
+  #stage-badge { top: calc(60px + env(safe-area-inset-top)); }
+  #caption-wrap { padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
 }
 @media(max-width: 480px){
   /* v57 — 참가자 요청: "모바일 최적화 / WCAG 2.1 AA 준수 / TalkBack 지원 /
@@ -137,11 +138,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      크기(22px)보다는 크고 v58의 2행 크기(40px)보다는 작은 중간
      크기(30px)로 맞춰, 한 줄에 다 들어가면서도 v57보다는 누르기
      편하도록 균형을 잡았다. */
-  #controls{ display:flex; flex-wrap:nowrap; gap:4px; justify-content:center; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
-  #controls .btn{ font-size:.66rem; letter-spacing:0; padding:7px 9px; min-height:30px; white-space:nowrap; }
+  /* v62 — 참가자 요청: "다시듣기는 지우자." 버튼이 4개→3개로 줄면서
+     한 줄에 들어가는 데 여유가 더 생겼다. 그 여유만큼 버튼을 조금 더
+     키워(30px→36px) 누르기 편하게 했다. */
+  #controls{ display:flex; flex-wrap:nowrap; gap:6px; justify-content:center; overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px; }
+  #controls .btn{ font-size:.75rem; letter-spacing:.02em; padding:9px 14px; min-height:36px; white-space:nowrap; }
   #top-controls{ flex-wrap:nowrap; gap:6px; }
   #info-btn{ width:32px; height:32px; font-size:.7rem; }
-  #btn-speed, #btn-easy-mode{ height:32px; font-size:.55rem; padding:0 7px; letter-spacing:0; white-space:nowrap; }
+  /* v64 — 참가자 요청: "속도·쉬운 문장 폰트 크기를 뒤로 버튼 크기로
+     맞추면 한 줄에 들어갈 수 있다." 라벨이 이미 짧아져 있어서(속도
+     1.0x / 쉬운 문장), 하단 #controls .btn과 같은 .75rem으로 키워도
+     ⓘ 버튼과 함께 한 줄에 들어간다. 높이도 하단 버튼과 통일해 위아래
+     버튼 크기가 시각적으로 어색하게 다르지 않도록 맞췄다. */
+  #btn-speed, #btn-easy-mode{ height:36px; font-size:.75rem; padding:0 10px; letter-spacing:.02em; white-space:nowrap; }
 }
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -268,7 +277,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장: 꺼짐</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장</button>
 </div>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
@@ -325,7 +334,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
         <h3>이용 방법</h3>
         <p>스크린 앞 의자에 앉아 "시작할게요"를 누르면 내레이션이 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다). 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
-        <p>화면 아래 <b>다시 듣기</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다.</p>
+        <p>화면 아래 <b>뒤로</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다.</p>
         <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
 
         <div class="copyright">
@@ -421,7 +430,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-back" onclick="onBackClick()">← 뒤로</button>
         <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음 →</button>
         <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-        <button class="btn" id="btn-replay" onclick="onReplayClick()">다시 듣기</button>
     </div>
 </div>
 
@@ -599,7 +607,6 @@ const detailSpotEl = document.getElementById('detail-spot');
 const effectSvg = document.getElementById('effect-svg');
 const badgeDots = document.querySelectorAll('#stage-badge .dot');
 const eyebrowEl = document.getElementById('eyebrow');
-const btnReplay = document.getElementById('btn-replay');
 const btnPause = document.getElementById('btn-pause');
 
 function onCaptionAreaClick(e){
@@ -886,7 +893,15 @@ function _getImageRect(){
     if(boxRatio > imgRatio){
         rh = h; rw = rh * imgRatio; rx = (w - rw) / 2; ry = 0;
     } else {
-        rw = w; rh = rw / imgRatio; rx = 0; ry = (h - rh) / 2;
+        // v63 — 참가자 요청: "조각상 이미지를 위로 좀 올리자 / 자막이
+        // 조각상을 가리지 않게." 세로로 좁고 긴 모바일 화면에서는
+        // boxRatio < imgRatio가 되어 이 분기를 타는데, 기존엔
+        // ry = (h-rh)/2로 이미지를 세로 가운데 정렬하고 있었다 — 바로
+        // 위 주석("세로는 윗변 고정")의 의도와 반대였다. 그 결과 이미지
+        // 아래쪽 절반이 화면 아래 캡션 영역과 그대로 겹쳤다. 다른
+        // 분기와 똑같이 ry=0으로 윗변에 붙여, 남는 여백이 전부 아래쪽
+        // (자막이 있는 자리)에 생기도록 통일한다.
+        rw = w; rh = rw / imgRatio; rx = 0; ry = 0;
     }
     // room2와 동일하게: 가로는 가운데 정렬 유지, 세로는 윗변 고정 —
     // 줄어든 공간이 전부 아래쪽(발 쪽)에 생기도록 한다.
@@ -1065,7 +1080,10 @@ function startDetailPhase(){
 function toggleEasyMode(){
     easyMode = !easyMode;
     const btn = document.getElementById('btn-easy-mode');
-    btn.textContent = easyMode ? '쉬운 문장: 켜짐' : '쉬운 문장: 꺼짐';
+    // v62 — 참가자 요청: "쉬운 문장: 꺼짐 → 쉬운 문장." 버튼 폭을 더
+    // 줄이기 위해 라벨을 상태와 무관하게 "쉬운 문장"으로 고정한다.
+    // 켜짐/꺼짐 상태는 여전히 aria-pressed(스크린리더용)와 .primary
+    // 강조색(시각적 켜짐 표시)로 전달되므로 정보가 사라지지는 않는다.
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
     if(phase === 'dialogue' && !announcing){
@@ -1353,22 +1371,6 @@ function onNextClick(){
         } else {
             dLineIdx = t.lines.length;
             showNextStageAnnouncement();
-        }
-    }
-}
-
-function onReplayClick(){
-    if(isPaused){ isPaused = false; btnPause.textContent = '멈춤'; btnPause.classList.remove('primary'); }
-    clearTimeout(autoTimer);
-    if(lastSpokenText){
-        speak(lastSpokenText, null, lastSpokenSpeaker);
-    } else {
-        if(phase === 'screen'){
-            playLayer(layerIdx);
-        } else if(announcing){
-            showNextStageAnnouncement();
-        } else {
-            playTurn(turnIdx);
         }
     }
 }
