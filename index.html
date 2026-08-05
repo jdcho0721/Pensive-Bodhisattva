@@ -476,7 +476,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 </div>
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
-<!-- 진입 게이트 -->
 <div id="intro-gate" class="intro-gate">
     <h1>침묵의 공명</h1>
     <p class="intro-desc">로댕의 '생각하는 사람'과 국보 '반가사유상'의 만남.<br>'고뇌'에서 '자비'로 이어지는 울림을 체험해보세요.</p>
@@ -488,8 +487,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     </div>
 
     <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
-        전시실 1 · 조우 (만나기)
+        전시실 1 · 조우
     </button>
+    
 </div>
 
 <style>
@@ -534,15 +534,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 
 .btn.primary {
-    width: 100%;
+    width: 20%;
     padding: 14px;
     font-size: 1rem;
     font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    background-color: #000; /* 예시 컬러 */
-    color: #fff;
-    cursor: pointer;
+    border: 1px solid #1a1a1a;
+    border-top: 1px solid #444;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 </style>
 
