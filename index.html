@@ -320,6 +320,31 @@ body.modal-open{
  overflow: hidden;
  touch-action: none;
 }
+
+
+/* ── 사용자 요청 1) '시작하기' 화면의 버튼/다음 버튼을 맨 위-왼쪽으로 ── */
+#intro{
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  text-align:left !important;
+}
+#landing{ align-items:flex-start !important; text-align:left !important; }
+#landing .btn{ align-self:flex-start; }
+#intro-nav{
+  justify-content:flex-start !important;
+  max-width:none !important;
+}
+
+/* ── 사용자 요청 2) '관람 순서' 문장이 좌/우로 잘리지 않게(줄바꿈 허용) ── */
+.route{ max-width:100% !important; }
+.route span{
+  white-space:normal !important;
+  max-width:100% !important;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  text-align:left;
+}
+
 </style>
 </head>
 <body>
