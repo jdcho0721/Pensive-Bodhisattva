@@ -477,20 +477,74 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
 <!-- 진입 게이트 -->
-<div id="intro-gate">
+<div id="intro-gate" class="intro-gate">
     <h1>침묵의 공명</h1>
-
-    <p>침묵의 공명은 로댕의 &lsquo;생각하는 사람&rsquo;과 국보 &lsquo;반가사유상&rsquo;을 나란히 만나는 전시입니다. &lsquo;고뇌&rsquo;에서 &lsquo;자비&rsquo;로 이어지는 울림을 체험해보세요.</p>
+    <p class="intro-desc">로댕의 '생각하는 사람'과 국보 '반가사유상'의 만남.<br>'고뇌'에서 '자비'로 이어지는 울림을 체험해보세요.</p>
 
     <div class="gate-route" role="group" aria-label="관람 순서">
-        <p class="gate-route-title">관람 순서</p>
-        <p class="gate-route-item">전시장 1 · 조우</p>
-        <p class="gate-route-item">전시장 2 · 사유와 체화 </p>
+        <span class="gate-route-title">관람 순서</span>
+        <span class="gate-route-item">전시장 1 · 조우</span>
+        <span class="gate-route-item">전시장 2 · 사유와 체화</span>
     </div>
 
-
-    <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">전시실 1 · 조우 (만나기)</button>
+    <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
+        전시실 1 · 조우 (만나기)
+    </button>
 </div>
+
+<style>
+/* 모바일 최적화 스타일 */
+.intro-gate {
+    padding: 20px 16px; /* 모바일 환경에 맞게 여백 축소 */
+    text-align: center;
+}
+
+.intro-gate h1 {
+    font-size: 1.5rem;
+    margin-bottom: 8px; /* 제목 아래 간격 줄임 */
+}
+
+.intro-desc {
+    font-size: 0.95rem;
+    line-name: 1.4;
+    margin-bottom: 16px; /* 설명과 관람 순서 사이 간격 줄임 */
+    color: #555;
+}
+
+.gate-route {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px; /* 관람 순서와 버튼 사이 간격 줄임 */
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* 항목 간 간격 최소화 */
+}
+
+.gate-route-title {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.gate-route-item {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.btn.primary {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background-color: #000; /* 예시 컬러 */
+    color: #fff;
+    cursor: pointer;
+}
+</style>
 
 <!-- ── 배경(0단계부터 끝까지 동일하게 유지) ── -->
 <div id="stage" aria-hidden="true"></div>
@@ -567,7 +621,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 const LAYERS = [
 { tag:'0 · 오리엔테이션',
     lines:[
-        { text:"제 1 전시관은 《침묵의 공명》 조우 입니다.", wide:null },
         { text:"우리나라 국보 83호 금동미륵보살반가사유상과, 프랑스 로댕의 생각하는 사람의 청동복제상을 직접 만나고 느껴보세요.", wide:'both' },
         { text:"반가사유상은 삼국시대, 6세기에서 7세기 무렵 만들어진 불교 조각입니다.", wide:'maitreya', source:"출처: [22, 26]" },
         { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
