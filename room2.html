@@ -232,7 +232,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption .qa-q{color:#40e0d0;}
 #caption .qa-a{color:var(--gold);}
 
-#hint-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+#hint-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+#hint-row .btn{font-size:1.05rem; padding:13px 26px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
@@ -766,7 +767,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-repeat" onclick="repeatCurrent()">다시 듣기</button>
         <button class="btn" id="btn-leave" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 보고 나가기">여일</button>
         <button class="btn primary" id="btn-finish" onclick="showCertificate(true)" style="display:none;">여일로 마치기</button>
-    </div>
+    
+        <button class="btn primary" id="btn-next-exhibit" onclick="location.href='room1.html'" aria-label="다음 전시로 이동">다음 전시</button>
+</div>
 </div>
 </div>
 
