@@ -283,6 +283,51 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #stage-badge{top:calc(88px + env(safe-area-inset-top));}
   #caption-wrap{bottom:64px; padding:20px 18px calc(16px + env(safe-area-inset-bottom));}
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   사용자 요청 (room1)
+   1) 하단(뒤로/멈춤/다음 전시) 버튼 크기 ↓ → '쉬운 문장' 버튼과 동일 톤
+   2) 해설(자막) 폰트 ↓ + 이미지 위 겹침 방지(이미지 아래 패널로 분리)
+   ───────────────────────────────────────────────────────────── */
+
+/* 1) 컨트롤 버튼 크기 = #btn-easy-mode 기준 */
+#controls .btn{
+  height:44px;
+  min-height:44px;
+  padding:0 14px;
+  border-radius:22px;
+  font-size:.8rem;
+  letter-spacing:.02em;
+}
+
+/* 2) 자막을 '이미지 아래 패널'로 분리 */
+:root{
+  --caption-panel-h: clamp(200px, 30vh, 280px);
+}
+
+/* 이미지(배경) 영역을 패널 높이만큼 위로 올려, 텍스트가 덮지 않게 */
+#stage,
+#spotlight-overlay,
+#mood-overlay,
+#veil{
+  bottom: var(--caption-panel-h) !important;
+}
+
+/* 자막/해설 패널은 화면 하단에 고정 + 불투명 배경으로 읽기 좋게 */
+#caption-wrap{
+  bottom: 0 !important;
+  height: var(--caption-panel-h);
+  overflow: auto;
+  background: rgba(0,0,0,.92);
+}
+
+/* 해설(자막) 폰트 크기 조금 줄이기 */
+#caption{
+  font-size: clamp(.95rem, 3.0vw, 1.25rem) !important;
+  line-height: 1.65 !important;
+}
+
 </style>
 </head>
 <body>
