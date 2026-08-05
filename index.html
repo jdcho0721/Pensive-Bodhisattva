@@ -146,7 +146,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .intro-pages{
  width:100%; max-width:600px; display:flex; flex-direction:column;
  align-items:center; min-height:0;
- padding-bottom:84px; /* room for sticky nav on small screens */
+ padding-top:0;
+ padding-bottom:16px;
 }
 .intro-page{
  display:none; flex-direction:column; align-items:center; gap:20px; width:100%;
@@ -154,10 +155,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .intro-page.active{display:flex;}
 #intro-nav{
  display:flex; align-items:center; justify-content:center; gap:10px;
- width:100%; max-width:600px; margin-top:10px;
- position:sticky; bottom:0; z-index:999;
- padding:10px calc(8px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
- background:linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.72) 30%, rgba(0,0,0,.92));
+ width:100%; max-width:600px;
+ position:sticky; top:0; z-index:999;
+ margin:0 0 10px 0;
+ padding:calc(10px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 10px calc(8px + env(safe-area-inset-left));
+ background:linear-gradient(to bottom, rgba(0,0,0,.92), rgba(0,0,0,.72) 70%, rgba(0,0,0,0));
  backdrop-filter:saturate(120%) blur(8px);
  pointer-events:auto;
 }
@@ -212,6 +214,112 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #btn-voice-toggle{
  font-size:.78rem; padding:9px 18px; min-height:44px; margin-top:4px;
 }
+
+/* ─────────────────────────────────────────────
+   팜플렛(i) 버튼 + 모달 (모바일 접근성)
+   ───────────────────────────────────────────── */
+.info-btn{
+ position: fixed;
+ top: calc(12px + env(safe-area-inset-top));
+ right: calc(12px + env(safe-area-inset-right));
+ width: 44px;
+ height: 44px;
+ border-radius: 999px;
+ border: 1px solid rgba(255,255,255,.35);
+ background: rgba(15, 14, 12, .72);
+ color: #fff;
+ font-family: "Cinzel Decorative", serif;
+ font-weight: 700;
+ font-size: 18px;
+ line-height: 44px;
+ text-align: center;
+ cursor: pointer;
+ -webkit-tap-highlight-color: transparent;
+ backdrop-filter: blur(10px);
+}
+.info-btn:focus-visible{
+ outline: 3px solid rgba(255,255,255,.9);
+ outline-offset: 2px;
+}
+.modal[hidden]{ display:none !important; }
+.modal{
+ position: fixed;
+ inset: 0;
+ z-index: 10000;
+}
+.modal-backdrop{
+ position: absolute;
+ inset: 0;
+ background: rgba(0,0,0,.55);
+}
+.modal-panel{
+ position: absolute;
+ left: 50%;
+ top: calc(12px + env(safe-area-inset-top));
+ transform: translateX(-50%);
+ width: min(960px, calc(100vw - 24px));
+ max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+ background: rgba(250, 247, 241, .98);
+ color: #231f18;
+ border-radius: 16px;
+ overflow: hidden;
+ box-shadow: 0 24px 80px rgba(0,0,0,.45);
+ display: flex;
+ flex-direction: column;
+}
+.modal-header{
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 10px;
+ padding: 12px 12px;
+ border-bottom: 1px solid rgba(35,31,24,.15);
+}
+.modal-header h2{
+ margin: 0;
+ font-size: 16px;
+ letter-spacing: .02em;
+}
+.modal-close{
+ width: 44px;
+ height: 44px;
+ border-radius: 12px;
+ border: 1px solid rgba(35,31,24,.18);
+ background: #fff;
+ color: #231f18;
+ font-size: 22px;
+ line-height: 42px;
+ cursor: pointer;
+}
+.modal-close:focus-visible{
+ outline: 3px solid rgba(35,31,24,.65);
+ outline-offset: 2px;
+}
+.modal-body{
+ padding: 0;
+ overflow: hidden;
+}
+#pamphlet-frame{
+ width: 100%;
+ height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 68px);
+ border: 0;
+ background: #fff;
+}
+.modal-fallback{
+ margin: 0;
+ padding: 10px 12px 14px;
+ font-size: 13px;
+ border-top: 1px solid rgba(35,31,24,.12);
+ background: rgba(255,255,255,.65);
+}
+.modal-fallback a{
+ color: inherit;
+ text-decoration: underline;
+}
+body.modal-open{
+ overflow: hidden;
+ touch-action: none;
+}
 </style>
 </head>
 <body>
@@ -223,6 +331,28 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
  별도로 초점이 옮겨가지 않는 변화를 TalkBack/VoiceOver 사용자
  에게도 알려준다. 이 앱 자체 낭독을 꺼둔 경우에 특히 중요하다. -->
  <div id="page-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+ <!-- 상단 i 버튼: 전시 팜플렛(안내) -->
+ <button type="button" id="btn-pamphlet-info" class="info-btn" aria-label="전시 안내 팜플렛 보기" aria-haspopup="dialog" aria-controls="pamphlet-modal" aria-expanded="false" hidden>i</button>
+
+ <!-- 팜플렛 모달 -->
+ <div id="pamphlet-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="pamphlet-title" hidden>
+   <div class="modal-backdrop" data-close="true"></div>
+   <div class="modal-panel" role="document">
+     <div class="modal-header">
+       <h2 id="pamphlet-title">전시 안내 팜플렛</h2>
+       <button type="button" class="modal-close" data-close="true" aria-label="닫기">×</button>
+     </div>
+     <div class="modal-body">
+       <iframe id="pamphlet-frame" title="침묵의 공명 전시 안내 팜플렛" loading="lazy" referrerpolicy="no-referrer" src="침묵의공명_전시팜플렛.html"></iframe>
+       <p class="modal-fallback">
+         팜플렛이 보이지 않으면
+         <a href="침묵의공명_전시팜플렛.html" target="_blank" rel="noopener">새 창으로 열기</a>
+       </p>
+     </div>
+   </div>
+ </div>
+
 
  <!-- ── 입장 페이지: 음성 해설을 시작하기 위한 최초 클릭을 확보한다 ── -->
  <div id="landing">
@@ -289,8 +419,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
  <h2>관람 순서</h2>
  </div>
  <div class="route">
- <span><b>전시장 1 · 조우</b> — 두 조각상과 만나기 </span>
- <span><b>전시장 2 · 사유와 체화</b> — 11곳의 숨겨진 이야기</span>
+ <span><b>전시장 1 · 조우</b> <br>— 조각상들의 모습속에 숨은 이야기를 들려줍니다." </span>
+ <span><b>전시장 2 · 사유와 체화</b> <br>— 11곳의 숨겨진 이야기: 몸이 다르면, 사유도 다릅니다.</span>
  </div>
  <button class="btn primary" id="btn-enter" aria-label="침묵의 공명 전시 입장, 전시장 1 조우로 이동합니다">입장하기</button>
  </div>
@@ -370,6 +500,91 @@ const btnVoiceToggle = document.getElementById('btn-voice-toggle');
 const introPagesWrap = document.querySelector('.intro-pages');
 const introNavEl = document.getElementById('intro-nav');
 const pageStatusEl = document.getElementById('page-status');
+const btnPamphletInfo = document.getElementById('btn-pamphlet-info');
+const pamphletModal = document.getElementById('pamphlet-modal');
+const pamphletFrame = document.getElementById('pamphlet-frame');
+
+let _lastFocusBeforePamphlet = null;
+
+function _getPamphletFocusable(){
+ return Array.from(pamphletModal.querySelectorAll('button, [href], iframe, input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+  .filter(el=> !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden'));
+}
+
+function openPamphlet(){
+ _lastFocusBeforePamphlet = document.activeElement;
+ pamphletModal.hidden = false;
+ document.body.classList.add('modal-open');
+ btnPamphletInfo.setAttribute('aria-expanded', 'true');
+
+ // iframe가 로딩 중이라도 닫기 버튼으로 먼저 초점 이동(모바일 접근성)
+ const firstFocusable = _getPamphletFocusable()[0];
+ if(firstFocusable) firstFocusable.focus();
+}
+
+function closePamphlet(){
+ pamphletModal.hidden = true;
+ document.body.classList.remove('modal-open');
+ btnPamphletInfo.setAttribute('aria-expanded', 'false');
+ if(_lastFocusBeforePamphlet && typeof _lastFocusBeforePamphlet.focus === 'function'){
+  _lastFocusBeforePamphlet.focus();
+ }else{
+  btnPamphletInfo.focus();
+ }
+}
+
+function _onPamphletKeydown(e){
+ if(pamphletModal.hidden) return;
+
+ if(e.key === 'Escape'){
+  e.preventDefault();
+  closePamphlet();
+  return;
+ }
+ if(e.key !== 'Tab') return;
+
+ const focusables = _getPamphletFocusable();
+ if(focusables.length === 0) return;
+
+ const first = focusables[0];
+ const last = focusables[focusables.length - 1];
+
+ if(e.shiftKey){
+  if(document.activeElement === first){
+   e.preventDefault();
+   last.focus();
+  }
+ }else{
+  if(document.activeElement === last){
+   e.preventDefault();
+   first.focus();
+  }
+ }
+}
+
+// 모달 열기/닫기 이벤트
+btnPamphletInfo.addEventListener('click', openPamphlet);
+pamphletModal.addEventListener('click', (e)=>{
+ const t = e.target;
+ if(t && t.getAttribute && t.getAttribute('data-close') === 'true') closePamphlet();
+});
+document.addEventListener('keydown', _onPamphletKeydown, true);
+
+// iframe이 파일명을 못 찾는 경우를 대비해 대체 파일명도 시도(프로젝트 구성에 따라)
+pamphletFrame.addEventListener('error', ()=>{
+ const candidates = [
+  '침묵의공명_전시팜플렛.html',
+  '침묵의공명 전시팜플렛.html',
+  'pamphlet.html'
+ ];
+ for(const c of candidates){
+  if(pamphletFrame.getAttribute('src') !== c){
+   pamphletFrame.setAttribute('src', c);
+   break;
+  }
+ }
+});
+
 
 // room1.html·room2.html과 같은 "자체 음성 해설 켜기/끄기" — 기기의
 // TalkBack·VoiceOver를 함께 쓰는 방문객은 이 앱 낭독과 스크린리더
@@ -395,6 +610,8 @@ btnLandingStart.addEventListener('click', ()=>{
  landingEl.setAttribute('inert', '');
  introPagesWrap.style.display = '';
  introNavEl.style.display = '';
+ // 팜플렛(i) 버튼 노출
+ btnPamphletInfo.hidden = false;
  // 스크린리더 사용자가 "시작하기"를 누른 뒤에도 그 버튼(이제는 화면에서
  // 사라진) 위치에 남아있지 않도록, 이제 막 드러난 본문 영역으로 초점을
  // 직접 옮겨준다 — TalkBack/VoiceOver가 처음부터 다시 스와이프하지
