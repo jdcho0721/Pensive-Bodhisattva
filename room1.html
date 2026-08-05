@@ -509,15 +509,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          내레이션을 끝까지 들을 수 있게 했다(자막 영역 탭도 그대로
          남겨둬 비장애 사용자의 빠른 진행은 유지). -->
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
-    <div id="controls" role="group" aria-label="재생 제어">
-        <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
-<button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-    
-        <button class="btn primary" id="btn-next-exhibit" onclick="location.href='room2.html'" aria-label="다음 전시로 이동">다음 전시</button>
+<div id="controls" role="group" aria-label="재생 제어">
+    <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
+    <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" ontouchend="goToRoom2(event)" aria-label="다음 전시로 이동">다음 전시</button>
 </div>
 </div>
 
 <script>
+
+
 const LAYERS = [
 { tag:'0 · 오리엔테이션',
     lines:[
@@ -1589,6 +1590,20 @@ function _infoDialogKeydown(e){
         if(dx > 60 && dy < 60) closeInfo(); // 오른쪽으로 스와이프 → 닫기
     }, { passive:true });
 })();
+
+function goToRoom2(e) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    // 오디오나 합성음 재생 중지 후 즉시 이동
+    try { window.speechSynthesis.cancel(); } catch(err) {}
+    
+    // 모바일 환경에서 캐시나 히스토리 충돌을 방지하기 위해 replace 사용 권장
+    setTimeout(function() {
+        location.replace('room2.html');
+    }, 50);
+}
 </script>
 </body>
 </html>
