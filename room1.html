@@ -123,7 +123,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border-top:1px solid var(--gold-dim); padding-top:10px;
 }
 #next-stage-tag.show{display:block;}
-#controls{display:flex; gap:16px; justify-content:center; margin-top:18px; flex-wrap:wrap;}
+#controls{display:flex; gap:24px; justify-content:center; margin-top:18px; flex-wrap:wrap; padding:0 16px calc(12px + env(safe-area-inset-bottom));}
 .btn{background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'Noto Serif KR',serif;
      min-height:44px; display:inline-flex; align-items:center; justify-content:center; /* WCAG 2.5.5 */
      font-size:.9rem; letter-spacing:.06em; padding:11px 22px; border-radius:30px; cursor:pointer; transition:all .25s;}
@@ -271,6 +271,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   #btn-speed, #btn-easy-mode, #btn-voice-toggle{ height:auto; min-height:32px; font-size:.68rem; padding:7px 12px; letter-spacing:.02em; white-space:nowrap; flex-shrink:0; }
 }
 
+
+/* 하단 4개 버튼 터치 간격(모바일) */
+@media (max-width: 480px){
+  #controls{gap:18px; padding:0 14px calc(16px + env(safe-area-inset-bottom));}
+  #controls .btn{padding:12px 20px;}
+}
 </style>
 </head>
 <body>
@@ -466,7 +472,7 @@ const LAYERS = [
 { tag:'0 · 오리엔테이션',
     lines:[
         { text:"제 1 전시관은  《침묵의 공명》 조우관 입니다.", wide:null },
-        { text:"동양의 반가사유상과, 서양 로댕의 생각하는 사람을 직접 만나고 느껴보세요.", wide:'both' },
+        { text:"동양의 반가사유상과, 서양 로댕의 생각하는 사람의 청동복제상을 직접 만나고 느껴보세요.", wide:'both' },
         { text:"먼저 두 조각상이 무엇인지부터 짧게 소개해드리겠습니다.", wide:'both' },
         { text:"반가사유상은 삼국시대, 6에서 7세기 무렵 만들어진 불교 조각입니다.", wide:'maitreya', source:"출처: [22, 26]" },
         { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
