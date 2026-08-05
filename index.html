@@ -322,32 +322,9 @@ body.modal-open{
 }
 
 
-/* 상단 '이전/다음' 버튼(고정) */
-#top-nav{
-  position: fixed;
-  top: calc(12px + env(safe-area-inset-top));
-  right: 12px;
-  z-index: 9999;
-  display: flex;
-  gap: 10px;
-}
-#top-nav .btn{
-  height: 44px;
-  min-height: 44px;
-  padding: 0 14px;
-  border-radius: 22px;
-  font-size: .8rem;
-}
 </style>
 </head>
 <body>
-<!-- 상단 '이전/다음' 버튼 -->
-<div id="top-nav" hidden>
- <button type="button" class="btn" id="top-prev" aria-label="소개 이전 페이지로 이동">이전</button>
- <button type="button" class="btn" id="top-next" aria-label="소개 다음 페이지로 이동">다음</button>
-</div>
-
-
 <!-- ── 소개 화면: 전시 팜플렛 내용을 담은 작품 소개(모바일 가독성을
  위해 3개 페이지로 분리) ── -->
 <div id="intro">
@@ -467,9 +444,7 @@ const introPages = Array.from(document.querySelectorAll('.intro-page'));
 const introDotsWrap = document.getElementById('intro-dots');
 const introPrevBtn = document.getElementById('intro-prev');
 const introNextBtn = document.getElementById('intro-next');
-const topNextBtn = document.getElementById('top-next');
-const topPrevBtn = document.getElementById('top-prev');
-const topNav = document.getElementById('top-nav');
+
 const btnEnter = document.getElementById('btn-enter');
 let introIdx = 0;
 
@@ -640,7 +615,7 @@ btnLandingStart.addEventListener('click', ()=>{
  // 팜플렛(i) 버튼 노출
  btnPamphletInfo.hidden = false;
  // 상단 '다음' 버튼 노출
- if (topNav) topNav.hidden = false;
+ 
  // 스크린리더 사용자가 "시작하기"를 누른 뒤에도 그 버튼(이제는 화면에서
  // 사라진) 위치에 남아있지 않도록, 이제 막 드러난 본문 영역으로 초점을
  // 직접 옮겨준다 — TalkBack/VoiceOver가 처음부터 다시 스와이프하지
@@ -828,9 +803,9 @@ function goToIntroPage(i){
  d.setAttribute('aria-current', idx === introIdx ? 'true' : 'false');
  });
  introPrevBtn.disabled = (introIdx === 0);
- if (topPrevBtn) topPrevBtn.disabled = (introIdx === 0);
+
  introNextBtn.style.visibility = (introIdx === introPages.length - 1) ? 'hidden' : 'visible';
- if (topNextBtn) topNextBtn.style.visibility = (introIdx === introPages.length - 1) ? 'hidden' : 'visible';
+
  _lastPageShownAt = Date.now();
  // 이 앱 자체 낭독을 꺼둔 방문객(스크린리더만 쓰는 경우)도 지금 몇
  // 번째 페이지로 넘어왔는지는 알 수 있어야 한다. 화면은 이미
@@ -860,21 +835,6 @@ introNextBtn.addEventListener('click', ()=>{
  goToIntroPage(introIdx + 1);
 });
 goToIntroPage(0);
-if (topNextBtn) topNextBtn.addEventListener('click', ()=>{
- if(!_userGestureSeen) return; // 아직 소개 화면 전이면 무시
- if(_navBusy) return;
- _lockNavBriefly();
- goToIntroPage(introIdx + 1);
-});
-if (topPrevBtn) topPrevBtn.addEventListener('click', ()=>{
- if(!_userGestureSeen) return;
- if(_navBusy) return;
- _lockNavBriefly();
- goToIntroPage(introIdx - 1);
-});
-
-
-
 // 좌우 스와이프(모바일) — 입장 페이지가 떠 있는 동안에는 무시한다.
 let _introTouchX = null;
 document.body.addEventListener('touchstart', e=>{ _introTouchX = e.touches[0].clientX; }, { passive:true });
