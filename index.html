@@ -624,6 +624,19 @@ btnVoiceToggle.addEventListener('click', toggleNarrationVoice);
 
 btnLandingStart.addEventListener('click', ()=>{
  _userGestureSeen = true;
+
+ // iOS Safari는 첫 발화 전에 엔진이 '잠들어' 있어 중간에 끊기는 경우가 있어,
+ // 사용자 제스처 직후 아주 짧게 깨워둔다(무음/초단발).
+ try{
+  if('speechSynthesis' in window){
+   const warm = new SpeechSynthesisUtterance(' ');
+   warm.lang = 'ko-KR';
+   warm.volume = 0;
+   window.speechSynthesis.cancel();
+   window.speechSynthesis.speak(warm);
+  }
+ }catch(e){}
+
  landingEl.classList.add('hide');
  landingEl.setAttribute('aria-hidden', 'true');
  landingEl.setAttribute('inert', '');
@@ -662,6 +675,14 @@ let _ttsQueue = [];
 let _ttsBusy = false;
 let _ttsWatchdog = null;
 let _currentIntroUtterance = null; // strong ref (iOS Safari에서 중요)
+
+// 일부 모바일(특히 iOS Safari)에서는 한 조각(utterance) 자체가 콜백 없이
+// '중간에 뚝' 끊기는 경우가 있다. 그때 큐가 이미 비어있으면(문장이 짧은 경우)
+// 다음 조각으로도 못 넘어가므로, 현재 조각을 기억해 두었다가 워치독이 재시도한다.
+let _currentChunkText = '';
+let _currentChunkStartedAt = 0;
+let _currentChunkRetry = 0;
+const _MAX_CHUNK_RETRY = 2;
 
 function _isIOS(){
  const ua = navigator.userAgent || '';
@@ -715,8 +736,21 @@ function _startTTSWatchdog(){
  // 갑자기 speaking=false로 떨어졌는데 아직 큐가 남아 있으면 다음 조각을 이어서 재생
  const speaking = window.speechSynthesis.speaking;
  const pending = window.speechSynthesis.pending;
- if(!speaking && !pending && _ttsQueue.length){
- _speakNextChunk();
+
+ if(!speaking && !pending){
+  if(_ttsQueue.length){
+   _speakNextChunk();
+   return;
+  }
+  // 큐가 비어 있는데도 _ttsBusy=true인 상태라면(짧은 문장/단일 조각),
+  // 현재 조각이 콜백 없이 끊긴 것으로 보고 몇 번 재시도한다.
+  if(_currentChunkText && _currentChunkRetry < _MAX_CHUNK_RETRY && (Date.now() - _currentChunkStartedAt) > 600){
+   _currentChunkRetry++;
+   try{ window.speechSynthesis.cancel(); }catch(e){}
+   // 같은 조각을 다시 맨 앞에 넣고 이어서 재생
+   _ttsQueue.unshift(_currentChunkText);
+   _speakNextChunk();
+  }
  }
  }, _isIOS() ? 700 : 1200);
 }
@@ -725,6 +759,11 @@ function stopIntroSpeech(){
  _ttsQueue = [];
  _ttsBusy = false;
  _currentIntroUtterance = null;
+
+ _currentChunkText = '';
+ _currentChunkStartedAt = 0;
+ _currentChunkRetry = 0;
+
  _stopTTSWatchdog();
  if('speechSynthesis' in window) window.speechSynthesis.cancel();
 }
@@ -735,6 +774,10 @@ function _speakNextChunk(){
  if(!_userGestureSeen) return;
 
  const next = _ttsQueue.shift();
+ _currentChunkText = next || '';
+ _currentChunkStartedAt = Date.now();
+ _currentChunkRetry = 0;
+
  if(!next){
  _ttsBusy = false;
  _currentIntroUtterance = null;
@@ -756,7 +799,7 @@ function _speakNextChunk(){
  utter.onend = ()=>{
  _currentIntroUtterance = null;
  // onend 직후 연속 호출이 씹히는 엔진이 있어 아주 짧게 양보
- setTimeout(_speakNextChunk, 0);
+ setTimeout(_speakNextChunk, _isIOS() ? 80 : 0);
  };
  utter.onerror = ()=>{
  // 에러가 나면 남은 큐는 비우고 종료

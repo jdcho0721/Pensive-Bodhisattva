@@ -328,17 +328,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
   line-height: 1.65 !important;
 }
 
-
-
-/* ── 사용자 요청: '다음 전시' 버튼만 다시 맨 아래로 ── */
-#btn-next-exhibit{
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(12px + env(safe-area-inset-bottom));
-  z-index: 10000;
-}
-
 </style>
 </head>
 <body>
@@ -524,7 +513,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
 <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
     
-        <button class="btn primary" id="btn-next-exhibit" onclick="location.href='room2_autostart5s.html'" aria-label="다음 전시로 이동">다음 전시</button>
+        <button class="btn primary" id="btn-next-exhibit" onclick="location.href='room2.html'" aria-label="다음 전시로 이동">다음 전시</button>
 </div>
 </div>
 
@@ -755,7 +744,19 @@ function enterRoom(){
     // 스크린리더(TalkBack/VoiceOver)를 켜지 않은 상태로는 아무 소리도
     // 들리지 않았다. "시작할게요"를 누르는(또는 6초 자동 진입) 이 시점에
     // 그 문구를 먼저 읽어준 뒤 기존 안내로 이어지게 했다.
-    speak('침묵의 공명, 전시실 1, 조우, 만나기입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 마주한 두 조각상, 로댕과 반가사유상의 이야기를 들려드립니다. 편안히 들어주세요.', ()=> playLayer(0));
+    const gateText = '침묵의 공명, 전시실 1, 조우, 만나기입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 마주한 두 조각상, 로댕과 반가사유상의 이야기를 들려드립니다. 편안히 들어주세요.';
+
+// ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
+try{
+  const cw = document.getElementById('caption-wrap');
+  if(cw){ cw.removeAttribute('inert'); cw.removeAttribute('aria-hidden'); }
+}catch(e){}
+speakerTagEl.textContent = '';
+tagEl.textContent = '오리엔테이션';
+sourceEl.textContent = '';
+captionEl.innerHTML = gateText;
+
+speak(gateText, ()=> playLayer(0));
     startAmbientSound();
     fadeArrivalIn();
 }
