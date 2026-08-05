@@ -518,6 +518,21 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
 }
 
+
+/* 다음 전시 버튼 크기 조정 */
+#btn-next-exhibit{
+  font-size: clamp(0.85rem, 1.3vw, 0.98rem);
+  padding: 10px 16px;
+  min-height: 42px;
+}
+@media (max-width: 480px){
+  #btn-next-exhibit{ padding: 10px 14px; min-height: 40px; }
+}
+
+/* 모바일에서는 카메라 연결 상태 배너(상단 가림 요소)를 숨김 — PC는 유지 */
+@media (max-width: 768px){
+  #depth-status{ display:none !important; }
+}
 </style>
 </head>
 <body>
@@ -774,6 +789,24 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 </div>
 
 <script>
+// 모바일(뷰포트 기준)에서는 카메라 '연결 끊김/불가' 안내창을 숨기고, PC에서는 유지
+const IS_MOBILE_VIEWPORT = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+
+let _gateNarrationStarted = false;
+function speakGateNarration(){
+    if(_gateNarrationStarted) return;
+    const gate = document.getElementById('intro-gate');
+    if(!gate) return;
+    const ps = Array.from(gate.querySelectorAll('p')).map(p=> (p.textContent || '').trim()).filter(Boolean);
+    const title = (gate.querySelector('h1')?.innerText || '전시 안내').replace(/\s+/g,' ').trim();
+    const text = [title, ...ps].join(' ');
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    speak(text, null, { skipHandoffTiming:true });
+    _gateNarrationStarted = true;
+}
+function stopGateNarration(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+}
 /* ══════════════════════════════════════════════════════
    반응형 핫스팟 정렬 — #stage는 background-size:contain으로 배경
    이미지를 비율 유지한 채 중앙 정렬한다. 뷰포트 비율(가로/세로)이
@@ -1133,7 +1166,8 @@ if(!(window.parent && window.parent !== window)){
     _autoEnterTimer = setTimeout(enterRoom, 60000);
 }
 function enterRoom(){
-    clearTimeout(_autoEnterTimer);
+    stopGateNarration();
+clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
     // v46 — 브라우저 자동재생 정책상 AudioContext는 실제 사용자 제스처
     // 안에서 시작돼야 한다. "시작할게요" 클릭이 이 전시에서 가장 확실한
@@ -2074,8 +2108,13 @@ async function startHandTracking(){
                     : '카메라를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.';
         }
         const fullMsg = reason + ' 카메라 없이도 화면을 손끝으로 터치하거나 클릭해서 그대로 체험하실 수 있습니다.';
-        speak(fullMsg); // 화면을 보기 어려운 관람객도 원인을 놓치지 않도록 음성으로도 함께 안내
-        alert(fullMsg);
+        if(!IS_MOBILE_VIEWPORT){
+            speak(fullMsg); // PC: 음성+알림 유지
+            alert(fullMsg);
+        }else{
+            // 모바일: 상단 버튼을 가리는 '카메라 연결 끊김' 안내창(알림)을 띄우지 않는다
+            console.warn(fullMsg);
+        }
     }
 }
 
@@ -4117,6 +4156,24 @@ function _infoDialogKeydown(e){
      Server(depth_bridge_server.py)가 꺼져 있어도 4초 간격으로 재연결을
      시도할 뿐 페이지 동작에는 영향 없다 — 클릭/터치/MediaPipe 손 추적은
      이 연결과 무관하게 그대로 동작한다. -->
-<script src="depth_camera_injector.js"></script>
+<script src="depth_camera_injector.js">
+// 첫 화면(인트로 게이트)에서 음성 해설: 데스크톱은 자동 시작을 시도하고,
+// 모바일은 자동재생 제한이 많아, 첫 터치/클릭 제스처에서 시작한다.
+(function(){
+    const gate = document.getElementById('intro-gate');
+    if(!gate) return;
+
+    const startOnce = ()=> speakGateNarration();
+    gate.addEventListener('pointerdown', startOnce, { once:true, passive:true });
+    gate.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){ startOnce(); }
+    }, { once:true });
+
+    if(!IS_MOBILE_VIEWPORT){
+        setTimeout(()=>{ try{ startOnce(); }catch(e){} }, 600);
+    }
+})();
+
+</script>
 </body>
 </html>
