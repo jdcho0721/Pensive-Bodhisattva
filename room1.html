@@ -84,7 +84,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 /* ── 상단: 단계 표시 ── */
 #eyebrow{position:fixed; top:calc(18px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
     font-family:'Cinzel Decorative',serif; letter-spacing:.16em; font-size:.72rem; color:var(--gold-dim); text-transform:uppercase; text-align:center;}
-#stage-badge{position:fixed; top:calc(50px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
+#stage-badge{position:fixed; top:calc(76px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
     display:flex; gap:6px; align-items:center; z-index:30;}
 #stage-badge .dot{
     width:44px;height:44px; /* 접근성: 시각적 점은 작지만(10px) 실제 탭 가능 영역은 WCAG 2.5.5 최소 44px */
@@ -97,10 +97,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #stage-badge .dot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 
 /* ── 하단: 공용 자막/컨트롤(0~3단계 전체가 공유) ── */
-#caption-wrap{position:fixed; left:0; right:0; bottom:0; padding:28px 24px calc(28px + env(safe-area-inset-bottom));
+#caption-wrap{position:fixed; left:0; right:0; bottom:72px; padding:22px 24px calc(18px + env(safe-area-inset-bottom));
     background:linear-gradient(to top, rgba(0,0,0,.95) 40%, rgba(0,0,0,0)); z-index:25; cursor:pointer;}
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
-#caption{font-size:clamp(1rem, 3.2vw, 1.4rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
+#caption{font-size:clamp(1.1rem, 3.6vw, 1.6rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
 
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
@@ -276,6 +276,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 @media (max-width: 480px){
   #controls{gap:18px; padding:0 14px calc(16px + env(safe-area-inset-bottom));}
   #controls .btn{padding:12px 20px;}
+}
+
+/* 상단 단계 점(4개) + 설정 버튼(4개) 겹침 방지 */
+@media (max-width: 480px){
+  #stage-badge{top:calc(88px + env(safe-area-inset-top));}
+  #caption-wrap{bottom:64px; padding:20px 18px calc(16px + env(safe-area-inset-bottom));}
 }
 </style>
 </head>
@@ -460,8 +466,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
     <div id="controls" role="group" aria-label="재생 제어">
         <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
-        <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 이야기로 이동">다음</button>
-        <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
+<button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
     
         <button class="btn primary" id="btn-next-exhibit" onclick="location.href='room2.html'" aria-label="다음 전시로 이동">다음 전시</button>
 </div>
