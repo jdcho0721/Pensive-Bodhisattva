@@ -166,9 +166,52 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
     border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px); flex:0 0 auto;
 }
+/* 1. 버튼 공통 스타일에서 폰트 굵기 변화 방지 또는 크기 기준 통일 */
+.btn {
+    background: transparent; 
+    border: 1px solid var(--gold-dim); 
+    color: var(--gold); 
+    font-family: 'Noto Serif KR', serif;
+    min-height: 44px; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: .9rem; 
+    letter-spacing: .06em; 
+    padding: 11px 22px; 
+    border-radius: 30px; 
+    cursor: pointer; 
+    transition: all .25s;
+    box-sizing: border-box; /* 패딩과 테두리가 너비에 포함되도록 설정 */
+}
+
+/* 2. 멈춤/다시 시작 버튼(#btn-pause)에 고정 크기(min-width) 부여 */
+#btn-pause {
+    min-width: 110px; /* "다시 시작" 글자가 들어가도 여유 있게 수용할 수 있는 최소 너비 설정 */
+    white-space: nowrap; /* 글자가 줄바꿈되면서 크기가 왜곡되는 현상 방지 */
+}
+
+/* 3. primary 클래스가 붙었을 때 크기가 커지는 현상 제어 */
+.btn.primary {
+    background: var(--gold);
+    color: #000;
+    border-color: var(--gold);
+    /* 만약 font-weight를 700으로 주어 두꺼워지는 것 때문에 커진다면, 
+       text-shadow나 다른 방식으로 강조를 주거나 아래와 같이 width를 강제할 수 있습니다. */
+}
+
 #btn-easy-mode{
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px); flex:0 0 auto;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 22px;
+    background: rgba(0,0,0,.72);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    font-size: .8rem;
+    backdrop-filter: blur(8px);
+    flex: 0 0 auto !important; /* 크기가 임의로 늘어나지 않도록 고정 */
+    width: auto;
+    white-space: nowrap;
 }
 #btn-easy-mode[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
 /* 접근성 — room2(전시실 2)와 동일한 이유로 추가: 이 화면도 자체
@@ -276,12 +319,24 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 @media (max-width: 480px){
   #controls{gap:18px; padding:0 14px calc(16px + env(safe-area-inset-bottom));}
   #controls .btn{padding:12px 20px;}
+  #btn-easy-mode {
+        flex: 0 0 auto !important; /* 모바일에서도 크기 확장 방지 */
+        flex-shrink: 0 !important;   /* 줄어들거나 늘어나는 성질 제거 */
+        width: auto !important;      /* 강제 100% 확장 방지 */
+        max-width: none;
+    }
 }
 
 /* 상단 단계 점(4개) + 설정 버튼(4개) 겹침 방지 */
 @media (max-width: 480px){
   #stage-badge{top:calc(88px + env(safe-area-inset-top));}
   #caption-wrap{bottom:64px; padding:20px 18px calc(16px + env(safe-area-inset-bottom));}
+  #btn-easy-mode {
+        flex: 0 0 auto !important; /* 모바일에서도 크기 확장 방지 */
+        flex-shrink: 0 !important;   /* 줄어들거나 늘어나는 성질 제거 */
+        width: auto !important;      /* 강제 100% 확장 방지 */
+        max-width: none;
+    }
 }
 
 
@@ -534,13 +589,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 
 .btn.primary {
-    width: 20%;
+    width: 25%;
     padding: 14px;
     font-size: 1rem;
     font-weight: bold;
     border: 1px solid #1a1a1a;
     border-top: 1px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* 다음 전시 버튼 폭을 반으로 줄이기 */
+#btn-next-exhibit {
+    width: 15%;
+    max-width: 200px; /* 필요에 따라 최대 너비 지정 가능 */
 }
 </style>
 

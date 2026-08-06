@@ -527,18 +527,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 /* 하단 3버튼: 한 줄 고정 + 컴팩트(시각) */
 #hint-row{
-    display:flex;
-    gap:8px;
-    flex-wrap:nowrap;
-    align-items:center;
-    justify-content:space-between;
+    display: flex;
+    gap: 8px; /* 버튼 사이의 간격을 가깝게 좁힘 */
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center; /* 가운데 정렬 또는 flex-start로 변경 가능 */
 }
 #hint-row .btn{
-    flex:1 1 0;
-    padding:8px 10px;
-    font-size:.95rem;
-    white-space:nowrap;
-    min-height:44px;
+    flex: 0 0 auto; /* 기존 10% 고정 넓이 풀기 */
+    max-width: none;
+    padding: 10px 16px; /* 여백 최적화 */
+    font-size: .95rem;
+    white-space: nowrap;
+    min-height: 44px;
 }
 
 /* 초소형 화면에서 살짝 더 압축 */
