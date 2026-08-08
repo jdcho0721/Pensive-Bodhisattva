@@ -248,6 +248,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
 #refs-list p b{color:var(--gold-light);}
 #info-card .copyright{ margin-top:28px; padding-top:18px; border-top:1px solid var(--gold-dim); font-size:.78rem; color:#888; }
+#info-card figure{ margin:6px 0 16px; }
+#info-card figure img{ display:block; width:100%; max-width:320px; margin:0 auto; border-radius:4px; border:1px solid var(--gold-dim); }
+#info-card figcaption{ text-align:center; margin-top:8px; font-size:.78rem; color:#999; letter-spacing:.02em; }
 #info-close{display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px; border-radius:26px; cursor:pointer;}
 #info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
@@ -488,6 +491,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p>삼국시대 장인의 손에서 태어난 것으로 추정될 뿐, 개별 작가의 이름은 전해지지 않습니다.</p>
         <p class="label">&lt;생각하는 사람&gt; (Le Penseur)</p>
         <p>프랑스 조각가 오귀스트 로댕이 1880년경 &lt;지옥의 문&gt; 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.</p>
+        <figure>
+            <img src="gate-of-hell.png" alt="로댕의 청동 조각 <지옥의 문>. 상단 중앙에 <생각하는 사람>이 앉아 있고, 문 전체에 지옥에서 고통받는 인간 군상 200여 점이 뒤엉켜 있다.">
+            <figcaption>&lt;지옥의 문&gt; (La Porte de l'Enfer) · 출처: 로댕 미술관, 파리</figcaption>
+        </figure>
         <p class="label">오귀스트 로댕 (Auguste Rodin, 1840~1917)</p>
         <p>프랑스의 조각가. &lt;칼레의 시민&gt;, &lt;지옥의 문&gt; 등을 남겼으며, 인체의 사실적 표현과 표면의 거친 질감으로 근대 조각의 새 장을 열었다고 평가받는다.</p>
 
@@ -541,6 +548,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <span class="gate-route-item">전시장 2 · 사유와 체화</span>
     </div>
 
+    <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
+
     <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
         전시실 1 · 조우
     </button>
@@ -586,6 +595,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .gate-route-item {
     font-size: 0.85rem;
     color: #666;
+}
+
+.gate-epigraph {
+    font-family: 'Noto Serif KR', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: rgba(212,175,55,.85);
+    letter-spacing: .02em;
+    line-height: 1.6;
+    word-break: keep-all;
+    margin: 0 0 20px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(212,175,55,.25);
 }
 
 .btn.primary {
@@ -752,6 +774,7 @@ const DIALOGUE = [
     "생각이 잦아드는 그 순간 찾아오는 마음의 자유를, 근심을 모두 내려놓은 이 미소가 말없이 전합니다.",
     "모든 소리가 멈춘 뒤에야 들리는 진짜 소리가 있다는 듯, 뺨에 닿은 손가락은 세상의 소란을 가만히 막아주고 있습니다.",
     "화가 전준엽은 이 미소를, 모나리자의 미소를 뛰어넘는 신비로운 미소라고 평했습니다.",
+    "모나리자가 르네상스적 이성과 기하학적 황금비(1:1.618)를 바탕으로 치밀하게 계산된 화면을 보여준다면, 국보 83호 반가사유상은 생각의 깊이와 종교적 초월성을 극대화하기 위해 인체를 유연하고 독창적인 비례로 재창조하였습니다.",
     "그가 보기에 이 얼굴은 군더더기 없이 흐르는 선으로 다듬어져 있으며, 어디에도 걸리거나 막히지 않는 맑은 생각의 상태를 담고 있습니다. 이 얼굴에 가만히 귀를 가까이 대면, 먼 산사에서 울려오다 잦아드는 종소리처럼 은은한 고요가 들려올 듯합니다."
   ],
   linesSimple:[
@@ -760,9 +783,10 @@ const DIALOGUE = [
     "걱정을 다 내려놓으면 마음이 자유로워집니다. 이 미소가 그 마음을 보여줍니다.",
     "손가락이 뺨에 닿아, 시끄러운 세상을 잠시 막아주는 듯합니다.",
     "화가 전준엽은 이 미소가 모나리자보다 신비롭다고 말했습니다.",
+    "모나리자는 정확한 비율과 계산으로 그려졌습니다. 반면 국보 83호 반가사유상은 깊은 생각과 종교적 마음을 표현하기 위해, 몸의 비율을 자유롭고 창의적으로 만들었습니다.",
     "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다. 이 얼굴에 귀를 대면, 먼 종소리처럼 조용한 울림이 들리는 듯합니다."
   ],
-  sources:["출처: [22, 26]", null, null, null, "출처: 전준엽 [37]", "출처: 전준엽 [37]"],
+  sources:["출처: [22, 26]", null, null, null, "출처: 전준엽 [37]", null, "출처: 전준엽 [37]"],
   spots:[{x:75, y:30.0}, {x:75, y:35.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
   intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
@@ -1761,6 +1785,258 @@ function goToRoom2(e) {
         location.replace('room2.html');
     }, 50);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   v-noscreenreader — 사용자 요청: "시각장애인이 모바일에서 스크린리더
+   (TalkBack/VoiceOver) 없이도 사용할 수 있도록 만들어 달라."
+
+   이 파일은 이미 스크린리더 사용자를 위한 장치(aria-label, aria-live
+   자막, 자체 speak() 내레이션 등)를 폭넓게 갖추고 있다. 하지만 그중
+   상당수는 "스크린리더가 켜져 있을 때만" 실제로 전달된다는 한계가
+   있었다:
+     1) 진입 버튼의 "화면을 두 번 탭하여…" 같은 사용법 안내는
+        aria-label에만 있어, 스크린리더 없이는 그 안내 자체가 전혀
+        들리지 않는다.
+     2) "다음"으로 넘어가는 큰 탭 영역은 하단 자막 패널(#caption-wrap)
+        뿐이라, 화면 위쪽·조각상 이미지 부분을 두드리면 아무 반응이
+        없는 "죽은 영역"이었다 — 화면을 볼 수 없는 사용자는 어디를
+        눌러야 반응이 오는지 시행착오로도 알아내기 어렵다.
+     3) 뒤로가기·일시정지는 각각 작은 버튼을 정확히 짚어야만 동작해,
+        화면을 보지 않고는 버튼 위치를 찾기 어렵다.
+
+   아래 코드는 이 세 가지를 보강한다 — 기존 버튼·aria-label·스크린
+   리더 지원은 그대로 둔 채(제거하거나 대체하지 않음), 화면 전체를
+   활용하는 "제스처 계층"을 그 위에 추가로 얹는다:
+     · 화면 아무 곳이나 한 번 두드리면(짧은 탭) → 다음으로 진행
+       (진입 화면에서는 전시 시작)
+     · 화면을 오른쪽으로 쓸어넘기면(swipe) → 바로 이전 문장으로
+     · 화면을 왼쪽으로 쓸어넘기면 → 다음 문장으로(탭과 동일, 여분의
+       동작)
+     · 화면을 길게 누르면(0.6초 이상) → 재생/일시정지 전환
+   기존의 실제 버튼(뒤로/멈춤/다음 전시, 상단 설정 버튼, 정보창, 단계
+   점) 위에서는 이 제스처 계층이 전혀 개입하지 않는다 — 그 버튼들은
+   지금까지와 똑같이 동작한다. 또한 모든 동작에 짧은 진동(가능한
+   기기에서)을 함께 줘서, 소리를 놓치더라도 "지금 탭이 인식됐다"는
+   촉각 확인을 받을 수 있게 했다.
+
+   더불어, 진입 화면에서 스크린리더 없이도 이 조작법을 "귀로" 미리
+   들을 수 있도록, 페이지가 뜨자마자(그리고 안전장치로 첫 터치 시점에
+   한 번 더) 이 앱 자체 음성(speak())으로 조작법을 안내한다. 사용자가
+   바로 두드리지 않으면 몇 초 간격으로 짧게 한 번씩 되짚어준다(진입
+   화면을 벗어나면 저절로 멈춘다) — 기존 20초 자동 시작 안전장치는
+   그대로 남겨둔다.
+   ══════════════════════════════════════════════════════════════ */
+(function initNoScreenReaderGestures(){
+    // 이름·역할을 가진 개별 버튼들이 모여 있는 영역 — 이 안에서는
+    // "전체 화면 탭=다음" 같은 단순 동작 대신, 아래에서 구현하는
+    // "터치 탐색 + 재확인 탭" 방식을 쓴다.
+    const EXCLUDE_SELECTOR = '#top-controls, #info-overlay, #stage-badge, #controls, #skiplink';
+    // 그 영역 안에서 실제로 이름을 말해주고 활성화할 대상(버튼·링크·점).
+    const CONTROL_SELECTOR = 'button, [role="button"], a, .dot';
+
+    function withinExcluded(el){
+        return !!(el && el.closest && el.closest(EXCLUDE_SELECTOR));
+    }
+    function isGateShowing(){
+        const gate = document.getElementById('intro-gate');
+        return !!(gate && gate.style.display !== 'none');
+    }
+    // 버튼의 "이름"을 사람이 읽을 문장으로 뽑아낸다 — 스크린리더가
+    // 읽는 것과 같은 우선순위(aria-label 우선, 없으면 화면에 보이는
+    // 글자)를 그대로 따른다.
+    function getAccessibleName(el){
+        if(!el) return '이름 없는 버튼';
+        const label = el.getAttribute && el.getAttribute('aria-label');
+        if(label && label.trim()) return label.trim();
+        const text = (el.textContent || '').trim();
+        if(text) return text;
+        const title = el.getAttribute && el.getAttribute('title');
+        if(title && title.trim()) return title.trim();
+        return '이름 없는 버튼';
+    }
+
+    // v-pc-fix — 참가자 보고: "PC에서는 길게 누르기가 안 된다." 원인은
+    // 이 제스처 계층 전체를 touchstart/touchmove/touchend(터치 전용
+    // 이벤트)로만 만들어서였다 — 마우스로는 그 이벤트 자체가 전혀
+    // 발생하지 않는다. 터치·마우스·펜을 모두 하나로 다루는 포인터
+    // 이벤트(pointerdown/pointermove/pointerup)로 바꿔, PC에서는
+    // "마우스 버튼을 누른 채 0.6초"가 길게 누르기로, 모바일에서는
+    // 지금까지와 동일하게 손가락을 댄 채 0.6초가 길게 누르기로
+    // 동작하도록 통일했다(코드도 하나만 유지하면 되어 더 안전하다).
+    let startX = 0, startY = 0, startTime = 0, downTarget = null;
+    let longPressTimer = null, longPressFired = false, draggedFar = false;
+    let suppressNextClick = false;
+    let pointerIsDown = false, activePointerId = null;
+
+    // ── 버튼 영역 전용: "한 번 탭/클릭 = 이름 말하기(탐색)", "같은
+    //    버튼을 2.5초 안에 한 번 더 = 실제로 실행"하는 상태 ──
+    let armedControl = null, armedAt = 0;
+    const ARM_WINDOW_MS = 2500;
+    // 손가락(또는 마우스)을 누른 채 훑을 때, 지나가는 버튼마다 이름을
+    // 한 번씩 말해준다(같은 버튼 위에 머무는 동안 반복해서 말하지 않는다).
+    let lastExploredControl = null;
+
+    function speakControlName(el){
+        try{ hapticPulse('turn'); }catch(err){}
+        speak(getAccessibleName(el));
+    }
+
+    function handlePointerDown(x, y, target){
+        startX = x; startY = y; startTime = Date.now();
+        downTarget = target;
+        longPressFired = false; draggedFar = false;
+        lastExploredControl = null;
+        if(withinExcluded(downTarget)) return; // 버튼 영역은 아래 move/up에서 별도 처리
+        longPressTimer = setTimeout(function(){
+            longPressFired = true;
+            suppressNextClick = true;
+            try{ hapticPulse('turn'); }catch(err){}
+            if(!isGateShowing()){ try{ onPauseClick(); }catch(err){} }
+            setTimeout(function(){ suppressNextClick = false; }, 400);
+        }, 600);
+    }
+
+    function handlePointerMove(x, y){
+        if(Math.abs(x - startX) > 12 || Math.abs(y - startY) > 12){
+            draggedFar = true;
+            if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; }
+        }
+        // ── 누른 채로 화면을 훑는 동안, 지금 그 아래 있는 버튼의
+        //    이름을 실시간으로 말해준다("터치 탐색"). 버튼 영역 밖에서는
+        //    아무 것도 하지 않는다(원래 콘텐츠 탐색용 동작과 겹치지
+        //    않도록).
+        const under = document.elementFromPoint(x, y);
+        const control = under && under.closest ? under.closest(CONTROL_SELECTOR) : null;
+        const controlInRegion = control && withinExcluded(control) ? control : null;
+        if(controlInRegion !== lastExploredControl){
+            lastExploredControl = controlInRegion;
+            if(controlInRegion){ speakControlName(controlInRegion); }
+        }
+    }
+
+    function handlePointerUp(x, y, upTarget){
+        clearTimeout(longPressTimer); longPressTimer = null;
+        if(longPressFired){ longPressFired = false; return; } // 이미 길게 누르기로 처리됨
+
+        const target = downTarget || upTarget;
+
+        // ── 버튼 영역: 탐색(1차)과 실행(같은 버튼 2차)을 분리 ──
+        if(withinExcluded(target)){
+            const control = target.closest ? target.closest(CONTROL_SELECTOR) : null;
+            if(!control) return; // 버튼이 아닌 영역(여백 등)을 짚었으면 아무 것도 하지 않는다
+            if(draggedFar){
+                return; // 끌며 탐색만 하다 뗀 경우 — 실행하지 않는다.
+            }
+            const now = Date.now();
+            if(armedControl === control && (now - armedAt) < ARM_WINDOW_MS){
+                // 같은 버튼을 다시 탭/클릭 → 실제로 실행(원래 클릭 동작을 그대로 통과시킨다).
+                armedControl = null;
+                try{ hapticPulse('stage'); }catch(err){}
+                return; // suppressNextClick을 켜지 않으므로 뒤이은 click이 정상 실행된다
+            }
+            // 처음 짚은 버튼 → 아직 실행하지 않고 이름만 말해준다.
+            armedControl = control; armedAt = now;
+            suppressNextClick = true;
+            speakControlName(control);
+            setTimeout(function(){ suppressNextClick = false; }, 400);
+            return;
+        }
+
+        if(draggedFar) return; // 버튼 밖에서 끌기만 한 경우는 아무 동작 없음
+
+        const dt = Date.now() - startTime;
+        const dx = x - startX, dy = y - startY;
+
+        // 좌우로 60px 이상, 위아래로는 60px 미만 움직였다면 스와이프로 본다.
+        if(Math.abs(dx) > 60 && Math.abs(dy) < 60){
+            if(isGateShowing()) return; // 진입 화면에서는 스와이프를 쓰지 않는다
+            suppressNextClick = true;
+            try{ hapticPulse('turn'); }catch(err){}
+            if(dx > 0){ try{ onBackClick(); }catch(err){} }      // 오른쪽으로 쓸어넘기기 → 이전
+            else { try{ onNextClick(); }catch(err){} }            // 왼쪽으로 쓸어넘기기 → 다음
+            setTimeout(function(){ suppressNextClick = false; }, 400);
+            return;
+        }
+
+        // 스와이프가 아니면 짧은 탭/클릭.
+        if(dt < 600){
+            if(isGateShowing()){
+                // 진입 화면: "시작" 버튼 자체를 짚었다면 버튼의 원래
+                // 클릭에 맡기고(중복 호출 방지), 그 외 화면 어디를
+                // 두드려도 같은 동작(전시 시작)으로 취급한다.
+                if(target && target.closest && target.closest('.btn.primary')) return;
+                suppressNextClick = true;
+                try{ hapticPulse('turn'); }catch(err){}
+                try{ enterRoom(); }catch(err){}
+                setTimeout(function(){ suppressNextClick = false; }, 400);
+                return;
+            }
+            // 이미 하단 자막 패널(#caption-wrap) 안이라면 그 영역 자체의
+            // onclick(onCaptionAreaClick)이 곧 처리하므로 여기서는
+            // 손대지 않는다(중복 진행 방지).
+            if(target && target.closest && target.closest('#caption-wrap')) return;
+            // 그 외 화면(조각상 이미지·여백 등 "죽은 영역")을 두드리면
+            // 자막 패널을 두드린 것과 똑같이 다음으로 진행한다.
+            suppressNextClick = true;
+            try{ hapticPulse('turn'); }catch(err){}
+            try{ onNextClick(); }catch(err){}
+            setTimeout(function(){ suppressNextClick = false; }, 400);
+        }
+    }
+
+    // ── 포인터 이벤트 배선: 마우스(PC)·터치(모바일)·펜을 한 코드로 ──
+    document.addEventListener('pointerdown', function(e){
+        // 마우스는 주 버튼(왼쪽 클릭)만, 터치/펜은 그대로 받는다.
+        if(e.pointerType === 'mouse' && e.button !== 0) return;
+        pointerIsDown = true; activePointerId = e.pointerId;
+        handlePointerDown(e.clientX, e.clientY, e.target);
+    });
+    document.addEventListener('pointermove', function(e){
+        if(!pointerIsDown || e.pointerId !== activePointerId) return;
+        handlePointerMove(e.clientX, e.clientY);
+    });
+    function onPointerRelease(e){
+        if(e.pointerId !== activePointerId) return;
+        pointerIsDown = false; activePointerId = null;
+        handlePointerUp(e.clientX, e.clientY, e.target);
+    }
+    document.addEventListener('pointerup', onPointerRelease);
+    document.addEventListener('pointercancel', function(e){
+        clearTimeout(longPressTimer); longPressTimer = null;
+        pointerIsDown = false; activePointerId = null;
+    });
+
+    // 위에서 이미 직접 처리한 제스처(길게 누르기·스와이프·죽은 영역
+    // 탭·버튼 1차 탐색 탭) 뒤에 브라우저가 자동으로 발생시키는 click
+    // 이벤트가 또 한 번 같은 동작을 실행하지 않도록 잠깐 막아준다.
+    document.addEventListener('click', function(e){
+        if(suppressNextClick){ e.stopPropagation(); e.preventDefault(); }
+    }, true);
+
+    // ── 진입 화면에서, 스크린리더 없이도 위 조작법을 미리 들려준다 ──
+    let onboardingSpoken = false;
+    function speakOnboardingIfNeeded(){
+        if(onboardingSpoken) return;
+        if(!isGateShowing()) return;
+        onboardingSpoken = true;
+        const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 화면 아무 곳이나 한 번 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작합니다. 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 두드리면 실행됩니다. 지금 화면을 두드리면 시작합니다.';
+        try{
+            speak(msg, function remind(){
+                setTimeout(function again(){
+                    if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
+                    speak('화면 아무 곳이나 두드리면 시작합니다.', function(){
+                        setTimeout(again, 8000);
+                    });
+                }, 6000);
+            });
+        }catch(err){}
+    }
+    // 자동재생 제약이 있는 브라우저를 위한 이중 안전장치: 로드 직후
+    // 한 번 시도하고, 첫 입력이 실제 사용자 제스처이므로 그 시점에도
+    // 한 번 더 시도한다(둘 중 먼저 성공하는 쪽만 실제로 말한다).
+    setTimeout(speakOnboardingIfNeeded, 700);
+    document.addEventListener('pointerdown', speakOnboardingIfNeeded, { once:true });
+})();
 </script>
 </body>
 </html>
