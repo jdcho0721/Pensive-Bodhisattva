@@ -641,7 +641,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
     <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
 
-    <p style="color:var(--gold-light); font-weight:700; font-size:clamp(0.85rem,1.6vw,1rem); letter-spacing:.02em;">아래 <b>'전시실 1 · 조우'</b> 버튼을 눌러주세요.</p>
 
     <button class="btn primary" onclick="handleGateEntryTap()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
         전시실 1 · 조우
@@ -780,7 +779,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="controls" role="group" aria-label="재생 제어">
     <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
     <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="다음전시 버튼입니다.">다음 전시</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시2 버튼입니다.">전시2</button>
 </div>
 </div>
 
@@ -963,7 +962,7 @@ function toggleNarration(){
 let autoTimer = null;   
 let speechGen = 0;      
 const LINE_PAUSE_MS  = 1100;  // v49 — 참가자 요청: "자막이 빨리 지나간다." 문장이 끝난 뒤 다음 문장으로 넘어가기 전 여백을 700ms → 1100ms로 늘려 읽을 시간을 더 준다.
-const LAYER_PAUSE_MS = 2000;  
+const LAYER_PAUSE_MS = 1300;  // v-faster-stage — 참가자 요청: "한 페이지에서 다음 페이지로 이동하는 속도가 느리다." 한 단계(레이어/턴)가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 2000ms → 1300ms로 줄였다. 문장 사이 여백(LINE_PAUSE_MS)은 위 v49의 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');
 const sourceEl = document.getElementById('source-tag');
