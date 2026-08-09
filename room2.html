@@ -234,7 +234,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    구분 규칙은 더 이상 필요 없어 제거했다 — #caption-wrap과 그 자식들은
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
 #focus-tag{font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
-#caption{font-size:clamp(1rem,3.4vw,1.35rem);line-height:1.7;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
+#caption{font-size:clamp(.5rem,1.7vw,.675rem);line-height:1.7;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
    숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다. */
@@ -259,11 +259,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption .qa-a{color:var(--gold);}
 
 #hint-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
-#hint-row .btn{font-size:1.05rem; padding:13px 26px;}
+#hint-row .btn{font-size:.53rem; padding:7px 13px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
-     min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
+     min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역. 시각 크기를 줄여도 이 값은 유지한다 */
      display:inline-flex;align-items:center;justify-content:center;
-     font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
+     font-size:.43rem;padding:5px 9px;border-radius:12px;cursor:pointer;white-space:normal;word-break:keep-all;}
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 
@@ -275,7 +275,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    함께 커지도록 했다. */
 #chat-toggle{position:fixed;right:16px;bottom:calc(190px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
-    min-width:52px;min-height:52px;padding:0.4em;font-size:1.3rem;line-height:1;cursor:pointer;}
+    min-width:44px;min-height:44px;padding:0.2em;font-size:.65rem;line-height:1;cursor:pointer;}
 /* v13 — 참가자 요청: 챗봇 창이 아래 자막을 가리고, 위치를 옮길 방법이
    없었다. 기본 위치를 화면 아래에서 더 띄우고(180px → 260px), 창
    맨 위에 드래그 전용 손잡이(제목줄)를 새로 둬서 화면 어디로든 옮길
@@ -358,13 +358,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    펼쳐지도록 했다 — 자세한 배경은 위 #chat-panel 정의 옆 v50 주석
    참고. */
 #chat-suggestions .chip{background:transparent;border:1px solid var(--gold-dim);color:var(--gold-light);
-    font-family:'Noto Serif KR',serif;font-size:.76rem;padding:6px 12px;border-radius:16px;cursor:pointer;
+    font-family:'Noto Serif KR',serif;font-size:.38rem;padding:3px 6px;border-radius:16px;cursor:pointer;
     white-space:normal;word-break:keep-all;text-align:left;}
 #chat-suggestions .chip:hover,#chat-suggestions .chip:focus-visible{background:rgba(212,175,55,.15);border-color:var(--gold);}
 #chat-suggestions.hide{display:none;}
 #chat-form{display:flex;gap:6px;flex:0 0 auto;}
 #chat-input{flex:1;background:#111;border:1px solid var(--gold-dim);color:#eee;border-radius:20px;padding:8px 14px;font-family:inherit;font-size:.85rem;}
-#chat-send{background:var(--gold);border:none;color:#000;border-radius:20px;padding:8px 16px;font-weight:700;cursor:pointer;min-height:44px;}
+#chat-send{background:var(--gold);border:none;color:#000;border-radius:20px;padding:4px 8px;font-weight:700;cursor:pointer;min-height:44px;font-size:.7rem;}
 /* v48 — 모바일 음성 입력. index.html(전시실 1)의 mic-trigger를 챗봇
    입력창에 이식. 평상시엔 다른 아이콘 버튼(#chat-send 등)과 같은
    금색 톤이고, 듣는 중(.active)에는 .suggested 핫스팟과 같은 청록색
@@ -372,7 +372,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    의미로 쓰이고 있는 색 코딩(FIT, 위 v4 주석 참고)을 그대로 재사용해
    새로운 색을 배우지 않아도 되게 했다. */
 #chat-mic{background:rgba(212,175,55,.14);border:1px solid var(--gold-dim);color:var(--gold-light);
-    border-radius:50%;width:44px;height:44px;min-width:44px;flex:0 0 44px;cursor:pointer;font-size:1.05rem;
+    border-radius:50%;width:44px;height:44px;min-width:44px;flex:0 0 44px;cursor:pointer;font-size:.53rem;
     display:flex;align-items:center;justify-content:center;transition:background .3s ease,box-shadow .3s ease;}
 #chat-mic:hover,#chat-mic:focus-visible{background:rgba(212,175,55,.26);}
 #chat-mic:focus-visible{outline:3px solid #fff;outline-offset:2px;}
@@ -389,30 +389,30 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     justify-content:center;gap:36px;text-align:center;padding:32px;}
 #intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.1rem,3.5vw,2.1rem);letter-spacing:.1em;line-height:1.5;}
 #intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.85rem,1.8vw,1.05rem);word-break:keep-all;}
-#intro-gate .btn{font-size:clamp(0.85rem,1.4vw,1rem);padding:10px 22px;}
+#intro-gate .btn{font-size:clamp(.43rem,.7vw,.5rem);padding:5px 11px;}
 
 /* ══════════════════════════════════════════════════════
    작품·작가 소개 / 저작권 — 공통 정보 오버레이
    ══════════════════════════════════════════════════════ */
 #info-btn{
     position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; z-index:45;
-    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 38px→44px */
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.95rem; cursor:pointer;
+    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 38px→44px, 최소 터치 영역이라 지름은 유지 */
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.48rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #speed-btn{
     position:fixed; top:calc(12px + env(safe-area-inset-top)); left:64px; z-index:45;
-    height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    height:44px; min-width:44px; padding:0 6px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.4rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
     font-family:'Noto Serif KR',serif;
 }
 #speed-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #easy-mode-btn{
     position:fixed; top:calc(12px + env(safe-area-inset-top)); left:148px; z-index:45;
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    height:44px; padding:0 7px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.4rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
     font-family:'Noto Serif KR',serif; white-space:nowrap;
 }
@@ -434,8 +434,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    강조색으로 계속 전달된다). */
 #voice-toggle-btn{
     position:fixed; top:calc(12px + env(safe-area-inset-top)); left:236px; z-index:45;
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    height:44px; padding:0 7px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.4rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
     font-family:'Noto Serif KR',serif; white-space:nowrap;
 }
@@ -558,10 +558,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    - 요청 반영: 버튼 크기 작게(시각), 라벨 변경, 하단 3버튼 1줄
    ══════════════════════════════════════════════════════ */
 
-/* 상단 컨트롤: 텍스트/패딩을 줄여 시각적으로 더 컴팩트하게 */
+/* 상단 컨트롤: 텍스트/패딩을 줄여 시각적으로 더 컴팩트하게 (요청 반영: 절반 축소) */
 #speed-btn,#easy-mode-btn,#voice-toggle-btn{
-    font-size:.92rem;
-    padding:0 10px;
+    font-size:.46rem;
+    padding:0 5px;
     letter-spacing:-.01em;
 }
 
@@ -576,17 +576,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #hint-row .btn{
     flex: 0 0 auto; /* 기존 10% 고정 넓이 풀기 */
     max-width: none;
-    padding: 10px 16px; /* 여백 최적화 */
-    font-size: .95rem;
+    padding: 5px 8px; /* 여백 최적화 (요청 반영: 절반 축소) */
+    font-size: .48rem;
     white-space: nowrap;
-    min-height: 44px;
+    min-height: 44px; /* WCAG 2.5.5 최소 터치 영역 — 유지 */
 }
 
 /* 초소형 화면에서 살짝 더 압축 */
 @media (max-width: 360px){
-    #speed-btn,#easy-mode-btn,#voice-toggle-btn{font-size:.88rem;padding:0 8px;}
+    #speed-btn,#easy-mode-btn,#voice-toggle-btn{font-size:.44rem;padding:0 4px;}
     #hint-row{gap:6px;}
-    #hint-row .btn{padding:8px 8px;font-size:.9rem;min-height:44px;}
+    #hint-row .btn{padding:4px 4px;font-size:.45rem;min-height:44px;}
 }
 
 </style>
@@ -1249,8 +1249,8 @@ function enterRoom(){
     // 없어서, 기기 스크린리더(TalkBack/VoiceOver)를 켜지 않으면 아무
     // 소리도 들리지 않았다. "시작할게요"를 누르는(또는 자동 진입) 이
     // 시점에 그 문구를 먼저 읽어준 뒤 기존 자세 안내로 이어지게 했다.
-    const introPage1 = '침묵의 공명, 전시실 2, 사유와 체화, 몸으로 생각하기입니다. 사유는 어느 한 곳에 마음을 두고 깊이 생각한다는 뜻이고, 체화는 그 생각을 몸으로 직접 겪어보는 것을 말합니다. 손끝으로 짚은 부위 하나하나에 잠시 머무르며 마음으로 사유하고, 때로는 그 모습을 몸으로 따라 하며 체화해 보세요. 두 조각상이 그 자리에서 무슨 생각을 하고 있었을지, 손끝과 몸으로 함께 헤아려보는 시간입니다.';
-    const introPage2 = '반가사유상은 오른발을 왼쪽 무릎 위에 얹은 자세로, 로댕의 생각하는 사람은 팔꿈치를 무릎에 괴고 몸을 웅크린 자세로 앉아 있습니다. 손끝으로 부위를 짚을 때마다 그 부위의 가장 인상적인 디테일을 짧게 들려드리고, 궁금한 것은 언제든 챗봇에게 물어보실 수 있습니다.';
+    const introPage1 = '침묵의 공명, 전시실 2, 사유와 체화, 몸으로 생각하기입니다. 손끝으로 짚은 부위 하나하나에 잠시 머무르며 마음으로 사유하고, 때로는 그 모습을 몸으로 따라해 보세요.';
+    const introPage2 = '손끝으로 부위를 짚을 때마다 인상적인 디테일을 들려드리고, 궁금한 것은 언제든 챗봇에게 물어보새요.';
 
     // ✅ v.intro-split — 첫 해설이 너무 길어 자막/청취가 부담된다는 피드백 반영:
     // "두 페이지"처럼 2번에 나눠 보여주고(자막도 함께 갱신), 1페이지가 끝나면 2페이지를 이어서 읽는다.
