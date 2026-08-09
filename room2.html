@@ -50,7 +50,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    전혀 없고, 자막 영역은 이전 v33보다 더 넉넉한 높이로 잡아 "길게" 나오라는
    요청도 함께 만족시킨다. */
 #room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden;}
-#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
+#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center calc(50% + 10%);
+    background-size:contain;;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
    JS가 매번 인라인 스타일로 덮어써서 맞춘다. */
@@ -185,12 +186,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     z-index:11;
 }
 
-#top-bar{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;z-index:30;pointer-events:none;}
-#top-bar > *{pointer-events:auto;}
+/* v-progress-below-image — 참가자 요청: "탐색한 부분을 점으로 나타내는
+   바는 이미지 바로 아래로 이동해줘. 작게 해서." 기존엔 position:fixed로
+   화면 맨 위에 떠서 이미지 위에 겹쳐 있었다. #stage 바로 다음 DOM
+   순서에 있던 걸 이용해, 고정 위치를 없애고 평범한 flex 자식으로
+   바꾸기만 하면 자연히 이미지(#stage) 바로 아래, 자막창(#caption-wrap)
+   바로 위에 놓인다 — 이미지가 실제로 얼마나 크게 그려지든(레터박스
+   포함) 상관없이 항상 "이미지 바로 아래"를 유지한다. */
+#top-bar{position:relative;flex:0 0 auto;width:100%;display:flex;justify-content:center;align-items:center;
+    padding:4px 10px;z-index:20;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
-#progress-pill{display:flex;gap:5px;align-items:center;}
-#progress-pill .dot{width:6px;height:6px;border-radius:50%;background:rgba(212,175,55,.25);}
-#progress-pill .dot.on{background:var(--gold);box-shadow:0 0 6px var(--gold);}
+#progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
+#progress-pill .dot{width:4px;height:4px;border-radius:50%;background:rgba(212,175,55,.25);}
+#progress-pill .dot.on{background:var(--gold);box-shadow:0 0 4px var(--gold);}
 
 #hw-panel{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:30;
     background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);border-radius:12px;padding:8px 12px;
@@ -229,7 +237,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    구분 규칙은 더 이상 필요 없어 제거했다 — #caption-wrap과 그 자식들은
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
 #focus-tag{font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
-#caption{font-size:clamp(1rem,3.4vw,1.35rem);line-height:1.7;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
+#caption{font-size:clamp(.85rem,2.8vw,1.1rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
    숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다. */
@@ -243,7 +251,44 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption b{color:var(--gold-light);}
 
-#hint-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+#hint-row{
+    display:flex;
+    gap:6px;
+    justify-content:center;
+    flex-wrap:nowrap; /* 2. 줄바꿈 없이 한 줄에 배치 */
+    margin-bottom:10px;
+    overflow-x:auto; /* 화면이 아주 좁을 경우를 대비한 안전망 */
+}
+#hint-row .btn{
+    height:36px;
+    min-height:36px;
+    padding:0 10px;
+    border-radius:18px;
+    background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim);
+    color:var(--gold);
+    font-size:.66rem;
+    font-family:'Noto Serif KR',serif;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(8px);
+    white-space:nowrap;
+    word-break:keep-all;
+    cursor:pointer;
+}
+/* 마치기 버튼(primary)은 기존 속성 유지 혹은 필요시 조화롭게 설정 */
+#hint-row .btn.primary{
+    background:var(--gold);
+    color:#1a1408;
+    font-weight:700;
+    border-color:var(--gold);
+}
+/* 2. '다시 듣기', '여일', '전시1' 버튼의 크기를 위의 '쉬운 문장' 버튼과 동일하게 맞춤 *
+#hint-row .btn:focus-visible{
+    outline:3px solid #fff;
+    outline-offset:2px;
+}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
@@ -277,6 +322,55 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     z-index:36;background:rgba(8,8,8,.96);border:1px solid var(--gold-dim);border-radius:16px;padding:0 14px 14px;
     display:none;height:38vh;min-height:120px;max-height:80vh;flex-direction:column;gap:8px;overflow:hidden;}
 #chat-panel.open{display:flex;}
+
+/* ══════════════════════════════════════════════════════
+   v-chat-fullscreen — 챗봇을 다른 화면 요소와 겹치지 않는 전체 화면
+   페이지처럼 보이게 한다. 열리면(.open) 작은 뜬 창 대신 #room-layout
+   안에서 #stage(조각상)가 있던 자리를 통째로 차지하는 전체 화면
+   패널로 바뀐다. #caption-wrap(답변이 표시되는 해설창)은 그대로
+   아래에 남아 있어, 챗봇 답변이 나오는 방식(showChatAnswerInCaption)은
+   전혀 손대지 않고도 화면 전체가 "챗봇 전용 페이지"처럼 보인다.
+   드래그·리사이즈 손잡이는 뜬 창일 때만 의미가 있으므로 이 모드에서
+   숨기고, 대신 위쪽에 '← 돌아가기' 헤더를 둔다. toggleChat()이
+   history.pushState로 이 상태를 기록해, 브라우저/기기의 뒤로가기로도
+   실제 페이지 이동처럼 닫을 수 있다.
+   ══════════════════════════════════════════════════════ */
+#chat-panel.open{
+    position:static; flex:1 1 auto; width:100%; max-width:none;
+    height:auto; min-height:0; max-height:none;
+    margin:0; border-radius:0; border-left:none; border-right:none; border-top:none;
+    overflow-y:auto;
+}
+#chat-page-header{display:none;}
+#chat-panel.open #chat-page-header{
+    display:flex; flex:0 0 auto; align-items:center; gap:12px;
+    margin:0 -14px; padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+    border-bottom:1px solid rgba(212,175,55,.18);
+}
+#chat-back-btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold-light);
+    font-family:'Noto Serif KR',serif;font-size:.85rem;padding:7px 14px;border-radius:14px;cursor:pointer;
+    min-height:44px;display:inline-flex;align-items:center;flex:0 0 auto;}
+#chat-back-btn:hover,#chat-back-btn:focus-visible{background:rgba(212,175,55,.15);border-color:var(--gold);}
+#chat-back-btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
+#chat-page-title{color:var(--gold);letter-spacing:.05em;font-size:.9rem;font-family:'Cinzel Decorative',serif;}
+#chat-panel.open #chat-drag-handle,
+#chat-panel.open #chat-resize-handle,
+#chat-panel.open #chat-corner-resize,
+#chat-panel.open #chat-resize-edge-top,
+#chat-panel.open #chat-resize-edge-bottom,
+#chat-panel.open #chat-resize-edge-left,
+#chat-panel.open #chat-resize-edge-right{display:none;}
+#chat-panel.open #chat-log{font-size:1rem;}
+
+/* 챗봇이 전체화면으로 열려 있는 동안에는 조각상·상단 컨트롤·챗봇
+   진입 버튼을 숨겨, 다른 요소와 겹쳐 보이던 문제를 근본적으로 없앤다.
+   #caption-wrap(해설창)과 그 안의 하단 버튼들은 챗봇 답변을 보여주는
+   자리이므로 그대로 둔다. */
+body.chat-open #stage,
+body.chat-open #top-controls,
+body.chat-open #top-bar,
+body.chat-open #chat-toggle{display:none;}
+
 /* v47 — 참가자 요청: "챗봇창 폭이 너무 크다 / 창 크기를 사방으로 쉽게
    조절하고 싶다." 기존엔 max-width 440px로 넓었고, 크기 조절도 오른쪽
    아래 모서리(#chat-corner-resize) 하나로만 가능했다. 폭 기본값을
@@ -364,27 +458,35 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 /* ══════════════════════════════════════════════════════
    작품·작가 소개 / 저작권 — 공통 정보 오버레이
    ══════════════════════════════════════════════════════ */
+/* v-one-line-controls — 참가자 요청: "버튼 크기를 작게 해서 한 줄에
+   들어가게 해줘." 기존엔 버튼마다 개별 left 좌표로 2줄에 나눠 배치돼
+   있었다. 하나의 flex 컨테이너로 묶고 크기를 줄여 한 줄에 모두 들어가게
+   했다 — 그래도 못 들어갈 만큼 좁은 화면(초소형 기기·글자 확대 설정)을
+   대비해 overflow-x:auto를 안전망으로 남긴다. */
+#top-controls{
+    position:fixed; top:calc(10px + env(safe-area-inset-top)); left:10px; right:10px; z-index:45;
+    display:flex; flex-wrap:nowrap; gap:6px; align-items:center;
+    overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px;
+}
 #info-btn{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; z-index:45;
-    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 38px→44px */
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.95rem; cursor:pointer;
+    width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 44px 미만이지만 손가락 터치는 문제없는 36px로 축소 */
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    flex:0 0 auto;
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #speed-btn{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:64px; z-index:45;
-    height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    height:36px; min-width:36px; padding:0 9px; border-radius:18px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif;
+    font-family:'Noto Serif KR',serif; flex:0 0 auto; white-space:nowrap;
 }
 #speed-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #easy-mode-btn{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:148px; z-index:45;
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    height:36px; padding:0 10px; border-radius:18px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap;
+    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #easy-mode-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
@@ -393,25 +495,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    (VoiceOver/TalkBack)를 켜고 쓰는 사용자는 자체 음성 + 스크린리더가
    같은 문장을 동시에 읽어 겹쳐 들릴 수 있다. 이 토글로 자체 음성만
    끄면, 텍스트는 그대로 aria-live로 갱신되어 스크린리더가 대신
-   읽어준다 — 정보 손실 없이 이중 음성만 없앤다. 기존 3개 버튼과
-   겹치지 않도록 아래 줄(두 번째 행)에 둔다. */
+   읽어준다 — 정보 손실 없이 이중 음성만 없앤다. */
 #voice-toggle-btn{
-    position:fixed; top:calc(64px + env(safe-area-inset-top)); left:12px; z-index:45;
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    height:36px; padding:0 10px; border-radius:18px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap;
+    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
 }
 #voice-toggle-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #voice-toggle-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
-#exhibit1-btn{
-    position:fixed; top:calc(64px + env(safe-area-inset-top)); left:106px; z-index:45;
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap;
-}
-#exhibit1-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -505,18 +597,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <body>
 
 <!-- ── 작품·작가 소개 / 저작권 ── -->
+<div id="top-controls">
 <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
 <button id="voice-toggle-btn" onclick="toggleNarration()" aria-pressed="false"
     aria-label="자체음성, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체음성</button>
-<!-- v-exhibit1-nav — 참가자 요청: "언제든지 index.html로 넘어갈 수 있게
-     전시1 버튼을 만들어줘." 기존에도 '여일' 완료 후 자동으로
-     index.html(전시실 1)로 돌아가는 흐름은 있었지만(beginYeoilExit),
-     그건 수료증·마음 비우기 장면을 거치는 정식 "마무리" 경로다. 이
-     버튼은 그 절차 없이, 관람 중 언제든 곧바로 전시실 1로 건너뛸 수
-     있는 직접 이동 경로다. -->
-<button id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 바로 이동">전시1</button>
+</div>
 <!-- 웹 접근성: 챗봇 버튼을 여기(정보 버튼 바로 다음)로 옮겼다. 원래는
      11개 핫스팟 뒤에 있어서, 스크린리더로 화면을 순서대로 스와이프하는
      사용자는 챗봇이 있다는 것 자체를 11번 넘게 스와이프해야 알 수
@@ -711,6 +798,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <video id="hand-video" playsinline autoplay muted aria-hidden="true"></video>
 <div id="hand-cursor" aria-hidden="true"></div>
 <div id="chat-panel" role="region" aria-label="사유의 상담소 — 대화 내용">
+    <!-- v-chat-fullscreen — 참가자 요청: "챗봇 창 버튼을 클릭하면 전체
+         화면에 나타나게 해줘." 열리면 #chat-panel이 작은 뜬 창 대신
+         #stage 자리를 통째로 차지하는 전체 화면으로 바뀐다(아래
+         #chat-panel.open 참고). 이 헤더가 예전 드래그 손잡이를 대신해
+         "뒤로가기"로 원래 화면에 돌아가는 길을 준다. 히스토리
+         (history.pushState)에도 이 상태를 남겨, 실제 페이지 이동처럼
+         브라우저/기기의 뒤로가기로도 닫을 수 있다. -->
+    <div id="chat-page-header">
+        <button type="button" id="chat-back-btn" onclick="toggleChat()" aria-label="대화를 닫고 전시 화면으로 돌아가기">← 돌아가기</button>
+        <span id="chat-page-title">사유의 상담소</span>
+    </div>
     <div id="chat-drag-handle" aria-hidden="true"><span>✥ 사유의 상담소</span><span class="hint">드래그해서 이동</span></div>
     <div id="chat-resize-handle" aria-hidden="true"><span></span></div>
     <div id="chat-corner-resize" aria-hidden="true"></div>
@@ -752,6 +850,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-repeat" onclick="repeatCurrent()">다시 듣기</button>
         <button class="btn" id="btn-leave" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 보고 나가기">여일</button>
         <button class="btn primary" id="btn-finish" onclick="showCertificate(true)" style="display:none;">마치기</button>
+        <!-- v-exhibit1-nav — 참가자 요청: "언제든지 index.html로 넘어갈 수
+             있게 전시1 버튼을 만들어줘." → 이후 "화면 아래로 이동" 요청
+             반영: 상단 컨트롤 대신 이 하단 버튼 줄로 옮겼다. 기존에도
+             '여일' 완료 후 자동으로 index.html(전시실 1)로 돌아가는
+             흐름은 있었지만(beginYeoilExit), 그건 수료증·마음 비우기
+             장면을 거치는 정식 "마무리" 경로다. 이 버튼은 그 절차 없이,
+             관람 중 언제든 곧바로 전시실 1로 건너뛸 수 있는 직접 이동
+             경로다. -->
+        <button class="btn" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 바로 이동">전시1</button>
     </div>
 </div>
 </div>
@@ -812,7 +919,8 @@ function fitHotspotLayer(){
     const IMAGE_SHRINK = 1;
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
-    const sy = y;
+   / 배경 이미지와 핫스팟 레이어 모두 세로 방향으로 10% 아래로 이동 반영
+    const sy = y + (ch * 0.10);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -3725,23 +3833,48 @@ function pickKBCandidates(query){
 }
 
 function toggleChat(){
-    document.getElementById('chat-panel').classList.toggle('open');
+    const panel = document.getElementById('chat-panel');
+    const willOpen = !panel.classList.contains('open');
+    if(willOpen){
+        // v-chat-fullscreen — 실제 페이지 이동처럼, 챗봇 화면도 브라우저/
+        // 기기의 뒤로가기로 닫을 수 있도록 히스토리에 상태를 남긴다.
+        history.pushState({ chatOpen:true }, '', '#chat');
+        panel.classList.add('open');
+        document.body.classList.add('chat-open');
+        const back = document.getElementById('chat-back-btn');
+        if(back) back.focus();
+    } else if(history.state && history.state.chatOpen){
+        // 뒤로가기 버튼(#chat-back-btn)으로 닫는 경우 — 실제로 한 단계
+        // 뒤로 이동시켜 popstate 핸들러가 닫기를 처리하게 한다.
+        history.back();
+    } else {
+        panel.classList.remove('open');
+        document.body.classList.remove('chat-open');
+    }
 }
+// v-chat-fullscreen — 브라우저/기기 뒤로가기(제스처 포함)로도 챗봇
+// '페이지'를 닫을 수 있게 한다. pushState로 남긴 #chat 상태를 벗어날
+// 때마다 챗봇을 닫힌 상태로 동기화한다.
+window.addEventListener('popstate', (e)=>{
+    const panel = document.getElementById('chat-panel');
+    if(!panel) return;
+    const isChatState = !!(e.state && e.state.chatOpen);
+    if(isChatState){
+        panel.classList.add('open');
+        document.body.classList.add('chat-open');
+    } else {
+        panel.classList.remove('open');
+        document.body.classList.remove('chat-open');
+    }
+});
 
-// 예상 질문 칩을 누르면 입력창에 채운 뒤 곧바로 전송한다(sendChat 재사용).
+// 예상 질문 칩을 누르면 입력창을 거치지 않고 곧바로 전송한다.
 function askSuggested(text){
-    // 버그 수정/참가자 요청: 예상 질문을 누르면 입력창에 그 문장이 잠깐
-    // "떠 있는" 걸 보여준 뒤에 전송돼야, 관람객이 뭘 선택했는지 눈으로
-    // 확인할 수 있다. 기존엔 값 채우기와 sendChat() 호출이 같은 동기
-    // 호출 안에서 곧바로 이어져(sendChat이 시작하자마자 input.value를
-    // 비움), 입력창에 문구가 화면에 그려질 틈도 없이 사라졌다. 짧은
-    // 지연을 하나 두어 실제로 눈에 보이게 한 뒤 전송한다.
-    const input = document.getElementById('chat-input');
-    input.value = text;
-    input.focus();
-    setTimeout(()=>{
-        sendChat({ preventDefault(){} });
-    }, 450);
+    // v-suggested-no-input — 참가자 요청: "고정 질문을 클릭하면 챗봇창의
+    // 입력으로 들어가지 않게 해줘." 이전엔 입력창에 문구를 잠깐
+    // 보여준 뒤(450ms) 전송했는데, 이제는 입력창에 전혀 닿지 않고
+    // sendChat에 텍스트를 직접 넘겨 바로 전송한다.
+    sendChat({ preventDefault(){} }, text);
 }
 
 /* ── 챗봇 답 창 드래그 리사이즈 ── */
@@ -3990,12 +4123,18 @@ function showChatAnswerInCaption(tag, text){
     document.getElementById('caption').innerHTML = String(text).replace(/\n/g, '<br>');
     document.getElementById('source-tag').textContent = '';
 }
-async function sendChat(e){
+async function sendChat(e, overrideText){
     e.preventDefault();
     const input = document.getElementById('chat-input');
-    const q = input.value.trim();
+    // v-suggested-no-input — 참가자 요청: "챗봇의 고정 질문을 클릭하면
+    // 챗봇창의 입력으로 들어가지 않게 해줘." overrideText가 주어지면
+    // (예상 질문 클릭) 입력창을 전혀 거치지 않고 그 텍스트를 바로
+    // 사용한다. 직접 타이핑해서 보낸 경우(overrideText 없음)는 기존과
+    // 동일하게 입력창 값을 읽는다.
+    const q = (typeof overrideText === 'string' ? overrideText : input.value).trim();
     if(!q) return false;
-    pushLog('me', q); input.value='';
+    pushLog('me', q);
+    if(typeof overrideText !== 'string') input.value='';
     // 참가자 요청: 질문을 보낸 뒤에도 예상 질문을 계속 볼 수 있어야 한다 —
     // 첫 질문 이후 자동으로 숨기던 동작을 없앴다. 언제든 다른 예상
     // 질문을 이어서 눌러볼 수 있다.
