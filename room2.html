@@ -336,9 +336,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    실제 페이지 이동처럼 닫을 수 있다.
    ══════════════════════════════════════════════════════ */
 #chat-panel.open{
-    position:static; flex:1 1 auto; width:100%; max-width:none;
-    height:auto; min-height:0; max-height:none;
-    margin:0; border-radius:0; border-left:none; border-right:none; border-top:none;
+    /* v-chat-fullscreen (revised) — open 상태에서는 전체 화면 패널 */
+    position:fixed;
+    left:0; right:0; top:0; bottom:0;
+    width:100vw; max-width:none;
+    height:100dvh; min-height:0; max-height:none;
+    margin:0;
+    border-radius:0;
+    border-left:none; border-right:none; border-top:none;
     overflow-y:auto;
 }
 #chat-page-header{display:none;}
@@ -592,6 +597,27 @@ body.chat-open #chat-toggle{display:none;}
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
 }
 
+
+
+/* v-mobile-tweaks — 모바일 레이아웃 미세 조정
+   1) 배경 이미지는 JS에서 모바일일 때만 추가로 10% 더 아래로 이동(총 20%).
+   2) 하단(다시 듣기/여일/전시1) 버튼 3개가 한 줄에 들어가도록 축소.
+   3) 상단 4개 버튼이 한 줄에 들어가도록 축소. */
+@media (max-width: 420px){
+    #top-controls{gap:4px;}
+    #info-btn{width:32px;height:32px;font-size:.75rem;}
+    #speed-btn,#easy-mode-btn,#voice-toggle-btn{
+        height:32px; min-width:32px; padding:0 7px; border-radius:16px; font-size:.60rem;
+    }
+
+    #top-bar{padding:2px 8px;}
+
+    #hint-row{gap:4px; margin-bottom:8px; overflow-x:hidden;}
+    #hint-row .btn{
+        height:32px; min-height:32px; padding:0 8px; border-radius:16px; font-size:.60rem;
+    }
+}
+
 </style>
 </head>
 <body>
@@ -791,6 +817,10 @@ body.chat-open #chat-toggle{display:none;}
     <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
 </div>
 
+
+
+
+
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
     text-align:center;padding:8px 12px;background:#7a1f1f;color:#fff;font-size:.8rem;
     letter-spacing:.02em;"></div>
@@ -920,7 +950,8 @@ function fitHotspotLayer(){
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
    / 배경 이미지와 핫스팟 레이어 모두 세로 방향으로 10% 아래로 이동 반영
-    const sy = y + (ch * 0.10);
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const sy = y + (ch * (0.10 + (isMobile ? 0.10 : 0.0)));
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -4288,6 +4319,6 @@ function _infoDialogKeydown(e){
      Server(depth_bridge_server.py)가 꺼져 있어도 4초 간격으로 재연결을
      시도할 뿐 페이지 동작에는 영향 없다 — 클릭/터치/MediaPipe 손 추적은
      이 연결과 무관하게 그대로 동작한다. -->
-<script src="depth_camera_injector.js"></script>
+
 </body>
 </html>
