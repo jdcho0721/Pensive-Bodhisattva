@@ -184,11 +184,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     background:rgba(64,224,208,.08);
     z-index:11;
 }
-/* v-row1 — #info-btn 등 상단 설정 버튼 줄(#top-controls, z-index:45)이
-   이 자리(top:12px, left:12px)를 이미 쓰고 있어서, 원래 top-bar도 같은
-   좌표에 있으면 진행률 점(점 11개)이 버튼 뒤에 가려 겹쳐 보였다.
-   설정 버튼 줄의 최대 높이(44px)만큼 아래로 내려 겹치지 않게 한다. */
-#top-bar{position:fixed;top:calc(12px + env(safe-area-inset-top) + clamp(30px, 8.6vw, 44px) + 8px);left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;z-index:30;pointer-events:none;}
+#top-bar{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;z-index:30;pointer-events:none;}
 #top-bar > *{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:5px;align-items:center;}
@@ -394,43 +390,32 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.1rem,3.5vw,2.1rem);letter-spacing:.1em;line-height:1.5;}
 #intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.85rem,1.8vw,1.05rem);word-break:keep-all;}
 #intro-gate .btn{font-size:clamp(0.85rem,1.4vw,1rem);padding:10px 22px;}
-/* ── 모바일에서 초기 안내(#intro-gate) 상하 잘림 방지 + 공간 축소 ──
-   overflow:hidden 환경에서도, 콘텐츠가 길면 #intro-gate 내부 스크롤로 모두 접근 가능 */
-#intro-gate{
-    min-height:100dvh;
-    padding:clamp(14px, 3.5vh, 28px);
-    gap:clamp(12px, 2.8vh, 24px);
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-}
-#intro-gate p{margin:0;}
-@media (max-height: 720px){
-    #intro-gate{justify-content:flex-start;}
-}
 
 /* ══════════════════════════════════════════════════════
    작품·작가 소개 / 저작권 — 공통 정보 오버레이
    ══════════════════════════════════════════════════════ */
-#top-controls{
-    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; right:12px; z-index:45;
-    display:flex; flex-wrap:nowrap; gap:clamp(4px, 1.6vw, 8px); align-items:center;
-    overflow-x:auto; -webkit-overflow-scrolling:touch;
-}
-#top-controls button{
-    flex:0 0 auto; font-family:'Noto Serif KR',serif; cursor:pointer;
-    background:rgba(0,0,0,.72); border:1px solid var(--gold-dim); color:var(--gold);
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    white-space:nowrap;
-    height:clamp(30px, 8.6vw, 44px); min-height:clamp(30px, 8.6vw, 44px);
-    font-size:clamp(0.62rem, 2.5vw, 0.85rem);
-    padding:0 clamp(8px, 2.4vw, 14px);
-    border-radius:clamp(16px, 4.4vw, 22px);
-}
 #info-btn{
-    width:clamp(30px, 8.6vw, 44px); padding:0; border-radius:50%;
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; z-index:45;
+    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 38px→44px */
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.95rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+#speed-btn{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:64px; z-index:45;
+    height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    font-family:'Noto Serif KR',serif;
+}
 #speed-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+#easy-mode-btn{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:148px; z-index:45;
+    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    font-family:'Noto Serif KR',serif; white-space:nowrap;
+}
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #easy-mode-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 /* 접근성 수정 — 이 화면은 자체 window.speechSynthesis로 해설을 읽어주는
@@ -447,6 +432,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    suffix까지 넣으면 자리가 부족해 넘칠 수 있어, easy-mode-btn과
    똑같은 방식으로 라벨도 "자체음성"으로 고정했다(상태는 aria-pressed와
    강조색으로 계속 전달된다). */
+#voice-toggle-btn{
+    position:fixed; top:calc(12px + env(safe-area-inset-top)); left:236px; z-index:45;
+    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    font-family:'Noto Serif KR',serif; white-space:nowrap;
+}
 #voice-toggle-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #voice-toggle-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #info-overlay{
@@ -566,55 +558,47 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    - 요청 반영: 버튼 크기 작게(시각), 라벨 변경, 하단 3버튼 1줄
    ══════════════════════════════════════════════════════ */
 
-/* ══════════════════════════════════════════════════════
-   ★ 최종 반응형 통합 레이어 (모바일 요청 반영) ★
-   ── 브레이크포인트 점프(768px/480px/360px에서만 값이 바뀌는 방식) 대신
-      clamp()로 뷰포트 폭에 따라 버튼·글자 크기가 끊김 없이 연속적으로
-      바뀌게 한다. 상단(ⓘ·속도·쉬운문장·자체음성)과 하단(다시듣기·여일·
-      다음전시) 버튼 줄은 항상 한 줄(nowrap)을 유지한다. !important는
-      위에 쌓인 여러 패치 규칙 중 어떤 것이 이겨도 이 레이어가 최종
-      적용되도록 보장하기 위한 것이다.
-   ══════════════════════════════════════════════════════ */
+/* 상단 컨트롤: 텍스트/패딩을 줄여 시각적으로 더 컴팩트하게 */
+#speed-btn,#easy-mode-btn,#voice-toggle-btn{
+    font-size:.92rem;
+    padding:0 10px;
+    letter-spacing:-.01em;
+}
+
+/* 하단 3버튼: 한 줄 고정 + 컴팩트(시각) */
 #hint-row{
-    display:flex !important;
-    flex-wrap:nowrap !important;
-    gap:clamp(4px, 2vw, 10px) !important;
-    align-items:center !important;
-    justify-content:center !important;
-    overflow-x:auto !important; /* 극단적으로 좁은 화면의 최후 안전장치 */
-    -webkit-overflow-scrolling:touch;
+    display: flex;
+    gap: 8px; /* 버튼 사이의 간격을 가깝게 좁힘 */
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center; /* 가운데 정렬 또는 flex-start로 변경 가능 */
 }
 #hint-row .btn{
-    flex:0 0 auto !important;
-    max-width:none !important;
-    white-space:nowrap !important;
-    height:clamp(32px, 9vw, 44px) !important;
-    min-height:clamp(32px, 9vw, 44px) !important;
-    font-size:clamp(0.66rem, 2.8vw, 0.9rem) !important;
-    padding:0 clamp(10px, 3vw, 18px) !important;
-    letter-spacing:.01em !important;
+    flex: 0 0 auto; /* 기존 10% 고정 넓이 풀기 */
+    max-width: none;
+    padding: 10px 16px; /* 여백 최적화 */
+    font-size: .95rem;
+    white-space: nowrap;
+    min-height: 44px;
+}
+
+/* 초소형 화면에서 살짝 더 압축 */
+@media (max-width: 360px){
+    #speed-btn,#easy-mode-btn,#voice-toggle-btn{font-size:.88rem;padding:0 8px;}
+    #hint-row{gap:6px;}
+    #hint-row .btn{padding:8px 8px;font-size:.9rem;min-height:44px;}
 }
 
 </style>
 </head>
 <body>
 
-<!-- ── 작품·작가 소개 / 저작권 ──
-     v-row1 — 참가자 요청(모바일 반응형): 기존엔 이 4개 버튼이 각자
-     position:fixed + 고정 픽셀 left값(12/64/148/236px)으로 배치돼
-     있었다 — 화면이 좁아지거나 시스템 글자 크기가 커지면 서로 겹치거나
-     화면 밖으로 밀려날 위험이 있었고, 실제로 위쪽 #top-bar의 진행률
-     점(progress-pill)과도 같은 top 좌표에서 겹치고 있었다. index.html의
-     #top-controls와 동일한 방식으로 하나의 flex 컨테이너에 담아
-     항상 한 줄(nowrap)로 유지하고, 진행률 점은 이 줄 아래로 내렸다
-     (아래 #top-bar 참고). -->
-<div id="top-controls" role="group" aria-label="설정">
-    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
-    <button id="speed-btn" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
-    <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장</button>
-    <button id="voice-toggle-btn" onclick="toggleNarration()" aria-pressed="false"
-        aria-label="자체음성, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체음성</button>
-</div>
+<!-- ── 작품·작가 소개 / 저작권 ── -->
+<button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
+<button id="speed-btn" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
+<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장</button>
+<button id="voice-toggle-btn" onclick="toggleNarration()" aria-pressed="false"
+    aria-label="자체음성, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체음성</button>
 <!-- 웹 접근성: 챗봇 버튼을 여기(정보 버튼 바로 다음)로 옮겼다. 원래는
      11개 핫스팟 뒤에 있어서, 스크린리더로 화면을 순서대로 스와이프하는
      사용자는 챗봇이 있다는 것 자체를 11번 넘게 스와이프해야 알 수
@@ -710,10 +694,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 <div id="intro-gate">
     <h1>침묵의 공명<br><span style="font-size:.55em;color:rgba(212,175,55,.7);">전시실 2 · 사유 및 체화 (몸으로 생각하기)</span></h1>
-    <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'사유'는 깊이 생각하기, '체화'는 몸으로 직접 느끼는 것입니다. 손끝으로 부위를 짚으며 잠시 멈춰 생각하고, 가능하면 자세를 따라 하며 체화해 보세요.</p>
-    <p>부위를 짚으면 가장 인상적인 디테일을 짧게 음성으로 안내합니다. 더 궁금한 점은 언제든 챗봇에게 물어보세요.</p>
-    <p style="color:var(--gold-light,#d4af37); font-weight:700; font-size:clamp(0.85rem,1.6vw,1rem); letter-spacing:.02em;">아래 <b>시작할게요</b> 버튼을 눌러주세요.</p>
-    <button class="btn primary" onclick="handleGateEntryTap()">시작할게요</button>
+    <p style="font-size:clamp(0.75rem,1.4vw,0.9rem);color:rgba(212,175,55,.7);max-width:520px;">'사유'는 어느 한 곳에 마음을 두고 깊이 생각한다는 뜻이고, '체화'는 그 생각을 몸으로 직접 겪어보는 것을 말합니다. 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요.</p>
+    <p>손끝으로 부위를 짚을 때마다, 인상적인 디테일을 짧게 들려드립니다.<br>궁금한 것은 언제든 챗봇에게 물어보세요.</p>
+    <button class="btn primary" onclick="enterRoom()">시작할께요</button>
 </div>
 
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
@@ -792,23 +775,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     </div>
 </div>
 
-<div id="top-bar">
-    <div class="pill" id="progress-pill" aria-hidden="true">
-        <span>탐색</span>
-        <span class="dot" data-k="rodin-forehead"></span><span class="dot" data-k="rodin-fist"></span>
-        <span class="dot" data-k="rodin-elbow"></span>
-        <span class="dot" data-k="rodin-muscle"></span><span class="dot" data-k="rodin-toes"></span>
-        <span class="dot" data-k="maitreya-ear"></span><span class="dot" data-k="maitreya-smile"></span>
-        <span class="dot" data-k="maitreya-fingers"></span><span class="dot" data-k="maitreya-robe"></span>
-        <span class="dot" data-k="maitreya-leg"></span>
-        <span class="dot" data-k="maitreya-toes"></span>
-    </div>
-    <!-- 웹 접근성: 위 progress-pill은 시각적 점 11개로만 탐색 진행률을
-         보여준다. 스크린리더/점자 디스플레이 사용자는 색이 채워진 점을
-         볼 수 없어 동일한 정보를 얻지 못했다 — 아래 sr-only 리전이 그
-         정보를 텍스트로 대신 전달한다(updateProgress()에서 갱신). -->
-    <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
-</div>
+
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
     text-align:center;padding:8px 12px;background:#7a1f1f;color:#fff;font-size:.8rem;
@@ -866,7 +833,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-leave" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 보고 나가기">여일</button>
         <button class="btn primary" id="btn-finish" onclick="showCertificate(true)" style="display:none;">다음전시</button>
     
-        <button class="btn primary" id="btn-next-exhibit" onclick="goToIndex(event)" aria-label="다음전시 버튼입니다.">다음 전시</button>
+        <button class="btn primary" id="btn-next-exhibit" onclick="location.href='index.html'" aria-label="다음 전시로 이동">다음 전시</button>
 </div>
 </div>
 </div>
@@ -1241,7 +1208,7 @@ function fadeArrivalOut(){
     _fadeStatueAudio(document.getElementById('snd-arrival'), 0);
 }
 
-// v-require-tap — 참가자 요청: "시작할게요 버튼을 눌러야만 넘어가도록
+// v-require-tap — 참가자 요청: "시작할께요 버튼을 눌러야만 넘어가도록
 // 해야겠다. 그래야 소리가 나온다." 실제로 브라우저의 자동재생 정책상
 // speechSynthesis(및 오디오)는 "진짜 사용자 동작(클릭/탭)" 안에서
 // 호출돼야만 확실히 소리가 난다 — 아래 enterRoom() 안의 v46 주석에서도
@@ -1249,40 +1216,11 @@ function fadeArrivalOut(){
 // 동작도 없이(=진짜 사용자 제스처가 아닌 채로) enterRoom()이 자동
 // 호출되도록 타이머를 걸어뒀었다 — 이 경로로 들어가면 브라우저가
 // 자동재생을 막아 소리가 전혀 안 나올 위험이 있었다. 그 타이머를
-// 없애, 오직 "시작할게요" 버튼을 실제로 눌렀을 때(또는 진입 화면
+// 없애, 오직 "시작할께요" 버튼을 실제로 눌렀을 때(또는 진입 화면
 // 어디든 실제로 탭했을 때 — 아래 initNoScreenReaderGestures 참고)만
 // enterRoom()이 실행되도록 한다. 자동재생 정책과 무관하게 소리가
 // 확실히 나오는 쪽을 택한 것이다.
 let _autoEnterTimer = null;
-
-// v-two-press-nav — index.html의 "다음전시" 버튼으로 넘어온 경우
-// (?from=next), 도착하자마자 "화면의 아무곳이나 터치하면 바로
-// 시작됩니다"라는 짧은 안내를 먼저 들려줘야 한다. 이 안내를 "듣는"
-// 탭과 실제로 "입장하는" 탭이 같으면, 안내 음성이 채 끝나기도 전에
-// 입장 환영 음성에 잘려버린다 — 그래서 이 안내가 아직 소비되지
-// 않았다면 첫 탭은 안내만 들려주고 입장은 보류하며, 그 다음 탭부터
-// 정상적으로 enterRoom()이 실행되도록 나눴다.
-const _arrivalParams = new URLSearchParams(location.search);
-const _arrivedFromNext = _arrivalParams.get('from') === 'next';
-let _arrivalMessageConsumed = !_arrivedFromNext;
-function _tryArrivalMessage(){
-    if(_arrivalMessageConsumed) return false;
-    _arrivalMessageConsumed = true;
-    try{
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance('침묵의 공명 제2전시 사유및 체화입니다. 화면의 아무곳이나 터치하면 바로 시작됩니다.');
-        u.lang = 'ko-KR';
-        window.speechSynthesis.speak(u);
-    }catch(err){}
-    return true;
-}
-setTimeout(_tryArrivalMessage, 700);
-
-function handleGateEntryTap(){
-    if(_tryArrivalMessage()) return; // 이번 탭은 안내만 — 입장은 다음 탭에
-    enterRoom();
-}
-
 function enterRoom(){
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
@@ -1311,14 +1249,7 @@ function enterRoom(){
     // 없어서, 기기 스크린리더(TalkBack/VoiceOver)를 켜지 않으면 아무
     // 소리도 들리지 않았다. "시작할게요"를 누르는(또는 자동 진입) 이
     // 시점에 그 문구를 먼저 읽어준 뒤 기존 자세 안내로 이어지게 했다.
-    // v-welcome-open — 참가자 제안: "아무 데나 터치/클릭하면 '침묵의
-    // 공명 제2전시 사유 및 체화에 오신 것을 환영합니다'로 시작해서
-    // 간단히 소개하자." 첫 문장으로 환영 인사를 붙였다. room2는
-    // 게이트가 사라지는 이 시점에 이미 손끝 탐색이 바로 가능한
-    // 상태라(위 hotspot 리스너에 별도 잠금 없음), 이 소개 음성이
-    // 끝나기를 기다릴 필요 없이 곧장 만져볼 수 있다 — 즉 "소개가
-    // 끝나면 자동으로 진입"이 이미 이 구조 그대로 이루어진다.
-    const introPage1 = '침묵의 공명 제2전시 사유 및 체화에 오신 것을 환영합니다. 몸으로 생각하기입니다. 사유는 어느 한 곳에 마음을 두고 깊이 생각한다는 뜻이고, 체화는 그 생각을 몸으로 직접 겪어보는 것을 말합니다. 손끝으로 짚은 부위 하나하나에 잠시 머무르며 마음으로 사유하고, 때로는 그 모습을 몸으로 따라 하며 체화해 보세요. 두 조각상이 그 자리에서 무슨 생각을 하고 있었을지, 손끝과 몸으로 함께 헤아려보는 시간입니다.';
+    const introPage1 = '침묵의 공명, 전시실 2, 사유와 체화, 몸으로 생각하기입니다. 사유는 어느 한 곳에 마음을 두고 깊이 생각한다는 뜻이고, 체화는 그 생각을 몸으로 직접 겪어보는 것을 말합니다. 손끝으로 짚은 부위 하나하나에 잠시 머무르며 마음으로 사유하고, 때로는 그 모습을 몸으로 따라 하며 체화해 보세요. 두 조각상이 그 자리에서 무슨 생각을 하고 있었을지, 손끝과 몸으로 함께 헤아려보는 시간입니다.';
     const introPage2 = '반가사유상은 오른발을 왼쪽 무릎 위에 얹은 자세로, 로댕의 생각하는 사람은 팔꿈치를 무릎에 괴고 몸을 웅크린 자세로 앉아 있습니다. 손끝으로 부위를 짚을 때마다 그 부위의 가장 인상적인 디테일을 짧게 들려드리고, 궁금한 것은 언제든 챗봇에게 물어보실 수 있습니다.';
 
     // ✅ v.intro-split — 첫 해설이 너무 길어 자막/청취가 부담된다는 피드백 반영:
@@ -2654,22 +2585,6 @@ function _certDialogKeydown(e){
             focusables[(idx === -1 || idx === focusables.length - 1) ? 0 : idx + 1].focus();
         }
     }
-}
-
-// v-two-press-nav — 참가자 요청: "다음전시 버튼은 한 번 누르면 '다음전시
-// 버튼입니다.'라고 말하고, 두 번 빠르게 누르면 다음전시로 넘어간다."
-// 실제 확인(1차 안내 → 2차 확인) 절차는 아래 initNoScreenReaderGestures의
-// isNextExhibitBtn 특수 처리에서 이뤄지고, goToIndex()는 그 확인이
-// 끝난 뒤에만 호출된다. "넘어가면서 말하는 멘트"는 도착지(index.html)가
-// 자기 페이지에서 직접 말하도록 넘긴다(?from=next 파라미터 — index.html의
-// speakOnboardingIfNeeded 참고).
-let _leavingRoom2 = false;
-function goToIndex(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    if(_leavingRoom2) return;
-    _leavingRoom2 = true;
-    try{ window.speechSynthesis.cancel(); }catch(err){}
-    location.href = 'index.html?from=next';
 }
 
 // "여일" 버튼 — 언제든 눌러서 지금까지의 기록을 확인하고 나갈 수 있다.
@@ -4444,7 +4359,7 @@ function _infoDialogKeydown(e){
    ══════════════════════════════════════════════════════════════ */
 (function initNoScreenReaderGestures(){
     // 탐색(1차)·확인(2차) 방식을 적용할 이름 있는 버튼 영역들.
-    const EXCLUDE_SELECTOR = '#top-controls, #info-btn, #speed-btn, #easy-mode-btn, #voice-toggle-btn, #chat-toggle, #hint-row, #info-overlay, #certificate-overlay';
+    const EXCLUDE_SELECTOR = '#info-btn, #speed-btn, #easy-mode-btn, #voice-toggle-btn, #chat-toggle, #hint-row, #info-overlay, #certificate-overlay';
     // 완전히 손대지 않는 영역 — 타이핑·마이크 등 기존 방식 그대로.
     const HANDS_OFF_SELECTOR = '#chat-panel';
     // 이미 자체적으로 "누르는 즉시 바로 설명"이 나오도록 만들어진
@@ -4479,22 +4394,7 @@ function _infoDialogKeydown(e){
 
     function speakControlName(el){
         try{ hapticPulse('turn'); }catch(err){}
-        // v-fix-queue-race — 참가자 보고: "해설이 나오는 중에 다음전시를
-        // 누르면 '다음전시 버튼입니다'라고 말하지 않고 다음 해설로
-        // 넘어간다." 원인: 이 함수가 window.speechSynthesis.cancel()을
-        // 직접 불러 지금 재생 중이던 앱 자체 TTS 대기열(_ttsQueue)의
-        // 발화를 강제로 끊었는데, 그 발화의 onerror가 "이 문장이 끝났다"로
-        // 처리되며 큐가 곧바로 다음 해설(예: 2페이지)로 자동 진행해
-        // 버렸다. 그 직후 이 함수가 speechSynthesis.speak()로 직접 얹은
-        // "다음전시 버튼입니다" 발화도, 뒤이어 실행된 큐의 다음 조각
-        // 재생이 다시 cancel()을 부르며 거의 즉시 끊겼다.
-        // 해결: 앱 자체 stopSpeech()로 대기열을 먼저 안전하게 비운다 —
-        // 이 함수는 콜백(onAllDone)을 부르지 않고 조용히 멈추므로 "다음
-        // 해설로 자동 진행"되는 부작용이 없다. 그 다음에야 우리 안내
-        // 문장을 speechSynthesis에 직접 얹는다(자체 음성 해설이 꺼져
-        // 있어도 버튼 이름 안내는 항상 들리도록, 앱의 speak()가 아니라
-        // 원래처럼 raw utterance를 계속 사용한다).
-        try{ stopSpeech(); }catch(err){}
+        try{ window.speechSynthesis.cancel(); }catch(err){}
         try{
             const u = new SpeechSynthesisUtterance(getAccessibleName(el));
             u.lang = 'ko-KR';
@@ -4528,46 +4428,14 @@ function _infoDialogKeydown(e){
         }
         // 누른 채 화면을 훑는 동안, 지금 그 아래 있는 버튼의 이름을
         // 실시간으로 말해준다("터치 탐색"). 버튼 영역 밖에서는 아무 것도
-        // 하지 않는다(조각상 부위 자체 동작과 겹치지 않도록). 이렇게
-        // 찾아낸 버튼은 바로 실행되지 않고 armed 상태로 남아, 손을 뗀 뒤
-        // 이어지는 확인 탭으로 실행된다.
+        // 하지 않는다(조각상 부위 자체 동작과 겹치지 않도록).
         const under = document.elementFromPoint(x, y);
         const control = under && under.closest ? under.closest(CONTROL_SELECTOR) : null;
         const controlInRegion = control && matches(control, EXCLUDE_SELECTOR) ? control : null;
         if(controlInRegion !== lastExploredControl){
             lastExploredControl = controlInRegion;
-            if(controlInRegion){
-                speakControlName(controlInRegion);
-                armedControl = controlInRegion;
-                armedAt = Date.now();
-            }
+            if(controlInRegion){ speakControlName(controlInRegion); }
         }
-    }
-
-    // v-two-press-nav — "다음전시" 버튼은 되돌릴 수 없는 화면 전환이라,
-    // 다른 버튼들과 달리 곧장 탭해도 즉시 실행하지 않는다 — 항상 "안내
-    // 후 빠른 재확인" 절차를 거친다(확인 창도 1.5초로 더 짧게 — "빠르게"
-    // 누르라는 요청 반영).
-    const NEXT_EXHIBIT_ID = 'btn-next-exhibit';
-    const NEXT_EXHIBIT_CONFIRM_MS = 1500;
-    function isNextExhibitBtn(el){ return !!(el && el.id === NEXT_EXHIBIT_ID); }
-
-    // 확인된 버튼을 실제로 실행한다 — "다음전시"만 이동 전에 안내 음성을
-    // 먼저 들려준 뒤(음성이 끝나면) 이동하고, 나머지 버튼은 곧장 클릭한다.
-    // v-format-match — 참가자 요청: "room2에서 다음 버튼을 두 번 빠르게
-    // 눌러 index.html로 넘어갈 때의 안내 형식을, index.html에서 room2로
-    // 넘어갈 때(goToRoom2)와 같은 형식으로." index.html의 goToRoom2()는
-    // 이동 전에 "전시 2로 넘어갑니다" 같은 별도 멘트를 말하지 않고 곧장
-    // 이동한다 — 도착 인사는 도착지 페이지가 ?from=next 파라미터를 보고
-    // 스스로 들려준다(room2.html의 _tryArrivalMessage 참고, "침묵의 공명
-    // 제2전시…"). 같은 형식을 맞추기 위해 이 함수도 "다음전시" 버튼을
-    // 특별 취급하지 않고 다른 버튼과 동일하게 곧장 클릭만 실행한다 —
-    // goToIndex()가 이미 이동 전 window.speechSynthesis.cancel()로 조용히
-    // 지금 소리를 끊고, 도착한 index.html이 자기 자신의 _tryArrivalMessage
-    // ("침묵의 공명 제1전시 조우입니다…")로 도착 인사를 말한다.
-    function activateControl(control){
-        if(!control) return;
-        try{ control.click(); }catch(err){}
     }
 
     function handlePointerUp(x, y, upTarget){
@@ -4576,63 +4444,41 @@ function _infoDialogKeydown(e){
         if(longPressFired){ longPressFired = false; return; }
 
         const target = downTarget || upTarget;
-        const landedControl = target && target.closest ? target.closest(CONTROL_SELECTOR) : null;
-        const dt = Date.now() - startTime;
 
         // ── 조각상 부위: 원래의 즉시 재생 동작을 절대 건드리지 않는다 ──
         if(matches(target, HOTSPOT_SELECTOR)) return;
 
-        // ── 버튼 영역(상단 설정·하단 재생 제어·정보창 등) ──
+        // ── 버튼 영역: 탐색(1차)과 실행(같은 버튼 2차)을 분리 ──
         if(matches(target, EXCLUDE_SELECTOR)){
-            if(!draggedFar && landedControl){
-                if(isNextExhibitBtn(landedControl)){
-                    const now = Date.now();
-                    if(armedControl === landedControl && (now - armedAt) < NEXT_EXHIBIT_CONFIRM_MS){
-                        // 빠르게 두 번째로 눌렀다 — 실제로 이동한다(index.html의
-                        // goToRoom2()와 같은 형식: 별도 멘트 없이 곧장 이동).
-                        armedControl = null;
-                        suppressNextClick = false; // 경합 상태 방지
-                        try{ hapticPulse('stage'); }catch(err){}
-                        activateControl(landedControl);
-                        return;
-                    }
-                    // 첫 번째 탭 — 아직 이동하지 않고 이름만 말해준다.
-                    armedControl = landedControl; armedAt = now;
-                    suppressNextClick = true;
-                    speakControlName(landedControl);
-                    setTimeout(function(){ suppressNextClick = false; }, 400);
-                    return;
-                }
-                // v-direct-tap — 다른 버튼들은 끌지 않고 곧장 눌렀다면
-                // 즉시 실행한다(비장애인의 일반적인 사용 방식). "다음전시"만
-                // 위에서 예외 처리했다.
+            const control = target.closest ? target.closest(CONTROL_SELECTOR) : null;
+            if(!control) return;
+            if(draggedFar) return; // 끌며 탐색만 하다 뗀 경우 — 실행하지 않는다.
+            const now = Date.now();
+            if(armedControl === control && (now - armedAt) < ARM_WINDOW_MS){
                 armedControl = null;
-                return;
-            }
-            if(!draggedFar && armedControl && dt < 600 &&
-               (Date.now() - armedAt) < (isNextExhibitBtn(armedControl) ? NEXT_EXHIBIT_CONFIRM_MS : ARM_WINDOW_MS)){
-                const c = armedControl;
-                armedControl = null;
-                suppressNextClick = false; // 경합 상태 방지
                 try{ hapticPulse('stage'); }catch(err){}
-                activateControl(c);
-                return;
+                return; // suppressNextClick을 켜지 않아 뒤이은 click이 정상 실행된다
             }
-            return; // 끌며 탐색만 하다 뗀 경우 — armed 상태만 유지
+            armedControl = control; armedAt = now;
+            suppressNextClick = true;
+            speakControlName(control);
+            setTimeout(function(){ suppressNextClick = false; }, 400);
+            return;
         }
 
         if(draggedFar) return;
 
+        const dt = Date.now() - startTime;
         if(dt >= 600) return; // 길게 누르기 기준을 넘겼는데 취소된 경우 — 아무 동작 없음
 
         if(isGateShowing()){
-            // 진입 화면: "시작" 버튼 자체를 짚었다면 버튼의 원래
-            // onclick(handleGateEntryTap)에 맡기고(중복 방지), 그 외
-            // 화면 어디를 두드려도 같은 동작으로 취급한다.
+            // 진입 화면: "시작" 버튼 자체를 짚었다면 버튼의 원래 클릭에
+            // 맡기고(중복 방지), 그 외 화면 어디를 두드려도 같은 동작
+            // (전시 시작)으로 취급한다.
             if(target && target.closest && target.closest('.btn.primary')) return;
             suppressNextClick = true;
             try{ hapticPulse('turn'); }catch(err){}
-            try{ handleGateEntryTap(); }catch(err){}
+            try{ enterRoom(); }catch(err){}
             setTimeout(function(){ suppressNextClick = false; }, 400);
         }
         // 진입 후 빈 공간(조각상 사이 여백 등)의 짧은 탭은 조용히 무시한다
@@ -4675,11 +4521,6 @@ function _infoDialogKeydown(e){
     function speakOnboardingIfNeeded(){
         if(onboardingSpoken) return;
         if(!isGateShowing()) return;
-        // v-two-press-nav — ?from=next로 넘어온 경우, 도착 직후 안내는
-        // 위쪽의 _tryArrivalMessage()/handleGateEntryTap()이 전담한다.
-        // 스크린리더 없는 사용자를 위한 긴 조작법 설명은 처음 오는
-        // 방문객(=바로 이 게이트로 직접 들어온 경우)에게만 필요하다.
-        if(_arrivedFromNext) return;
         onboardingSpoken = true;
         const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 조각상 위 원하는 곳을 손끝으로 짚으면, 바로 그 부분의 이야기가 들립니다. 화면의 빈 곳을 길게 누르면 방금 들은 설명을 다시 들려드립니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 누르면 실행됩니다. 지금 화면을 두드리면 시작합니다.';
         try{
