@@ -423,6 +423,83 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     letter-spacing:.04em;
 }
 
+/* ══════════════════════════════════════════════════════
+   ★ 최종 반응형 통합 레이어 (모바일 요청 반영) ★
+   ── 목적: 위쪽에 여러 차례(v48~v71) 덧쌓인 브레이크포인트별 고정값
+      규칙들이 서로 충돌하면서, 일부 화면 폭에서는 버튼이 화면 크기에
+      전혀 반응하지 않거나(예: #controls .btn을 고정 44px/0.8rem으로
+      다시 덮어쓰던 규칙) 상단 버튼 줄이 2줄로 줄바꿈되며 아래 4단계
+      점과 겹치는 문제가 있었다.
+   ── 해결: 브레이크포인트 점프 대신 clamp()로 뷰포트 폭에 따라
+      버튼·글자 크기가 끊김 없이 연속적으로 줄어들게 하고, 상단/하단
+      버튼 줄은 항상 한 줄(nowrap)로 고정한다. !important는 위의 여러
+      레이어 중 어떤 것이 최종적으로 이겨도 이 규칙이 항상 적용되도록
+      보장하기 위해 의도적으로 사용했다. ══════════════════════════════════════════════════════ */
+
+/* 상단(ⓘ·속도·쉬운문장·자체음성 해설) — 항상 한 줄 */
+#top-controls{
+    flex-wrap:nowrap !important;
+    gap:clamp(4px, 1.6vw, 8px) !important;
+    overflow-x:auto !important; /* 극단적으로 좁은 화면·시스템 글자 확대 시 최후 안전장치 */
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+}
+#top-controls .btn, #info-btn{
+    height:clamp(30px, 8.6vw, 44px) !important;
+    min-height:clamp(30px, 8.6vw, 44px) !important;
+    font-size:clamp(0.62rem, 2.5vw, 0.85rem) !important;
+    padding:0 clamp(8px, 2.4vw, 14px) !important;
+    letter-spacing:.01em !important;
+    flex:0 0 auto !important;
+    white-space:nowrap !important;
+}
+#info-btn{
+    width:clamp(30px, 8.6vw, 44px) !important;
+    padding:0 !important;
+}
+
+/* 하단(뒤로 · 멈춤/다시 시작 · 다음 전시) — 항상 한 줄 */
+#controls{
+    flex-wrap:nowrap !important;
+    gap:clamp(6px, 2.6vw, 20px) !important;
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+}
+#controls .btn{
+    height:clamp(32px, 9vw, 44px) !important;
+    min-height:clamp(32px, 9vw, 44px) !important;
+    font-size:clamp(0.66rem, 2.8vw, 0.9rem) !important;
+    padding:0 clamp(10px, 3vw, 20px) !important;
+    letter-spacing:.02em !important;
+    flex:0 0 auto !important;
+    white-space:nowrap !important;
+}
+#btn-pause{
+    min-width:clamp(70px, 22vw, 110px) !important;
+}
+
+/* 4단계 점 — 화면 폭에 따라 부드럽게 줄어들고, 상단 버튼 줄과 절대
+   겹치지 않도록 위쪽 여백을 상단 버튼 줄의 최대 높이(44px) 기준으로
+   넉넉하게 확보한다. */
+#stage-badge{
+    top:calc(12px + env(safe-area-inset-top) + clamp(30px, 8.6vw, 44px) + 10px) !important;
+    gap:clamp(2px, 1vw, 6px) !important;
+}
+#stage-badge .dot{
+    width:clamp(26px, 7vw, 44px) !important;
+    height:clamp(26px, 7vw, 44px) !important;
+}
+#stage-badge .dot::after{
+    width:clamp(7px, 2vw, 10px) !important;
+    height:clamp(7px, 2vw, 10px) !important;
+}
+
+/* 해설(자막) 패널 — 이미지·스팟과 절대 겹치지 않도록 이미지 영역은
+   이미 위쪽 CSS(--caption-panel-h)에서 패널 높이만큼 비워두고 있다.
+   여기서는 패널 안 글자 크기만 화면 폭에 맞춰 추가로 다듬는다. */
+#caption-tag, #source-tag{ font-size:clamp(0.68rem, 2.2vw, 0.78rem) !important; }
+#speaker-tag{ font-size:clamp(0.7rem, 2.4vw, 0.82rem) !important; }
+
 </style>
 </head>
 <body>
@@ -550,7 +627,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
     <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
 
-    <button class="btn primary" onclick="enterRoom()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
+    <p style="color:var(--gold-light); font-weight:700; font-size:clamp(0.85rem,1.6vw,1rem); letter-spacing:.02em;">아래 <b>'전시실 1 · 조우'</b> 버튼을 눌러주세요.</p>
+
+    <button class="btn primary" onclick="handleGateEntryTap()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
         전시실 1 · 조우
     </button>
     
@@ -610,20 +689,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border-top: 1px solid rgba(212,175,55,.25);
 }
 
-.btn.primary {
-    width: 25%;
-    padding: 14px;
-    font-size: 1rem;
+#intro-gate .btn.primary {
+    min-width: clamp(160px, 60vw, 280px);
+    padding: clamp(11px, 3vw, 14px) clamp(20px, 6vw, 28px);
+    font-size: clamp(0.85rem, 3.2vw, 1rem);
     font-weight: bold;
+    white-space: nowrap;
     border: 1px solid #1a1a1a;
     border-top: 1px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-/* 다음 전시 버튼 폭을 반으로 줄이기 */
-#btn-next-exhibit {
-    width: 15%;
-    max-width: 200px; /* 필요에 따라 최대 너비 지정 가능 */
 }
 </style>
 
@@ -692,7 +766,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="controls" role="group" aria-label="재생 제어">
     <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
     <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" ontouchend="goToRoom2(event)" aria-label="다음 전시로 이동">다음 전시</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="다음전시 버튼입니다.">다음 전시</button>
 </div>
 </div>
 
@@ -713,7 +787,7 @@ const LAYERS = [
         { text:"로댕이 제작한 지옥의 문에는 지옥에서 고통받는 인간의 형상 200여 점이 서로 뒤엉켜 있으며, 그들의 정념과 야수성, 고뇌를 표현하고 있습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [34]" },
         { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", wide:'rodin' },
         { text:"이 자세는 카르포의 〈우골리노〉에서 보이는 극적인 신체 표현을 떠올리게 합니다. 동시에 미켈란젤로의 〈로렌초 데 메디치 좌상〉처럼 응축된 근육 긴장과 비틀림의 감각도 겹쳐집니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
-        { text:"반가사유상은 부드러운 곡선으로, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.",
+        { text:"반가사유상은 불교의 발상지 인도에서 시작된 불교 도상입니다. 간다라조각이 자연스럽고 부드러운 매력이라면 마투라조각은 근엄하고 각 잡힌 매력이 있어요. 우리나라 반가사유상은 부드러운 곡선으로, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.",
           wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya' },
         { text:"로댕의 생각하는 사람은 근육질의 단단한 면으로, 그 힘든 마음 자체를 표현했습니다.",
           wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin' },
@@ -895,20 +969,46 @@ function onCaptionAreaClick(e){
     onNextClick();
 }
 
-// v.iframe-fix — 이 타이머는 원래 room1.html을 셸 없이 혼자 열었을 때,
-// 방문객이 6초간 아무 반응이 없으면 자동으로 시작시키기 위한 안전장치
-// 였다. 그런데 셸(index.html)은 소개/전시장1/전시장2 세 iframe을 처음
-// 부터 한꺼번에 불러오므로, 셸 안에서도 이 타이머가 그대로 작동해
-// 셸이 아직 "입장" 신호를 보내지도 않았는데 room1이 제멋대로
-// enterRoom()을 실행해버리는 문제가 있었다 — 소개 화면에서 낭독을
-// 듣는 도중에 room1의 음성이 끼어들어 끊어버리는 원인이 이것이었다.
-// 그래서 이제 이 자동 타이머는 부모 창이 없을 때(=이 파일을 독립적
-// 으로 열었을 때)만 건다. 셸 안에 있을 때는 셸이 명시적으로
-// win.enterRoom()을 호출해줄 때만 시작한다.
+// v-require-tap — 참가자 요청: "첫 페이지에서 시간이 지나 자동으로
+// 넘어가면, 그 다음 페이지의 소리가 나오지 않는다" — 브라우저의
+// 자동재생 정책상 speechSynthesis는 진짜 사용자 동작(클릭/탭) 안에서
+// 호출돼야만 확실히 소리가 난다. 타이머로 자동 진입하면 이 조건을
+// 충족하지 못해, 입장 직후 나가야 할 안내 음성이 조용히 막힐 위험이
+// 있었다. 오직 "전시실 1 · 조우" 버튼(또는 진입 화면 어디든 실제로
+// 탭했을 때 — 아래 initNoScreenReaderGestures 참고)만 enterRoom()을
+// 실행하도록 한다.
 let _autoEnterTimer = null;
-if(!(window.parent && window.parent !== window)){
-    _autoEnterTimer = setTimeout(enterRoom, 20000);
+
+// v-two-press-nav — room2.html의 "다음전시" 버튼으로 넘어온 경우
+// (?from=next), 도착하자마자 "화면의 아무곳이나 터치하면 바로
+// 시작됩니다"라는 짧은 안내를 먼저 들려줘야 한다. 문제는 이 안내를
+// "듣는" 탭과 실제로 "입장하는" 탭이 원래 똑같이 처리돼 있었다는 것 —
+// 게이트 위 아무 곳이나 탭하면 곧장 enterRoom()이 불려서, 안내 음성이
+// 채 끝나기도 전에 입장 환영 음성에 잘려버렸다. 그래서 이 안내가 아직
+// 소비되지 않았다면, 첫 탭은 안내만 들려주고 입장은 보류한다 — 그
+// 다음 탭(또는 안내가 필요 없는 일반 진입이라면 바로)부터 정상적으로
+// enterRoom()이 실행된다.
+const _arrivalParams = new URLSearchParams(location.search);
+const _arrivedFromNext = _arrivalParams.get('from') === 'next';
+let _arrivalMessageConsumed = !_arrivedFromNext;
+function _tryArrivalMessage(){
+    if(_arrivalMessageConsumed) return false;
+    _arrivalMessageConsumed = true;
+    try{ speak('침묵의 공명 제1전시 조우입니다. 화면의 아무곳이나 터치하면 바로 시작됩니다.'); }catch(err){}
+    return true;
 }
+// 자동재생 제약이 있는 브라우저를 위해, 로드 직후에도 한 번 시도해본다
+// (성공하면 굳이 첫 탭에서 또 소비하지 않도록 이미 위에서 true로 표시됨).
+setTimeout(_tryArrivalMessage, 700);
+
+// 게이트의 버튼(onclick)과 "게이트 아무 곳이나 탭"(제스처 계층) 양쪽
+// 모두 이 함수를 거치도록 통일했다 — 도착 안내가 남아있으면 그것부터
+// 들려주고, 없으면(또는 이미 들었으면) 곧장 enterRoom()으로 입장한다.
+function handleGateEntryTap(){
+    if(_tryArrivalMessage()) return; // 이번 탭은 안내만 — 입장은 다음 탭에
+    enterRoom();
+}
+
 function enterRoom(){
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
@@ -926,7 +1026,13 @@ function enterRoom(){
     // 스크린리더(TalkBack/VoiceOver)를 켜지 않은 상태로는 아무 소리도
     // 들리지 않았다. "시작할게요"를 누르는(또는 6초 자동 진입) 이 시점에
     // 그 문구를 먼저 읽어준 뒤 기존 안내로 이어지게 했다.
-    const gateText = '침묵의 공명, 전시실 1, 조우, 만나기입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 마주한 두 조각상, 로댕과 반가사유상의 이야기를 들려드립니다. 편안히 들어주세요.';
+    // v-welcome-open — 참가자 제안: "아무 데나 터치/클릭하면 '침묵의
+    // 공명에 오신 것을 환영합니다'로 시작해서 간단히 소개하자." 첫
+    // 문장으로 환영 인사를 붙였다. 바로 아래 speak() 호출이 이 문구가
+    // 끝나자마자 playLayer(0)을 불러 본편으로 자동 진행하므로("소개가
+    // 끝나면 자동으로 진입"), room2.html과 마찬가지로 이 구조가 이미
+    // 그대로 갖춰져 있었다 — 추가로 타이머를 걸 필요가 없다.
+    const gateText = '침묵의 공명에 오신 것을 환영합니다. 전시실 1, 조우, 만나기입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 마주한 두 조각상, 로댕과 반가사유상의 이야기를 들려드립니다. 편안히 들어주세요.';
 
 // ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
 try{
@@ -1772,18 +1878,26 @@ function _infoDialogKeydown(e){
     }, { passive:true });
 })();
 
+// v-two-press-nav — 참가자 요청: "다음전시 버튼은 한 번 누르면 '다음전시
+// 버튼입니다.'라고 말하고, 두 번 빠르게 누르면 다음전시로 넘어간다."
+// 실제 확인(1차 안내 → 2차 확인) 절차는 아래 initNoScreenReaderGestures의
+// isNextExhibitBtn 특수 처리에서 이뤄지고, 여기 goToRoom2()는 그 확인이
+// 끝난 뒤에만 호출된다 — 그래서 여기서는 곧장 이동하면 된다. "넘어가면서
+// 말하는 멘트"는 더 이상 여기(전시실 1)에서 말하지 않는다 — 이동하는
+// 순간 이 문서는 곧 사라지므로, 그 멘트는 도착지(room2.html)가 자기
+// 페이지에서 직접 말하도록 넘겼다(?from=next 파라미터로 신호를 준다 —
+// room2.html의 speakOnboardingIfNeeded 참고).
+let _leavingRoom1 = false;
 function goToRoom2(e) {
     if (e) {
         e.preventDefault();
         e.stopPropagation();
     }
-    // 오디오나 합성음 재생 중지 후 즉시 이동
+    if(_leavingRoom1) return;
+    _leavingRoom1 = true;
     try { window.speechSynthesis.cancel(); } catch(err) {}
-    
     // 모바일 환경에서 캐시나 히스토리 충돌을 방지하기 위해 replace 사용 권장
-    setTimeout(function() {
-        location.replace('room2.html');
-    }, 50);
+    location.replace('room2.html?from=next');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1904,47 +2018,88 @@ function goToRoom2(e) {
         // ── 누른 채로 화면을 훑는 동안, 지금 그 아래 있는 버튼의
         //    이름을 실시간으로 말해준다("터치 탐색"). 버튼 영역 밖에서는
         //    아무 것도 하지 않는다(원래 콘텐츠 탐색용 동작과 겹치지
-        //    않도록).
+        //    않도록). 이렇게 훑어서 찾아낸 버튼은 그 자리에서 바로
+        //    실행되지 않고 "armed" 상태로 표시해둔다 — 손을 뗀 뒤에
+        //    이어지는 확인 탭으로 실행된다(아래 handlePointerUp 참고).
         const under = document.elementFromPoint(x, y);
         const control = under && under.closest ? under.closest(CONTROL_SELECTOR) : null;
         const controlInRegion = control && withinExcluded(control) ? control : null;
         if(controlInRegion !== lastExploredControl){
             lastExploredControl = controlInRegion;
-            if(controlInRegion){ speakControlName(controlInRegion); }
+            if(controlInRegion){
+                speakControlName(controlInRegion);
+                armedControl = controlInRegion;
+                armedAt = Date.now();
+            }
         }
     }
+
+    // v-two-press-nav — "다음전시" 버튼은 되돌릴 수 없는 화면 전환이라,
+    // 다른 버튼들과 달리 곧장 탭해도 즉시 실행하지 않는다 — 항상 "안내
+    // 후 빠른 재확인" 절차를 거친다. 확인 창도 더 짧게(1.5초, "빠르게"
+    // 누르라는 요청 반영) 잡는다.
+    const NEXT_EXHIBIT_ID = 'btn-next-exhibit';
+    const NEXT_EXHIBIT_CONFIRM_MS = 1500;
+    function isNextExhibitBtn(el){ return !!(el && el.id === NEXT_EXHIBIT_ID); }
 
     function handlePointerUp(x, y, upTarget){
         clearTimeout(longPressTimer); longPressTimer = null;
         if(longPressFired){ longPressFired = false; return; } // 이미 길게 누르기로 처리됨
 
         const target = downTarget || upTarget;
+        const landedControl = target && target.closest ? target.closest(CONTROL_SELECTOR) : null;
+        const dt = Date.now() - startTime;
 
-        // ── 버튼 영역: 탐색(1차)과 실행(같은 버튼 2차)을 분리 ──
+        // ── 버튼 영역(상단 설정·하단 재생 제어·정보창 등) ──
         if(withinExcluded(target)){
-            const control = target.closest ? target.closest(CONTROL_SELECTOR) : null;
-            if(!control) return; // 버튼이 아닌 영역(여백 등)을 짚었으면 아무 것도 하지 않는다
-            if(draggedFar){
-                return; // 끌며 탐색만 하다 뗀 경우 — 실행하지 않는다.
-            }
-            const now = Date.now();
-            if(armedControl === control && (now - armedAt) < ARM_WINDOW_MS){
-                // 같은 버튼을 다시 탭/클릭 → 실제로 실행(원래 클릭 동작을 그대로 통과시킨다).
+            if(!draggedFar && landedControl){
+                if(isNextExhibitBtn(landedControl)){
+                    const now = Date.now();
+                    if(armedControl === landedControl && (now - armedAt) < NEXT_EXHIBIT_CONFIRM_MS){
+                        // 빠르게 두 번째로 눌렀다 — 실제로 이동한다.
+                        armedControl = null;
+                        suppressNextClick = false; // 직전 눌렀을 때 걸어둔 억제가 아직
+                                                    // 안 풀렸더라도, 이 click은 확실히
+                                                    // 통과시킨다(경합 상태 방지).
+                        try{ hapticPulse('stage'); }catch(err){}
+                        try{ landedControl.click(); }catch(err){}
+                        return;
+                    }
+                    // 첫 번째 탭 — 아직 이동하지 않고 이름만 말해준다.
+                    armedControl = landedControl; armedAt = now;
+                    suppressNextClick = true;
+                    speakControlName(landedControl);
+                    setTimeout(function(){ suppressNextClick = false; }, 400);
+                    return;
+                }
+                // v-direct-tap — 참가자 지적: "두 번 눌러야 하면 비장애인이
+                // 불편하다." 끌지 않고 곧장 버튼 하나를 눌렀다는 것은
+                // 눈으로 보고 정확히 그 버튼을 짚었다는 뜻이다(비장애인의
+                // 일반적인 사용 방식) — 확인 절차 없이 그 자리에서 바로
+                // 실행한다(원래 클릭을 그대로 통과시킨다). "다음전시"만은
+                // 위에서 예외 처리했다. 이전에 탐색 중이던 다른 버튼이
+                // 있었다면 그 상태는 무효화한다.
                 armedControl = null;
-                try{ hapticPulse('stage'); }catch(err){}
-                return; // suppressNextClick을 켜지 않으므로 뒤이은 click이 정상 실행된다
+                return;
             }
-            // 처음 짚은 버튼 → 아직 실행하지 않고 이름만 말해준다.
-            armedControl = control; armedAt = now;
-            suppressNextClick = true;
-            speakControlName(control);
-            setTimeout(function(){ suppressNextClick = false; }, 400);
+            if(!draggedFar && armedControl && dt < 600 &&
+               (Date.now() - armedAt) < (isNextExhibitBtn(armedControl) ? NEXT_EXHIBIT_CONFIRM_MS : ARM_WINDOW_MS)){
+                // 버튼 영역 안이지만 정확한 버튼은 아닌 자리(여백 등)를
+                // 살짝 다시 두드렸다 — 방금 손끝으로 훑어 찾아낸 버튼을
+                // 실행한다.
+                const c = armedControl;
+                armedControl = null;
+                suppressNextClick = false; // 경합 상태 방지(위와 동일한 이유)
+                try{ hapticPulse('stage'); }catch(err){}
+                try{ c.click(); }catch(err){}
+                return;
+            }
+            // 끌며 탐색만 하다 뗀 경우 — 실행하지 않고 armed 상태만 유지한다.
             return;
         }
 
-        if(draggedFar) return; // 버튼 밖에서 끌기만 한 경우는 아무 동작 없음
+        if(draggedFar) return; // 버튼 영역 밖에서 끌기만 한 경우는 아무 동작 없음
 
-        const dt = Date.now() - startTime;
         const dx = x - startX, dy = y - startY;
 
         // 좌우로 60px 이상, 위아래로는 60px 미만 움직였다면 스와이프로 본다.
@@ -1962,12 +2117,12 @@ function goToRoom2(e) {
         if(dt < 600){
             if(isGateShowing()){
                 // 진입 화면: "시작" 버튼 자체를 짚었다면 버튼의 원래
-                // 클릭에 맡기고(중복 호출 방지), 그 외 화면 어디를
-                // 두드려도 같은 동작(전시 시작)으로 취급한다.
+                // onclick(handleGateEntryTap)에 맡기고(중복 호출 방지),
+                // 그 외 화면 어디를 두드려도 같은 동작으로 취급한다.
                 if(target && target.closest && target.closest('.btn.primary')) return;
                 suppressNextClick = true;
                 try{ hapticPulse('turn'); }catch(err){}
-                try{ enterRoom(); }catch(err){}
+                try{ handleGateEntryTap(); }catch(err){}
                 setTimeout(function(){ suppressNextClick = false; }, 400);
                 return;
             }
@@ -2018,6 +2173,14 @@ function goToRoom2(e) {
     function speakOnboardingIfNeeded(){
         if(onboardingSpoken) return;
         if(!isGateShowing()) return;
+        // v-two-press-nav — ?from=next로 넘어온 경우, 도착 직후 안내는
+        // 위쪽의 _tryArrivalMessage()/handleGateEntryTap()이 전담한다
+        // (onboardingSpoken을 그쪽에서 이미 true로 표시해두므로 보통
+        // 여기까지 오지 않지만, 순서가 꼬였을 때를 대비해 한 번 더
+        // 명시적으로 걸러둔다). 스크린리더 없는 사용자를 위한 긴 조작법
+        // 설명은 처음 오는 방문객(=바로 이 게이트로 직접 들어온 경우)
+        // 에게만 필요하다.
+        if(_arrivedFromNext) return;
         onboardingSpoken = true;
         const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 화면 아무 곳이나 한 번 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작합니다. 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 두드리면 실행됩니다. 지금 화면을 두드리면 시작합니다.';
         try{
