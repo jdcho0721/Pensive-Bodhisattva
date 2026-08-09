@@ -223,6 +223,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
     z-index:25;min-height:clamp(180px, 34vh, 320px);max-height:46vh;overflow-y:auto;box-sizing:border-box;
     display:flex;flex-direction:column;justify-content:center;}
+/* v-caption-mic-overlap — 참가자 요청: "핸드폰에서 해설 자막이 화면
+   아래 버튼과 겹치지 않게 해줘." #chat-toggle(💬)은 position:fixed로
+   화면에 고정돼 있어 자막창의 실제 높이와 무관하게 항상 같은 자리에
+   떠 있다. 자막이 길어져 여러 줄로 늘어나면(특히 좁은 모바일 화면)
+   그 문장이 챗봇 버튼이 떠 있는 자리까지 밀고 올라가 서로 겹쳤다.
+   모바일 폭에서는 텍스트 요소(자막·라벨·출처)에만 챗봇 버튼이
+   차지하는 만큼(지름 52px + 우측 여백 16px + 여유분) 오른쪽 여백을
+   비워둬, 자막이 아무리 길어져도 그 자리를 침범하지 않게 한다 —
+   하단 버튼 줄(#hint-row)은 가운데 정렬을 그대로 유지하도록 별도로
+   건드리지 않는다. */
+@media (max-width: 768px){
+    #focus-tag, #caption, #source-tag{padding-right:78px;}
+}
 /* v35 — 스크롤 없는 키오스크 한 화면 구조로 되돌아왔으므로, #caption-wrap은
    다시 #room-layout(flex 컨테이너)의 자식으로 "남는 공간"이 아니라 스스로
    min-height를 갖는 flex:0 0 auto 자식이다. v33보다 더 크게(뷰포트 높이의
@@ -257,15 +270,20 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
-/* v-smaller-hint-row — 참가자 요청: "화면 아래 버튼 3개의 크기를 줄여서
-   한 줄에 들어가면 좋겠다." → 이후 명확화: "이건 PC가 아니라 폰에서
-   한 줄에 안 들어가는 상황에 대한 요청이다. PC는 문제없다." 그래서
-   768px 이하(모바일 폭)에서만 이 축소 오버라이드가 적용되게 미디어
-   쿼리로 감쌌다 — PC 등 넓은 화면에서는 위 공통 .btn 크기(44px)를
-   그대로 쓴다. */
+/* v-two-tap-buttons — 참가자 요청: 각 버튼은 처음 누르면 이름만
+   안내하고, 같은 버튼을 한 번 더 눌러야 실제로 작동한다(아래
+   document 클릭 가로채기 스크립트 참고). 이름 안내 후 "무장된" 상태
+   임을 시각적으로도 보여준다 — 저시력 사용자도 지금 어느 버튼이
+   확인 대기 중인지 알 수 있게. */
+button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:0 0 10px 2px rgba(212,175,55,.5);}
+/* v-match-easy-mode-size — 참가자 요청: "다시듣기·여일·전시1 버튼을
+   '쉬운 문장'과 같은 크기로." #easy-mode-btn(위 상단 컨트롤)과 정확히
+   같은 값(height:36px, padding:0 10px, font-size:.66rem, radius:18px)
+   으로 맞춰, 모바일에서 상단·하단 버튼이 시각적으로 완전히 통일되게
+   했다. */
 @media (max-width: 768px){
     #hint-row .btn{
-        min-height:36px; font-size:.68rem; padding:6px 12px; border-radius:18px;
+        height:36px; min-height:36px; font-size:.66rem; padding:0 10px; border-radius:18px;
     }
 }
 
@@ -585,7 +603,7 @@ body.chat-open #chat-toggle{display:none;}
 
 <!-- ── 작품·작가 소개 / 저작권 ── -->
 <div id="top-controls">
-<button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기">ⓘ</button>
+<button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-name="정보">ⓘ</button>
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
 <button id="voice-toggle-btn" onclick="toggleNarration()" aria-pressed="false"
@@ -598,7 +616,7 @@ body.chat-open #chat-toggle{display:none;}
      유지하면서, DOM 순서만 앞으로 당겨 "화면을 열자마자 두 번째로
      만나는 버튼"이 되도록 했다 — 스크린리더는 시각적 위치가 아니라
      이 순서대로 탐색하기 때문이다. -->
-<button id="chat-toggle" onclick="toggleChat()" aria-label="사유의 상담소 — 질문하기">💬</button>
+<button id="chat-toggle" onclick="toggleChat()" aria-label="사유의 상담소 — 질문하기" data-tap-name="사유의 상담소">💬</button>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
         <h2>작품·작가 소개</h2>
@@ -3586,8 +3604,19 @@ function _formatCorpusBlock(passages){
       안전망 역할만 하도록 순서를 뒤집은 것이다.
    ── 서버가 꺼져 있어도(launch.bat에서 RAG는 선택 사항) 조용히 넘어가고
       챗봇은 평소대로(로컬 코퍼스 + LLM) 동작한다. ══════════════════════════════════════════════════════ */
-const RAG_ENDPOINT        = "http://localhost:8800/rag/search";
-const RAG_STATUS_ENDPOINT = "http://localhost:8800/status";
+// v-mobile-llm — 참가자 요청: "모바일에서 챗봇 질문에 대해 LLM으로
+// 연결되도록 해달라." 기존엔 "localhost"로 고정돼 있어, PC(서버가
+// 실제로 떠 있는 기기)에서 열 때만 동작했다. 모바일 기기에서
+// "localhost"는 그 서버가 아니라 모바일 기기 자기 자신을 가리키므로,
+// 같은 Wi-Fi 안에서 모바일로 접속해도 로컬 LLM·RAG 서버에 닿을 수
+// 없었다. location.hostname은 지금 이 페이지를 "무엇으로 열었는지"를
+// 그대로 반영한다 — PC에서 직접 열면 'localhost'(또는 파일 경로일 땐
+// 빈 문자열), 모바일에서 PC의 LAN IP(예: 192.168.0.5)로 접속했다면
+// 그 IP가 그대로 들어온다. 같은 값을 API 호출에도 그대로 써서, 페이지를
+// 연 방법과 같은 경로로 LLM·RAG 서버에 닿게 한다.
+const LLM_HOST = location.hostname || 'localhost';
+const RAG_ENDPOINT        = `http://${LLM_HOST}:8800/rag/search`;
+const RAG_STATUS_ENDPOINT = `http://${LLM_HOST}:8800/status`;
 
 // room2 진입 시 한 번 호출 — 연결 여부를 콘솔에만 조용히 남긴다(UI 비차단).
 async function checkRAGStatus(){
@@ -3728,7 +3757,7 @@ function _cleanAIText(text, isFinal){
 async function fetchDetailAI(prompt, ragBlock, onUpdate){
     const fullPrompt = ragBlock ? (prompt + ragBlock) : prompt;
     try{
-        const response = await fetch("http://localhost:1234/v1/chat/completions", {
+        const response = await fetch(`http://${LLM_HOST}:1234/v1/chat/completions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -3780,7 +3809,7 @@ async function fetchDetailAI(prompt, ragBlock, onUpdate){
         return finalText;
     }catch(e){
         console.error('AI 연결 오류:', e);
-        const fallback = '지금은 답을 찾지 못했어요. (로컬 AI 서버 연결을 확인해주세요)';
+        const fallback = '지금은 답을 찾지 못했어요. 전시를 운영하는 컴퓨터와 같은 Wi-Fi에 연결돼 있는지 확인해주세요.';
         if(onUpdate) onUpdate(fallback);
         return fallback;
     }
@@ -3826,6 +3855,23 @@ function pickKBCandidates(query){
     return out;
 }
 
+// v-talkback-fix — 참가자 요청: "모바일에서 뒤로 버튼이 talkback이
+// 안된다." 예전엔 #chat-back-btn을 누르면 history.back()만 호출하고,
+// 실제로 패널을 닫는 일은 popstate 이벤트가 나중에 비동기로 처리했다.
+// 일반 터치는 이 왕복이 보통 빠르게 끝나지만, TalkBack의 더블탭
+// 활성화는 이벤트 타이밍이 달라 popstate가 기대만큼 즉시(또는 아예)
+// 오지 않는 경우가 있었다 — 그러면 버튼을 눌러도 화면이 안 닫힌
+// 것처럼 보인다. 이제 닫기 버튼을 누르면 popstate를 기다리지 않고
+// 그 자리에서 곧바로 패널을 닫고, 히스토리 정리(history.back())는
+// 그 뒤에 보조적으로만 시도한다 — 나중에 popstate가 오더라도
+// closeChatPanel()이 다시 불려 상태가 어긋나지 않는다(멱등).
+function closeChatPanel(){
+    const panel = document.getElementById('chat-panel');
+    if(!panel) return;
+    panel.classList.remove('open');
+    document.body.classList.remove('chat-open');
+}
+
 function toggleChat(){
     const panel = document.getElementById('chat-panel');
     const willOpen = !panel.classList.contains('open');
@@ -3837,13 +3883,15 @@ function toggleChat(){
         document.body.classList.add('chat-open');
         const back = document.getElementById('chat-back-btn');
         if(back) back.focus();
-    } else if(history.state && history.state.chatOpen){
-        // 뒤로가기 버튼(#chat-back-btn)으로 닫는 경우 — 실제로 한 단계
-        // 뒤로 이동시켜 popstate 핸들러가 닫기를 처리하게 한다.
-        history.back();
     } else {
-        panel.classList.remove('open');
-        document.body.classList.remove('chat-open');
+        // 먼저 즉시 닫는다 — popstate가 오든 안 오든, 버튼을 누른
+        // 시점에 화면은 반드시 닫힌다.
+        closeChatPanel();
+        // 히스토리에 남겨둔 #chat 상태도 정리한다(하드웨어 뒤로가기를
+        // 한 번 더 눌렀을 때 빈 팝업처럼 다시 걸리지 않도록).
+        if(history.state && history.state.chatOpen){
+            history.back();
+        }
     }
 }
 // v-chat-fullscreen — 브라우저/기기 뒤로가기(제스처 포함)로도 챗봇
@@ -3857,8 +3905,7 @@ window.addEventListener('popstate', (e)=>{
         panel.classList.add('open');
         document.body.classList.add('chat-open');
     } else {
-        panel.classList.remove('open');
-        document.body.classList.remove('chat-open');
+        closeChatPanel();
     }
 });
 
@@ -4232,6 +4279,18 @@ async function sendChat(e, overrideText){
     // 첫 질문 이후 자동으로 숨기던 동작을 없앴다. 언제든 다른 예상
     // 질문을 이어서 눌러볼 수 있다.
 
+    // v-speak-question — 참가자 요청: "고정 질문을 클릭하거나 타이핑·
+    // 음성으로 질문을 입력하면, 화면을 볼 수 없는 관람객은 무슨 질문이
+    // 전송됐는지 알 수 없다. 그 질문 내용도 음성으로 알려달라." 답변은
+    // 이미 음성으로 나가고 있었으니, 질문 자체를 먼저 읽어준 뒤 그
+    // 낭독이 끝나면 기존 답변 처리로 이어간다. 고정 질문 클릭·타이핑
+    // 전송·음성 입력 세 경로가 전부 sendChat() 하나로 모이므로, 여기
+    // 한 곳만 고치면 세 경로 모두에 자동으로 적용된다.
+    speak(q, ()=>{ _processChatAnswer(q); });
+    return false;
+}
+
+async function _processChatAnswer(q){
     // v47 — 참가자 요청: 챗봇 답(자막)은 챗봇창 안이 아니라 아래
     // 해설창(#caption)에 나오도록 한다. 아래 모든 응답 경로에서
     // pushLog('ai', ...) 대신 showChatAnswerInCaption()을 쓴다 —
@@ -4246,7 +4305,7 @@ async function sendChat(e, overrideText){
             _chatAnswerActive = true;
             speak(recap, ()=>{ _chatAnswerActive = false; });
         }, 200);
-        return false;
+        return;
     }
 
     // 1순위: 지식베이스 퍼지 매칭 — 즉시 응답
@@ -4258,7 +4317,7 @@ async function sendChat(e, overrideText){
             _chatAnswerActive = true;
             speak(kbAnswer, ()=>{ _chatAnswerActive = false; });
         }, 250);
-        return false;
+        return;
     }
 
     // 1.5순위 — v42: 조각상 사실(1순위)에 안 걸리면, 200개 철학 문답
@@ -4267,7 +4326,7 @@ async function sendChat(e, overrideText){
     const philItem = _searchPhilosophyQA(q);
     if(philItem){
         setTimeout(()=>{ _renderPhilosophyAnswer(philItem); }, 250);
-        return false;
+        return;
     }
 
     // 2순위: 확신도 높은 KB 매칭이 없으면, 로댕/반가사유상 KB 약한 후보 +
@@ -4303,7 +4362,6 @@ async function sendChat(e, overrideText){
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
     _chatAnswerActive = true;
     speak(answer, ()=>{ _chatAnswerActive = false; }); // 다중양식 원칙 — 챗봇 답도 텍스트만이 아니라 음성으로 함께 전달한다.
-    return false;
 }
 
 /* sendChat()의 두 응답 경로(KB 즉답 / AI·RAG 폴백) 모두에서 공통으로
@@ -4371,6 +4429,73 @@ function _infoDialogKeydown(e){
         }
     }
 }
+
+/* ══════════════════════════════════════════════════════
+   v-two-tap-buttons — 참가자 요청: "각 버튼의 최초 터치 또는 클릭에
+   대해서 먼저 '이 버튼은 ~입니다'라고 안내하고, 다시 한번 터치하면
+   작동되도록 해줘." 화면을 보기 어려운 관람객이 원하는 버튼이 맞는지
+   먼저 확인(탐색)한 뒤, 같은 버튼을 한 번 더 눌러야 실제로 실행되는
+   (확인) 2단계 방식이다.
+     · 대상: <button> 태그로 만들어진 화면 위/아래 컨트롤들(정보·속도·
+       쉬운문장·자체음성·챗봇 진입·다시듣기·여일·마치기·전시1·
+       참고문헌·닫기·수료증 버튼들·시작할께요).
+     · 제외 1 — 조각상 위 11개 부위(.hotspot): <button>이 아니라
+       <div role="button">로 만들어져 있어 애초에 이 선택자에 걸리지
+       않는다. 실제 조각상을 손끝으로 만지면 바로 느껴지는 경험과
+       똑같아야 하므로(만지면 즉시 반응), 일부러 그대로 뒀다.
+     · 제외 2 — 챗봇 대화창(#chat-panel) 안쪽(마이크·입력창·전송·
+       예상 질문 칩·돌아가기): 타이핑·대화가 실시간으로 오가는
+       영역이라 첫 탭이 곧바로 동작해야 한다. 특히 돌아가기 버튼은
+       바로 전 요청에서 "누르면 즉시 닫혀야 한다"고 고친 바로 그
+       버튼이라, 여기 포함시키면 방금 고친 걸 다시 어긋나게 만든다.
+   구현: document에 캡처 단계(capture:true)로 클릭을 가로채, 아직
+   "무장"되지 않은 버튼이면 실제 동작(onclick)을 막고 이름만 안내한
+   뒤 무장 상태로 표시한다. 같은 버튼을 정해진 시간(2.5초) 안에 한
+   번 더 누르면 이번엔 가로채지 않고 그대로 통과시켜 원래 동작이
+   실행된다. 다른 버튼을 누르면 무장 상태가 그 버튼으로 옮겨간다.
+   ══════════════════════════════════════════════════════ */
+const TWOTAP_ARM_WINDOW_MS = 2500;
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel';
+let _armedTwoTapEl = null;
+let _twoTapTimer = null;
+
+function _twoTapName(el){
+    if(el.dataset && el.dataset.tapName) return el.dataset.tapName;
+    const txt = el.textContent.trim();
+    if(txt) return txt;
+    return el.getAttribute('aria-label') || '버튼';
+}
+
+function _disarmTwoTap(){
+    if(_armedTwoTapEl) _armedTwoTapEl.classList.remove('twotap-armed');
+    _armedTwoTapEl = null;
+    clearTimeout(_twoTapTimer);
+}
+
+document.addEventListener('click', function(e){
+    const target = e.target.closest('button');
+    if(!target) return;
+    if(target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇 안쪽은 손대지 않음 — 즉시 반응 유지
+    if(target.disabled) return;
+
+    if(_armedTwoTapEl === target){
+        // 같은 버튼을 다시 눌렀다 — 확인됐다. 가로채지 않고 그대로
+        // 통과시켜 원래 onclick이 정상 실행되게 한다.
+        _disarmTwoTap();
+        return;
+    }
+
+    // 처음 누른 버튼이거나 다른 버튼으로 옮겨왔다 — 실행을 막고
+    // 이름만 안내한 뒤 무장 상태로 표시한다.
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    _disarmTwoTap();
+    _armedTwoTapEl = target;
+    target.classList.add('twotap-armed');
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){ /* 무시 */ }
+    speak(`이 버튼은 ${_twoTapName(target)}입니다.`);
+    _twoTapTimer = setTimeout(_disarmTwoTap, TWOTAP_ARM_WINDOW_MS);
+}, true); // 캡처 단계 — onclick 속성(버블 단계)이 실행되기 전에 먼저 가로챈다
 
 </script>
 
