@@ -233,8 +233,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    가로채는" 문제 자체가 사라졌다. 그래서 이전의 pointer-events:none/auto
    구분 규칙은 더 이상 필요 없어 제거했다 — #caption-wrap과 그 자식들은
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
-#focus-tag{font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
-#caption{font-size:clamp(1rem,3.4vw,1.35rem);line-height:1.7;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
+#focus-tag{font-size:clamp(0.68rem, 2.2vw, 0.78rem);color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
+#caption{font-size:clamp(.95rem, 3.0vw, 1.25rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
    숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다. */
@@ -243,7 +243,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
        검은 배경 위에서 WCAG 2.1 AA 명도 대비 기준(4.5:1)에 못 미쳤다.
        같은 금색 톤을 유지하면서 알파값만 .72로 올려 대비를 5.1:1로
        확보했다 — 저시력 사용자도 읽을 수 있는 최소 대비를 만족한다. */
-    font-size:.7rem; color:rgba(212,175,55,.72); text-align:center; max-width:600px;
+    font-size:clamp(0.68rem, 2.2vw, 0.78rem); color:rgba(212,175,55,.72); text-align:center; max-width:600px;
     margin:0 auto 10px; min-height:1em; word-break:keep-all; letter-spacing:.02em;
 }
 #caption b{color:var(--gold-light);}
@@ -258,12 +258,22 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption .qa-q{color:#40e0d0;}
 #caption .qa-a{color:var(--gold);}
 
-#hint-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
-#hint-row .btn{font-size:.71rem; padding:5px 9px;}
+#hint-row{display:flex;gap:clamp(6px, 2.6vw, 20px);justify-content:center;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:10px;}
+#hint-row .btn{
+    height:clamp(32px, 9vw, 44px);
+    min-height:clamp(32px, 9vw, 44px);
+    font-size:clamp(0.66rem, 2.8vw, 0.9rem);
+    padding:0 clamp(10px, 3vw, 20px);
+    letter-spacing:.02em;
+    flex:0 0 auto;
+    white-space:nowrap;
+}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
-     min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역. 시각 크기를 줄여도 이 값은 유지한다 */
-     display:inline-flex;align-items:center;justify-content:center;
-     font-size:.57rem;padding:3px 6px;border-radius:8px;cursor:pointer;white-space:normal;word-break:keep-all;}
+     min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
+     display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+     font-size:.9rem;letter-spacing:.06em;padding:11px 22px;border-radius:30px;cursor:pointer;transition:all .25s;white-space:normal;word-break:keep-all;}
+.btn:hover,.btn:focus-visible{background:rgba(212,175,55,.14);}
+.btn.primary:hover{box-shadow:0 0 18px rgba(212,175,55,.5);}
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 
@@ -441,36 +451,47 @@ body.chat-open #chat-toggle{display:none;}
     justify-content:center;gap:36px;text-align:center;padding:32px;}
 #intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.1rem,3.5vw,2.1rem);letter-spacing:.1em;line-height:1.5;}
 #intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.85rem,1.8vw,1.05rem);word-break:keep-all;}
-#intro-gate .btn{font-size:clamp(.57rem,.93vw,.67rem);padding:3px 7px;}
+#intro-gate .btn{font-size:clamp(0.85rem,1.4vw,1rem);padding:10px 22px;}
 
 /* ══════════════════════════════════════════════════════
    작품·작가 소개 / 저작권 — 공통 정보 오버레이
    ══════════════════════════════════════════════════════ */
-/* 반응형: 4개 버튼을 개별 고정좌표 대신 flex 컨테이너로 묶어, 화면이
-   좁으면 자동으로 다음 줄로 줄바꿈되게 한다(가로 스크롤/잘림 방지). */
+/* 반응형: index.html의 '최종 반응형 통합 레이어'와 동일한 방식 —
+   버튼 4개를 항상 한 줄(nowrap)로 유지하고, clamp()로 화면 폭에 따라
+   크기가 끊김 없이 연속적으로 줄어들게 한다. 극단적으로 좁은 화면·
+   시스템 글자 확대 시에는 가로 스크롤이 최후 안전장치가 된다. */
 #top-controls{
     position:fixed; top:calc(12px + env(safe-area-inset-top)); left:12px; right:12px; z-index:45;
-    display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
+    display:flex; flex-wrap:nowrap; gap:clamp(4px, 1.6vw, 8px); align-items:flex-start;
+    overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:2px;
+}
+#info-btn,#speed-btn,#easy-mode-btn,#voice-toggle-btn{
+    height:clamp(30px, 8.6vw, 44px);
+    min-height:clamp(30px, 8.6vw, 44px);
+    font-size:clamp(0.62rem, 2.5vw, 0.85rem);
+    padding:0 clamp(8px, 2.4vw, 14px);
+    letter-spacing:.01em;
+    flex:0 0 auto;
+    white-space:nowrap;
 }
 #info-btn{
-    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 최소 터치 영역이라 지름은 유지 */
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.64rem; cursor:pointer;
+    width:clamp(30px, 8.6vw, 44px); border-radius:50%; background:rgba(0,0,0,.72); /* WCAG 2.5.5: 최소 터치 영역 지향 */
+    border:1px solid var(--gold-dim); color:var(--gold); cursor:pointer; padding:0;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    flex:0 0 auto;
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #speed-btn{
-    height:44px; min-width:44px; padding:0 4px; border-radius:15px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.53rem; cursor:pointer;
+    min-width:44px; border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; flex:0 0 auto;
+    font-family:'Noto Serif KR',serif;
 }
 #speed-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #easy-mode-btn{
-    height:44px; padding:0 5px; border-radius:15px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.53rem; cursor:pointer;
+    border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
+    font-family:'Noto Serif KR',serif;
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #easy-mode-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
@@ -479,15 +500,12 @@ body.chat-open #chat-toggle{display:none;}
    (VoiceOver/TalkBack)를 켜고 쓰는 사용자는 자체 음성 + 스크린리더가
    같은 문장을 동시에 읽어 겹쳐 들릴 수 있다. 이 토글로 자체 음성만
    끄면, 텍스트는 그대로 aria-live로 갱신되어 스크린리더가 대신
-   읽어준다 — 정보 손실 없이 이중 음성만 없앤다.
-   v-responsive — #top-controls가 flex-wrap으로 바뀌면서, 버튼들이
-   화면 폭에 맞춰 스스로 줄바꿈되므로 더 이상 개별 left 좌표를
-   계산해 겹치지 않게 배치할 필요가 없어졌다. */
+   읽어준다 — 정보 손실 없이 이중 음성만 없앤다. */
 #voice-toggle-btn{
-    height:44px; padding:0 5px; border-radius:15px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.53rem; cursor:pointer;
+    border-radius:22px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); cursor:pointer;
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
+    font-family:'Noto Serif KR',serif;
 }
 #voice-toggle-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #voice-toggle-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
@@ -604,202 +622,13 @@ body.chat-open #chat-toggle{display:none;}
 
 
 /* ══════════════════════════════════════════════════════
-   모바일 '컴팩트 UI' 패치 (시각 크기↓, 터치 타깃은 유지)
-   - 요청 반영: 버튼 크기 작게(시각), 라벨 변경, 하단 3버튼 1줄
+   모바일 반응형 버튼 크기는 위 #top-controls / #hint-row .btn 선언의
+   clamp()가 화면 폭에 따라 끊김 없이 처리한다(index.html의 '최종
+   반응형 통합 레이어'와 동일한 방식) — 더 이상 별도의 고정 브레이크
+   포인트 패치가 필요하지 않다.
    ══════════════════════════════════════════════════════ */
 
-/* 상단 컨트롤: 텍스트/패딩을 줄여 시각적으로 더 컴팩트하게 (요청 반영: 크기 2/3로 축소) */
-#speed-btn,#easy-mode-btn,#voice-toggle-btn{
-    font-size:.53rem;
-    padding:0 4px;
-    letter-spacing:-.01em;
-}
 
-/* 하단 3버튼: 한 줄 고정 + 컴팩트(시각) */
-#hint-row{
-    display: flex;
-    gap: 8px; /* 버튼 사이의 간격을 가깝게 좁힘 */
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: center; /* 가운데 정렬 또는 flex-start로 변경 가능 */
-}
-#hint-row .btn{
-    flex: 0 0 auto; /* 기존 10% 고정 넓이 풀기 */
-    max-width: none;
-    padding: 3px 5px; /* 여백 최적화 (요청 반영: 2/3로 축소) */
-    font-size: .64rem;
-    white-space: nowrap;
-    min-height: 44px; /* WCAG 2.5.5 최소 터치 영역 — 유지 */
-}
-
-/* 초소형 화면에서 살짝 더 압축 */
-@media (max-width: 360px){
-    #speed-btn,#easy-mode-btn,#voice-toggle-btn{font-size:.5rem;padding:0 3px;}
-    #hint-row{gap:6px;}
-    #hint-row .btn{padding:3px 3px;font-size:.6rem;min-height:44px;}
-}
-
-
-
-/* ══════════════════════════════════════════════════════
-   접근성(저시력/시각장애) · 모바일 반응형 최적화 오버라이드
-   - 큰 글자/큰 버튼/명확한 포커스/안전영역(safe-area) 반영
-   - 기존 레이아웃/좌표계/핫스팟 로직은 그대로 유지
-   ══════════════════════════════════════════════════════ */
-
-html{
-  font-size: clamp(18px, 2.2vw, 22px);
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
-body{
-  line-height: 1.6;
-}
-
-/* 하단 자막/해설 영역: 휴대폰에서 읽기 좋은 크기 */
-#caption-wrap{
-  padding-left: max(14px, env(safe-area-inset-left));
-  padding-right: max(14px, env(safe-area-inset-right));
-  padding-bottom: max(14px, env(safe-area-inset-bottom));
-}
-
-#focus-tag{
-  font-size: 0.95rem;
-}
-
-#caption{
-  font-size: clamp(1.15rem, 4.6vw, 1.75rem);
-  line-height: 1.75;
-  letter-spacing: 0.01em;
-}
-
-#source-tag{
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-/* 공통 버튼: 큰 터치 타깃 + 둥근 모양 + 읽기 쉬운 글자 */
-.btn,
-#chat-back-btn,
-#chat-send,
-#chat-toggle{
-  -webkit-tap-highlight-color: rgba(212,175,55,.25);
-}
-
-.btn{
-  font-size: clamp(1rem, 3.8vw, 1.15rem);
-  padding: 0.70em 1.05em;
-  border-radius: 999px;
-  min-height: 56px;
-  border-width: 2px;
-  letter-spacing: 0.02em;
-}
-
-.btn.primary{
-  font-weight: 800;
-}
-
-/* 하단 버튼 줄: 작은 화면에서 더 잘 눌리게 */
-#hint-row{
-  gap: 10px;
-}
-
-#hint-row .btn{
-  flex: 1 1 30%;
-}
-
-/* 챗봇: 버튼/입력/칩 글자 크기 상향 */
-#chat-toggle{
-  min-width: 68px;
-  min-height: 68px;
-  font-size: 1.05rem;
-  border-width: 2px;
-}
-
-#chat-panel{
-  width: min(420px, calc(100vw - 24px));
-  max-width: none;
-  border-width: 2px;
-}
-
-#chat-drag-handle{
-  font-size: 1rem;
-}
-
-#chat-drag-handle .hint{
-  font-size: 0.95rem;
-}
-
-#chat-page-title{
-  font-size: 1rem;
-}
-
-#chat-log{
-  font-size: 1.02rem;
-  line-height: 1.7;
-}
-
-#chat-suggestions{
-  gap: 8px;
-}
-
-#chat-suggestions .chip{
-  font-size: 0.98rem;
-  padding: 0.55em 0.75em;
-  border-radius: 999px;
-  border-width: 2px;
-  min-height: 48px;
-}
-
-#chat-form{
-  gap: 10px;
-}
-
-#chat-input{
-  font-size: 1.05rem;
-  padding: 0.75em 1.0em;
-  min-height: 56px;
-  border-width: 2px;
-}
-
-#chat-send{
-  font-size: 1.05rem;
-  padding: 0.70em 1.0em;
-  min-height: 56px;
-  border-radius: 999px;
-}
-
-#chat-back-btn{
-  font-size: 1.02rem;
-  padding: 0.60em 0.95em;
-  min-height: 56px;
-  border-width: 2px;
-  border-radius: 999px;
-}
-
-/* 입력 포커스 가시성 강화 */
-#chat-input:focus-visible,
-.btn:focus-visible,
-#chat-send:focus-visible,
-#chat-toggle:focus-visible,
-#chat-back-btn:focus-visible,
-#chat-suggestions .chip:focus-visible{
-  outline: 3px solid #fff;
-  outline-offset: 3px;
-}
-
-/* 작은 화면(세로가 짧은 경우): 자막 영역이 과도하게 커지지 않게 상한 */
-@media (max-height: 740px){
-  #caption-wrap{ max-height: 44vh; }
-}
-
-/* 대비 선호(가능한 브라우저에서): 테두리/텍스트 대비를 더 올림 */
-@media (prefers-contrast: more){
-  :root{ --gold-dim: rgba(212,175,55,.55); }
-  #source-tag{ color: rgba(212,175,55,.88) !important; }
-  .btn{ border-color: var(--gold) !important; }
-}
 
 </style>
 </head>
