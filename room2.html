@@ -250,13 +250,24 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption b{color:var(--gold-light);}
 
-#hint-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+#hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
      font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
+/* v-smaller-hint-row — 참가자 요청: "화면 아래 버튼 3개의 크기를 줄여서
+   한 줄에 들어가면 좋겠다." → 이후 명확화: "이건 PC가 아니라 폰에서
+   한 줄에 안 들어가는 상황에 대한 요청이다. PC는 문제없다." 그래서
+   768px 이하(모바일 폭)에서만 이 축소 오버라이드가 적용되게 미디어
+   쿼리로 감쌌다 — PC 등 넓은 화면에서는 위 공통 .btn 크기(44px)를
+   그대로 쓴다. */
+@media (max-width: 768px){
+    #hint-row .btn{
+        min-height:36px; font-size:.68rem; padding:6px 12px; border-radius:18px;
+    }
+}
 
 /* ── 사유의 상담소(챗봇) ── */
 /* v2 — 사용성 평가 지적: "확대 시 버튼 텍스트 잘림". 기존엔 width/height가
@@ -403,6 +414,20 @@ body.chat-open #chat-toggle{display:none;}
 #chat-form{display:flex;gap:6px;flex:0 0 auto;}
 #chat-input{flex:1;background:#111;border:1px solid var(--gold-dim);color:#eee;border-radius:20px;padding:8px 14px;font-family:inherit;font-size:.85rem;}
 #chat-send{background:var(--gold);border:none;color:#000;border-radius:20px;padding:8px 16px;font-weight:700;cursor:pointer;min-height:44px;}
+/* v-chat-stt — 참가자 요청: 챗봇 마이크 입력(음성인식) 이식. 평상시엔
+   다른 아이콘 버튼(#chat-send 등)과 같은 금색 톤이고, 듣는 중(.active)
+   에는 .suggested 핫스팟과 같은 청록색 발광으로 바뀐다 — "청록 = 지금
+   진행 중" 색 코딩을 그대로 재사용했다. */
+#chat-mic{background:rgba(212,175,55,.14);border:1px solid var(--gold-dim);color:var(--gold-light);
+    border-radius:50%;width:44px;height:44px;min-width:44px;flex:0 0 44px;cursor:pointer;font-size:1rem;
+    display:flex;align-items:center;justify-content:center;transition:background .3s ease,box-shadow .3s ease;}
+#chat-mic:hover,#chat-mic:focus-visible{background:rgba(212,175,55,.26);}
+#chat-mic:focus-visible{outline:3px solid #fff;outline-offset:2px;}
+#chat-mic.active{background:rgba(64,224,208,.3);border-color:rgba(64,224,208,.6);
+    box-shadow:0 0 14px 4px rgba(64,224,208,.5);animation:chatMicPulse 1s ease-in-out infinite;}
+@keyframes chatMicPulse{0%,100%{box-shadow:0 0 8px 2px rgba(64,224,208,.4);}50%{box-shadow:0 0 18px 8px rgba(64,224,208,.7);}}
+@media (prefers-reduced-motion: reduce){ #chat-mic.active{animation:none;} }
+#chat-mic[disabled]{opacity:.35;cursor:not-allowed;}
 /* 금색(#var(--gold)) 배경 위 흰색 아웃라인은 대비가 약해질 수 있어,
    outline-offset을 살짝 늘려 배경 바깥쪽 어두운 영역에 아웃라인이
    걸리게 했다 — 실제 대비는 어두운 배경(#0008) 위에서 측정된다. */
@@ -799,6 +824,10 @@ body.chat-open #chat-toggle{display:none;}
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
         <label for="chat-input" class="sr-only">궁금한 점을 입력하세요</label>
+        <!-- v-chat-stt — 마이크 버튼을 입력창 옆에 둔다. 상태 안내
+             (#chat-mic-status)는 화면엔 안 보이고 스크린리더에만 읽힌다. -->
+        <button type="button" id="chat-mic" onclick="toggleChatMic()" aria-label="음성으로 질문하기">🎤</button>
+        <span id="chat-mic-status" class="sr-only" role="status" aria-live="polite"></span>
         <input id="chat-input" placeholder="만진 부분이 궁금하면 물어보세요" autocomplete="off" aria-label="궁금한 점을 입력하세요">
         <button id="chat-send" type="submit" aria-label="질문 전송">전송</button>
     </form>
@@ -881,7 +910,11 @@ function fitHotspotLayer(){
     const IMAGE_SHRINK = 1;
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
-    const sy = y;
+    // 요청 반영: 배경 이미지를 이미지 자체 높이의 5%만큼 아래로 이동.
+    // 핫스팟 레이어도 아래에서 동일한 sy를 그대로 사용하므로, 이미지와
+    // 핫스팟 좌표가 항상 함께 움직여 서로 어긋나지 않는다.
+    const Y_SHIFT_PCT = 0.05;
+    const sy = y + sh * Y_SHIFT_PCT;
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -3836,6 +3869,105 @@ function askSuggested(text){
     // 보여준 뒤(450ms) 전송했는데, 이제는 입력창에 전혀 닿지 않고
     // sendChat에 텍스트를 직접 넘겨 바로 전송한다.
     sendChat({ preventDefault(){} }, text);
+}
+
+/* ══════════════════════════════════════════════════════
+   v-chat-stt — 참가자 요청: 챗봇 마이크 입력(음성인식) 이식.
+   조각상을 만지느라 두 손이 자유롭지 않거나, 타이핑 자체가 부담스러운
+   상황에서도 마이크를 탭하고 말하기만 하면 챗봇에 물어볼 수 있다.
+   ── 흐름: 인식 중에는 입력창에 실시간으로 채워(말하고 있다는 걸 눈으로
+      확인), 문장이 최종 확정되면 sendChat()을 그대로 재사용해 전송한다
+      — 타이핑으로 온 질문과 구분할 필요가 없다.
+   ── 지원 브라우저: 안드로이드 Chrome 등 Web Speech API
+      (webkitSpeechRecognition) 지원 브라우저에서만 동작한다. iOS
+      Safari 등 미지원 브라우저에서는 마이크 버튼이 비활성화되고,
+      기존 텍스트 입력/예상 질문 칩은 그대로 쓸 수 있어 핵심 흐름이
+      막히지 않는다.
+   ══════════════════════════════════════════════════════ */
+const ChatSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let chatRecognition = null;
+let isChatListening = false;
+
+if(ChatSpeechRecognition){
+    chatRecognition = new ChatSpeechRecognition();
+    chatRecognition.lang = 'ko-KR';
+    chatRecognition.interimResults = true;
+    chatRecognition.continuous = false;
+
+    chatRecognition.onstart = () => {
+        isChatListening = true;
+        document.getElementById('chat-mic').classList.add('active');
+        document.getElementById('chat-mic-status').textContent = '듣고 있습니다. 질문을 말씀해 주세요.';
+    };
+
+    chatRecognition.onresult = (event) => {
+        const input = document.getElementById('chat-input');
+        let interim = '', final = '';
+        for(let i = event.resultIndex; i < event.results.length; i++){
+            const t = event.results[i][0].transcript;
+            if(event.results[i].isFinal) final += t; else interim += t;
+        }
+        // 말하는 중에도 입력창에 실시간으로 채워, 화면을 볼 수 있는
+        // 사용자는 인식이 잘 되고 있는지 눈으로 바로 확인할 수 있다.
+        input.value = final || interim;
+        if(final){
+            document.getElementById('chat-mic-status').textContent = '질문을 보냈습니다.';
+            // askSuggested()와 비슷하게, 인식된 문장이 화면에 잠깐
+            // 보인 뒤 전송되도록 짧은 지연을 둔다.
+            setTimeout(()=>{ sendChat({ preventDefault(){} }); }, 400);
+        }
+    };
+
+    chatRecognition.onerror = (event) => {
+        isChatListening = false;
+        document.getElementById('chat-mic').classList.remove('active');
+        if(event.error === 'not-allowed' || event.error === 'service-not-allowed'){
+            document.getElementById('chat-mic-status').textContent = '마이크 사용 권한이 필요합니다.';
+        } else if(event.error === 'no-speech'){
+            document.getElementById('chat-mic-status').textContent = '음성이 인식되지 않았습니다. 다시 시도해 주세요.';
+        }
+    };
+
+    chatRecognition.onend = () => {
+        isChatListening = false;
+        document.getElementById('chat-mic').classList.remove('active');
+    };
+} else {
+    // 미지원 브라우저에서는 버튼을 비활성화하고 이유를 스크린리더/
+    // 툴팁으로 알린다. 텍스트 입력과 예상 질문 칩은 영향 없이 그대로 동작한다.
+    document.addEventListener('DOMContentLoaded', ()=>{
+        const btn = document.getElementById('chat-mic');
+        if(btn){
+            btn.disabled = true;
+            btn.setAttribute('aria-label', '음성 입력 미지원 브라우저');
+            btn.title = '이 브라우저는 음성 입력을 지원하지 않습니다.';
+        }
+    });
+}
+
+function toggleChatMic(){
+    if(!chatRecognition){
+        const msg = '이 브라우저는 음성 입력을 지원하지 않습니다. 텍스트로 입력하거나 예상 질문을 눌러 주세요.';
+        document.getElementById('chat-mic-status').textContent = msg;
+        speak(msg);
+        return;
+    }
+    // 듣기 시작 직전에는 진행 중인 내레이션(TTS)을 멈춰, 챗봇이 말하는
+    // 소리와 마이크로 들어오는 관람객 목소리가 섞이지 않게 한다.
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    if(isChatListening){
+        chatRecognition.stop();
+    } else {
+        // v-chat-fullscreen 통합 — 패널을 classList로 직접 열면 전체화면
+        // 전환에 필요한 body.chat-open·히스토리 상태가 함께 걸리지
+        // 않는다. 아직 닫혀 있을 때만 toggleChat()을 그대로 재사용해
+        // 같은 방식으로 연다.
+        const panel = document.getElementById('chat-panel');
+        if(!panel.classList.contains('open')) toggleChat();
+        document.getElementById('chat-input').value = '';
+        try{ chatRecognition.start(); }
+        catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+    }
 }
 
 /* ── 챗봇 답 창 드래그 리사이즈 ── */
