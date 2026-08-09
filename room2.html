@@ -50,8 +50,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    전혀 없고, 자막 영역은 이전 v33보다 더 넉넉한 높이로 잡아 "길게" 나오라는
    요청도 함께 만족시킨다. */
 #room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden;}
-#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center calc(50% + 10%);
-    background-size:contain;;background-size:contain;}
+#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
    JS가 매번 인라인 스타일로 덮어써서 맞춘다. */
@@ -251,44 +250,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption b{color:var(--gold-light);}
 
-#hint-row{
-    display:flex;
-    gap:6px;
-    justify-content:center;
-    flex-wrap:nowrap; /* 2. 줄바꿈 없이 한 줄에 배치 */
-    margin-bottom:10px;
-    overflow-x:auto; /* 화면이 아주 좁을 경우를 대비한 안전망 */
-}
-#hint-row .btn{
-    height:36px;
-    min-height:36px;
-    padding:0 10px;
-    border-radius:18px;
-    background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim);
-    color:var(--gold);
-    font-size:.66rem;
-    font-family:'Noto Serif KR',serif;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    backdrop-filter:blur(8px);
-    white-space:nowrap;
-    word-break:keep-all;
-    cursor:pointer;
-}
-/* 마치기 버튼(primary)은 기존 속성 유지 혹은 필요시 조화롭게 설정 */
-#hint-row .btn.primary{
-    background:var(--gold);
-    color:#1a1408;
-    font-weight:700;
-    border-color:var(--gold);
-}
-/* 2. '다시 듣기', '여일', '전시1' 버튼의 크기를 위의 '쉬운 문장' 버튼과 동일하게 맞춤 *
-#hint-row .btn:focus-visible{
-    outline:3px solid #fff;
-    outline-offset:2px;
-}
+#hint-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
@@ -336,14 +298,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    실제 페이지 이동처럼 닫을 수 있다.
    ══════════════════════════════════════════════════════ */
 #chat-panel.open{
-    /* v-chat-fullscreen (revised) — open 상태에서는 전체 화면 패널 */
-    position:fixed;
-    left:0; right:0; top:0; bottom:0;
-    width:100vw; max-width:none;
-    height:100dvh; min-height:0; max-height:none;
-    margin:0;
-    border-radius:0;
-    border-left:none; border-right:none; border-top:none;
+    position:static; flex:1 1 auto; width:100%; max-width:none;
+    height:auto; min-height:0; max-height:none;
+    margin:0; border-radius:0; border-left:none; border-right:none; border-top:none;
     overflow-y:auto;
 }
 #chat-page-header{display:none;}
@@ -597,27 +554,6 @@ body.chat-open #chat-toggle{display:none;}
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
 }
 
-
-
-/* v-mobile-tweaks — 모바일 레이아웃 미세 조정
-   1) 배경 이미지는 JS에서 모바일일 때만 추가로 10% 더 아래로 이동(총 20%).
-   2) 하단(다시 듣기/여일/전시1) 버튼 3개가 한 줄에 들어가도록 축소.
-   3) 상단 4개 버튼이 한 줄에 들어가도록 축소. */
-@media (max-width: 420px){
-    #top-controls{gap:4px;}
-    #info-btn{width:32px;height:32px;font-size:.75rem;}
-    #speed-btn,#easy-mode-btn,#voice-toggle-btn{
-        height:32px; min-width:32px; padding:0 7px; border-radius:16px; font-size:.60rem;
-    }
-
-    #top-bar{padding:2px 8px;}
-
-    #hint-row{gap:4px; margin-bottom:8px; overflow-x:hidden;}
-    #hint-row .btn{
-        height:32px; min-height:32px; padding:0 8px; border-radius:16px; font-size:.60rem;
-    }
-}
-
 </style>
 </head>
 <body>
@@ -817,10 +753,6 @@ body.chat-open #chat-toggle{display:none;}
     <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
 </div>
 
-
-
-
-
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
     text-align:center;padding:8px 12px;background:#7a1f1f;color:#fff;font-size:.8rem;
     letter-spacing:.02em;"></div>
@@ -949,9 +881,7 @@ function fitHotspotLayer(){
     const IMAGE_SHRINK = 1;
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
-   / 배경 이미지와 핫스팟 레이어 모두 세로 방향으로 10% 아래로 이동 반영
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    const sy = y + (ch * (0.10 + (isMobile ? 0.10 : 0.0)));
+    const sy = y;
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -4319,6 +4249,6 @@ function _infoDialogKeydown(e){
      Server(depth_bridge_server.py)가 꺼져 있어도 4초 간격으로 재연결을
      시도할 뿐 페이지 동작에는 영향 없다 — 클릭/터치/MediaPipe 손 추적은
      이 연결과 무관하게 그대로 동작한다. -->
-
+<script src="depth_camera_injector.js"></script>
 </body>
 </html>
