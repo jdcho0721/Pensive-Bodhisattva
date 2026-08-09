@@ -215,6 +215,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
     z-index:25;min-height:clamp(180px, 34vh, 320px);max-height:46vh;overflow-y:auto;box-sizing:border-box;
     display:flex;flex-direction:column;justify-content:center; 
+    transform:translateY(-20%); /* 요청 반영: 해설창을 자기 높이의 20%만큼 위로 이동 */
     pointer-events: none; /* 자막창 배경 자체의 클릭 반응 차단 */}
 
 /* 자막창 내부의 버튼이나 입력 요소들은 정상 클릭되도록 복구 */
@@ -234,7 +235,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    구분 규칙은 더 이상 필요 없어 제거했다 — #caption-wrap과 그 자식들은
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
 #focus-tag{font-size:clamp(0.68rem, 2.2vw, 0.78rem);color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
-#caption{font-size:clamp(.95rem, 3.0vw, 1.25rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
+#caption{font-size:clamp(0.85rem,1.8vw,1.05rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
    숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다. */
