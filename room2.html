@@ -639,6 +639,168 @@ body.chat-open #chat-toggle{display:none;}
     #hint-row .btn{padding:3px 3px;font-size:.6rem;min-height:44px;}
 }
 
+
+
+/* ══════════════════════════════════════════════════════
+   접근성(저시력/시각장애) · 모바일 반응형 최적화 오버라이드
+   - 큰 글자/큰 버튼/명확한 포커스/안전영역(safe-area) 반영
+   - 기존 레이아웃/좌표계/핫스팟 로직은 그대로 유지
+   ══════════════════════════════════════════════════════ */
+
+html{
+  font-size: clamp(18px, 2.2vw, 22px);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body{
+  line-height: 1.6;
+}
+
+/* 하단 자막/해설 영역: 휴대폰에서 읽기 좋은 크기 */
+#caption-wrap{
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}
+
+#focus-tag{
+  font-size: 0.95rem;
+}
+
+#caption{
+  font-size: clamp(1.15rem, 4.6vw, 1.75rem);
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
+
+#source-tag{
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* 공통 버튼: 큰 터치 타깃 + 둥근 모양 + 읽기 쉬운 글자 */
+.btn,
+#chat-back-btn,
+#chat-send,
+#chat-toggle{
+  -webkit-tap-highlight-color: rgba(212,175,55,.25);
+}
+
+.btn{
+  font-size: clamp(1rem, 3.8vw, 1.15rem);
+  padding: 0.70em 1.05em;
+  border-radius: 999px;
+  min-height: 56px;
+  border-width: 2px;
+  letter-spacing: 0.02em;
+}
+
+.btn.primary{
+  font-weight: 800;
+}
+
+/* 하단 버튼 줄: 작은 화면에서 더 잘 눌리게 */
+#hint-row{
+  gap: 10px;
+}
+
+#hint-row .btn{
+  flex: 1 1 30%;
+}
+
+/* 챗봇: 버튼/입력/칩 글자 크기 상향 */
+#chat-toggle{
+  min-width: 68px;
+  min-height: 68px;
+  font-size: 1.05rem;
+  border-width: 2px;
+}
+
+#chat-panel{
+  width: min(420px, calc(100vw - 24px));
+  max-width: none;
+  border-width: 2px;
+}
+
+#chat-drag-handle{
+  font-size: 1rem;
+}
+
+#chat-drag-handle .hint{
+  font-size: 0.95rem;
+}
+
+#chat-page-title{
+  font-size: 1rem;
+}
+
+#chat-log{
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+#chat-suggestions{
+  gap: 8px;
+}
+
+#chat-suggestions .chip{
+  font-size: 0.98rem;
+  padding: 0.55em 0.75em;
+  border-radius: 999px;
+  border-width: 2px;
+  min-height: 48px;
+}
+
+#chat-form{
+  gap: 10px;
+}
+
+#chat-input{
+  font-size: 1.05rem;
+  padding: 0.75em 1.0em;
+  min-height: 56px;
+  border-width: 2px;
+}
+
+#chat-send{
+  font-size: 1.05rem;
+  padding: 0.70em 1.0em;
+  min-height: 56px;
+  border-radius: 999px;
+}
+
+#chat-back-btn{
+  font-size: 1.02rem;
+  padding: 0.60em 0.95em;
+  min-height: 56px;
+  border-width: 2px;
+  border-radius: 999px;
+}
+
+/* 입력 포커스 가시성 강화 */
+#chat-input:focus-visible,
+.btn:focus-visible,
+#chat-send:focus-visible,
+#chat-toggle:focus-visible,
+#chat-back-btn:focus-visible,
+#chat-suggestions .chip:focus-visible{
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+/* 작은 화면(세로가 짧은 경우): 자막 영역이 과도하게 커지지 않게 상한 */
+@media (max-height: 740px){
+  #caption-wrap{ max-height: 44vh; }
+}
+
+/* 대비 선호(가능한 브라우저에서): 테두리/텍스트 대비를 더 올림 */
+@media (prefers-contrast: more){
+  :root{ --gold-dim: rgba(212,175,55,.55); }
+  #source-tag{ color: rgba(212,175,55,.88) !important; }
+  .btn{ border-color: var(--gold) !important; }
+}
+
 </style>
 </head>
 <body>
