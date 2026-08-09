@@ -50,8 +50,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    전혀 없고, 자막 영역은 이전 v33보다 더 넉넉한 높이로 잡아 "길게" 나오라는
    요청도 함께 만족시킨다. */
 #room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden;}
-#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center calc(50% + 10%);
-    background-size:contain;;background-size:contain;}
+#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
    JS가 매번 인라인 스타일로 덮어써서 맞춘다. */
@@ -251,44 +250,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption b{color:var(--gold-light);}
 
-#hint-row{
-    display:flex;
-    gap:6px;
-    justify-content:center;
-    flex-wrap:nowrap; /* 2. 줄바꿈 없이 한 줄에 배치 */
-    margin-bottom:10px;
-    overflow-x:auto; /* 화면이 아주 좁을 경우를 대비한 안전망 */
-}
-#hint-row .btn{
-    height:36px;
-    min-height:36px;
-    padding:0 10px;
-    border-radius:18px;
-    background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim);
-    color:var(--gold);
-    font-size:.66rem;
-    font-family:'Noto Serif KR',serif;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    backdrop-filter:blur(8px);
-    white-space:nowrap;
-    word-break:keep-all;
-    cursor:pointer;
-}
-/* 마치기 버튼(primary)은 기존 속성 유지 혹은 필요시 조화롭게 설정 */
-#hint-row .btn.primary{
-    background:var(--gold);
-    color:#1a1408;
-    font-weight:700;
-    border-color:var(--gold);
-}
-/* 2. '다시 듣기', '여일', '전시1' 버튼의 크기를 위의 '쉬운 문장' 버튼과 동일하게 맞춤 *
-#hint-row .btn:focus-visible{
-    outline:3px solid #fff;
-    outline-offset:2px;
-}
+#hint-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
@@ -919,8 +881,7 @@ function fitHotspotLayer(){
     const IMAGE_SHRINK = 1;
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
-   / 배경 이미지와 핫스팟 레이어 모두 세로 방향으로 10% 아래로 이동 반영
-    const sy = y + (ch * 0.10);
+    const sy = y;
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
