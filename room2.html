@@ -965,40 +965,19 @@ function fitHotspotLayer(){
     const IMAGE_SHRINK = 1.15;
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
-    // 요청 반영: "현재 위치에서 10% 아래로 더" — 기존 10%에 10%를 더해
-    // 총 20%만큼 아래로 이동. 핫스팟 레이어도 아래에서 동일한 sy를
-    // 그대로 사용하므로, 이미지와 핫스팟 좌표가 항상 함께 움직여
-    // 서로 어긋나지 않는다.
-    // v-mobile-fix — 참가자 지적: "핸드폰에서 hotspot이 모두 내려가
-    // 있다. 현재 위치에서 위쪽으로 20% 이동해달라." 위 20% 하향 이동은
-    // PC/모바일 구분 없이 똑같이 적용되고 있었는데, 모바일 화면(주로
-    // 세로가 긴 폭-제한 분기)에서는 이 20%가 특히 과하게 느껴진다는
-    // 지적이다. 모바일에서만 이 하향 이동을 취소해(20% → 0%), 요청한
-    // "현재 위치에서 위로 20% 이동"과 정확히 같은 결과를 만든다. PC는
-    // 기존 20% 하향 이동을 그대로 유지한다.
-    const isMobileY = window.matchMedia('(max-width: 768px)').matches;
-    const Y_SHIFT_PCT = isMobileY ? 0 : 0.20;
-    let sy = y + sh * Y_SHIFT_PCT;
-    // 안전장치 — 이미지를 확대(1.15배)한 데다 아래로도 더 내리다 보니,
-    // 그대로 두면 이미지 아래쪽(발 부분)이 보이는 영역(#stage) 밖으로
-    // 밀려나 그쪽 핫스팟을 터치할 수 없게 될 수 있다. 이미지 하단이
-    // 항상 #stage 안에 들어오도록 sy의 상한을 둬서, "머리 쪽은 최대한
-    // 내리되 발 쪽은 화면 밖으로 나가지 않는" 균형을 맞춘다.
-    const maxSy = ch - sh;
-    if(sy > maxSy) sy = maxSy;
-    // v-mobile-fix — 참가자 지적: "PC에서는 hotspot이 이미지와 잘
-    // 맞는데 모바일에서는 어긋난다." 원인: 화면 비율에 따라 위 두 분기
-    // (boxRatio > imgRatio 여부) 중 어느 쪽을 타느냐가 다르고, 특히
-    // "세로가 꽉 차는" 분기(주로 데스크톱처럼 옆으로 넓은 화면)에서는
-    // 15% 확대만으로 이미 이미지 아래가 stage 밖으로 밀려나, 위 maxSy
-    // 클램프가 이미지를 다시 위로 끌어올리다 못해 이미지 "상단"(머리·
-    // 얼굴)이 stage 위 경계 밖(음수 sy)으로 잘려나가는 경우가 있었다.
-    // #room-layout이 overflow:hidden이라 그렇게 밀려난 hotspot-layer
-    // 상단부는 실제로 보이는 이미지와 어긋나게 된다. 아래 하한선
-    // (minSy)으로 이미지 상단이 항상 stage 안에 들어오도록 강제해,
-    // PC에서 맞던 방식이 모바일에서도 그대로 맞도록 한다.
-    const minSy = 0;
-    if(sy < minSy) sy = minSy;
+    // 요청 반영: "모바일 이미지도 PC와 같은 비율로 그대로 두고, 화면
+    // 위에서 25% 지점에 이미지의 맨 윗부분이 나오도록." 가로 위치·확대
+    // 비율(sx, sw, sh)은 위에서 이미 PC/모바일 구분 없이 같은 계산식
+    // (contain-fit + 1.15배 확대)을 쓰고 있으므로 그대로 둔다. 세로
+    // 위치만 기존에 있던 기기별 분기(Y_SHIFT_PCT, isMobileY)·안전
+    // clamp(minSy/maxSy)·추가 5% 하향 이동을 전부 걷어내고, "이미지
+    // 맨 위 = 화면(stage) 세로 25% 지점"이라는 규칙 하나로 통일한다.
+    // 이제 PC와 모바일이 완전히 같은 계산식을 타므로 기기별로 결과가
+    // 달라질 여지가 없다. 이미지(background-position)와 hotspot
+    // 레이어(layer.style.top)가 항상 같은 sy를 공유하므로 둘은 항상
+    // 함께, 정확히 같은 자리를 가리킨다.
+    const TOP_ANCHOR_PCT = 0.25;
+    const sy = ch * TOP_ANCHOR_PCT;
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
