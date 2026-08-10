@@ -296,17 +296,17 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    했다. */
    
 @media (max-width: 768px) {
-    /* 1. 배경 이미지만 아래로 10% 내림 (50% + 10% = 60%) */
-    #stage {
-        background-position: center 60%;
-    }
-    
-    /* 2. 이미지 위에 올라가는 핫스팟도 똑같이 아래로 내림 */
-    .hotspot {
-        transform: translateY(10vh); 
-    }
-
-    /* 3. 질문하신 버튼 스타일은 그대로 유지하거나 필요시 함께 조정 */
+    /* v-root-cause-fix — 여기 있던 두 규칙(#stage background-position:
+       center 60%, .hotspot { transform: translateY(10vh); })이 진짜
+       미스매치 원인이었다. 특히 .hotspot에 걸려 있던 translateY(10vh)는
+       fitHotspotLayer()가 #hotspot-layer 전체를 이미지와 정확히 맞춰
+       놓은 "뒤에", 그 자식인 각 .hotspot 요소 하나하나를 다시 CSS로
+       10vh씩 강제로 더 내려버리고 있었다 — JS 쪽 sy 계산을 아무리
+       고쳐도 이 규칙이 마지막에 끼어들어 hotspot만 이미지에서 따로
+       떨어져 나가는 원인이었다(이미지 자체는 이 규칙과 무관하게 JS
+       인라인 스타일로 그려지므로 그대로였고, hotspot만 밀렸다).
+       #stage의 background-position 규칙도 JS 인라인 스타일에 항상
+       덮어써지는 죽은 코드였다. 두 규칙 모두 제거한다. */
     #hint-row .btn {
         height: 36px; 
         min-height: 36px; 
