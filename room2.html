@@ -1323,7 +1323,11 @@ function enterRoom(){
 // ── TTS 속도 조절 — 참가자 피드백(P3, P4: "TTS 속도 개선"/"속도가 빠르다")
 // 반영. room1-intro-touch.html과 동일한 방식으로 배속을 순환 선택한다.
 const SPEED_STEPS = [0.7, 0.85, 1.0, 1.2, 1.5];
-let _speedIdx = 2; // 1.0배에서 시작
+// v-slower-default — 참가자 요청: "음성속도 자체도 조금 느리게 하는 것이
+// 좋을 것 같다." 기본 시작 배속을 1.0배(_speedIdx=2)에서 한 단계 낮춰
+// 0.85배(_speedIdx=1)로 바꿨다. 배속 순환 버튼(cycleSpeed)으로 언제든
+// 다시 1.0배·1.2배 등으로 올릴 수 있다.
+let _speedIdx = 1; // 0.85배에서 시작
 let TTS_RATE = SPEED_STEPS[_speedIdx];
 let _lastSpokenText = '';
 function cycleSpeed(){
@@ -1338,7 +1342,15 @@ function cycleSpeed(){
     if(_lastSpokenText) speak(_lastSpokenText);
 }
 
-const CHARS_PER_SEC_AT_1X = 5;     // 배속 1.0x 기준 대략적인 낭독 속도 추정치(자/초) — 문장별 자막 타이밍(_displaySentencesTimed)에 쓰인다.
+// v-caption-lag-fix — 참가자 요청: "자막이 너무 늦게 나온다." 이 추정치
+// (5자/초)가 실제 브라우저 TTS 낭독 속도보다 낮게 잡혀 있으면, 한 문장을
+// 다 읽는 데 실제로는 이 추정보다 짧게 걸리는데도 자막은 추정 시간만큼
+// 더 기다렸다가 다음 문장으로 넘어간다 — 그 결과 음성은 이미 다음
+// 문장을 읽고 있는데 자막은 이전 문장에 머물러 "늦게 나온다"고 느껴진다.
+// (boundary 이벤트를 지원하는 브라우저에서는 실측으로 대체되어 이 문제가
+// 없지만, 지원하지 않는 기기에서는 이 추정치가 그대로 쓰인다.) 5 → 7로
+// 올려, 실제 낭독 속도에 더 가깝게 맞췄다.
+const CHARS_PER_SEC_AT_1X = 7;     // 배속 1.0x 기준 대략적인 낭독 속도 추정치(자/초) — 문장별 자막 타이밍(_displaySentencesTimed)에 쓰인다.
 
 function speak(text, onEnd){
     _lastSpokenText = text;
