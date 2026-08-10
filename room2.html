@@ -4438,7 +4438,24 @@ async function sendChat(e, overrideText){
     // 낭독이 끝나면 기존 답변 처리로 이어간다. 고정 질문 클릭·타이핑
     // 전송·음성 입력 세 경로가 전부 sendChat() 하나로 모이므로, 여기
     // 한 곳만 고치면 세 경로 모두에 자동으로 적용된다.
-    speak(q, ()=>{ _processChatAnswer(q); });
+    // v-mobile-answer-fallback — 참가자 요청: "핸드폰에서 질문을 입력해도
+    // 답변 자막이 안 나오고 기본 안내문에 멈춰 있다." 답변 처리
+    // (_processChatAnswer)가 speak(q, ...)의 onEnd 콜백에만 걸려 있었는데,
+    // 일부 모바일 브라우저(특히 iOS Safari)는 speechSynthesis가 onend·
+    // onerror를 아예 호출하지 않고 조용히 멈추는 경우가 있다 — 그러면
+    // 질문을 읽어주는 단계에서 그대로 멈춰, 답이 영영 나오지 않는다.
+    // 질문 낭독에 걸릴 것으로 추정되는 시간(+여유분)을 안전 타임아웃으로
+    // 걸어, 어느 쪽이 먼저 오든(TTS 종료 또는 타임아웃) 답변 처리가
+    // 반드시 한 번은 실행되게 한다.
+    let _chatAnswerStarted = false;
+    const _startChatAnswerOnce = ()=>{
+        if(_chatAnswerStarted) return;
+        _chatAnswerStarted = true;
+        _processChatAnswer(q);
+    };
+    speak(q, _startChatAnswerOnce);
+    const _estSpeakMs = (q.length / (CHARS_PER_SEC_AT_1X * TTS_RATE)) * 1000;
+    setTimeout(_startChatAnswerOnce, Math.max(_estSpeakMs, 300) + 3000);
     return false;
 }
 
