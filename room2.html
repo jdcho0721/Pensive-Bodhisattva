@@ -192,7 +192,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    바꾸기만 하면 자연히 이미지(#stage) 바로 아래, 자막창(#caption-wrap)
    바로 위에 놓인다 — 이미지가 실제로 얼마나 크게 그려지든(레터박스
    포함) 상관없이 항상 "이미지 바로 아래"를 유지한다. */
-#top-bar{position:relative;flex:0 0 auto;width:100%;display:flex;justify-content:center;align-items:center;
+/* v-progress-left — 참가자 요청: "탐색 바를 왼쪽으로 보내서 챗봇
+   버튼과 겹치지 않게 해줘." 챗봇 진입 버튼(#chat-toggle)이 화면
+   오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
+   위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
+   버튼과 화면 좌우로 확실히 떨어지게 한다. */
+#top-bar{position:relative;flex:0 0 auto;width:100%;display:flex;justify-content:flex-start;align-items:center;
     padding:4px 10px;z-index:20;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -221,8 +226,24 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 #caption-wrap{position:relative;flex:0 0 auto;width:100%;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
-    z-index:25;min-height:clamp(180px, 34vh, 320px);max-height:46vh;overflow-y:auto;box-sizing:border-box;
-    display:flex;flex-direction:column;justify-content:center;}
+    z-index:25;min-height:clamp(180px, 34vh, 320px);max-height:46vh;box-sizing:border-box;
+    display:flex;flex-direction:column;}
+/* v-caption-scrollbox — 참가자 요청: "해설이 길면 아래 버튼(다시듣기·
+   여일·전시1)과 겹치지 않게, 해설창을 따로 만들어 스크롤바를 넣어라."
+   기존엔 자막·라벨·출처·버튼이 전부 한 스크롤 영역 안에 있어서, 자막이
+   길어지면 버튼까지 함께 스크롤해야 닿을 수 있었다. 이제 자막 쪽
+   (#caption-scroll)만 따로 떼어 자체 스크롤을 갖게 하고, 버튼 줄
+   (#hint-row)은 그 아래 항상 고정된 자리에 남는다 — 버튼은 스크롤과
+   무관하게 언제나 같은 위치에서 바로 눌릴 수 있다. */
+#caption-scroll{
+    flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; justify-content:center;
+    scrollbar-width:auto; scrollbar-color:var(--gold-dim) rgba(255,255,255,.06);
+}
+#caption-scroll::-webkit-scrollbar{ width:8px; }
+#caption-scroll::-webkit-scrollbar-track{ background:rgba(255,255,255,.06); border-radius:6px; }
+#caption-scroll::-webkit-scrollbar-thumb{ background:var(--gold-dim); border-radius:6px; }
+#caption-scroll::-webkit-scrollbar-thumb:hover{ background:var(--gold); }
 /* v-caption-mic-overlap — 되돌림: 참가자가 직전 수정(자막에 우측 여백을
    둬서 챗봇 버튼 자리를 피해 미리 줄바꿈시키던 것)을 취소해 달라고
    요청했다 — "버튼 자리를 침범해도 괜찮으니 줄바꿈은 하지 말자." 자막은
@@ -255,7 +276,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption b{color:var(--gold-light);}
 
-#hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+#hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;flex:0 0 auto;padding-top:10px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
@@ -844,9 +865,11 @@ body.chat-open #chat-toggle{display:none;}
 </div>
 
 <div id="caption-wrap">
-    <div id="focus-tag" role="status" aria-live="polite">부위를 터치해 보세요</div>
-    <div id="caption" role="status" aria-live="polite">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
-    <div id="source-tag" aria-hidden="true"></div>
+    <div id="caption-scroll">
+        <div id="focus-tag" role="status" aria-live="polite">부위를 터치해 보세요</div>
+        <div id="caption" role="status" aria-live="polite">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
+        <div id="source-tag" aria-hidden="true"></div>
+    </div>
     <div id="hint-row">
         <button class="btn" id="btn-repeat" onclick="repeatCurrent()" data-tap-action="방금 들은 설명을 다시 들려드립니다">다시 듣기</button>
         <button class="btn" id="btn-leave" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 보고 나가기" data-tap-action="지금까지 만진 기록을 보여드립니다">여일</button>
@@ -917,16 +940,26 @@ function fitHotspotLayer(){
     // 이 문제의 원인이었던 겹침 자체가 없어졌으므로, 조각상을 인위적으로
     // 축소해 "뒤로 물러난 것처럼" 보이게 할 필요가 없다. IMAGE_SHRINK를
     // 1(축소 없음)로 되돌려 조각상이 주어진 공간에 꽉 차게(contain) 표시되도록 한다.
-    const IMAGE_SHRINK = 1;
+    // 요청 반영: "얼굴 부분 핫스팟을 터치하기 좋게" 이미지를 좀 더
+    // 확대한다(1 → 1.15, 15% 확대). background-image는 박스 밖으로
+    // 넘치는 부분이 자동으로 잘려 보이므로(overflow 처리 불필요),
+    // 확대해도 레이아웃이 깨지지 않는다.
+    const IMAGE_SHRINK = 1.15;
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
-    // 요청 반영: 배경 이미지를 이미지 자체 높이의 10%만큼 아래로 이동.
-    // (참가자 설명: 조각상 머리가 상단 버튼 영역과 겹쳐서 머리 부분의
-    // 핫스팟을 터치할 수 없었다 — 5%로는 부족해 10%로 늘렸다.)
-    // 핫스팟 레이어도 아래에서 동일한 sy를 그대로 사용하므로, 이미지와
-    // 핫스팟 좌표가 항상 함께 움직여 서로 어긋나지 않는다.
-    const Y_SHIFT_PCT = 0.10;
-    const sy = y + sh * Y_SHIFT_PCT;
+    // 요청 반영: "현재 위치에서 10% 아래로 더" — 기존 10%에 10%를 더해
+    // 총 20%만큼 아래로 이동. 핫스팟 레이어도 아래에서 동일한 sy를
+    // 그대로 사용하므로, 이미지와 핫스팟 좌표가 항상 함께 움직여
+    // 서로 어긋나지 않는다.
+    const Y_SHIFT_PCT = 0.20;
+    let sy = y + sh * Y_SHIFT_PCT;
+    // 안전장치 — 이미지를 확대(1.15배)한 데다 아래로도 더 내리다 보니,
+    // 그대로 두면 이미지 아래쪽(발 부분)이 보이는 영역(#stage) 밖으로
+    // 밀려나 그쪽 핫스팟을 터치할 수 없게 될 수 있다. 이미지 하단이
+    // 항상 #stage 안에 들어오도록 sy의 상한을 둬서, "머리 쪽은 최대한
+    // 내리되 발 쪽은 화면 밖으로 나가지 않는" 균형을 맞춘다.
+    const maxSy = ch - sh;
+    if(sy > maxSy) sy = maxSy;
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -1606,7 +1639,14 @@ function repeatCurrent(){
     document.getElementById(currentKey)?.classList.remove('explored');
     document.getElementById(currentKey)?.classList.add('visited');
     document.getElementById(currentKey)?.classList.add('narrating');
-    speak(d.focus + ' ' + _detailText(d), ()=>{
+    const sentence = d.focus + ' ' + _detailText(d);
+    // v-one-sentence-per-screen — 참가자 요청: "해설은 한 페이지에 한
+    // 문장씩만 보이게 해줘." 다시 듣기도 처음 들을 때와 똑같이 문장
+    // 단위로 자막을 갈아 끼운다 — 예전엔 음성만 처음부터 다시 재생되고
+    // 자막은 마지막으로 보였던 문장에 그대로 멈춰 있어, 음성과 자막이
+    // 서로 어긋났었다.
+    _displaySentencesTimed(sentence, document.getElementById('caption'));
+    speak(sentence, ()=>{
         document.getElementById(currentKey)?.classList.remove('visited');
         document.getElementById(currentKey)?.classList.remove('narrating');
         document.getElementById(currentKey)?.classList.add('explored');
@@ -2589,7 +2629,10 @@ function _processCenterMoment(){
     document.getElementById('focus-tag').textContent = '두 조각상 사이, 비어 있는 자리';
     const line = '지금 두 조각상 사이, 비어 있는 그 자리에 서 계십니다. 힘든 마음과 따뜻한 마음이 소리 없이 만나는 자리입니다.';
     _stopCaptionSync(); // v-stop-caption-sync — 진행 중이던 부위 해설의 자막 예약을 먼저 중지
-    document.getElementById('caption').innerHTML = line;
+    // v-one-sentence-per-screen — 참가자 요청: "해설은 한 페이지에 한
+    // 문장씩만 보이게 해줘." 두 문장을 한 번에 띄우던 것을 문장 단위로
+    // 갈아 끼우게 바꿨다.
+    _displaySentencesTimed(line, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
 
     fadeArrivalOut(); // 혹시 아직 남아있다면(가운데 자리부터 먼저 짚은 경우) 함께 정리
@@ -2937,6 +2980,12 @@ const PART_MEANINGS = {
         '누구를 본떠 만들었어|모델이 누구야|생각하는 사람 누구 닮았나|누구를 모델로 했어|모델이 누구인지 궁금해|어떤 사람을 표현|누구를 표현|어떤 인물을 표현|누구를 형상화|무엇을 형상화|누구를 나타낸|실존 인물이야|특정 인물이야|누구의 모습|어떤 사람을 표현한 것|어떤 사람을 표현한 거야|무엇을 표현한 것인가|어떤 인물을 표현한 것': '처음에는 <신곡>을 쓴 시인 단테를 떠올리며 만들었지만, 완성된 형상은 특정 인물이 아니라 힘들어하는 사람 전체를 나타내는 모습으로 발전했다고 알려져 있습니다.',
         '이 작품을 보면 어떤 느낌이야|작품을 보는 경험이 어때|감상 포인트가 뭐야|생각하는 사람 작품 경험|어떻게 감상하면 좋아': '정답을 알려주기보다, 보는 사람이 스스로 자기 안의 무게를 잠깐이라도 느껴보게 하는 것이 이 작품이 주는 경험이라고 이야기됩니다.',
         '전시 제목이 무슨 뜻|침묵의 공명이 뭐야|왜 침묵의 공명이라고 지었어|전시 이름의 뜻|전시 제목 의미 궁금해': '두 조각상은 말을 하지 않지만, 나란히 놓인 채로 서로 다른 방식의 사유를 조용히 주고받는 듯 보인다는 뜻에서 붙여진 제목입니다.',
+        // v-index-keywords — 참가자 요청: "자막에 나오는 모든 키워드에
+        // 대한 질문과 답을 챗봇 지식베이스에 추가해줘." index.html(전시실
+        // 1)의 자막에서 언급되지만 이 KB에는 없던 고유명사·개념들을
+        // 찾아 추가했다.
+        '우골리노가 뭐야|카르포 우골리노|우골리노 조각이 뭐야|이 자세가 우골리노랑 닮았다는게 무슨 말|우골리노 영향|장 바티스트 카르포|카르포가 누구야': '프랑스 조각가 장 바티스트 카르포가 1863년에 만든 <우골리노> 조각의 극적인 신체 표현에서 영향을 받았다고 평가됩니다. 오른쪽 팔꿈치를 왼쪽 허벅지에 얹는 자세가 특히 닮아 있습니다.',
+        '로렌초 데 메디치가 뭐야|메디치 조각상|미켈란젤로 메디치 무덤|산 로렌초 성당 조각|메디치가 묘소': '미켈란젤로가 산 로렌초 성당의 메디치가 묘소를 위해 만든 조각상에서 보이는 응축된 근육 긴장과 비틀림의 감각도, 생각하는 사람의 자세에 겹쳐진다고 평가됩니다.',
     },
     '반가사유상': {
         '원융|원융과 조화|원융이 뭐야|원융이 무슨 뜻|원융과 조화가 무슨 뜻|원융 뜻|원융 무슨 말|원융 설명해줘|원융이 뭔지 궁금해|원융에 대해 알려줘': '원융(圓融)은 모든 이치가 모여 하나로 조화롭게 융합되고, 걸림이나 막힘이 없이 원만한 상태를 뜻하는 불교 및 동양 철학 용어입니다. 미술사학자 강우방은 반가사유상처럼 둥글고 조화로운 형태를 이 개념으로 설명했습니다 — 날카로운 각이 아니라, 서로 다른 부분들이 하나로 둥글게 어우러지는 데서 나오는 아름다움입니다.',
@@ -2985,6 +3034,12 @@ const PART_MEANINGS = {
         '이 자세를 왜 골랐어|이 자세를 선택한 이유|반가좌를 고른 이유|왜 이 자세야 다른 자세도 있는데': '왕자였던 싯다르타가 세상 모든 것이 늘 변하고 사라진다는 사실을 골똘히 생각하던 모습에서 비롯된 자세로 알려져 있습니다. 다리를 편하게 걸치고 손끝을 뺨에 가만히 얹은 모습은, 이미 힘든 마음을 지나온 사람만이 가질 수 있는 여유로 해석됩니다.',
         '이 작품을 보면 어떤 느낌이야|작품을 보는 경험이 어때|감상 포인트가 뭐야|반가사유상 작품 경험|어떻게 감상하면 좋아': '힘들어하던 사람이 깊은 생각을 거쳐 마음이 편안해지는 과정을 함께 따라가 보는 것이, 이 작품을 감상하는 경험이라고 이야기됩니다.',
         '전시 제목이 무슨 뜻|침묵의 공명이 뭐야|왜 침묵의 공명이라고 지었어|전시 이름의 뜻|전시 제목 의미 궁금해': '두 조각상은 말을 하지 않지만, 나란히 놓인 채로 서로 다른 방식의 사유를 조용히 주고받는 듯 보인다는 뜻에서 붙여진 제목입니다.',
+        // v-index-keywords — 위 로댕 항목과 같은 이유로 추가.
+        '강우방이 누구야|강우방 박사가 누구야|강우방 원융|미술사학자 강우방': '미술사학자 강우방은 반가사유상처럼 둥글고 조화로운 형태를 \'원융과 조화\'라는 개념으로 설명했습니다. 날카로운 각이 아니라 서로 다른 부분이 하나로 둥글게 어우러지는 데서 나오는 아름다움을 가리키는 말입니다.',
+        '전준엽이 누구야|화가 전준엽|전준엽 화가 평가|전준엽이 뭐라고 했어': '화가 전준엽은 반가사유상의 미소를 모나리자의 미소를 뛰어넘는 신비로운 미소라고 평했습니다.',
+        '황수영이 누구야|황수영 박사가 누구야|황수영 연구|황수영이 뭘 밝혀냈어': '황수영 박사는 반가사유상의 원융한 조형미를 학문적으로 처음 밝혀낸 미술사학자입니다. 삼국시대 반가사유상이 왜 이렇게 균형 잡힌 아름다움을 갖는지를 연구로 풀어냈습니다.',
+        '황금비가 뭐야|모나리자 황금비|1대1.618|황금비율|황금비 무슨 뜻': '황금비(1:1.618)는 르네상스 회화에서 조화로운 비례로 여겨진 수학적 비율로, 모나리자 같은 작품에 쓰였다고 이야기됩니다. 반가사유상은 이런 수학적 비례보다는, 사유의 깊이와 종교적 초월성을 드러내기 위해 몸을 유연하고 독창적인 비례로 재창조했다는 점에서 대비됩니다.',
+        '간다라 조각이 뭐야|마투라 조각이 뭐야|간다라랑 마투라 차이|반가사유상 인도 기원 양식|간다라 마투라': '간다라 조각은 그리스·로마 영향을 받아 자연스럽고 부드러운 매력이 특징이고, 마투라 조각은 인도 고유 양식으로 근엄하고 각 잡힌 매력이 특징입니다. 우리나라 반가사유상은 이 중 부드러운 곡선을 이어받아, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.',
     }
 };
 
@@ -3143,7 +3198,7 @@ const PHILOSOPHY_QA = [
   { q: ["인생에 정해진 계획이 있을까요"], rodin: "정해진 계획보다, 매 순간 온 힘을 다해 마주하는 태도가 더 중요합니다.", maitreya: "정해진 계획에 집착하기보다, 인연 따라 유연하게 응하는 것이 지혜입니다." },
   { q: ["성장한다는 게 뭔가요"], rodin: "성장은 더 무거운 짐을 견딜 수 있도록 근육이 단단해지는 과정입니다.", maitreya: "성장은 조금씩 집착을 내려놓으며 마음이 넓어지는 과정입니다." },
   { q: ["실수를 통해 배울 수 있나요"], rodin: "실수는 아직 버텨내는 힘이 부족했다는 신호이며, 그것을 통해 근육은 더 단단해집니다.", maitreya: "실수도 무상한 과정의 일부입니다. 자책보다 그 경험을 있는 그대로 받아들이십시오." },
-  { q: ["사유란 무엇인가요"], rodin: "사유는 근육을 긴장시켜서라도 세계의 무게 앞에서 물러서지 않는 것입니다.", maitreya: "사유는 모든 판단을 내려놓고, 있는 그대로를 고요히 바라보는 것입니다." },
+  { q: ["사유란 무엇인가요"], rodin: "사유란, 답을 알 수 없는 물음 앞에서도 눈을 피하지 않고 끝까지 붙들고 씨름하는 일입니다. 그 무게가 고스란히 근육의 긴장으로 남습니다.", maitreya: "사유는 모든 판단을 내려놓고, 있는 그대로를 고요히 바라보는 것입니다." },
   { q: ["생각을 멈출 수가 없어요"], rodin: "생각이 멈추지 않는다는 것은 아직 온 힘을 다해 버티고 있다는 증거입니다.", maitreya: "생각을 억지로 멈추려 하지 마십시오. 그저 그 생각을 붙잡지 않고 흘러가게 두십시오." },
   { q: ["명상과 사유의 차이가 뭔가요"], rodin: "제 사유는 긴장 속에서 답을 찾아 헤매는 분투에 가깝습니다.", maitreya: "제 사유는 판단을 내려놓고 있는 그대로를 지켜보는 고요함에 가깝습니다." },
   { q: ["질문을 멈추지 않는 이유가 뭔가요"], rodin: "질문을 멈추지 않는 것이야말로 살아있다는, 사유하고 있다는 유일한 증거이기 때문입니다.", maitreya: "질문 자체보다, 그 질문을 붙들고 있는 마음을 가만히 들여다보는 것이 더 중요할 때가 있습니다." },
