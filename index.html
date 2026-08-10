@@ -749,6 +749,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <audio id="snd-maitreya" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
 <audio id="snd-rodin" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
 <audio id="snd-meeting" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
+<!-- v-line-sound-cue — 참가자 요청: "'그가 보기에 이 얼굴은~~' 대사가
+     나올 때 Temple_Bell_at_Daybreak.mp4 사운드가 나오게 해줘." 위
+     snd-rodin/snd-maitreya처럼 특정 화자 내내 반복 재생되는 앰비언트
+     루프가 아니라, 특정 한 줄에서만 한 번 울리는 효과음이라 loop 없이
+     별도 엘리먼트로 둔다. -->
+<audio id="snd-oneshot" preload="auto"></audio>
 <div class="spot-wide" id="spot" aria-hidden="true"></div>
 <div id="detail-spot" aria-hidden="true"></div>
 <svg id="effect-svg" aria-hidden="true"></svg>
@@ -874,9 +880,14 @@ const DIALOGUE = [
     "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다. 이 얼굴에 귀를 대면, 먼 종소리처럼 조용한 울림이 들리는 듯합니다."
   ],
   sources:["출처: [22, 26]", null, null, null, "출처: 전준엽 [37]", null, "출처: 전준엽 [37]"],
+  // v-line-sound-cue — 참가자 요청: "'그가 보기에 이 얼굴은~~' 대사가
+  // 나올 때 Temple_Bell_at_Daybreak.mp4 사운드가 나오게 해줘." sources와
+  // 같은 방식으로 lines[]와 같은 순서의 배열을 두고, 마지막 줄에서만
+  // 채운다("이 얼굴에 가만히 귀를 가까이 대면… 종소리처럼" 대사 그대로).
+  sounds:[null, null, null, null, null, null, 'Temple_Bell_at_Daybreak.mp4'],
   spots:[{x:75, y:30.0}, {x:75, y:25.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
-  intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
+  intro:"이어서 생각하는 사람이, 무거운 몸통의 사유를 건넵니다.",
   introSimple:"로댕이 몸통 이야기를 합니다.",
   lines:[
     "팽팽하게 당겨진 근육은, '살아있다는 것' 자체가 감당해야 가야 할 무게라는 사실을 온몸으로 증언합니다.",
@@ -1058,31 +1069,63 @@ sourceEl.textContent = '';
 captionEl.innerHTML = gateText;
 
 speak(gateText, ()=> playLayer(0));
-    startAmbientSound();
+    // v-bamboo-1stage-only — 참가자 요청: "Where_Bamboo_Bends(=snd-base)는
+    // 1단계에서만 나오게 해줘." 예전엔 여기 입장하자마자 바로 틀어서
+    // 처음부터 끝까지(0~3단계 내내) 계속 켜져 있었다. 이제 여기서는
+    // 틀지 않고, 아래 playLayer()가 1단계(Global, layerIdx===1)에
+    // 들어올 때만 켜고 다른 단계로 넘어가면 끈다.
     fadeArrivalIn();
 }
 
-const AMBIENT_VOLUME = 0.18;
+const AMBIENT_VOLUME = 0.09; // v-bamboo-1stage-only: 참가자 요청으로 기존 0.18의 절반으로 낮춤
 function startAmbientSound(){
     const el = document.getElementById('snd-base');
     if(!el) return;
-    el.volume = 0;
     el.loop = true;
-    const p = el.play();
-    if(p && typeof p.catch === 'function'){
-        p.catch(e => console.warn('[앰비언트] 자동재생 차단:', e.message));
-    }
-    let v = 0;
-    const fadeIn = setInterval(()=>{
-        v = Math.min(AMBIENT_VOLUME, v + 0.01);
-        el.volume = v;
-        if(v >= AMBIENT_VOLUME) clearInterval(fadeIn);
-    }, 60);
+    _fadeStatueAudio(el, AMBIENT_VOLUME);
+}
+function stopAmbientSound(){
+    const el = document.getElementById('snd-base');
+    if(!el) return;
+    _fadeStatueAudio(el, 0);
 }
 
-const STATUE_SOUND_VOLUME = 0.18;
+// v-subtle-ambient — 참가자 요청: "전체적으로 해설을 듣는 데 방해가
+// 안 되게 볼륨을 작게 하고, 계속 나오면 불편하니까 적당히 랜덤하게
+// 나오다 안 나오다 하게 해줘." 기존엔 화자가 정해지면(rodin/maitreya)
+// 그 루프 소리가 볼륨 STATUE_SOUND_VOLUME으로 고정된 채 해설 내내
+// 끊김없이 깔렸다. 이제 두 가지를 바꾼다:
+// 1) 기본 볼륨을 0.18 → 0.11로 낮춰 내레이션을 덜 방해하게 한다.
+// 2) 화자가 정해지면 곧바로 그 볼륨까지 올리는 대신 무음에서 시작해,
+//    아래 _runIntermittentCycle()이 "몇 초 조용히 → 몇 초만 옅게 들림"을
+//    무작위 간격으로 스스로 반복한다 — 드론처럼 계속 깔리지 않고
+//    이따금 스치듯 들린다. 화자가 바뀌거나 사라지면(updateStatueSound)
+//    사이클은 스스로 멈춘다.
+const STATUE_SOUND_VOLUME = 0.11;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
+let _intermittentTimer = null;
+function _stopIntermittentStatueSound(){
+    clearTimeout(_intermittentTimer);
+    _intermittentTimer = null;
+}
+function _runIntermittentCycle(speaker){
+    // 이 사이클을 예약한 뒤에도 화자가 바뀌었을 수 있다 — 매 단계마다
+    // 확인해서, 낡은 사이클이 새 화자의 소리를 건드리지 않게 한다.
+    if(_currentStatueSound !== speaker) return;
+    const el = document.getElementById(speaker === 'rodin' ? 'snd-rodin' : 'snd-maitreya');
+    const offMs = 2600 + Math.random() * 6000;   // 약 2.6~8.6초 조용히
+    _intermittentTimer = setTimeout(()=>{
+        if(_currentStatueSound !== speaker) return;
+        _fadeStatueAudio(el, STATUE_SOUND_VOLUME);
+        const onMs = 1800 + Math.random() * 3400;  // 약 1.8~5.2초만 옅게 들림
+        _intermittentTimer = setTimeout(()=>{
+            if(_currentStatueSound !== speaker) return;
+            _fadeStatueAudio(el, 0);
+            _runIntermittentCycle(speaker);
+        }, onMs);
+    }, offMs);
+}
 
 const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15] };
 function hapticPulse(type){
@@ -1147,15 +1190,43 @@ function updateStatueSound(speaker){
     const target = (speaker === 'rodin' || speaker === 'maitreya') ? speaker : null;
     if(target === _currentStatueSound) return;
     _currentStatueSound = target;
+    _stopIntermittentStatueSound();
     const rodinEl = document.getElementById('snd-rodin');
     const maitreyaEl = document.getElementById('snd-maitreya');
-    _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
-    _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
+    // v-subtle-ambient — 곧바로 목표 볼륨으로 올리지 않고 일단 무음으로
+    // 내린다. 실제로 "들렸다 안 들렸다"하는 건 아래 _runIntermittentCycle()이
+    // target이 있을 때만 스스로 예약해서 만든다.
+    _fadeStatueAudio(rodinEl, 0);
+    _fadeStatueAudio(maitreyaEl, 0);
     const moodEl = document.getElementById('mood-overlay');
     if(moodEl){
         moodEl.classList.toggle('mood-rodin', target === 'rodin');
         moodEl.classList.toggle('mood-maitreya', target === 'maitreya');
     }
+    if(target){
+        _runIntermittentCycle(target);
+    }
+}
+
+// v-line-sound-cue — 참가자 요청: 특정 대사 한 줄에서만 짧게 울리는
+// 효과음(예: 종소리). 화자 앰비언트 루프(snd-rodin/snd-maitreya)와는
+// 별개로, #snd-oneshot 하나를 그때그때 새 소스로 갈아 끼워 재생한다.
+// 반복 재생하지 않고, 이 사운드도 내레이션을 방해하지 않도록 낮은
+// 볼륨으로만 튼다.
+const ONESHOT_SOUND_VOLUME = 0.16;
+function playOneShotSound(src){
+    if(!src) return;
+    const el = document.getElementById('snd-oneshot');
+    if(!el) return;
+    try{
+        if(el.getAttribute('src') !== src) el.src = src;
+        el.currentTime = 0;
+        el.volume = ONESHOT_SOUND_VOLUME;
+        const p = el.play();
+        if(p && typeof p.catch === 'function'){
+            p.catch(e => console.warn('[효과음] 자동재생 차단:', e.message));
+        }
+    }catch(e){}
 }
 
 // ── TTS 속도 조절 — 참가자 피드백(P3, P4: "해설 TTS 속도가 빠르다") 반영.
@@ -1279,6 +1350,26 @@ function speak(text, onEnd, speaker){
             u.onend = finishNoEarlierThanEst;
             u.onerror = finishNoEarlierThanEst;
             window.speechSynthesis.speak(u);
+            // v-speech-keepalive — 참가자 요청: "3단계에서 자막·음성
+            // 해설이 중간에 끊기는 부분이 많다." 크롬 등 일부 브라우저는
+            // 한 번에 읽는 문장이 길면(대략 15초 안팎) speechSynthesis가
+            // onend도 없이 소리만 저절로 멈춰버리는 잘 알려진 버그가
+            // 있다 — 주기적으로 pause()·resume()을 호출해줘야 계속
+            // 이어진다. 3단계(대화) 문장이 1·2단계보다 훨씬 길어서
+            // ("모나리자가 르네상스적 이성과…" 같은 문장) 이 버그에 걸릴
+            // 확률이 특히 높았다. 발화 중 10초마다 깨워서 끊김 없이
+            // 끝까지 읽히게 한다. onend/onerror가 오거나 취소되면 즉시
+            // 멈춘다.
+            const _keepAliveTimer = setInterval(()=>{
+                if(myGen !== speechGen || !window.speechSynthesis.speaking){
+                    clearInterval(_keepAliveTimer);
+                    return;
+                }
+                window.speechSynthesis.pause();
+                window.speechSynthesis.resume();
+            }, 10000);
+            u.addEventListener('end', ()=> clearInterval(_keepAliveTimer));
+            u.addEventListener('error', ()=> clearInterval(_keepAliveTimer));
             // v31 — 참가자 지적: "해설이 끝나기 전에 화면이 빠르게 넘어간다."
             // 원인: 이 워치독 타이머가 글자 수만으로 예상 시간을 계산하고,
             // 실제 재생 속도(TTS_RATE)는 전혀 반영하지 않고 있었다. 속도를
@@ -1432,6 +1523,9 @@ function playLayer(i){
     // 1단계(Global)로 넘어가는 이 시점에 조용히 내려보내, 다시는
     // 돌아오지 않게 한다(뒤로가기로 0단계로 되돌아가지 않는 한).
     if(i === 1) fadeArrivalOut();
+    // v-bamboo-1stage-only — Where_Bamboo_Bends(snd-base)는 1단계에서만.
+    // 다른 단계로 이동하면(뒤로가기로 0단계에 돌아가는 경우 포함) 꺼진다.
+    if(i === 1) startAmbientSound(); else stopAmbientSound();
     playLine();
 }
 
@@ -1507,6 +1601,10 @@ function startDetailPhase(){
     // 넘어가는 이 시점에 확실히 꺼둔다. 그렇지 않으면 이 소리가 3단계
     // 내내(다음 playLine() 호출이 없으므로) 계속 남아 있게 된다.
     updateMeetingSound(false);
+    // v-bamboo-1stage-only — 상단 점(배지)으로 1단계를 거치지 않고 곧장
+    // 3단계로 건너뛴 경우에도(jumpToStage(3)) Where_Bamboo_Bends가 남아
+    // 있지 않도록, 여기서도 확실히 꺼둔다.
+    stopAmbientSound();
     // v28 — 참가자 지적: "자막이 안 보인다." 이 문장을 speak()에는 넘겼지만
     // 정작 captionEl에는 한 번도 대입하지 않아서, 음성은 나오는데 화면
     // 자막은 비어 있었다(또는 직전 화면 자막이 그대로 남아 있었다).
@@ -1578,6 +1676,9 @@ function playDialogueLine(){
     const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
     captionEl.innerHTML = text;
     sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
+    if(t.sounds && t.sounds[dLineIdx]){
+        playOneShotSound(t.sounds[dLineIdx]);
+    }
     const pt = t.spots[dLineIdx];
     updateDetailSpot(pt);              
     drawPartPulse(pt, t.speaker);      
@@ -1775,6 +1876,9 @@ function playDialogueLineAt(tIdx, dIdx){
     const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
     captionEl.innerHTML = text;
     sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
+    if(t.sounds && t.sounds[dLineIdx]){
+        playOneShotSound(t.sounds[dLineIdx]);
+    }
     const pt = t.spots[dLineIdx];
     updateDetailSpot(pt);
     drawPartPulse(pt, t.speaker);
