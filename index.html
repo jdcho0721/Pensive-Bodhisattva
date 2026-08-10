@@ -542,9 +542,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          라틴 문자 i로 바꿔 어떤 기기·폰트에서도 항상 같은 모양으로
          보이게 했다 — 화면낭독기가 읽는 이름은 여전히 아래 aria-label
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
-    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
-    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배">속도 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장</button>
+    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배" data-tap-action="말하기 속도를 바꿉니다">속도 1.0x</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" data-tap-action="쉬운 문장 모드를 전환합니다">쉬운 문장: 꺼짐</button>
     <button class="btn" id="btn-voice-toggle" onclick="toggleNarration()" aria-pressed="false"
         aria-label="자체 음성 해설, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체 음성 해설: 켜짐</button>
 </div>
@@ -614,7 +614,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
 
-        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false">참고문헌 보기</button>
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="참고문헌 목록을 엽니다">참고문헌 보기</button>
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
             <p><b>[22]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
             <p><b>[26]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
@@ -777,9 +777,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          남겨둬 비장애 사용자의 빠른 진행은 유지). -->
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
 <div id="controls" role="group" aria-label="재생 제어">
-    <button class="btn" id="btn-back" onclick="onBackClick()">뒤로</button>
+    <button class="btn" id="btn-back" onclick="onBackClick()" data-tap-action="이전 내용으로 돌아갑니다">뒤로</button>
     <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시2 버튼입니다.">전시2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시2 버튼입니다." data-tap-action="전시실 2로 이동합니다">전시2</button>
 </div>
 </div>
 
@@ -874,7 +874,7 @@ const DIALOGUE = [
     "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다. 이 얼굴에 귀를 대면, 먼 종소리처럼 조용한 울림이 들리는 듯합니다."
   ],
   sources:["출처: [22, 26]", null, null, null, "출처: 전준엽 [37]", null, "출처: 전준엽 [37]"],
-  spots:[{x:75, y:30.0}, {x:75, y:35.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
+  spots:[{x:75, y:30.0}, {x:75, y:25.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
   intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
   introSimple:"로댕이 몸통 이야기를 합니다.",
@@ -1521,10 +1521,10 @@ function startDetailPhase(){
 function toggleEasyMode(){
     easyMode = !easyMode;
     const btn = document.getElementById('btn-easy-mode');
-    // v62 — 참가자 요청: "쉬운 문장: 꺼짐 → 쉬운 문장." 버튼 폭을 더
-    // 줄이기 위해 라벨을 상태와 무관하게 "쉬운 문장"으로 고정한다.
-    // 켜짐/꺼짐 상태는 여전히 aria-pressed(스크린리더용)와 .primary
-    // 강조색(시각적 켜짐 표시)로 전달되므로 정보가 사라지지는 않는다.
+    // v-revert-fixed-label — 참가자 요청: "쉬운 문장" 고정 라벨을 취소.
+    // v62에서 버튼 폭을 줄이려고 라벨을 "쉬운 문장"으로 고정했었는데,
+    // 다시 상태(켜짐/꺼짐)가 텍스트에 그대로 보이도록 되돌린다.
+    btn.textContent = easyMode ? '쉬운 문장: 켜짐' : '쉬운 문장: 꺼짐';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
     if(phase === 'dialogue' && !announcing){
@@ -2008,6 +2008,23 @@ function goToRoom2(e) {
         speak(getAccessibleName(el));
     }
 
+    // v-tap-action-announce — 참가자 제안: "버튼이 무엇인지는 잘 안내하고
+    // 있는데, 한 번 더 눌러 확인할 때 그 다음 진행도 음성으로 설명해주면
+    // 시각장애인에게 더 도움이 되지 않을까?" 확인 탭에서 data-tap-action
+    // 속성이 있는 버튼은, 실제로 누르기(click) 전에 "지금부터 무엇이
+    // 일어날지"를 먼저 짧게 안내한다 — 그 낭독이 끝난 뒤에야 실제 클릭이
+    // 실행된다. 이 속성이 없는 버튼(의미가 이미 자명하거나, 토글처럼
+    // 미리 안내가 오히려 어색한 경우)은 예전처럼 곧바로 실행된다.
+    function confirmAndActivate(el){
+        if(!el) return;
+        const actionText = el.getAttribute && el.getAttribute('data-tap-action');
+        if(actionText){
+            speak(actionText, function(){ try{ el.click(); }catch(err){} });
+        } else {
+            try{ el.click(); }catch(err){}
+        }
+    }
+
     function handlePointerDown(x, y, target){
         startX = x; startY = y; startTime = Date.now();
         downTarget = target;
@@ -2075,7 +2092,7 @@ function goToRoom2(e) {
                                                     // 안 풀렸더라도, 이 click은 확실히
                                                     // 통과시킨다(경합 상태 방지).
                         try{ hapticPulse('stage'); }catch(err){}
-                        try{ landedControl.click(); }catch(err){}
+                        confirmAndActivate(landedControl);
                         return;
                     }
                     // 첫 번째 탭 — 아직 이동하지 않고 이름만 말해준다.
@@ -2104,7 +2121,7 @@ function goToRoom2(e) {
                 armedControl = null;
                 suppressNextClick = false; // 경합 상태 방지(위와 동일한 이유)
                 try{ hapticPulse('stage'); }catch(err){}
-                try{ c.click(); }catch(err){}
+                confirmAndActivate(c);
                 return;
             }
             // 끌며 탐색만 하다 뗀 경우 — 실행하지 않고 armed 상태만 유지한다.
