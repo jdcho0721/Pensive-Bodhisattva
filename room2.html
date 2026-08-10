@@ -294,11 +294,29 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    같은 값(height:36px, padding:0 10px, font-size:.66rem, radius:18px)
    으로 맞춰, 모바일에서 상단·하단 버튼이 시각적으로 완전히 통일되게
    했다. */
-@media (max-width: 768px){
-    #hint-row .btn{
-        height:36px; min-height:36px; font-size:.66rem; padding:0 10px; border-radius:18px;
+   
+@media (max-width: 768px) {
+    /* 1. 배경 이미지만 아래로 10% 내림 (50% + 10% = 60%) */
+    #stage {
+        background-position: center 60%;
+    }
+    
+    /* 2. 이미지 위에 올라가는 핫스팟도 똑같이 아래로 내림 */
+    .hotspot {
+        transform: translateY(10vh); 
+    }
+
+    /* 3. 질문하신 버튼 스타일은 그대로 유지하거나 필요시 함께 조정 */
+    #hint-row .btn {
+        height: 36px; 
+        min-height: 36px; 
+        font-size: .66rem; 
+        padding: 0 10px; 
+        border-radius: 18px;
     }
 }
+
+
 
 /* ── 사유의 상담소(챗봇) ── */
 /* v2 — 사용성 평가 지적: "확대 시 버튼 텍스트 잘림". 기존엔 width/height가
