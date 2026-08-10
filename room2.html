@@ -1307,7 +1307,7 @@ function enterRoom(){
     // 떠 있던 안내문과 같은 내용을 그대로 음성으로도 들려준다 — 화면
     // 텍스트와 음성이 서로 다른 문제(v41)가 다시 생기지 않게, 아래
     // introLine을 #intro-gate의 h1·p 문구와 동일하게 맞춰뒀다.
-    const introLine = '침묵의 공명. 전시실 2 · 사유 및 체화, 몸으로 생각하기입니다. 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요.';
+    const introLine = '침묵의 공명. 전시실 2 · 사유 및 체화, 몸으로 생각하기입니다. 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요. 조각상의 관심 부분을 만져보새요';
     _displaySentencesTimed(introLine, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
     speak(introLine);
