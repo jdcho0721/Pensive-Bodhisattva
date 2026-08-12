@@ -623,10 +623,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p><b>[35]</b> Musée Rodin, The Thinker, collection notice, musee-rodin.fr, accessed 2026.</p>
             <p><b>[36]</b> W.B. Kang, Wonyung-gwa-Johwa [원융과 조화], Youlhwadang, Seoul, 1990.</p>
             <p><b>[37]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
+            <p><b>[38]</b> Iryeon [일연], 『삼국유사(三國遺事)』 권3, 「탑상(塔像)」 제4, 「미륵선화·미시랑·진자사(彌勒仙花・未尸郎・眞慈師)」, 13세기 편찬.</p>
+            <p><b>[39]</b> Kōtarō Takamura [高村光太郎] (ed./trans.), 『ロダンの言葉』[Rodin no Kotoba, 로댕의 말], Oranda Shobō [オランダ書房], Tokyo, 1916.</p>
+            <p><b>[40]</b> Yu-seop Ko [高裕燮], 「金銅半跏思惟像의 考察 — 朝鮮美術史草稿의 一片」, Tongmun-gwan [통문관], 1966 (유고, 원고는 1944년 이전 작성).</p>
+            <p><b>[41]</b> "The Gates of Hell," Wikipedia, https://en.wikipedia.org/wiki/The_Gates_of_Hell (accessed 2026).</p>
+            <p><b>[42]</b> National Institute of Korean History [국사편찬위원회], 「백제의 미륵신앙과 미륵사」·「미륵신앙의 유행과 신라의 화랑도」, 사료로 본 한국사, http://contents.history.go.kr.</p>
+            <p><b>[43]</b> Ruth Butler, "Nationalism, a New Seriousness, and Rodin: Some Thoughts about French Sculpture in the 1870s."</p>
         </div>
         <button id="info-close" onclick="closeInfo()">닫기</button>
     </div>
 </div>
+
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
 <div id="intro-gate" class="intro-gate">
@@ -712,6 +719,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border-top: 1px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
+
 </style>
 
 <!-- ── 배경(0단계부터 끝까지 동일하게 유지) ── -->
@@ -793,17 +801,30 @@ const LAYERS = [
         { text:"반가사유상은 삼국시대, 6세기에서 7세기 무렵 만들어진 불교 조각입니다.", wide:'maitreya', source:"출처: [22, 26]" },
         { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
           wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"출처: [22, 26]" },
+        { text:"삼국시대에는 미륵이 화랑으로 다시 태어난다고 믿어져, 반가사유상이 그 화랑을 상징하는 것으로 여겨지기도 했습니다.",
+          wide:'maitreya', source:"출처: 삼국유사 [38]" },
+        { text:"백제·신라 모두 전쟁과 왕권 위기 속에 있던 시기였습니다. 백제는 무왕이 미륵사를 세워 국력을 모았고, 신라는 화랑도가 미륵의 화신을 자처하며 반가사유상을 만들었습니다.",
+          wide:'maitreya', source:"출처: 국사편찬위원회 [42]" },
+        { text:"로댕이 활동하던 시기, 프랑스는 프로이센과의 전쟁에서 패한 뒤 국가적 자존심을 되찾으려 예술에 힘을 쏟던 제3공화국이었고, 조각계는 사실주의·인상주의가 교차하던 근대 조각 태동기였습니다.",
+          wide:'rodin', source:"출처: Butler [43]" },
         { text:"생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년 무렵 만든 조각입니다.", wide:'rodin', source:"출처: Vujanović [27]" },
         { text:"원래 지옥의 문 상단부 인물로 제작됐다가, 1904년 독립된 대형 청동상으로 다시 만들어졌습니다.", wide:'rodin', source:"출처: Vujanović [27]" },
         { text:"처음엔 약 70센티미터 크기로, '시인'이라는 이름의 조각이었습니다. 신곡을 쓴 단테가, 지옥의 여러 층을 내려다보며 자신의 시상에 몰두한 모습이었습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
         { text:"그래서 이 조각은 처음부터, 고문당하는 육체를 지닌 저주받은 존재이면서, 동시에 시로써 그 고통을 넘어서기로 결심한 자유로운 정신의 소유자이기도 했습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
         { text:"로댕이 제작한 지옥의 문에는 지옥에서 고통받는 인간의 형상 200여 점이 서로 뒤엉켜 있으며, 그들의 정념과 야수성, 고뇌를 표현하고 있습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [34]" },
+        { text:"로댕은 죽을 때까지 37년간 이 문을 손에서 놓지 않았고, 그사이 200여 개 인물상을 계속 더하고 빼고 고쳤습니다. 결국 이 지옥의 문은 로댕 생전에는 청동으로 주조되지 못했습니다.", wide:'rodin', source:"출처: 위키피디아 [41]" },
         { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", wide:'rodin' },
-        { text:"이 자세는 카르포의 〈우골리노〉에서 보이는 극적인 신체 표현을 떠올리게 합니다. 동시에 미켈란젤로의 〈로렌초 데 메디치 좌상〉처럼 응축된 근육 긴장과 비틀림의 감각도 겹쳐집니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
+        { text:"카르포의 〈우골리노〉에는 '생각하는 사람'을 특이하게 만드는 한 가지 특징, 즉 오른쪽 팔꿈치가 몸을 가로질러 왼쪽 허벅지에 놓인 모습이 이미 담겨 있습니다. 동시에 미켈란젤로의 〈로렌초 데 메디치 좌상〉처럼 응축된 근육 긴장과 비틀림의 감각도 겹쳐집니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
+        { text:"로댕은 이렇게 말한 적이 있습니다. '조각에는 독창성이 필요 없다. 생명이 필요하다.'", wide:'rodin', source:"출처: 高村光太郎 편역, 로댕의 말 [39]" },
+        { text:"'조각을 볼 때, 그 안에서 시간이 느껴져야 한다'고도 말했습니다.", wide:'rodin', source:"출처: 高村光太郎 편역, 로댕의 말 [39]" },
         { text:"반가사유상은 불교의 발상지 인도에서 시작된 불교 도상입니다. 간다라조각이 자연스럽고 부드러운 매력이라면 마투라조각은 근엄하고 각 잡힌 매력이 있어요. 우리나라 반가사유상은 부드러운 곡선으로, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.",
           wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya' },
+        { text:"인도에서는 태자상(출가 전, 고뇌하는 싯다르타 왕자의 모습)과 관음보살상(자비로 중생을 살피는 보살)을 상징했던 이 도상이, 중국에서는 초기엔 태자상이었다가 북제 때 미륵보살상으로 바뀌었고, 우리나라에서는 처음부터 미륵보살상(미래의 부처)으로 받아들여졌습니다.",
+          wide:'maitreya', source:"출처: 高裕燮 [40]" },
+        { text:"국보 83호는 여러 반가 자세 가운데 가장 뛰어난 반가사유 자세를 취한 도상으로 평가받습니다.", wide:'maitreya', source:"출처: 高裕燮 [40]" },
         { text:"로댕의 생각하는 사람은 근육질의 단단한 면으로, 그 힘든 마음 자체를 표현했습니다.",
           wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin' },
+        { text:"한 인물은 생각에 잠겨 고요한 상태에 있고, 다른 인물은 생각과 싸우고 있습니다.", wide:'both', source:"출처: [22]" },
         { text:"서로 다른 길을 걸었지만, 두 조각상 모두 깊이 사유하는 인간의 몸짓이라는 점에서는 같습니다.", wide:'both' },
         { text:"지금 손이 닿는 곳에는, 두 조각상의 복제품이 놓여 있습니다.", wide:'both' },
         { text:"왼쪽은 로댕, 오른쪽은 반가사유상 — 여기 전시된 로댕과 반가사유상은 실물보다 작은 크기입니다.", wide:'both' },
@@ -1828,6 +1849,7 @@ function onNextClick(){
 }
 
 let _infoLastFocused = null;
+
 function openInfo(){
     try{ window.speechSynthesis.cancel(); }catch(e){}
     _infoLastFocused = document.activeElement;
