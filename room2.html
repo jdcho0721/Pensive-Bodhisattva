@@ -4212,6 +4212,27 @@ const STT_MAX_AUTO_RETRY = 2;
 let _sttFinalHandled = false;
 let _sttLastInterim = '';
 
+// v-stt-word-fix — 참가자 지적: "'체화' 음성인식이 안 된다. '최화'라고
+// 인식한다." 브라우저 내장 음성인식(webkitSpeechRecognition, 실제로는
+// 구글 음성엔진)은 우리가 발음 사전이나 커스텀 보캐뷸러리를 직접 얹을
+// 방법이 없다 — Web Speech API는 SpeechGrammarList를 사실상 무시한다.
+// 대신 "인식된 텍스트가 KB 검색·챗봇 전송에 쓰이기 직전" 단계에서
+// 자주 틀리는 단어쌍만 표적으로 교정한다. "체"와 "최"처럼 초성은 같고
+// 모음(ㅔ/ㅚ)만 달라 소리가 비슷한 경우 특히 잦은 오인식 패턴이다.
+// 목록에 [오인식 → 올바른 표기] 쌍을 추가하면 다른 단어에도 같은
+// 방식으로 대응할 수 있다.
+const STT_WORD_FIXES = [
+    [/최화/g, '체화'],
+];
+function _applySttWordFixes(text){
+    if(!text) return text;
+    let fixed = text;
+    for(const [pattern, replacement] of STT_WORD_FIXES){
+        fixed = fixed.replace(pattern, replacement);
+    }
+    return fixed;
+}
+
 if(ChatSpeechRecognition){
     chatRecognition = new ChatSpeechRecognition();
     chatRecognition.lang = 'ko-KR';
@@ -4233,6 +4254,10 @@ if(ChatSpeechRecognition){
             const t = event.results[i][0].transcript;
             if(event.results[i].isFinal) final += t; else interim += t;
         }
+        // v-stt-word-fix — 화면에 채우기 전에 자주 틀리는 단어쌍부터 교정해,
+        // 사용자가 보는 실시간 자막과 실제 전송되는 질문이 항상 같게 한다.
+        final = _applySttWordFixes(final);
+        interim = _applySttWordFixes(interim);
         // 말하는 중에도 입력창에 실시간으로 채워, 화면을 볼 수 있는
         // 사용자는 인식이 잘 되고 있는지 눈으로 바로 확인할 수 있다.
         input.value = final || interim;
@@ -4285,7 +4310,7 @@ if(ChatSpeechRecognition){
         // 했다는 뜻이므로 — 그 텍스트를 그대로 질문으로 보낸다.
         if(!_sttFinalHandled && _sttLastInterim.trim()){
             const input = document.getElementById('chat-input');
-            input.value = _sttLastInterim;
+            input.value = _applySttWordFixes(_sttLastInterim);
             document.getElementById('chat-mic-status').textContent = '질문을 보냈습니다.';
             setTimeout(()=>{ sendChat({ preventDefault(){} }); }, 400);
         }
