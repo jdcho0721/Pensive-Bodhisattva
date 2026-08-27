@@ -591,8 +591,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p>Human + Art + Technology의 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
 
         <h3>이용 방법</h3>
-        <p>스크린 앞 의자에 앉아 "시작할게요"를 누르면 내레이션이 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다). 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
-        <p>화면 아래 <b>뒤로</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다.</p>
+        <p>관람 순서 화면에서 <b>전시실 1 · 조우</b> 버튼을 누르거나 화면 아무 곳이나 가볍게 두드리면, 안내 음성과 함께 시작됩니다. 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
+        <p>화면 아래 <b>뒤로</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있고, 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다.</p>
+        <p>화면 위쪽의 <b>속도</b> 버튼으로 내레이션 속도를 바꾸고, <b>쉬운 문장</b> 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다.</p>
         <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
 
         <div class="copyright">
@@ -994,10 +995,42 @@ setTimeout(_tryArrivalMessage, 700);
 
 // 게이트의 버튼(onclick)과 "게이트 아무 곳이나 탭"(제스처 계층) 양쪽
 // 모두 이 함수를 거치도록 통일했다 — 도착 안내가 남아있으면 그것부터
-// 들려주고, 없으면(또는 이미 들었으면) 곧장 enterRoom()으로 입장한다.
+// 들려주고, 없으면(또는 이미 들었으면) 첫 탭엔 안내만, 짧은 시간 안의
+// 두 번째 탭에 실제로 입장한다.
+// v-two-press-gate — 참가자 요청: "전시실 1 · 조우 버튼을 누르면 음성
+// 해설을 해주고, 한 번 더 눌러야 입장하게 해달라." 기존엔 ?from=next로
+// 넘어온 경우에만 "첫 탭은 안내, 두 번째 탭에 입장" 방식이 적용되고,
+// 그 외(일반적으로 게이트에 처음 들어온 경우)엔 곧장 한 번에 입장했다.
+// 버튼의 aria-label이 원래도 "화면을 두 번 탭하여…"라고 안내하고
+// 있었으므로, 실제 동작도 항상 그렇게 통일한다.
+let _gateArmed = false;
+let _gateArmedAt = 0;
+const GATE_CONFIRM_MS = 1500;
 function handleGateEntryTap(){
-    if(_tryArrivalMessage()) return; // 이번 탭은 안내만 — 입장은 다음 탭에
-    enterRoom();
+    if(_tryArrivalMessage()) return; // 이번 탭은 도착 안내만 — 입장은 다음 탭에
+    const now = Date.now();
+    if(_gateArmed && (now - _gateArmedAt) < GATE_CONFIRM_MS){
+        // 빠르게 두 번째로 눌렀다 — 실제로 입장한다.
+        _gateArmed = false;
+        try{ hapticPulse('stage'); }catch(err){}
+        speak('전시실 1로 입장합니다.', enterRoom);
+        return;
+    }
+    // 첫 번째 탭 — 아직 입장하지 않고 안내만 들려준다.
+    _gateArmed = true;
+    _gateArmedAt = now;
+    try{ hapticPulse('turn'); }catch(err){}
+    try{ speak(getGateButtonLabel()); }catch(err){}
+}
+function getGateButtonLabel(){
+    const btn = document.querySelector('#intro-gate .btn.primary');
+    if(btn){
+        const label = btn.getAttribute('aria-label');
+        if(label && label.trim()) return label.trim();
+        const text = (btn.textContent || '').trim();
+        if(text) return text;
+    }
+    return '전시실 1 · 조우로 이동합니다. 다시 누르면 입장합니다.';
 }
 
 function enterRoom(){
@@ -1011,19 +1044,17 @@ function enterRoom(){
     });
     stageEl.classList.add('lit');
     // v.gate-voice — 진입 게이트 화면("침묵의 공명 / 전시실 1 · 조우 /
-    // '조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다 / 마주한
-    // 두 조각상 로댕과 반가사유상의 이야기를 들려드립니다")은 지금까지
-    // 화면에 텍스트로만 떠 있고 이 앱 자체의 음성 해설은 없어서, 기기
-    // 스크린리더(TalkBack/VoiceOver)를 켜지 않은 상태로는 아무 소리도
-    // 들리지 않았다. "시작할게요"를 누르는(또는 6초 자동 진입) 이 시점에
-    // 그 문구를 먼저 읽어준 뒤 기존 안내로 이어지게 했다.
-    // v-welcome-open — 참가자 제안: "아무 데나 터치/클릭하면 '침묵의
-    // 공명에 오신 것을 환영합니다'로 시작해서 간단히 소개하자." 첫
-    // 문장으로 환영 인사를 붙였다. 바로 아래 speak() 호출이 이 문구가
-    // 끝나자마자 playLayer(0)을 불러 본편으로 자동 진행하므로("소개가
-    // 끝나면 자동으로 진입"), room2.html과 마찬가지로 이 구조가 이미
-    // 그대로 갖춰져 있었다 — 추가로 타이머를 걸 필요가 없다.
-    const gateText = '침묵의 공명에 오신 것을 환영합니다. 전시실 1, 조우, 만나기입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다. 마주한 두 조각상, 로댕과 반가사유상의 이야기를 들려드립니다. 편안히 들어주세요.';
+    // '조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다")은
+    // 지금까지 화면에 텍스트로만 떠 있고 이 앱 자체의 음성 해설은 없어서,
+    // 기기 스크린리더(TalkBack/VoiceOver)를 켜지 않은 상태로는 아무
+    // 소리도 들리지 않았다. 입장하는 이 시점에 그 문구를 먼저 읽어준
+    // 뒤 기존 안내로 이어지게 했다.
+    // v-gate-text-scope — 참가자 요청: "두 번째 화면(입장 직후)은 '조우'에
+    // 대한 설명만 해달라." 환영 인사·조각상 소개·"편안히 들어주세요" 같은
+    // 부가 문구는 빼고, 전시실 1의 이름이자 주제인 "조우"의 뜻풀이 한
+    // 문장만 남겼다. 이어지는 두 조각상 소개(오리엔테이션)는 바로 다음
+    // 단계(playLayer(0))에서 별도로 들려준다.
+    const gateText = '전시실 1, 조우입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다.';
 
 // ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
 try{
@@ -2052,13 +2083,15 @@ function goToRoom2(e) {
         }
     }
 
-    // v-two-press-nav — "다음전시" 버튼은 되돌릴 수 없는 화면 전환이라,
-    // 다른 버튼들과 달리 곧장 탭해도 즉시 실행하지 않는다 — 항상 "안내
-    // 후 빠른 재확인" 절차를 거친다. 확인 창도 더 짧게(1.5초, "빠르게"
-    // 누르라는 요청 반영) 잡는다.
-    const NEXT_EXHIBIT_ID = 'btn-next-exhibit';
+    // v-two-press-controls — 참가자 요청: "뒤로·멈춤·전시2 버튼도 누르면
+    // 음성 해설을 먼저 해주고, 한 번 더 눌러야 실행되게 해달라." 기존엔
+    // 되돌릴 수 없는 화면 전환인 "전시2"(다음전시) 버튼만 예외적으로
+    // 항상 "안내 후 빠른 재확인" 절차를 거쳤다. 이제 뒤로·멈춤 버튼도
+    // 같은 목록에 넣어, 세 버튼 모두 첫 탭엔 이름만 안내하고 짧은 시간
+    // 안에 한 번 더 눌러야 실제로 실행되게 통일한다.
+    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-back', 'btn-pause'];
     const NEXT_EXHIBIT_CONFIRM_MS = 1500;
-    function isNextExhibitBtn(el){ return !!(el && el.id === NEXT_EXHIBIT_ID); }
+    function isNextExhibitBtn(el){ return !!(el && TWO_PRESS_CONFIRM_IDS.includes(el.id)); }
 
     function handlePointerUp(x, y, upTarget){
         clearTimeout(longPressTimer); longPressTimer = null;
@@ -2094,9 +2127,10 @@ function goToRoom2(e) {
                 // 불편하다." 끌지 않고 곧장 버튼 하나를 눌렀다는 것은
                 // 눈으로 보고 정확히 그 버튼을 짚었다는 뜻이다(비장애인의
                 // 일반적인 사용 방식) — 확인 절차 없이 그 자리에서 바로
-                // 실행한다(원래 클릭을 그대로 통과시킨다). "다음전시"만은
-                // 위에서 예외 처리했다. 이전에 탐색 중이던 다른 버튼이
-                // 있었다면 그 상태는 무효화한다.
+                // 실행한다(원래 클릭을 그대로 통과시킨다). 뒤로·멈춤·
+                // 전시2(TWO_PRESS_CONFIRM_IDS)는 위에서 예외 처리했다.
+                // 이전에 탐색 중이던 다른 버튼이 있었다면 그 상태는
+                // 무효화한다.
                 armedControl = null;
                 return;
             }
@@ -2200,15 +2234,22 @@ function goToRoom2(e) {
         // 에게만 필요하다.
         if(_arrivedFromNext) return;
         onboardingSpoken = true;
+        // v-gate-text-first — 참가자 요청: "사용법 안내가 나오기 전에,
+        // 먼저 이 화면에 있는 글(제목·소개·관람 순서·문구)을 읽어달라."
+        // 화면 텍스트를 먼저 들려준 뒤, 이어서 조작법 안내로 넘어간다.
+        const screenText = '침묵의 공명. 로댕의 생각하는 사람과 국보 반가사유상의 만남, 고뇌에서 자비로 이어지는 울림을 체험해보세요. 관람 순서는 전시장 1 조우, 전시장 2 사유와 체화입니다. 몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.';
         const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 화면 아무 곳이나 한 번 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작합니다. 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 두드리면 실행됩니다. 지금 화면을 두드리면 시작합니다.';
         try{
-            speak(msg, function remind(){
-                setTimeout(function again(){
-                    if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                    speak('화면 아무 곳이나 두드리면 시작합니다.', function(){
-                        setTimeout(again, 8000);
-                    });
-                }, 6000);
+            speak(screenText, function(){
+                if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
+                speak(msg, function remind(){
+                    setTimeout(function again(){
+                        if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
+                        speak('화면 아무 곳이나 두드리면 시작합니다.', function(){
+                            setTimeout(again, 8000);
+                        });
+                    }, 6000);
+                });
             });
         }catch(err){}
     }

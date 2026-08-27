@@ -581,7 +581,8 @@ body.chat-open #chat-toggle{display:none;}
     font-family:'Cinzel Decorative',serif; color:var(--gold); letter-spacing:.14em;
     font-size:1.25rem; margin:0 0 6px;
 }
-#certificate-card .cert-sub{ color:var(--gold-light); font-size:.78rem; letter-spacing:.06em; margin-bottom:20px; }
+#certificate-card .cert-sub{ color:var(--gold-light); font-size:.78rem; letter-spacing:.06em; margin-bottom:8px; }
+#certificate-card .cert-meaning{ color:#999; font-size:.74rem; line-height:1.6; max-width:280px; margin:0 auto 18px; word-break:keep-all; }
 #certificate-card .cert-stat{ font-size:2.1rem; color:var(--gold); font-weight:700; margin:10px 0 2px; font-family:'Cinzel Decorative',serif; }
 #certificate-card .cert-stat-label{ color:#999; font-size:.78rem; margin-bottom:18px; }
 #certificate-card .cert-list{ text-align:left; margin:18px 0; }
@@ -665,6 +666,7 @@ body.chat-open #chat-toggle{display:none;}
         <p>화면 속 조각상에서 궁금한 부위를 손끝으로 짚으면(클릭·터치), 그 부위에 대한 짧은 설명을 음성과 자막으로 들려드립니다.</p>
         <p>오른쪽 아래 <b>💬</b> 버튼을 누르면 '사유의 상담소' 챗봇이 열립니다. 미리 준비된 예상 질문 버튼을 탭하면 타이핑 없이 바로 물어볼 수 있고, 방금 만진 부위나 두 조각상에 대해 궁금한 점을 직접 입력해 자유롭게 물어볼 수도 있습니다.</p>
         <p>화면 아래 빈 공간을 옆으로 스와이프하면 방금 들은 설명을 다시 들을 수 있고, 모든 부위를 한 번씩 만지면 <b>마치기</b> 버튼이 나타납니다. 손끝 감상에 집중하느라 설명을 놓쳤다면, 같은 부위를 다시 만지면 언제든 다시 들을 수 있습니다.</p>
+        <p>화면 위쪽의 <b>속도</b> 버튼으로 내레이션 속도를 바꾸고, <b>쉬운 문장</b> 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다.</p>
         <p>화면 아래 <b>여일</b> 버튼을 누르면 언제든 지금까지 만난 기록을 수료증으로 확인하고, 마음을 비우는 짧은 순간과 함께 처음 화면으로 돌아갈 수 있습니다.</p>
 
         <div class="copyright">
@@ -695,6 +697,7 @@ body.chat-open #chat-toggle{display:none;}
     <div id="certificate-card">
         <h2>수료증</h2>
         <div class="cert-sub">여일(如一) · 두 조각상과의 대화</div>
+        <div class="cert-meaning">여일(如一)은 '한결같다'는 뜻으로, 로댕처럼 움켜쥐려는 마음과 반가사유상처럼 내려놓으려는 마음 사이를 늘 오가는 인간의 흔들림을 그대로 받아들이는 자리로 돌아간다는 의미입니다.</div>
         <div class="cert-stat" id="cert-stat">0 / 11</div>
         <div class="cert-stat-label">곳을 손끝으로 만나셨습니다</div>
         <div class="cert-list" id="cert-list"></div>
@@ -2716,8 +2719,6 @@ async function _playCenterSynthesis(moodEl){
    같은 visited Set을 그대로 사용한다 — 안 만진 곳을 만진 것처럼 꾸미지
    않는다. */
 function showCertificate(isComplete){
-    try{ window.speechSynthesis.cancel(); }catch(e){}
-
     const shortName = k => DETAILS[k].title.split(' · ')[1];
     const rodinDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='로댕').map(shortName);
     const maitreyaDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='반가사유상').map(shortName);
@@ -2736,9 +2737,10 @@ function showCertificate(isComplete){
     addSection('로댕 · 생각하는 사람', rodinDone);
     addSection('반가사유상', maitreyaDone);
 
-    document.getElementById('cert-line').textContent = (visited.size >= ORDER.length)
+    const certLineText = (visited.size >= ORDER.length)
         ? '열한 곳을 모두 만나셨습니다.'
         : (remain > 0 ? `아직 ${remain}곳이 남아 있습니다. 다음에 다시 오시면 이어서 만나보실 수 있습니다.` : '열한 곳을 모두 만나셨습니다.');
+    document.getElementById('cert-line').textContent = certLineText;
 
     const now = new Date();
     document.getElementById('cert-date').textContent = now.toLocaleString('ko-KR',
@@ -2761,6 +2763,16 @@ function showCertificate(isComplete){
     _certLastFocused = document.activeElement;
     document.getElementById('btn-cert-close').focus();
     document.addEventListener('keydown', _certDialogKeydown);
+
+    // v-cert-voice-fix — 참가자 보고: "수료증 페이지에 음성 해설이 안
+    // 나온다." showCertificate()가 화면(자막·카드)만 채우고 speak()를
+    // 한 번도 부르지 않던 게 원인이었다. "여일(如一)"의 뜻도 함께
+    // 궁금해할 수 있어 한 문장으로 풀어 안내한다. (맨 위에 있던 별도
+    // window.speechSynthesis.cancel() 호출은 제거했다 — speak() 자신이
+    // 내부에서 다시 cancel()을 부르므로, 두 번 연달아 부르면 크롬 등
+    // 일부 브라우저에서 소리가 안 나는 문제로 이어질 수 있다.)
+    const meaningText = "여일(如一)은 '한결같다'는 뜻으로, 로댕처럼 움켜쥐려는 마음과 반가사유상처럼 내려놓으려는 마음 사이를 늘 오가는 인간의 흔들림을 그대로 받아들이는 자리로 돌아간다는 의미입니다.";
+    speak(`수료증입니다. 지금까지 열한 곳 중 ${visited.size}곳을 손끝으로 만나셨습니다. ${certLineText} ${meaningText}`);
 }
 
 let _certLastFocused = null;
@@ -2800,7 +2812,6 @@ function requestLeave(){
 function beginYeoilExit(){
     document.getElementById('certificate-overlay').classList.remove('show');
     document.removeEventListener('keydown', _certDialogKeydown);
-    window.speechSynthesis.cancel();
     stopHandTracking();
 
     const yeoil = document.getElementById('yeoil-overlay');
@@ -2810,6 +2821,14 @@ function beginYeoilExit(){
     // 브라우저가 전환 없이 즉시 반영해버릴 수 있다.
     requestAnimationFrame(()=> requestAnimationFrame(()=> yeoil.classList.add('visible')));
 
+    // v-yeoil-voice-fix — 참가자 보고: "여일 페이지에 음성 해설이 안
+    // 나온다." 원인은 여기서 window.speechSynthesis.cancel()을 먼저
+    // 부르고, 바로 이어서 speak()를 호출한 것이었다 — speak() 자신도
+    // 내부에서 다시 cancel()을 부르므로, cancel()이 사실상 연달아 두 번
+    // 불리는 셈이 된다. 크롬 등 일부 브라우저는 cancel()이 짧은 간격
+    // 안에 겹쳐 불리면 이후 speak()가 소리 없이 실패하는 버그가 있어,
+    // 여기서는 이 중복 cancel()을 빼고 speak() 자체의 cancel()에만
+    // 맡긴다.
     speak('이제, 마음을 비우고 돌아갑니다.', null);
 
     clearTimeout(_yeoilExitTimer);
