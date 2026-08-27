@@ -543,7 +543,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          보이게 했다 — 화면낭독기가 읽는 이름은 여전히 아래 aria-label
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
-    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배" data-tap-action="말하기 속도를 바꿉니다">속도 1.0x</button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 1.0x, 현재 설정입니다" data-tap-action="말하기 속도를 바꿉니다">속도 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" data-tap-action="쉬운 문장 모드를 전환합니다">쉬운 문장: 꺼짐</button>
     <button class="btn" id="btn-voice-toggle" onclick="toggleNarration()" aria-pressed="false"
         aria-label="자체 음성 해설, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체 음성 해설: 켜짐</button>
@@ -791,7 +791,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 const LAYERS = [
 { tag:'0 · 오리엔테이션',
     lines:[
-        { text:"우리나라 국보 83호 금동미륵보살반가사유상과, 프랑스 로댕의 생각하는 사람의 청동복제상을 직접 만나고 느껴보세요.", wide:'both' },
+        { text:"우리나라 국보 83호 금동미륵보살반가사유상과, 프랑스 로댕의 생각하는 사람의 청동복제상을 직접 만나고 느껴보세요.", wide:'both', source:"연출(전시 저작자)" },
         { text:"반가사유상은 삼국시대, 6세기에서 7세기 무렵 만들어진 불교 조각입니다.", wide:'maitreya', source:"출처: [22, 26]" },
         { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
           wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"출처: [22, 26]" },
@@ -800,42 +800,42 @@ const LAYERS = [
         { text:"처음엔 약 70센티미터 크기로, '시인'이라는 이름의 조각이었습니다. 신곡을 쓴 단테가, 지옥의 여러 층을 내려다보며 자신의 시상에 몰두한 모습이었습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
         { text:"그래서 이 조각은 처음부터, 고문당하는 육체를 지닌 저주받은 존재이면서, 동시에 시로써 그 고통을 넘어서기로 결심한 자유로운 정신의 소유자이기도 했습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
         { text:"로댕이 제작한 지옥의 문에는 지옥에서 고통받는 인간의 형상 200여 점이 서로 뒤엉켜 있으며, 그들의 정념과 야수성, 고뇌를 표현하고 있습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [34]" },
-        { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", wide:'rodin' },
+        { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", wide:'rodin', source:"출처: 로댕 뮤지엄, 지옥의 문 [34]" },
         { text:"이 자세는 카르포의 〈우골리노〉에서 보이는 극적인 신체 표현을 떠올리게 합니다. 동시에 미켈란젤로의 〈로렌초 데 메디치 좌상〉처럼 응축된 근육 긴장과 비틀림의 감각도 겹쳐집니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [35]" },
         { text:"반가사유상은 불교의 발상지 인도에서 시작된 불교 도상입니다. 간다라조각이 자연스럽고 부드러운 매력이라면 마투라조각은 근엄하고 각 잡힌 매력이 있어요. 우리나라 반가사유상은 부드러운 곡선으로, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.",
-          wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya' },
+          wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya', source:"출처: [22](느슨한 대응 — 간다라·마투라 양식 비교 세부는 미검증)" },
         { text:"로댕의 생각하는 사람은 근육질의 단단한 면으로, 그 힘든 마음 자체를 표현했습니다.",
-          wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin' },
-        { text:"서로 다른 길을 걸었지만, 두 조각상 모두 깊이 사유하는 인간의 몸짓이라는 점에서는 같습니다.", wide:'both' },
-        { text:"지금 손이 닿는 곳에는, 두 조각상의 복제품이 놓여 있습니다.", wide:'both' },
-        { text:"왼쪽은 로댕, 오른쪽은 반가사유상 — 여기 전시된 로댕과 반가사유상은 실물보다 작은 크기입니다.", wide:'both' },
-        { text:"이어지는 이야기를 들으며, 두 손으로 편하게 전체 형태를 만져보셔도 좋습니다.", wide:'both' },
-        { text:"이제 두 조각상이 놓인 장면을, 전체에서 세부 순서로 들려드리겠습니다.", wide:'both' }
+          wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin', source:"저자 해석 — 출처 없음" },
+        { text:"서로 다른 길을 걸었지만, 두 조각상 모두 깊이 사유하는 인간의 몸짓이라는 점에서는 같습니다.", wide:'both', source:"저자 해석 — 출처 없음" },
+        { text:"지금 손이 닿는 곳에는, 두 조각상의 복제품이 놓여 있습니다.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"왼쪽은 로댕, 오른쪽은 반가사유상 — 여기 전시된 로댕과 반가사유상은 실물보다 작은 크기입니다.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"이어지는 이야기를 들으며, 두 손으로 편하게 전체 형태를 만져보셔도 좋습니다.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"이제 두 조각상이 놓인 장면을, 전체에서 세부 순서로 들려드리겠습니다.", wide:'both', source:"연출(전시 저작자)" }
     ]},
 { tag:'1단계 · Global — 전체 구도',
     lines:[
-        { text:"어둡고 고요한 전시실입니다.", wide:null },
-        { text:"금빛 조명 두 줄기가, 두 조각상만을 은은히 비추고 있습니다.", wide:'both' },
-        { text:"왼쪽엔 어두운 청동빛의 로댕, 오른쪽엔 짙은 금빛의 반가사유상이 앉아 있습니다.", wide:'both' },
+        { text:"어둡고 고요한 전시실입니다.", wide:null, source:"연출(전시 저작자)" },
+        { text:"금빛 조명 두 줄기가, 두 조각상만을 은은히 비추고 있습니다.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"왼쪽엔 어두운 청동빛의 로댕, 오른쪽엔 짙은 금빛의 반가사유상이 앉아 있습니다.", wide:'both', source:"연출(전시 저작자)" },
    
-        { text:"두 조각상은 같은 공간 안에, 나란히 놓여 있습니다.", wide:'both' },
-        { text:"멀리서 넓게 보면 두 조각상이 한 화면에 들어오고, 가까이 다가가면 각자의 표정이 따로 보이기 시작합니다.", wide:'both' },
-        { text:"공기는 무겁지 않고, 향 냄새가 옅게 감도는 듯 고요합니다.", wide:'both' }
+        { text:"두 조각상은 같은 공간 안에, 나란히 놓여 있습니다.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"멀리서 넓게 보면 두 조각상이 한 화면에 들어오고, 가까이 다가가면 각자의 표정이 따로 보이기 시작합니다.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"공기는 무겁지 않고, 향 냄새가 옅게 감도는 듯 고요합니다.", wide:'both', source:"연출(전시 저작자)" }
     ]},
 { tag:'2단계 · Focus — 자세와 위치',
     lines:[
-        { text:"왼쪽, 로댕의 생각하는 사람을 먼저 가까이서 보겠습니다.", wide:'rodin' },
+        { text:"왼쪽, 로댕의 생각하는 사람을 먼저 가까이서 보겠습니다.", wide:'rodin', source:"연출(전시 저작자)" },
         { text:"몸을 앞으로 깊이 웅크리고, 오른쪽 팔꿈치를 왼쪽 무릎에 괴고 있습니다.",
-          wide:'rodin', detail:{x:32, y:41.0}, speaker:'rodin' },
+          wide:'rodin', detail:{x:32, y:41.0}, speaker:'rodin', source:"관찰+연출; 로댕 뮤지엄 [35]" },
         { text:"구부린 손등이 턱을 떠받치고, 시선은 아래 대지를 향합니다.",
-          wide:'rodin', detail:{x:32, y:26.0}, speaker:'rodin' },
-        { text:"오른쪽, 반가사유상으로 건너가 가까이서 보겠습니다.", wide:'maitreya' },
+          wide:'rodin', detail:{x:32, y:26.0}, speaker:'rodin', source:"관찰+연출; 로댕 뮤지엄 [35]" },
+        { text:"오른쪽, 반가사유상으로 건너가 가까이서 보겠습니다.", wide:'maitreya', source:"연출(전시 저작자)" },
         { text:"오른발을 들어 왼쪽 무릎 위에 가만히 얹은, 반가 자세입니다.",
-          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya' },
+          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"관찰+연출; [22]" },
         { text:"뺨에 오른손 손가락 두 개가 살짝 닿아 있습니다.",
-          wide:'maitreya', detail:{x:72.5, y:25.5}, speaker:'maitreya' },
+          wide:'maitreya', detail:{x:72.5, y:25.5}, speaker:'maitreya', source:"관찰+연출; [22]" },
         { text:"두 조각상이 마주 선 사이, 비어 있는 침묵이 이 전시를 이끄는 무대가 됩니다.",
-          wide:'both', detail:{x:50, y:45.0}, speaker:'both', meeting:true }
+          wide:'both', detail:{x:50, y:45.0}, speaker:'both', meeting:true, source:"연출(전시 저작자)" }
     ]}
 ];
 
@@ -853,7 +853,8 @@ const DIALOGUE = [
     "눈썹을 찌푸리고 눈을 내리깔았습니다. 언젠가 죽는다는 두려움이 생각을 더 깊게 만듭니다.",
     "질문이 질문을 낳습니다. 그 질문들이 마음을 무겁게 누릅니다. 이 이마를 만지면, 밧줄처럼 거칠고 단단하게 느껴질 것입니다."
   ],
-  spots:[{x:32, y:30}, {x:32, y:15}]},
+  spots:[{x:32, y:30}, {x:32, y:15}],
+  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
 { speaker:'maitreya', label:'반가사유상', part:'머리',
   intro:"그 말에 반가사유상이, 자신의 얼굴로 화답합니다.",
   introSimple:"반가사유상이 이어서 이야기합니다.",
@@ -875,7 +876,7 @@ const DIALOGUE = [
     "모나리자는 정확한 비율과 계산으로 그려졌습니다. 반면 국보 83호 반가사유상은 깊은 생각과 종교적 마음을 표현하기 위해, 몸의 비율을 자유롭고 창의적으로 만들었습니다.",
     "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다. 이 얼굴에 귀를 대면, 먼 종소리처럼 조용한 울림이 들리는 듯합니다."
   ],
-  sources:["출처: [22, 26]", null, null, null, "출처: 전준엽 [37]", null, "출처: 전준엽 [37]"],
+  sources:["출처: [22, 26]", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "출처: 전준엽 [37]", "출처: 전준엽 [37]", "출처: 전준엽 [37]"],
   spots:[{x:75, y:30.0}, {x:75, y:25.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
   intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
@@ -888,7 +889,8 @@ const DIALOGUE = [
     "근육이 팽팽하게 당겨져 있습니다. 살아가는 것도 힘든 일이라는 뜻입니다.",
     "'나는 누구일까' 하는 질문이 몸을 긴장하게 만들었습니다. 이 근육을 만지면, 팽팽한 활시위처럼 뜨겁고 단단하게 느껴질 것입니다."
   ],
-  spots:[{x:21, y:40.0}, {x:23, y:45.0}]},
+  spots:[{x:21, y:40.0}, {x:23, y:45.0}],
+  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
 { speaker:'maitreya', label:'반가사유상', part:'몸통',
   intro:"반가사유상이, 고요한 상체로 화답합니다.",
   introSimple:"반가사유상이 몸통 이야기를 합니다.",
@@ -904,7 +906,7 @@ const DIALOGUE = [
     "학자 강우방은 이런 둥근 모양을 '원융과 조화'라고 불렀습니다. 각지지 않고 둥글게 어우러지는 아름다움입니다.",
     "황수영 박사는 이 아름다움을 처음 학문적으로 밝혀낸 학자입니다."
   ],
-  sources:[null, null, "출처: 강우방 [36]", "출처: 황수영 [26]"],
+  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "출처: 강우방 [36]", "출처: 황수영 [26]"],
   spots:[{x:74, y:43.0}, {x:76, y:45.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'다리',
   intro:"마지막으로 로댕이, 땅을 딛은 발의 사유를 건넵니다.",
@@ -919,7 +921,8 @@ const DIALOGUE = [
     "더 높이 오르고 싶어도, 우리는 땅을 떠날 수 없습니다. 발가락이 땅을 꽉 움켜쥐고 있습니다.",
     "우리가 만든 기술에 오히려 매인 오늘의 모습이, 이 무거운 발에 담겨 있습니다. 이 발을 만지면, 흙냄새 나는 거칠고 단단한 감촉이 느껴질 것입니다."
   ],
-  spots:[{x:22, y:67.0}, {x:23, y:67.0}, {x:25, y:67.0}]},
+  spots:[{x:22, y:67.0}, {x:23, y:67.0}, {x:25, y:67.0}],
+  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
 { speaker:'maitreya', label:'반가사유상', part:'다리',
   intro:"반가사유상이, 편안히 앉은 다리로 화답합니다.",
   introSimple:"반가사유상이 마지막으로 다리 이야기를 합니다.",
@@ -933,7 +936,8 @@ const DIALOGUE = [
     "'나'라는 틀을 벗어나면 마음이 자유로워집니다. 이 편안한 자세가 그 자유를 보여줍니다.",
     "가만히 멈출 때만 얻는 자유가 있습니다. 이 고요한 자세가 오랜 시간이 지나도 그 자유를 전합니다. 이 다리를 만지면, 따뜻한 비단처럼 가볍고 매끄럽게 느껴질 것입니다."
   ],
-  spots:[{x:73, y:51.0}, {x:73, y:51.0}, {x:73, y:51.0}]}
+  spots:[{x:73, y:51.0}, {x:73, y:51.0}, {x:73, y:51.0}],
+  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]}
 ];
 
 let phase = 'screen'; 
@@ -964,7 +968,7 @@ function toggleNarration(){
 let autoTimer = null;   
 let speechGen = 0;      
 const LINE_PAUSE_MS  = 1100;  // v49 — 참가자 요청: "자막이 빨리 지나간다." 문장이 끝난 뒤 다음 문장으로 넘어가기 전 여백을 700ms → 1100ms로 늘려 읽을 시간을 더 준다.
-const LAYER_PAUSE_MS = 800;   // v-page-pause-shorten — 참가자 요청: "자막 음성 재생이 끝나고 나서 몇 초 있다가 다음 페이지로 넘어가게 해달라. 지금은 인터벌이 너무 길다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 1300ms → 800ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 위 v49의 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
+const LAYER_PAUSE_MS = 350;   // v-page-pause-shorten-2 — 참가자 요청: "페이지 넘어가는 게 너무 늦다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 800ms → 350ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');
 const sourceEl = document.getElementById('source-tag');
@@ -1173,7 +1177,7 @@ function cycleSpeed(){
     const btn = document.getElementById('btn-speed');
     if(btn){
         btn.textContent = `속도 ${TTS_RATE}x`;
-        btn.setAttribute('aria-label', `말하기 속도, 현재 ${TTS_RATE}배`);
+        btn.setAttribute('aria-label', `속도 ${TTS_RATE}x, 현재 설정입니다`);
     }
     hapticPulse('turn');
     // 지금 읽던 문장이 있으면 같은 문장을 새 속도로 이어서 다시 읽는다.
