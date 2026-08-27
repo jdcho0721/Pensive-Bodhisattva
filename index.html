@@ -231,16 +231,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     white-space: nowrap;
 }
 #btn-easy-mode[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
-/* 접근성 — room2(전시실 2)와 동일한 이유로 추가: 이 화면도 자체
-   speechSynthesis로 해설을 읽어주는 동시에 자막을 aria-live로 갱신
-   하므로, 스크린리더(VoiceOver/TalkBack)를 켜고 쓰는 방문객은 자체
-   음성과 스크린리더 음성이 겹쳐 들릴 수 있다. 이 토글로 자체 음성만
-   끄면 자막 텍스트는 그대로 갱신되어 스크린리더가 대신 읽어준다. */
-#btn-voice-toggle{
-    height:44px; padding:0 14px; border-radius:22px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px); flex:0 0 auto;
-}
-#btn-voice-toggle[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -331,7 +321,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      30px)·크기(font-size .68rem, padding 7px 12px, min-height 32px)로
      통일한다. */
   #info-btn{ width:auto; height:auto; border-radius:30px; font-size:.68rem; padding:7px 12px; min-height:32px; flex-shrink:0; }
-  #btn-speed, #btn-easy-mode, #btn-voice-toggle{ height:auto; min-height:32px; font-size:.68rem; padding:7px 12px; letter-spacing:.02em; white-space:nowrap; flex-shrink:0; }
+  #btn-speed, #btn-easy-mode{ height:auto; min-height:32px; font-size:.68rem; padding:7px 12px; letter-spacing:.02em; white-space:nowrap; flex-shrink:0; }
 }
 
 
@@ -453,7 +443,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
       레이어 중 어떤 것이 최종적으로 이겨도 이 규칙이 항상 적용되도록
       보장하기 위해 의도적으로 사용했다. ══════════════════════════════════════════════════════ */
 
-/* 상단(ⓘ·속도·쉬운문장·자체음성 해설) — 항상 한 줄 */
+/* 상단(ⓘ·속도·쉬운문장) — 항상 한 줄 */
 #top-controls{
     flex-wrap:nowrap !important;
     gap:clamp(4px, 1.6vw, 8px) !important;
@@ -543,10 +533,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          보이게 했다 — 화면낭독기가 읽는 이름은 여전히 아래 aria-label
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
-    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 1.0x, 현재 설정입니다" data-tap-action="말하기 속도를 바꿉니다">속도 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" data-tap-action="쉬운 문장 모드를 전환합니다">쉬운 문장: 꺼짐</button>
-    <button class="btn" id="btn-voice-toggle" onclick="toggleNarration()" aria-pressed="false"
-        aria-label="자체 음성 해설, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체 음성 해설: 켜짐</button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장: 꺼짐</button>
 </div>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
@@ -948,22 +936,6 @@ let announcing = false;
 let isPaused = false;
 let pausedContext = null;
 let easyMode = false;
-// 접근성 — room2(전시실 2)와 동일한 이유로 추가한 자체 음성 해설
-// 끄기 토글. 꺼두면 speak()는 실제 소리를 내지 않고, 자막(aria-live)
-// 갱신 타이밍만 그대로 유지한다 — 아래 speak() 함수 참고.
-let narrationMuted = false;
-function toggleNarration(){
-    narrationMuted = !narrationMuted;
-    try{ window.speechSynthesis.cancel(); }catch(e){}
-    const btn = document.getElementById('btn-voice-toggle');
-    if(btn){
-        btn.textContent = narrationMuted ? '자체 음성 해설: 꺼짐' : '자체 음성 해설: 켜짐';
-        btn.setAttribute('aria-pressed', String(narrationMuted));
-        btn.setAttribute('aria-label', narrationMuted
-            ? '자체 음성 해설, 현재 꺼짐. 자막은 계속 화면에 표시되고 스크린리더로 읽힙니다.'
-            : '자체 음성 해설, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.');
-    }
-}
 
 let autoTimer = null;   
 let speechGen = 0;      
@@ -1175,15 +1147,26 @@ function cycleSpeed(){
     _speedIdx = (_speedIdx + 1) % SPEED_STEPS.length;
     TTS_RATE = SPEED_STEPS[_speedIdx];
     const btn = document.getElementById('btn-speed');
+    const announceText = `속도 ${TTS_RATE}x입니다`;
     if(btn){
         btn.textContent = `속도 ${TTS_RATE}x`;
-        btn.setAttribute('aria-label', `속도 ${TTS_RATE}x, 현재 설정입니다`);
+        btn.setAttribute('aria-label', announceText);
     }
     hapticPulse('turn');
-    // 지금 읽던 문장이 있으면 같은 문장을 새 속도로 이어서 다시 읽는다.
-    if(lastSpokenText){
-        speak(lastSpokenText, null, lastSpokenSpeaker);
-    }
+    // v-speed-announce-reliable — 참가자 보고: "처음 누를 때만 안내가
+    // 나오고, 그 다음부터는 버튼을 눌러도 음성이 안 나온다." 원인은
+    // speak()가 호출될 때마다 전역 lastSpokenText를 안내 문구로 덮어쓰고,
+    // 그 안내가 끝난 뒤 곧바로 그 값을 다시 speak()로 읽던 체이닝
+    // 구조였다 — speak()를 연달아 두 번 호출하는 패턴이 브라우저의
+    // 음성 재생 큐를 꼬이게 만들어, 이후 눌러도 소리가 나오지 않는
+    // 문제로 이어졌다. 이제는 매 클릭마다 안내 문구 하나만 딱 한 번
+    // speak()로 읽고, 원래 내레이션 재개용 lastSpokenText는 안내 전
+    // 값으로 그대로 되돌려 놓는다(버튼을 몇 번을 눌러도 항상 새로
+    // 안내되고, 내레이션의 "이어 듣기" 상태도 그대로 보존된다).
+    const prevText = lastSpokenText, prevSpeaker = lastSpokenSpeaker;
+    speak(announceText);
+    lastSpokenText = prevText;
+    lastSpokenSpeaker = prevSpeaker;
 }
 
 let lastSpokenText = '';
@@ -1244,15 +1227,6 @@ function speak(text, onEnd, speaker){
     lastSpokenText = text;
     lastSpokenSpeaker = speaker || null;
     const myGen = ++speechGen;
-    if(narrationMuted){
-        // 자체 음성은 재생하지 않는다(정보는 자막·aria-live로 이미
-        // 전달됨). 다른 로직(자동 진행 등)의 타이밍이 그대로 흘러가도록,
-        // 실제로 읽었을 때와 같은 추정 시간(estMs) 뒤에 onEnd만 호출한다.
-        try{ window.speechSynthesis.cancel(); }catch(e){}
-        const estMs = Math.max(2200, (text.length * 260) / TTS_RATE);
-        setTimeout(()=>{ if(myGen===speechGen && onEnd) onEnd(); }, estMs);
-        return;
-    }
     try{
         window.speechSynthesis.cancel();
         _ensureVoicesReady().then(()=>{
@@ -1533,11 +1507,18 @@ function toggleEasyMode(){
     btn.textContent = easyMode ? '쉬운 문장: 켜짐' : '쉬운 문장: 꺼짐';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
-    if(phase === 'dialogue' && !announcing){
-        dLineIdx = Math.max(-1, dLineIdx - 1); 
-        clearTimeout(autoTimer);
-        if(dLineIdx < 0){ playTurn(turnIdx); } else { playDialogueLine(); }
-    }
+    // v-easy-mode-announce-reliable — 참가자 보고: "처음 누를 때만 안내가
+    // 나오고, 그 다음부터는 안 나온다." 안내가 끝난 뒤 곧바로 현재
+    // 문장을 새 난이도로 다시 들려주는 체이닝(speak 안에서 다시 speak을
+    // 부르는 구조)이 브라우저의 음성 재생 큐를 꼬이게 만드는 원인이었다.
+    // 이제는 매 클릭마다 상태 안내 문구 하나만 딱 한 번 speak()로
+    // 읽는다 — 몇 번을 눌러도 항상 새로 안내된다. (문장을 새 난이도로
+    // 다시 들려주는 기능은 다음에 스스로 자막이 넘어갈 때 자연히 새
+    // 난이도로 반영된다.)
+    const prevText = lastSpokenText, prevSpeaker = lastSpokenSpeaker;
+    speak(easyMode ? '쉬운 문장으로 전환합니다.' : '원래 문장으로 돌아갑니다.');
+    lastSpokenText = prevText;
+    lastSpokenSpeaker = prevSpeaker;
 }
 
 function playTurn(i){

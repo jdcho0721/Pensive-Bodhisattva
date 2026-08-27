@@ -527,20 +527,6 @@ body.chat-open #chat-toggle{display:none;}
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 #easy-mode-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
-/* 접근성 수정 — 이 화면은 자체 window.speechSynthesis로 해설을 읽어주는
-   동시에 caption/focus-tag를 aria-live로도 갱신한다. 스크린리더
-   (VoiceOver/TalkBack)를 켜고 쓰는 사용자는 자체 음성 + 스크린리더가
-   같은 문장을 동시에 읽어 겹쳐 들릴 수 있다. 이 토글로 자체 음성만
-   끄면, 텍스트는 그대로 aria-live로 갱신되어 스크린리더가 대신
-   읽어준다 — 정보 손실 없이 이중 음성만 없앤다. */
-#voice-toggle-btn{
-    height:36px; padding:0 10px; border-radius:18px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
-}
-#voice-toggle-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
-#voice-toggle-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -637,10 +623,8 @@ body.chat-open #chat-toggle{display:none;}
 <!-- ── 작품·작가 소개 / 저작권 ── -->
 <div id="top-controls">
 <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-name="정보" data-tap-action="정보와 저작권 안내를 엽니다">ⓘ</button>
-<button id="speed-btn" onclick="cycleSpeed()" aria-label="말하기 속도, 현재 1.0배" data-tap-action="말하기 속도를 바꿉니다">1.0x</button>
-<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐" data-tap-action="쉬운 문장 모드를 전환합니다">쉬운 문장</button>
-<button id="voice-toggle-btn" onclick="toggleNarration()" aria-pressed="false"
-    aria-label="자체음성, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.">자체음성</button>
+<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">1.0x</button>
+<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
 </div>
 <!-- 웹 접근성: 챗봇 버튼을 여기(정보 버튼 바로 다음)로 옮겼다. 원래는
      11개 핫스팟 뒤에 있어서, 스크린리더로 화면을 순서대로 스와이프하는
@@ -1121,30 +1105,6 @@ const visited = new Set();
 let currentKey = null;
 
 // ── 쉬운 문장으로 듣기 — room1-intro-touch.html과 동일한 패턴.
-// 켜는 순간부터(그 이전에 이미 들은 설명은 소급 변경하지 않음) 부위별
-// 설명이 detailSimple(짧고 쉬운 문장)로 나간다. 챗봇 답변은 대상이 아니다
-// — 챗봇은 최근 논의를 거쳐 오히려 철학적 어휘를 허용하는 쪽으로 바꿨으므로
-// (DETAIL_SYSTEM_PROMPT 참고), 이 토글은 고정 낭독 문구에만 적용한다.
-// 접근성 수정 — 자체 TTS(speechSynthesis)와 스크린리더 음성이 겹쳐
-// 들리는 문제 대응용 토글. 꺼두면 speak()는 실제 소리를 내지 않고,
-// 화면의 caption/focus-tag(aria-live)만 갱신해 스크린리더가 대신
-// 읽게 한다 — 아래 speak() 함수 참고.
-let narrationMuted = false;
-function toggleNarration(){
-    narrationMuted = !narrationMuted;
-    try{ window.speechSynthesis.cancel(); }catch(e){}
-    const btn = document.getElementById('voice-toggle-btn');
-    if(btn){
-        // 라벨은 상태와 무관하게 "자체음성"으로 고정한다. 상태는
-        // aria-pressed(스크린리더용)와 강조색(시각)으로 전달된다.
-        btn.textContent = '자체음성';
-        btn.setAttribute('aria-pressed', String(narrationMuted));
-        btn.setAttribute('aria-label', narrationMuted
-            ? '자체음성, 현재 꺼짐. 자막은 계속 화면에 표시되고 스크린리더로 읽힙니다.'
-            : '자체음성, 현재 켜짐. 스크린리더를 함께 쓰고 있어 음성이 겹쳐 들린다면 꺼주세요.');
-    }
-}
-
 let easyMode = false;
 function toggleEasyMode(){
     easyMode = !easyMode;
@@ -1157,6 +1117,13 @@ function toggleEasyMode(){
         btn.setAttribute('aria-label', easyMode ? '쉬운 문장, 현재 켜짐' : '쉬운 문장, 현재 꺼짐');
     }
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
+    // v-easy-mode-announce-match — 참가자 요청: "쉬운 문장 버튼도 누르면
+    // 무엇으로 바뀌는지 바로 안내해달라." "이 버튼은 쉬운 문장 버튼입니다"
+    // 같은 이름 안내 없이, 바뀐 상태를 바로 말해준다. 내레이션 재개용
+    // _lastSpokenText가 이 안내 문구로 덮어써지지 않도록 되돌려 놓는다.
+    const prevText = _lastSpokenText;
+    speak(easyMode ? '쉬운 문장으로 전환합니다.' : '원래 문장으로 돌아갑니다.');
+    _lastSpokenText = prevText;
 }
 function _detailText(d){
     return (easyMode && d.detailSimple) ? d.detailSimple : d.detail;
@@ -1336,12 +1303,25 @@ function cycleSpeed(){
     _speedIdx = (_speedIdx + 1) % SPEED_STEPS.length;
     TTS_RATE = SPEED_STEPS[_speedIdx];
     const btn = document.getElementById('speed-btn');
+    const announceText = `속도 ${TTS_RATE}x입니다`;
     if(btn){
         btn.textContent = `${TTS_RATE}x`;
-        btn.setAttribute('aria-label', `말하기 속도, 현재 ${TTS_RATE}배`);
+        btn.setAttribute('aria-label', announceText);
     }
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
-    if(_lastSpokenText) speak(_lastSpokenText);
+    // v-speed-announce-reliable — 참가자 보고: "처음 누를 때만 안내가
+    // 나오고, 그 다음부터는 안 나온다." 원인은 speak()가 호출될 때마다
+    // 전역 _lastSpokenText를 안내 문구로 덮어쓰고, 안내가 끝난 뒤 곧바로
+    // 그 값을 다시 speak()로 읽던 체이닝 구조였다 — speak()를 연달아
+    // 두 번 호출하는 패턴이 브라우저의 음성 재생 큐를 꼬이게 만들어,
+    // 이후 눌러도 소리가 나오지 않는 문제로 이어졌다. 이제는 매
+    // 클릭마다 안내 문구 하나만 딱 한 번 speak()로 읽고, 원래 내레이션
+    // 재개용 _lastSpokenText는 안내 전 값으로 그대로 되돌려 놓는다(버튼을
+    // 몇 번을 눌러도 항상 새로 안내되고, 내레이션의 "이어 듣기" 상태도
+    // 그대로 보존된다).
+    const prevText = _lastSpokenText;
+    speak(announceText);
+    _lastSpokenText = prevText;
 }
 
 // v-caption-lag-fix — 참가자 요청: "자막이 너무 늦게 나온다." 이 추정치
@@ -1356,15 +1336,6 @@ const CHARS_PER_SEC_AT_1X = 7;     // 배속 1.0x 기준 대략적인 낭독 속
 
 function speak(text, onEnd){
     _lastSpokenText = text;
-    if(narrationMuted){
-        // 자체 음성은 재생하지 않는다(정보는 aria-live 텍스트로 이미
-        // 전달됨). 실제로 읽었을 때와 비슷한 시간만큼 뒤에 onEnd만 호출한다.
-        try{ window.speechSynthesis.cancel(); }catch(e){}
-        const charsPerSec = CHARS_PER_SEC_AT_1X * TTS_RATE;
-        const estMs = (text.length / charsPerSec) * 1000;
-        if(onEnd) setTimeout(onEnd, Math.max(estMs, 300));
-        return;
-    }
     try{
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
@@ -3060,7 +3031,7 @@ const PART_MEANINGS = {
         '존재가 뭐야|존재란|존재 뜻이 뭐야|존재가 무슨 말이야': '존재는 무언가가 지금 있다는 것, 살아 있다는 것 자체를 가리키는 말입니다. 이 전시의 두 조각상은 각자의 방식으로 인간이라는 존재가 짊어진 무게와 그로부터 놓여난 평온을 몸의 자세로 보여줍니다.',
         '근심이 뭐야|근심 뜻|근심이 무슨 말이야': '근심은 앞일이 걱정되어 마음이 편치 않은 상태를 뜻합니다. 반가사유상의 미소는 이런 근심을 내려놓은 뒤 찾아오는 평온한 마음을 표현한 것으로 해석됩니다.',
         '평온이 뭐야|평온 뜻|평온이 무슨 말이야': '평온은 근심이나 긴장 없이 고요하고 편안한 마음 상태를 뜻합니다. 반가사유상의 옅은 미소와 부드러운 곡선은 괴로운 마음을 내려놓은 뒤의 평온을 보여준다고 해석됩니다.',
-        '스크린리더가 뭐야|스크린리더 뜻|스크린리더가 무슨 말이야|스크린리더는 어떻게 써|스크린 리더가 뭐야': '스크린리더는 화면의 글자와 요소를 음성으로 읽어주어, 시각장애가 있는 사용자가 화면 내용을 들으며 이용할 수 있게 해주는 보조 프로그램입니다(예: VoiceOver, TalkBack). 이 전시는 스크린리더를 함께 쓰는 관람객을 위해, 스크린리더 음성과 전시의 자체 음성 해설이 겹쳐 들리지 않도록 자체음성 버튼을 따로 끌 수 있게 만들어졌습니다.',
+        '스크린리더가 뭐야|스크린리더 뜻|스크린리더가 무슨 말이야|스크린리더는 어떻게 써|스크린 리더가 뭐야': '스크린리더는 화면의 글자와 요소를 음성으로 읽어주어, 시각장애가 있는 사용자가 화면 내용을 들으며 이용할 수 있게 해주는 보조 프로그램입니다(예: VoiceOver, TalkBack). 이 전시의 음성 해설과 스크린리더 음성이 함께 겹쳐 들릴 수 있어, 스크린리더를 쓰는 동안에는 기기의 스크린리더 음성 안내를 조절해 이용해 주세요.',
         '로댕 생각하는 사람 몇살 때 만들었어|제작 당시 로댕 나이|제작 당시 로댕 나이 뭐야|제작 당시 로댕 나이 알려줘|제작 당시 로댕 나이 궁금해|제작 당시 로댕 나이 설명해줘|제작 당시 로댕 나이가 뭔지 궁금해|제작 당시 로댕 나이에 대해 알려줘|제작 당시 로댕 나이 뜻이 뭐야|제작 당시 로댕 나이 왜 그런거야|제작 당시 로댕 나이 무슨 의미야|제작 당시 로댕 나이 궁금한데': '로댕이 1880년경 지옥의 문을 구상하던 40대 초반 무렵 함께 만들어진 인물상에서 출발했습니다.',
         '생각하는 사람 청동 주조 방식|어떻게 만든 거야 제작기법|청동 주조 방식 뭐야|청동 주조 방식 알려줘|청동 주조 방식 궁금해|청동 주조 방식 설명해줘|청동 주조 방식가 뭔지 궁금해|청동 주조 방식에 대해 알려줘|청동 주조 방식 뜻이 뭐야|청동 주조 방식 왜 그런거야|청동 주조 방식 무슨 의미야|청동 주조 방식 궁금한데': '밀랍으로 원형을 뜬 뒤 그 위에 거푸집을 씌우고 청동을 부어 굳히는 전통적인 청동 주조 방식으로 제작됐습니다.',
         '왜 유명한 작품이 됐어|이렇게 유명해진 이유|전세계적으로 알려진 이유|생각하는 사람이 유명한 이유 뭐야|생각하는 사람이 유명한 이유 알려줘|생각하는 사람이 유명한 이유 궁금해|생각하는 사람이 유명한 이유 설명해줘|생각하는 사람이 유명한 이유가 뭔지 궁금해|생각하는 사람이 유명한 이유에 대해 알려줘|생각하는 사람이 유명한 이유 뜻이 뭐야|생각하는 사람이 유명한 이유 왜 그런거야|생각하는 사람이 유명한 이유 무슨 의미야': '힘들어하는 사람의 보편적 이미지를 근육의 긴장 하나로 압축해낸 조형성 덕분에, 오늘날까지 사유의 상징으로 가장 널리 알려진 조각 중 하나가 됐습니다.',
@@ -3136,7 +3107,7 @@ const PART_MEANINGS = {
         '존재가 뭐야|존재란|존재 뜻이 뭐야|존재가 무슨 말이야': '존재는 무언가가 지금 있다는 것, 살아 있다는 것 자체를 가리키는 말입니다. 이 전시의 두 조각상은 각자의 방식으로 인간이라는 존재가 짊어진 무게와 그로부터 놓여난 평온을 몸의 자세로 보여줍니다.',
         '근심이 뭐야|근심 뜻|근심이 무슨 말이야': '근심은 앞일이 걱정되어 마음이 편치 않은 상태를 뜻합니다. 반가사유상의 미소는 이런 근심을 내려놓은 뒤 찾아오는 평온한 마음을 표현한 것으로 해석됩니다.',
         '평온이 뭐야|평온 뜻|평온이 무슨 말이야': '평온은 근심이나 긴장 없이 고요하고 편안한 마음 상태를 뜻합니다. 반가사유상의 옅은 미소와 부드러운 곡선은 괴로운 마음을 내려놓은 뒤의 평온을 보여준다고 해석됩니다.',
-        '스크린리더가 뭐야|스크린리더 뜻|스크린리더가 무슨 말이야|스크린리더는 어떻게 써|스크린 리더가 뭐야': '스크린리더는 화면의 글자와 요소를 음성으로 읽어주어, 시각장애가 있는 사용자가 화면 내용을 들으며 이용할 수 있게 해주는 보조 프로그램입니다(예: VoiceOver, TalkBack). 이 전시는 스크린리더를 함께 쓰는 관람객을 위해, 스크린리더 음성과 전시의 자체 음성 해설이 겹쳐 들리지 않도록 자체음성 버튼을 따로 끌 수 있게 만들어졌습니다.',
+        '스크린리더가 뭐야|스크린리더 뜻|스크린리더가 무슨 말이야|스크린리더는 어떻게 써|스크린 리더가 뭐야': '스크린리더는 화면의 글자와 요소를 음성으로 읽어주어, 시각장애가 있는 사용자가 화면 내용을 들으며 이용할 수 있게 해주는 보조 프로그램입니다(예: VoiceOver, TalkBack). 이 전시의 음성 해설과 스크린리더 음성이 함께 겹쳐 들릴 수 있어, 스크린리더를 쓰는 동안에는 기기의 스크린리더 음성 안내를 조절해 이용해 주세요.',
         '왼발은 왜 내려놓았어|반가사유상 왼발 의미|내린 발이 뜻하는 것|왼발 뭐야|왼발 알려줘|왼발 궁금해': '가만히 내려놓은 왼발에는, 멈춰 있으면서도 언제든 다시 일어나 사람들에게 다가갈 수 있다는 마음이 담겨 있다고 해석됩니다.',
         '장신구가 왜 적어|왜 화려하지 않아|소박한 이유가 뭐야|장신구 적은 이유 궁금해|왜 꾸미지 않았어': '화려한 장식을 덜어낼수록 사람 본연의 품격이 더 잘 드러난다는 생각이 담겨 있다고 해석됩니다. 보관 외에는 몸에 걸친 장식이 거의 없습니다.',
         '왜 금빛이야|금박은 무슨 뜻|금동인 이유가 뭐야|금빛 의미|금박 의미 궁금해|금빛 의미가 뭐야|금빛 의미 뭐야|금박 의미 뭐야|금빛이 뜻하는 것|금빛의 의미': '표면의 은은한 금빛은 잘 익은 감처럼 따뜻하게 반짝이며, 단순한 장식이 아니라 변하지 않는 소중한 가치를 나타낸다고 여겨집니다.',
@@ -4825,7 +4796,7 @@ function _infoDialogKeydown(e){
    실행된다. 다른 버튼을 누르면 무장 상태가 그 버튼으로 옮겨간다.
    ══════════════════════════════════════════════════════ */
 const TWOTAP_ARM_WINDOW_MS = 2500;
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel';
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 
