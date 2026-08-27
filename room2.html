@@ -623,7 +623,7 @@ body.chat-open #chat-toggle{display:none;}
 <!-- ── 작품·작가 소개 / 저작권 ── -->
 <div id="top-controls">
 <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-name="정보" data-tap-action="정보와 저작권 안내를 엽니다">ⓘ</button>
-<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">1.0x</button>
+<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
 </div>
 <!-- 웹 접근성: 챗봇 버튼을 여기(정보 버튼 바로 다음)로 옮겼다. 원래는
@@ -1305,7 +1305,7 @@ function cycleSpeed(){
     const btn = document.getElementById('speed-btn');
     const announceText = `속도 ${TTS_RATE}x입니다`;
     if(btn){
-        btn.textContent = `${TTS_RATE}x`;
+        btn.textContent = `속도 ${TTS_RATE}x`;
         btn.setAttribute('aria-label', announceText);
     }
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
