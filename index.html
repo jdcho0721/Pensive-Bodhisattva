@@ -131,6 +131,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .btn.primary{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
 .btn.primary:hover{box-shadow:0 0 18px rgba(212,175,55,.5);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
+/* v-hearing-caption-parity — 접근성 최종 점검: 상단·하단 버튼을 훑어
+   찾거나(탐색) 뒤로·멈춤·전시2를 첫 번째로 눌렀을 때, 음성 안내만
+   나가고 화면엔 아무 표시가 없었다 — 소리를 들을 수 없는 관람객은
+   버튼이 "확인 대기" 상태인지 알 수 없었다. room2.html의 twotap-armed와
+   같은 방식으로 금빛 테두리를 둘러 시각적으로도 보여준다. */
+.btn.control-armed{outline:3px solid var(--gold); outline-offset:2px; box-shadow:0 0 14px 2px rgba(212,175,55,.55);}
 
 #intro-gate{position:fixed; inset:0; z-index:50; background:#000; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:36px; text-align:center; padding:32px;}
@@ -507,6 +513,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption-tag, #source-tag{ font-size:clamp(0.68rem, 2.2vw, 0.78rem) !important; }
 #speaker-tag{ font-size:clamp(0.7rem, 2.4vw, 0.82rem) !important; }
 
+/* v-hearing-caption-parity — 접근성 최종 점검: 전정기관 장애나 어지럼증에
+   민감한 사용자를 위해, 배경·스팟·자막의 부드러운 페이드 전환도
+   운영체제의 "동작 줄이기" 설정을 존중하도록 한다. */
+@media (prefers-reduced-motion: reduce){
+    #stage, #mood-overlay, .spot-wide, .spot, #speaker-tag,
+    #stage-badge .dot::after, .btn, #skiplink{ transition:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -591,10 +605,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p>Human + Art + Technology의 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
 
         <h3>이용 방법</h3>
-        <p>관람 순서 화면에서 <b>전시실 1 · 조우</b> 버튼이나 화면 아무 곳이나 가볍게 두드리면 안내 음성이 나오고, 짧은 시간 안에 한 번 더 두드리면 실제로 시작됩니다.</p>
+        <p>관람 순서 화면에서 <b>전시실 1 · 조우</b> 버튼이나 화면 아무 곳이나 가볍게 두드리면 안내 음성이 나오고 버튼 테두리가 금빛으로 빛나며, 짧은 시간 안에 한 번 더 두드리면 실제로 시작됩니다.</p>
         <p>손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
         <p>화면 아래 <b>뒤로</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있고, 페이지를 넘기듯 왼쪽으로 쓸어넘기면 다음 이야기로, 반대로 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다.</p>
-        <p>화면 위쪽의 <b>속도</b> 버튼으로 내레이션 속도를 바꾸고, <b>쉬운 문장</b> 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다. <b>뒤로</b>·<b>멈춤</b>·<b>전시2</b> 버튼은 한 번 누르면 이름을 말해주고, 짧은 시간 안에 한 번 더 눌러야 실제로 실행됩니다.</p>
+        <p>화면 위쪽의 <b>속도</b> 버튼으로 내레이션 속도를 바꾸고, <b>쉬운 문장</b> 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다. <b>뒤로</b>·<b>멈춤</b>·<b>전시2</b> 버튼은 한 번 누르면 이름을 말해주고 테두리가 금빛으로 빛나며, 짧은 시간 안에 한 번 더 눌러야 실제로 실행됩니다.</p>
         <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
 
         <div class="copyright">
@@ -630,13 +644,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <span class="gate-route-item">전시장 2 · 사유와 체화</span>
     </div>
 
-    <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다. 화면을 두 번 탭하여 전시실 1  조우로 이동하세요.</p>
+    <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
 
 
-    <button class="btn primary" onclick="handleGateEntryTap()" aria-label="화면을 두 번 탭하여 전시실 1  조우로 이동하세요.">
+    <button class="btn primary" onclick="handleGateEntryTap()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
         전시실 1 · 조우
     </button>
-    
+    <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다.</p>
 </div>
 
 <style>
@@ -693,6 +707,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border-top: 1px solid rgba(212,175,55,.25);
 }
 
+.gate-hint {
+    font-size: 0.76rem;
+    color: #888;
+    margin-top: 12px;
+    word-break: keep-all;
+}
+
 #intro-gate .btn.primary {
     min-width: clamp(160px, 60vw, 280px);
     padding: clamp(11px, 3vw, 14px) clamp(20px, 6vw, 28px);
@@ -702,6 +723,18 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border: 1px solid #1a1a1a;
     border-top: 1px solid #444;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* v-hearing-caption-parity — 접근성 최종 점검: 첫 탭에서 안내 음성만
+   나가고 화면엔 아무 변화가 없었다 — 소리를 들을 수 없는 관람객은
+   버튼이 "확인 대기" 상태로 바뀐 것을 알 방법이 없어, 왜 한 번 더
+   눌러야 하는지 모른 채 헤맬 수 있었다. room2.html의 twotap-armed와
+   같은 방식으로, 첫 탭 뒤 짧은 시간 동안 버튼에 금빛 테두리를 둘러
+   "한 번 더 누르면 입장" 상태를 시각적으로도 보여준다. */
+#intro-gate .btn.primary.gate-armed {
+    outline: 3px solid var(--gold);
+    outline-offset: 3px;
+    box-shadow: 0 0 16px 3px rgba(212,175,55,.6), 0 4px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.25);
 }
 
 </style>
@@ -996,12 +1029,19 @@ let _gateArmedAt = 0;
 // 탭은 항상 입장으로 이어져야 하므로 이 경우엔 시간 만료를 두지 않는다.
 let _gateArmedNoExpiry = false;
 const GATE_CONFIRM_MS = 1500;
+function _setGateArmedVisual(on){
+    try{
+        const btn = document.querySelector('#intro-gate .btn.primary');
+        if(btn) btn.classList.toggle('gate-armed', !!on);
+    }catch(err){}
+}
 function _tryArrivalMessage(){
     if(_arrivalMessageConsumed) return false;
     _arrivalMessageConsumed = true;
     _gateArmed = true;
     _gateArmedAt = Date.now();
     _gateArmedNoExpiry = true;
+    _setGateArmedVisual(true);
     try{ speak('침묵의 공명 제1전시 조우입니다. 화면의 아무곳이나 터치하면 바로 시작됩니다.'); }catch(err){}
     return true;
 }
@@ -1026,6 +1066,7 @@ function handleGateEntryTap(){
         // 두 번째로 눌렀다 — 실제로 입장한다.
         _gateArmed = false;
         _gateArmedNoExpiry = false;
+        _setGateArmedVisual(false);
         try{ hapticPulse('stage'); }catch(err){}
         speak('전시실 1로 입장합니다.', enterRoom);
         return;
@@ -1034,6 +1075,7 @@ function handleGateEntryTap(){
     _gateArmed = true;
     _gateArmedAt = now;
     _gateArmedNoExpiry = false;
+    _setGateArmedVisual(true);
     try{ hapticPulse('turn'); }catch(err){}
     try{ speak(getGateButtonLabel()); }catch(err){}
 }
@@ -2041,6 +2083,18 @@ function goToRoom2(e) {
     // ── 버튼 영역 전용: "한 번 탭/클릭 = 이름 말하기(탐색)", "같은
     //    버튼을 2.5초 안에 한 번 더 = 실제로 실행"하는 상태 ──
     let armedControl = null, armedAt = 0;
+    // v-hearing-caption-parity — armedControl이 바뀔 때마다 이 함수 하나로
+    // CSS 클래스도 함께 갱신한다(청각장애인 관람객을 위한 시각적 "확인
+    // 대기" 표시 — 위 .control-armed 스타일 참고).
+    function setArmedControl(el){
+        if(armedControl && armedControl !== el){
+            try{ armedControl.classList.remove('control-armed'); }catch(err){}
+        }
+        armedControl = el;
+        if(el){
+            try{ el.classList.add('control-armed'); }catch(err){}
+        }
+    }
     const ARM_WINDOW_MS = 2500;
     // 손가락(또는 마우스)을 누른 채 훑을 때, 지나가는 버튼마다 이름을
     // 한 번씩 말해준다(같은 버튼 위에 머무는 동안 반복해서 말하지 않는다).
@@ -2101,7 +2155,7 @@ function goToRoom2(e) {
             lastExploredControl = controlInRegion;
             if(controlInRegion){
                 speakControlName(controlInRegion);
-                armedControl = controlInRegion;
+                setArmedControl(controlInRegion);
                 armedAt = Date.now();
             }
         }
@@ -2132,7 +2186,7 @@ function goToRoom2(e) {
                     const now = Date.now();
                     if(armedControl === landedControl && (now - armedAt) < NEXT_EXHIBIT_CONFIRM_MS){
                         // 빠르게 두 번째로 눌렀다 — 실제로 이동한다.
-                        armedControl = null;
+                        setArmedControl(null);
                         suppressNextClick = false; // 직전 눌렀을 때 걸어둔 억제가 아직
                                                     // 안 풀렸더라도, 이 click은 확실히
                                                     // 통과시킨다(경합 상태 방지).
@@ -2141,7 +2195,7 @@ function goToRoom2(e) {
                         return;
                     }
                     // 첫 번째 탭 — 아직 이동하지 않고 이름만 말해준다.
-                    armedControl = landedControl; armedAt = now;
+                    setArmedControl(landedControl); armedAt = now;
                     suppressNextClick = true;
                     speakControlName(landedControl);
                     setTimeout(function(){ suppressNextClick = false; }, 400);
@@ -2155,7 +2209,7 @@ function goToRoom2(e) {
                 // 전시2(TWO_PRESS_CONFIRM_IDS)는 위에서 예외 처리했다.
                 // 이전에 탐색 중이던 다른 버튼이 있었다면 그 상태는
                 // 무효화한다.
-                armedControl = null;
+                setArmedControl(null);
                 return;
             }
             if(!draggedFar && armedControl && dt < 600 &&
@@ -2164,7 +2218,7 @@ function goToRoom2(e) {
                 // 살짝 다시 두드렸다 — 방금 손끝으로 훑어 찾아낸 버튼을
                 // 실행한다.
                 const c = armedControl;
-                armedControl = null;
+                setArmedControl(null);
                 suppressNextClick = false; // 경합 상태 방지(위와 동일한 이유)
                 try{ hapticPulse('stage'); }catch(err){}
                 confirmAndActivate(c);
