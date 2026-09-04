@@ -1345,12 +1345,105 @@ function cycleSpeed(){
 // 올려, 실제 낭독 속도에 더 가깝게 맞췄다.
 const CHARS_PER_SEC_AT_1X = 7;     // 배속 1.0x 기준 대략적인 낭독 속도 추정치(자/초) — 문장별 자막 타이밍(_displaySentencesTimed)에 쓰인다.
 
-function speak(text, onEnd){
+// ══════════════════════════════════════════════════════
+// ── 화자별 목소리 특성 (index.html에서 이식) ──
+// 로댕은 실제 남성을 모델로 한 조각상이므로 남성처럼 들리는 목소리를
+// 배정하는 것이 근거가 있다. 반가사유상(미륵보살)은 도상학적으로 성별이
+// 뚜렷하지 않으므로 여성 목소리를 일부러 찾아 배정하지 않는다 — 대신
+// pitch를 살짝 높여 로댕과 구별만 되게 한다.
+// room2는 접근성을 위한 배속 조절(TTS_RATE, cycleSpeed)이 이미 있으므로,
+// 화자 프로필은 고정 rate 대신 "배율(rateMul)"로 둬서 사용자가 고른
+// 배속 위에 곱해지도록 한다 — 화자 목소리를 구별하면서도 배속 조절
+// 기능을 덮어쓰지 않는다.
+const VOICE_PROFILES_R2 = {
+    rodin:    { pitch: 0.90, rateMul: 0.94 },
+    maitreya: { pitch: 1.08, rateMul: 1.00 }
+};
+
+let _cachedVoicesR2 = null;
+let _voiceAssignmentR2 = null; // { rodin, maitreya, rodinConfident }
+let _voiceDiagnosticLoggedR2 = false;
+
+function _refreshVoiceCacheR2() {
+    try {
+        const v = window.speechSynthesis.getVoices();
+        if (v && v.length) {
+            _cachedVoicesR2 = v;
+            _voiceAssignmentR2 = null;
+            if (!_voiceDiagnosticLoggedR2) {
+                _voiceDiagnosticLoggedR2 = true;
+                const koList = v.filter(x => /^ko/i.test(x.lang));
+                console.log(`[TTS 음성 목록] 전체 ${v.length}개 중 한국어 ${koList.length}개 감지됨`);
+                koList.forEach(x => console.log(`  · ${x.name} (${x.lang})${x.localService ? ' [로컬]' : ' [온라인]'}`));
+            }
+        }
+    } catch (e) {}
+}
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+    _refreshVoiceCacheR2();
+    window.speechSynthesis.onvoiceschanged = _refreshVoiceCacheR2;
+}
+
+function _ensureVoiceAssignmentR2() {
+    if (_voiceAssignmentR2) return _voiceAssignmentR2;
+    if (!_cachedVoicesR2 || !_cachedVoicesR2.length) _refreshVoiceCacheR2();
+    const voices = _cachedVoicesR2 || [];
+    if (voices.length < 2) return null;
+
+    const koVoices = voices.filter(v => /^ko/i.test(v.lang));
+    if (koVoices.length < 2) return null; // 한국어 음성이 1개뿐이면 pitch/rate만으로 구별
+    const pool = koVoices;
+
+    // 브라우저/OS마다 한국어 음성 이름 표기가 제각각이다. 구글 계열
+    // 음성(Chrome/Android)은 "ko-KR-Wavenet-C/D", "ko-KR-Standard-C/D"처럼
+    // C·D 접미사가 남성인 경우가 많다(A·B는 여성).
+    const maleHint = pool.find(v =>
+        /male|man|남성|민수|현우|진호|영훈|준서|동현|지훈|석진|injoon|인준|jinho|yeongho|dongwon|jihun|seokjin|wavenet-[cd]|standard-[cd]/i.test(v.name)
+        && !/female|woman/i.test(v.name)
+    );
+    const knownFemale = /female|woman|여성|유나|지민|서현|heami|희애|sunhi|선히|yuna|seoyeon|서연|wavenet-[ab]|standard-[ab]/i;
+    const nonFemale = pool.find(v => !knownFemale.test(v.name));
+
+    const rodinVoice    = maleHint || nonFemale || pool[0];
+    const maitreyaVoice = pool.find(v => v !== rodinVoice) || pool[1];
+
+    _voiceAssignmentR2 = { rodin: rodinVoice, maitreya: maitreyaVoice, rodinConfident: !!maleHint };
+    return _voiceAssignmentR2;
+}
+
+// u(SpeechSynthesisUtterance)에 화자별 pitch·rate·voice를 적용한다.
+// baseRate는 사용자가 골라둔 현재 배속(TTS_RATE) — 화자 프로필은 이
+// 값을 대체하지 않고 곱해서, 배속 조절 기능과 화자 구별이 함께 작동한다.
+function _applyVoiceProfileR2(u, speakerKey, baseRate) {
+    const profile = VOICE_PROFILES_R2[speakerKey];
+    if (profile) {
+        u.pitch = profile.pitch;
+        u.rate  = baseRate * profile.rateMul;
+    }
+    const assignment = _ensureVoiceAssignmentR2();
+    // 이름으로 확실히 남성이라 확인된 음성을 못 구했을 때(assignment가 없거나
+    // 있어도 소거법으로 고른 불확실한 경우)는 pitch가 로댕을 남성처럼 들리게
+    // 하는 유일한 수단이므로, 이때만 더 낮은 pitch를 대신 적용한다.
+    if (speakerKey === 'rodin' && (!assignment || !assignment.rodinConfident)) {
+        u.pitch = 0.78;
+        u.rate  = baseRate * 0.90;
+    }
+    if (assignment && assignment[speakerKey]) {
+        u.voice = assignment[speakerKey];
+    }
+}
+
+function speak(text, onEnd, speakerKey){
     _lastSpokenText = text;
     try{
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang='ko-KR'; u.rate=TTS_RATE;
+        // v61.0: speakerKey('rodin'/'maitreya')가 있으면 화자별 pitch·rate·
+        // (가능하면) 실제 음성까지 적용한다 — 위 u.rate=TTS_RATE(사용자가
+        // 고른 배속) 다음에 와야, 배속은 유지한 채 그 위에 화자 배율만
+        // 곱해진다.
+        if (speakerKey) _applyVoiceProfileR2(u, speakerKey, TTS_RATE);
         // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
         // 문장 목록과 같은 텍스트라면, 브라우저가 실제로 보고하는 낭독 위치
         // (boundary 이벤트)로 자막 전환을 대신한다 — 위 _displaySentencesTimed
@@ -1514,6 +1607,10 @@ function _processTouch(key){
     // 좁혀 송출하도록 라우팅하면 된다.
     const d = DETAILS[key];
     if(!d) return;
+    // v61.0: 이 부위가 로댕 쪽인지 반가사유상 쪽인지에 따라 아래 speak()
+    // 호출에 화자 목소리(pitch/rate/가능하면 실제 음성)를 구별해 넘긴다 —
+    // updateStatueSound()가 배경음을 고를 때 쓰는 것과 같은 판정 기준이다.
+    const _speakerKey = (d.body === '로댕') ? 'rodin' : 'maitreya';
     currentKey = key;
     hapticPulse('confirm'); // 클릭이든 손 추적 dwell이든, 실제 해설이 시작되는 이 지점 하나로 수렴
     hapticZoneSync(key); // v-haptic-sync — confirm 직후 이어서, 부위 그룹 전용 리듬으로 "어느 존재의 어느 높이인지" 전달
@@ -1589,7 +1686,7 @@ function _processTouch(key){
             // DETAILS의 embody 필드 자체는 남겨두되(나중에 다시 쓸 수
             // 있도록), 낭독이 끝나면 곧바로 다음 단계로 넘어간다.
             _afterNarrationBranch(key, d, remainingAfterThis);
-        });
+        }, _speakerKey);
     };
 
     // 원래 startNarration 콜백 안에 있던 "다음 안내" 분기를 별도 함수로
@@ -1622,7 +1719,7 @@ function _processTouch(key){
         if(bridge){
             document.getElementById('caption').innerHTML = bridge;
             document.getElementById('source-tag').textContent = '';
-            speak(bridge, startNarration);
+            speak(bridge, startNarration, _speakerKey);
         } else {
             startNarration();
         }
@@ -1654,6 +1751,8 @@ function repeatCurrent(){
     document.getElementById(currentKey)?.classList.add('visited');
     document.getElementById(currentKey)?.classList.add('narrating');
     const sentence = d.focus + ' ' + _detailText(d);
+    // v61.0: 다시 듣기도 처음 들을 때와 같은 화자 목소리를 써야 한다.
+    const _speakerKey = (d.body === '로댕') ? 'rodin' : 'maitreya';
     // v-one-sentence-per-screen — 참가자 요청: "해설은 한 페이지에 한
     // 문장씩만 보이게 해줘." 다시 듣기도 처음 들을 때와 똑같이 문장
     // 단위로 자막을 갈아 끼운다 — 예전엔 음성만 처음부터 다시 재생되고
@@ -1664,7 +1763,7 @@ function repeatCurrent(){
         document.getElementById(currentKey)?.classList.remove('visited');
         document.getElementById(currentKey)?.classList.remove('narrating');
         document.getElementById(currentKey)?.classList.add('explored');
-    });
+    }, _speakerKey);
 }
 
 /* v2 — 6.3절 표3 감사 대응: '기억 회상(Recall) 지원'(△) 보완. 별도의
@@ -3421,8 +3520,8 @@ function _renderPhilosophyAnswer(item){
     pushLog('ai', text);
     _chatAnswerActive = true;
     speak(item.rodin, ()=>{
-        speak(item.maitreya, ()=>{ _chatAnswerActive = false; });
-    });
+        speak(item.maitreya, ()=>{ _chatAnswerActive = false; }, 'maitreya');
+    }, 'rodin');
 }
 
 
