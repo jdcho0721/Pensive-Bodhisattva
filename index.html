@@ -803,6 +803,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
 <div id="controls" role="group" aria-label="재생 제어">
     <button class="btn" id="btn-back" onclick="onBackClick()" data-tap-action="이전 내용으로 돌아갑니다">뒤로</button>
+    <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 버튼입니다." data-tap-action="다음 이야기로 넘어갑니다">다음</button>
     <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
     <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시2 버튼입니다." data-tap-action="전시실 2로 이동합니다">전시2</button>
 </div>
@@ -1311,6 +1312,19 @@ function _ensureVoicesReady(){
     });
     return _voicesReadyPromise;
 }
+// v-tts-naturalness — 기계적인 TTS 음성이 몰입을 방해한다는 평가에 따른
+// 개선. 지금까지는 u.voice를 전혀 지정하지 않아 브라우저 기본 한국어
+// 음성(대부분 로봇처럼 들림)을 그대로 썼다. Edge 등 일부 브라우저가 함께
+// 제공하는 "Online (Natural)"·Wavenet류 신경망 음성이 있으면 최우선으로
+// 골라 훨씬 자연스러운 낭독을 들려준다. 신경망 음성이 없으면 기존과
+// 동일하게 첫 번째 한국어 음성(또는 브라우저 기본값)을 그대로 쓴다.
+function _pickBestKoreanVoice(){
+    const voices = window.speechSynthesis.getVoices() || [];
+    const koVoices = voices.filter(v => /^ko/i.test(v.lang));
+    if(!koVoices.length) return null;
+    const neural = koVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
+    return neural || koVoices[0];
+}
 function speak(text, onEnd, speaker){
     lastSpokenText = text;
     lastSpokenSpeaker = speaker || null;
@@ -1323,6 +1337,8 @@ function speak(text, onEnd, speaker){
             if(myGen !== speechGen) return; // 그 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'ko-KR';
+            const _bestVoice = _pickBestKoreanVoice();
+            if(_bestVoice) u.voice = _bestVoice;
             if(speaker==='rodin'){ u.rate = TTS_RATE; u.pitch = 0.90; }
             else if(speaker==='maitreya'){ u.rate = TTS_RATE; u.pitch = 1.08; }
             else { u.rate = TTS_RATE; u.pitch = 1.0; }
