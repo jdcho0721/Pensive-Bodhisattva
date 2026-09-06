@@ -678,15 +678,17 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 }
 @keyframes yeoilBreathe{ 0%,100%{ opacity:.72; transform:scale(1); } 50%{ opacity:1; transform:scale(1.045); } }
 #yeoil-text{ color:#ccc; font-size:.95rem; line-height:1.95; max-width:380px; word-break:keep-all; }
-#yeoil-sub{ color:var(--gold-light); font-size:.76rem; letter-spacing:.1em; margin-top:30px; }
 /* v-yeoil-meaning-move — 참가자 요청으로 수료증에 있던 "여일(如一)은
    '한결같다'는 뜻으로..." 설명을 여기, 마음 비우기 화면의 마지막
    부분으로 옮겨왔다. 스타일은 옮겨오기 전 #certificate-card .cert-meaning과
    동일하게 맞췄다. */
 #yeoil-meaning{ color:#999; font-size:.74rem; line-height:1.6; max-width:320px; margin:14px auto 0; word-break:keep-all; }
 /* v-yeoil-manual-exit — 참가자 요청으로 자동 이동 타이머를 없애고,
-   대신 이 버튼을 눌러야만 전시실 1로 이동한다. */
-#btn-yeoil-continue{ margin-top:32px; }
+   대신 버튼을 눌러야만 이동한다.
+   v-yeoil-room-buttons — 참가자 요청: "아래 전시실1과 전시실2 버튼을
+   만들어줘." 전시실1은 index.html로 이동, 전시실2는 이 화면을 닫고
+   탐색으로 돌아간다(closeYeoilOverlay, 오른쪽 스와이프와 동일 동작). */
+#yeoil-actions{ display:flex; gap:10px; justify-content:center; margin-top:32px; }
 #copyright-tag{
     position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
@@ -791,9 +793,11 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <div id="yeoil-overlay" role="status" aria-live="polite">
     <div id="yeoil-glyph" aria-hidden="true">無</div>
     <div id="yeoil-text">생각을 내려놓습니다.<br>손끝의 감촉도, 들었던 이야기도<br>지금 이 순간 가만히 놓아둡니다.</div>
-    <div id="yeoil-sub">여일(如一) — 한결같은 자리로 돌아갑니다</div>
     <div id="yeoil-meaning"></div>
-    <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시실 1로 이동</button>
+    <div id="yeoil-actions">
+        <button class="btn" id="btn-yeoil-room2" onclick="closeYeoilOverlay()" aria-label="전시실 2로 돌아갑니다" data-tap-action="전시실 2로 돌아갑니다">전시실2</button>
+        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시실1</button>
+    </div>
 </div>
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
@@ -3063,6 +3067,17 @@ function beginYeoilExit(){
     // 나오고, 그 뒤 실제로 언제 떠날지는 전적으로 관람객이 아래
     // "전시실 1로 이동" 버튼을 눌러 스스로 정한다.
     speak(`이제, 마음을 비우고 돌아갑니다. ${meaningText}`);
+}
+
+// v-yeoil-room-buttons — 참가자 요청: "전시실2 버튼을 만들어줘", 그리고
+// "왼쪽에서 오른쪽으로 스와이프하면 이전 창으로 돌아가게 해줘." 둘 다
+// 같은 동작이다 — 마음 비우기 화면을 취소하고 원래 탐색 화면으로
+// 되돌아간다(닫기만 할 뿐 아무 곳으로도 이동하지 않는다).
+function closeYeoilOverlay(){
+    window.speechSynthesis.cancel();
+    const yeoil = document.getElementById('yeoil-overlay');
+    yeoil.classList.remove('visible');
+    yeoil.classList.remove('show');
 }
 
 /* ══════════════════════════════════════════════════════
@@ -5386,6 +5401,29 @@ function _infoDialogKeydown(e){
         if(isOwnControl(e.target)) return;
         closeInfo();
     });
+})();
+
+// v-yeoil-room-buttons — 참가자 요청: "여일 창에서 왼쪽에서 오른쪽으로
+// 스와이프하면 이전 창으로 돌아가게 해달라." #info-overlay의 스와이프
+// 닫기(v-info-exit-gestures)와 같은 원리 — 오른쪽 스와이프만 감지해
+// closeYeoilOverlay()를 부른다(탭/클릭 닫기는 여기서는 요청되지
+// 않았으므로 추가하지 않는다 — 화면의 두 버튼이 이미 명확한 종료
+// 수단이다).
+(function initYeoilOverlaySwipeBack(){
+    const overlay = document.getElementById('yeoil-overlay');
+    if(!overlay) return;
+    let startX = 0, startY = 0;
+    overlay.addEventListener('touchstart', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        startX = e.changedTouches[0].screenX;
+        startY = e.changedTouches[0].screenY;
+    }, { passive:true });
+    overlay.addEventListener('touchend', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        const dx = e.changedTouches[0].screenX - startX;
+        const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
+        if(dx > 60 && dyAbs < 60) closeYeoilOverlay(); // 오른쪽으로 스와이프 → 이전 화면으로
+    }, { passive:true });
 })();
 
 /* ══════════════════════════════════════════════════════
