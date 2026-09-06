@@ -4083,7 +4083,7 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 2. 그 다음 눈에 보이거나 만져지는 사실을 말하십시오.
 3. 참고 자료가 있을 때만, 그 범위 안에서 아주 짧은 사유적 여운(예: 힘든 마음과 따뜻한 마음의 대비) 한 문장을 마지막에 붙일 수 있습니다.
 [미시구조 — 문장 자체의 규칙]
-- 2문장 이내, 90자 내외의 짧고 완전한 문장만 쓰십시오. 한 문장에 여러 사실을 욱여넣지 마십시오.
+- 2~3문장 이내, 150자를 넘지 않는 짧고 완전한 문장만 쓰십시오. 한 문장에 여러 사실을 욱여넣지 마십시오.
 - "그것", "저것" 같은 지시대명사 대신 구체적인 명사를 쓰십시오.
 - 매번 같은 조각상·부위를 가리킬 때는 같은 용어를 일관되게 쓰십시오.
 - "사랑", "신비로운 감정"처럼 근거 없이 지어낸 감정적 해석이나 인생 조언, 개인적 위로는 하지 마십시오.
@@ -4107,7 +4107,7 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 
 // v-center-synthesis — 참가자 요청: "두 조각상의 가운데 서면, 지금까지
 // 만진 부분에 대한 종합적인 철학적 사유 내용을 2~3문장으로 들려줘." 위
-// DETAIL_SYSTEM_PROMPT는 부위 하나에 대한 사실 확인용(2문장·90자 내외,
+// DETAIL_SYSTEM_PROMPT는 부위 하나에 대한 사실 확인용(2~3문장·150자 이내,
 // "사실부터" 구조)이라 이 용도에는 너무 제한적이다. 여러 부위를 아우르는
 // 종합적 사유이므로 별도 시스템 프롬프트를 둔다 — 사실 왜곡 금지·마크다운
 // 금지·TTS 친화적 문장 같은 핵심 원칙은 그대로 가져오되, 분량과 어조만
@@ -4115,7 +4115,7 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 const CENTER_SYNTHESIS_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 관람객이 로댕의 '생각하는 사람'과 반가사유상 두 조각상에서 지금까지 만진 부위들이 아래에 주어집니다. 이를 아우르는 짧은 종합적 사유를 들려주십시오.
 
 [규칙]
-- 2~3문장, 전체 160자 내외로 간결하게 쓰십시오. 한 문장에 여러 생각을 욱여넣지 마십시오.
+- 2~3문장, 전체 150자를 넘지 않게 간결하게 쓰십시오. 한 문장에 여러 생각을 욱여넣지 마십시오.
 - 주어진 부위 설명에 이미 담긴 내용을 바탕으로 통합하십시오. 새로운 사실이나 인용, 인물을 지어내지 마십시오.
 - 개별 부위를 하나씩 나열하지 말고, 로댕 쪽과 반가사유상 쪽이 보여주는 대비나 공명을 짧게 묶어내십시오.
 - "사랑", "신비로운 감정"처럼 근거 없는 감정적 해석이나 인생 조언은 하지 마십시오.
@@ -4154,6 +4154,24 @@ function _stripMarkdownSymbols(text){
     // 마크다운 기호만 제거하고, 문장 내용 자체는 건드리지 않는다.
     return text.replace(/\*\*/g, '').replace(/[*#`]/g, '').replace(/__/g, '');
 }
+// v-answer-max-length — 참가자 요청: "LLM 응답의 길이를 최대 150자로
+// 해줘." 시스템 프롬프트(DETAIL_SYSTEM_PROMPT 등)에도 글자 수 지침을
+// 적어두지만, 소형 로컬 모델은 그 지침을 항상 정확히 지키지는 못한다
+// (위 주석 참고) — 그래서 프롬프트만 믿지 않고, 화면에 보여주기
+// 직전 코드 레벨에서 한 번 더 150자 상한을 강제한다. 문장 중간에서
+// 뚝 끊기지 않도록, 150자 이내에서 가장 마지막 완결 문장(.!?。？！로
+// 끝나는 지점)까지만 남기고 그 뒤는 자른다 — 그런 문장부호를 전혀
+// 못 찾으면(문장 하나가 150자를 훌쩍 넘는 드문 경우) 어쩔 수 없이
+// 글자 수 기준으로만 자른다.
+const MAX_ANSWER_CHARS = 150;
+function _capToMaxLength(text, maxLen){
+    if(text.length <= maxLen) return text;
+    const window = text.slice(0, maxLen);
+    const lastEnd = Math.max(window.lastIndexOf('.'), window.lastIndexOf('!'), window.lastIndexOf('?'),
+        window.lastIndexOf('。'), window.lastIndexOf('？'), window.lastIndexOf('！'));
+    if(lastEnd > 0) return window.slice(0, lastEnd + 1);
+    return window;
+}
 function _trimToCompleteSentence(text){
     const trimmed = text.trim();
     if(!trimmed) return trimmed;
@@ -4167,6 +4185,7 @@ function _trimToCompleteSentence(text){
 }
 function _cleanAIText(text, isFinal){
     let cleaned = _stripMarkdownSymbols(text);
+    cleaned = _capToMaxLength(cleaned, MAX_ANSWER_CHARS);
     if(isFinal) cleaned = _trimToCompleteSentence(cleaned);
     return cleaned;
 }
