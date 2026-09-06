@@ -643,11 +643,18 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 }
 #certificate-card .cert-sub{ color:var(--gold-light); font-size:.78rem; letter-spacing:.06em; margin-bottom:8px; }
 #certificate-card .cert-meaning{ color:#999; font-size:.74rem; line-height:1.6; max-width:280px; margin:0 auto 18px; word-break:keep-all; }
-#certificate-card .cert-stat{ font-size:2.1rem; color:var(--gold); font-weight:700; margin:10px 0 2px; font-family:'Cinzel Decorative',serif; }
+#certificate-card .cert-stat{ font-size:1.3rem; color:var(--gold); font-weight:700; margin:10px 0 2px; font-family:'Cinzel Decorative',serif; }
 #certificate-card .cert-stat-label{ color:#999; font-size:.78rem; margin-bottom:18px; }
 #certificate-card .cert-list{ text-align:left; margin:18px 0; }
 #certificate-card .cert-list h3{ color:var(--gold-light); font-size:.85rem; margin:14px 0 6px; border-bottom:1px solid var(--gold-dim); padding-bottom:4px; }
 #certificate-card .cert-list p{ margin:0 0 4px; color:#ccc; font-size:.85rem; }
+/* v-cert-chat-summary — 참가자 요청: "챗봇에 질문한 내용과 답변을
+   간략히 적어줘." cert-list(만난 부위 목록)와 같은 시각 언어를 그대로
+   따르되, 문답이라 좌측 정렬 목록으로 두고 Q/A를 구분해 보여준다. */
+#certificate-card .cert-chat-log{ text-align:left; margin:18px 0; }
+#certificate-card .cert-chat-log h3{ color:var(--gold-light); font-size:.85rem; margin:14px 0 6px; border-bottom:1px solid var(--gold-dim); padding-bottom:4px; }
+#certificate-card .cert-chat-log p{ margin:0 0 10px; color:#ccc; font-size:.78rem; line-height:1.5; word-break:keep-all; }
+#certificate-card .cert-chat-log p b{ color:var(--gold-light); }
 #certificate-card .cert-line{ margin-top:20px; padding-top:16px; border-top:1px solid var(--gold-dim); font-style:italic; color:#bbb; font-size:.85rem; }
 #certificate-card .cert-date{ margin-top:14px; font-size:.72rem; color:#888; }
 #certificate-actions{ display:flex; gap:8px; justify-content:center; margin-top:26px; flex-wrap:nowrap; }
@@ -677,6 +684,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    부분으로 옮겨왔다. 스타일은 옮겨오기 전 #certificate-card .cert-meaning과
    동일하게 맞췄다. */
 #yeoil-meaning{ color:#999; font-size:.74rem; line-height:1.6; max-width:320px; margin:14px auto 0; word-break:keep-all; }
+/* v-yeoil-manual-exit — 참가자 요청으로 자동 이동 타이머를 없애고,
+   대신 이 버튼을 눌러야만 전시실 1로 이동한다. */
+#btn-yeoil-continue{ margin-top:32px; }
 #copyright-tag{
     position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
@@ -727,7 +737,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <p>Human + Art + Technology의 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
 
         <h3>이용 방법</h3>
-        <p>"시작할께요"를 누르면 바로 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다).</p>
+        <p>"전시실2 체화"를 누르면 바로 시작됩니다(누르지 않아도 1분 뒤 자동으로 시작됩니다).</p>
         <p>화면 속 조각상에서 궁금한 부위를 손끝으로 짚으면(클릭·터치) 곧바로 그 부위에 대한 짧은 설명을 음성과 자막으로 들려드립니다 — 손끝으로 짚는 동작만은 예외적으로 한 번에 반응합니다.</p>
         <p>그 외 대부분의 버튼(<b>ⓘ</b>, <b>여일</b>, <b>마치기</b>, <b>💬</b> 등)은 처음 누르면 이름을 음성으로 말해주고 버튼 테두리가 금빛으로 빛나며, 같은 버튼을 몇 초 안에 한 번 더 누르면 실제로 실행됩니다. <b>속도</b>·<b>쉬운 문장</b> 버튼만 누르는 즉시 바로 실행됩니다.</p>
         <p>오른쪽 아래 <b>💬</b> 버튼을 누르면 '사유의 상담소' 챗봇이 열립니다. 미리 준비된 예상 질문 버튼을 탭하면 타이핑 없이 바로 물어볼 수 있고, 방금 만진 부위나 두 조각상에 대해 궁금한 점을 직접 입력해 자유롭게 물어볼 수도 있습니다.</p>
@@ -763,10 +773,11 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <div id="certificate-overlay" role="dialog" aria-modal="true" aria-label="탐색 수료증">
     <div id="certificate-card">
         <h2>수료증</h2>
-        <div class="cert-sub">여일(如一) · 두 조각상과의 대화</div>
+        <div class="cert-sub">침묵의 공명</div>
         <div class="cert-stat" id="cert-stat">0 / 11</div>
         <div class="cert-stat-label">곳을 손끝으로 만나셨습니다</div>
         <div class="cert-list" id="cert-list"></div>
+        <div class="cert-chat-log" id="cert-chat-log"></div>
         <div class="cert-line" id="cert-line"></div>
         <div class="cert-date" id="cert-date"></div>
         <div id="certificate-actions">
@@ -782,6 +793,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div id="yeoil-text">생각을 내려놓습니다.<br>손끝의 감촉도, 들었던 이야기도<br>지금 이 순간 가만히 놓아둡니다.</div>
     <div id="yeoil-sub">여일(如一) — 한결같은 자리로 돌아갑니다</div>
     <div id="yeoil-meaning"></div>
+    <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시실 1로 이동</button>
 </div>
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
@@ -791,7 +803,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <h1>침묵의 공명<br><span style="color:rgba(212,175,55,.7);">전시실 2 · 사유 및 체화 (몸으로 생각하기)</span></h1>
 
     <p> 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. <br>궁금한 것은 언제든 챗봇에게 물어보세요.</p>
-    <button class="btn primary" data-tap-action="전시실2로 입장합니다." onclick="event.stopPropagation();enterRoom()">시작할께요</button>
+    <button class="btn primary" data-tap-action="전시실2로 입장합니다." onclick="event.stopPropagation();enterRoom()">전시실2 체화</button>
 </div>
 
 
@@ -946,7 +958,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <div id="source-tag" aria-hidden="true"></div>
     </div>
     <div id="hint-row">
-        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 봅니다" data-tap-action="지금까지 만진 기록을 보여드립니다">나가기</button>
+        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 봅니다" data-tap-action="지금까지 만진 기록을 보여드립니다">수료증</button>
         <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="마음을 비우고 전시실 1로 돌아갑니다" data-tap-action="마음을 비우고 돌아갑니다">여일</button>
         <button class="btn primary" id="btn-finish" onclick="showCertificate(true)" style="display:none;" data-tap-action="수료증을 보여드립니다">마치기</button>
         <!-- v-exhibit1-nav — 참가자 요청: "언제든지 index.html로 넘어갈 수
@@ -1757,9 +1769,9 @@ function _processTouch(key){
         // 없앴다 — 관람객이 순서 힌트 없이 완전히 자유롭게 11곳을
         // 탐방한다. 열한 곳을 모두 만졌을 때의 완료 안내만 남겨둔다.
         if(remainingAfterThis.length === 0){
-            document.getElementById('caption').innerHTML = '열한 곳을 모두 만져보셨습니다. 아래 마치기 버튼을 누르면 바로 수료증으로 이동하고, 나가기 버튼을 눌러도 언제든 확인할 수 있습니다.';
+            document.getElementById('caption').innerHTML = '열한 곳을 모두 만져보셨습니다. 아래 마치기 버튼을 누르면 바로 수료증으로 이동하고, 수료증 버튼을 눌러도 언제든 확인할 수 있습니다.';
             document.getElementById('source-tag').textContent = '';
-            speak('이제 열한 곳을 모두 만져보셨습니다. 아래 마치기 버튼을 누르면 바로 수료증으로 이동하고, 나가기 버튼을 눌러도 언제든 확인할 수 있습니다.');
+            speak('이제 열한 곳을 모두 만져보셨습니다. 아래 마치기 버튼을 누르면 바로 수료증으로 이동하고, 수료증 버튼을 눌러도 언제든 확인할 수 있습니다.');
         }
     }
 
@@ -2900,6 +2912,46 @@ function showCertificate(isComplete){
     addSection('로댕 · 생각하는 사람', rodinDone);
     addSection('반가사유상', maitreyaDone);
 
+    // v-cert-chat-summary — 참가자 요청: "챗봇에 질문한 내용과 답변을
+    // 간략히 적어줘." 챗봇 로직 곳곳(지식베이스·회상·AI 스트리밍 등
+    // 여러 경로)을 따로 가로채는 대신, 이미 화면에 그려져 있는
+    // #chat-log를 그대로 읽어 Q(me)·A(ai) 쌍으로 묶는다 — 실제로 보여준
+    // 내용과 항상 정확히 일치하고, 답변이 스트리밍 도중 텍스트만 갱신되는
+    // 경로(생각하는 중… → 최종 답변)까지도 그 시점의 최종 텍스트를
+    // 그대로 반영한다.
+    const chatLogEl = document.getElementById('cert-chat-log');
+    if(chatLogEl){
+        chatLogEl.innerHTML = '';
+        const bubbles = Array.from(document.querySelectorAll('#chat-log > .me, #chat-log > .ai'));
+        const qaPairs = [];
+        let current = null;
+        bubbles.forEach(el => {
+            const text = el.textContent.trim();
+            if(!text) return;
+            if(el.classList.contains('me')){
+                current = { q: text, aParts: [] };
+                qaPairs.push(current);
+            } else if(current){
+                current.aParts.push(text);
+            }
+        });
+        if(qaPairs.length){
+            const h = document.createElement('h3'); h.textContent = '챗봇과 나눈 대화';
+            chatLogEl.appendChild(h);
+            qaPairs.forEach(pair => {
+                const qShort = _capToMaxLength(pair.q, 40);
+                const aShort = pair.aParts.length ? _capToMaxLength(pair.aParts.join(' '), 60) : '(답변 없음)';
+                const p = document.createElement('p');
+                const qLine = document.createElement('span'); qLine.innerHTML = '<b>Q.</b> ';
+                qLine.appendChild(document.createTextNode(qShort));
+                const aLine = document.createElement('span'); aLine.innerHTML = '<br><b>A.</b> ';
+                aLine.appendChild(document.createTextNode(aShort));
+                p.appendChild(qLine); p.appendChild(aLine);
+                chatLogEl.appendChild(p);
+            });
+        }
+    }
+
     const certLineText = (visited.size >= ORDER.length)
         ? '열한 곳을 모두 만나셨습니다.'
         : (remain > 0 ? `아직 ${remain}곳이 남아 있습니다. 다음에 다시 오시면 이어서 만나보실 수 있습니다.` : '열한 곳을 모두 만나셨습니다.');
@@ -3003,21 +3055,15 @@ function beginYeoilExit(){
     // 안에 겹쳐 불리면 이후 speak()가 소리 없이 실패하는 버그가 있어,
     // 여기서는 이 중복 cancel()을 빼고 speak() 자체의 cancel()에만
     // 맡긴다.
-    // v-yeoil-timing-fix — 문장 끝에 여일 설명이 추가로 길게 붙으면서,
-    // 기존처럼 고정된 5.2초 뒤 자동 이동하면 낭독이 채 끝나기도 전에
-    // 화면이 넘어가 버린다. speak()의 onEnd 콜백으로 "실제로 다 읽고
-    // 난 뒤"를 알아내 그 다음에만 이동하도록 바꿨다(낭독 속도·기기별
-    // 차이에 자동으로 맞춰진다). onEnd가 어떤 이유로든 불리지 않는
-    // 극히 드문 경우를 대비해, 별도의 넉넉한 안전장치 시간도 함께 둔다.
-    const navigateAway = () => { window.location.href = 'index.html'; };
-    clearTimeout(_yeoilExitTimer);
-    speak(`이제, 마음을 비우고 돌아갑니다. ${meaningText}`, ()=>{
-        clearTimeout(_yeoilExitTimer);
-        _yeoilExitTimer = setTimeout(navigateAway, 1800); // 낭독이 끝난 뒤 잠시 머무는 여백
-    });
-    _yeoilExitTimer = setTimeout(navigateAway, 17000); // 안전장치 — onEnd 미호출 대비
+    // v-yeoil-manual-exit — 참가자 요청: "수료증에 있는 나가기 버튼을
+    // 누르면 자막·음성해설을 끝까지 해주고, 타이머로 전시실1로 자동
+    // 이동시키지 말고 버튼을 눌러야 이동하게 해달라." 예전엔 낭독이
+    // 끝난 뒤 자동으로(또는 onEnd 미호출 대비 안전장치로) 강제 이동
+    // 시켰는데, 그 타이머를 전부 없앴다 — 해설은 끊기지 않고 끝까지
+    // 나오고, 그 뒤 실제로 언제 떠날지는 전적으로 관람객이 아래
+    // "전시실 1로 이동" 버튼을 눌러 스스로 정한다.
+    speak(`이제, 마음을 비우고 돌아갑니다. ${meaningText}`);
 }
-let _yeoilExitTimer = null;
 
 /* ══════════════════════════════════════════════════════
    사유의 상담소 — 지식베이스(퍼지 매칭) + 로컬 LLM 폴백 챗봇.
@@ -5253,7 +5299,7 @@ function openInfo(){
     // 않았는지) 확인해, 닫힌 뒤에는 다음 구간을 읽지 않는다.
     const introSpeech = '작품 소개입니다. 작품명은 침묵의 공명, 사유 및 체화입니다. 이 전시는 두 개의 조각상, 금동미륵보살반가사유상과 로댕의 생각하는 사람을 나란히 놓아 힘든 마음과 따뜻한 마음이라는 두 가지 태도를 비교합니다. 반가사유상은 부드러운 곡선으로 괴로운 마음을 내려놓은 편안함을, 생각하는 사람은 긴장한 근육으로 사람이 살아가며 짊어진 무거운 마음을 표현합니다. 두 조각상 모두 고개를 숙이고 손을 얼굴 가까이 둔 자세로, 이는 사유와 명상을 상징하는 공통된 조형 언어입니다. 금동미륵보살반가사유상은 삼국시대, 6세기에서 7세기 무렵 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 제작자는 삼국시대 장인으로 추정될 뿐, 이름은 전해지지 않습니다. 생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년경 지옥의 문 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.';
     const artistSpeech = "'침묵의 공명' 작가 소개입니다. 조준동은 성균관대학교 전자전기공학부 명예교수입니다. 성균관대학교에서 전자공학을 전공하고, 뉴욕 폴리테크닉 대학교에서 컴퓨터공학 석사를, 노스웨스턴 대학교에서 컴퓨터공학 박사 학위를 받았습니다. 성균관대학교 일반대학원 휴먼아이씨티융합학과를 창설했으며, 인간과 컴퓨터의 상호작용과 멀티모달 인터페이스 개발에 관심을 갖고, 인문학과 예술, 기술을 결합한 휴마톨로지라는 개념을 창안하여 디지털 인터랙티브 아트 작품을 제작하고 있습니다.";
-    const usageSpeech = "이용 방법입니다. 시작할께요를 누르면 바로 시작되고, 누르지 않아도 1분 뒤 자동으로 시작됩니다. 화면 속 조각상에서 궁금한 부위를 손끝으로 짚으면 곧바로 그 부위에 대한 짧은 설명을 음성과 자막으로 들려드립니다. 그 외 대부분의 버튼은 처음 누르면 이름을 음성으로 말해주고, 같은 버튼을 몇 초 안에 한 번 더 누르면 실제로 실행됩니다. 속도와 쉬운 문장 버튼만 누르는 즉시 바로 실행됩니다. 오른쪽 아래 버튼을 누르면 사유의 상담소 챗봇이 열려, 궁금한 점을 자유롭게 물어볼 수 있습니다. 화면 아래 빈 공간을 옆으로 스와이프하거나 같은 부위를 다시 만지면 방금 들은 설명을 다시 들을 수 있습니다. 화면 아래 나가기 버튼을 누르면 언제든 지금까지 만난 기록을 수료증으로 확인할 수 있고, 열한 곳을 모두 만지면 마치기 버튼이 나타납니다. 여일 버튼을 누르면 수료증 없이 곧바로 마음을 비우고 처음 화면으로 돌아갑니다. 지금 보고 계신 이 안내창은 화면을 한 번 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.";
+    const usageSpeech = "이용 방법입니다. 전시실2 체화를 누르면 바로 시작되고, 누르지 않아도 1분 뒤 자동으로 시작됩니다. 화면 속 조각상에서 궁금한 부위를 손끝으로 짚으면 곧바로 그 부위에 대한 짧은 설명을 음성과 자막으로 들려드립니다. 그 외 대부분의 버튼은 처음 누르면 이름을 음성으로 말해주고, 같은 버튼을 몇 초 안에 한 번 더 누르면 실제로 실행됩니다. 속도와 쉬운 문장 버튼만 누르는 즉시 바로 실행됩니다. 오른쪽 아래 버튼을 누르면 사유의 상담소 챗봇이 열려, 궁금한 점을 자유롭게 물어볼 수 있습니다. 화면 아래 빈 공간을 옆으로 스와이프하거나 같은 부위를 다시 만지면 방금 들은 설명을 다시 들을 수 있습니다. 화면 아래 수료증 버튼을 누르면 언제든 지금까지 만난 기록을 수료증으로 확인할 수 있고, 열한 곳을 모두 만지면 마치기 버튼이 나타납니다. 여일 버튼을 누르면 수료증 없이 곧바로 마음을 비우고 처음 화면으로 돌아갑니다. 지금 보고 계신 이 안내창은 화면을 한 번 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.";
     function infoStillOpen(){
         const ov = document.getElementById('info-overlay');
         return !!(ov && ov.classList.contains('show'));
