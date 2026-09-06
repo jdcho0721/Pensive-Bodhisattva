@@ -813,7 +813,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <button class="btn" id="btn-back" onclick="onBackClick()" data-tap-action="이전 내용으로 돌아갑니다">뒤로</button>
     <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 버튼입니다." data-tap-action="다음 이야기로 넘어갑니다">다음</button>
     <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시2 버튼입니다." data-tap-action="전시실 2로 이동합니다">전시2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시2 버튼입니다." data-tap-action="전시실2로 이동합니다.">전시2</button>
 </div>
 </div>
 
@@ -2165,6 +2165,18 @@ function goToRoom2(e) {
         longPressFired = false; draggedFar = false;
         lastExploredControl = null;
         if(withinExcluded(downTarget)) return; // 버튼 영역은 아래 move/up에서 별도 처리
+        // v-gate-longpress-fix — 참가자 지적: "맨 첫 페이지의 전시실 1 조우
+        // 버튼은 어떨 때는 한 번 더 눌렀는데 실행이 안 되는 경우가 있다."
+        // 원인: 진입 화면(#intro-gate)의 버튼은 위 EXCLUDE_SELECTOR에 없어서
+        // 이 길게 누르기(일시정지) 타이머의 대상이 되는데, 손을 뗄 때까지
+        // 0.6초가 살짝만 넘어가도(터치 지연 등으로 종종 벌어짐) 아래
+        // longPressTimer가 먼저 발동해 suppressNextClick을 켜버린다.
+        // 진입 화면에서는 isGateShowing() 체크 덕분에 실제 일시정지 동작은
+        // 일어나지 않지만, 그 직후 발생하는 버튼의 진짜 클릭(두 번째 탭 —
+        // 실제 입장 확인)이 이 억제 플래그에 걸려 캡처 단계에서 통째로
+        // 막혀버렸다. 진입 화면에는 애초에 "길게 눌러 일시정지" 기능이
+        // 없으므로, 이 화면에서는 타이머 자체를 걸지 않는다.
+        if(isGateShowing()) return;
         longPressTimer = setTimeout(function(){
             longPressFired = true;
             suppressNextClick = true;
