@@ -293,7 +293,11 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    '쉬운 문장'과 같은 크기로." #easy-mode-btn(위 상단 컨트롤)과 정확히
    같은 값(height:36px, padding:0 10px, font-size:.66rem, radius:18px)
    으로 맞춰, 모바일에서 상단·하단 버튼이 시각적으로 완전히 통일되게
-   했다. */
+   했다.
+   v-yeoil-match-exhibit1-size — 참가자 요청: "전시1과 전시2 버튼 크기를
+   이전 화면들의 전시1과 같은 크기로 해줘." 여일(마음 비우기) 화면의
+   전시1·전시2 버튼(#yeoil-actions)도 이 규칙에 함께 넣어, #hint-row의
+   전시1 버튼과 항상 같은 크기를 쓰도록 했다. */
    
 @media (max-width: 768px) {
     /* v-root-cause-fix — 여기 있던 두 규칙(#stage background-position:
@@ -307,7 +311,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
        인라인 스타일로 그려지므로 그대로였고, hotspot만 밀렸다).
        #stage의 background-position 규칙도 JS 인라인 스타일에 항상
        덮어써지는 죽은 코드였다. 두 규칙 모두 제거한다. */
-    #hint-row .btn {
+    #hint-row .btn, #yeoil-actions .btn {
         height: 36px; 
         min-height: 36px; 
         font-size: .66rem; 
@@ -665,13 +669,19 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    돌아간다(자동 전환 — 조작을 더 요구하지 않는다). */
 #yeoil-overlay{
     position:fixed; inset:0; z-index:90; background:#000;
-    display:none; align-items:center; justify-content:center; flex-direction:column;
+    display:none; align-items:center; justify-content:safe center; flex-direction:column;
     text-align:center; padding:20px; opacity:0; transition:opacity 1.4s ease;
+    /* v-yeoil-overflow-fix — 참가자 보고: "화면 윗부분이 잘린다." 세로로
+       중앙 정렬(justify-content:center)된 콘텐츠가 뷰포트보다 길어지면
+       스크롤 수단이 없어 위쪽이 화면 밖으로 밀려 보이지 않았다.
+       overflow-y:auto로 스크롤 가능하게 하고, 'safe center'로 스크롤이
+       안 되는(구형) 브라우저에서도 최소한 시작 지점부터는 보이게 한다. */
+    overflow-y:auto;
 }
 #yeoil-overlay.show{display:flex;}
 #yeoil-overlay.visible{opacity:1;}
 #yeoil-glyph{
-    font-family:'Cinzel Decorative', serif; font-size:clamp(4.5rem, 22vw, 10rem); color:var(--gold);
+    font-family:'Cinzel Decorative', serif; font-size:clamp(3.2rem, 15vw, 6.5rem); color:var(--gold);
     text-shadow:0 0 40px rgba(212,175,55,.55), 0 0 100px rgba(212,175,55,.25);
     margin-bottom:26px; line-height:1; letter-spacing:.05em;
     animation: yeoilBreathe 4.5s ease-in-out infinite;
@@ -686,8 +696,13 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 /* v-yeoil-manual-exit — 참가자 요청으로 자동 이동 타이머를 없애고,
    대신 버튼을 눌러야만 이동한다.
    v-yeoil-room-buttons — 참가자 요청: "아래 전시실1과 전시실2 버튼을
-   만들어줘." 전시실1은 index.html로 이동, 전시실2는 이 화면을 닫고
-   탐색으로 돌아간다(closeYeoilOverlay, 오른쪽 스와이프와 동일 동작). */
+   만들어줘." 전시1은 index.html로 이동, 전시2는 이 화면을 닫고
+   탐색으로 돌아간다(closeYeoilOverlay, 오른쪽 스와이프와 동일 동작).
+   v-yeoil-btn-shrink — 참가자 요청: "버튼 크기를 반으로 줄여줘." (이후
+   "이전 화면들의 전시1과 같은 크기로 해달라"는 요청으로 되돌림 — 아래
+   #hint-row .btn과 같은 media query에 이 버튼도 포함시켜, 다른 화면의
+   전시1 버튼과 항상 같은 크기를 쓰도록 통일했다. 이 규칙 자체는 그래서
+   더 이상 필요 없다.) */
 #yeoil-actions{ display:flex; gap:10px; justify-content:center; margin-top:32px; }
 #copyright-tag{
     position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
@@ -795,8 +810,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div id="yeoil-text">생각을 내려놓습니다.<br>손끝의 감촉도, 들었던 이야기도<br>지금 이 순간 가만히 놓아둡니다.</div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
-        <button class="btn" id="btn-yeoil-room2" onclick="closeYeoilOverlay()" aria-label="전시실 2로 돌아갑니다" data-tap-action="전시실 2로 돌아갑니다">전시실2</button>
-        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시실1</button>
+        <button class="btn" id="btn-yeoil-room2" onclick="closeYeoilOverlay()" aria-label="전시실 2로 돌아갑니다" data-tap-action="전시실 2로 돌아갑니다">전시2</button>
+        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
@@ -2965,11 +2980,13 @@ function showCertificate(isComplete){
     document.getElementById('cert-date').textContent = now.toLocaleString('ko-KR',
         { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
 
-    // v48 — 완주 여부와 관계없이 도착지는 항상 같다(처음 화면). 문구만
-    // "여일로 마치기"와 "여일 — 나가기"로 살짝 구분해, 완주했을 때는
-    // 조금 더 마침의 느낌이 나도록 한다.
+    // v48 — 완주 여부와 관계없이 도착지는 항상 같다(처음 화면).
+    // v-cert-exit-label — 참가자 요청: "수료증 창 아래 '나가기' 버튼을
+    // 여일로 바꾸어줘." 이 버튼이 실제로 하는 일(beginYeoilExit, 마음
+    // 비우기 화면으로 이동)이 곧 "여일" 그 자체이므로, 이름을 그 행동과
+    // 맞춰 통일했다.
     const primaryBtn = document.getElementById('btn-cert-primary');
-    primaryBtn.textContent = isComplete ? '마음 비우고 나가기' : '나가기';
+    primaryBtn.textContent = isComplete ? '마음 비우고 여일' : '여일';
     primaryBtn.setAttribute('data-tap-action', '전시실 1로 이동합니다');
     primaryBtn.onclick = beginYeoilExit;
 
