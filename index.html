@@ -616,8 +616,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p>관람 순서 화면에서 <b>전시실 1 · 조우</b> 버튼이나 화면 아무 곳이나 가볍게 두드리면 안내 음성이 나오고 버튼 테두리가 금빛으로 빛나며, 짧은 시간 안에 한 번 더 두드리면 실제로 시작됩니다.</p>
         <p>손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
         <p>화면 아래 <b>뒤로</b> 버튼으로 방금 들은 설명을 다시 들을 수 있고, <b>다음</b> 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있고, 페이지를 넘기듯 왼쪽으로 쓸어넘기면 다음 이야기로, 반대로 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다.</p>
-        <p>화면 위쪽의 <b>속도</b> 버튼으로 내레이션 속도를 바꾸고, <b>쉬운 문장</b> 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다. <b>뒤로</b>·<b>멈춤</b>·<b>전시2</b> 버튼은 한 번 누르면 이름을 말해주고 테두리가 금빛으로 빛나며, 짧은 시간 안에 한 번 더 눌러야 실제로 실행됩니다.</p>
+        <p>화면 위쪽의 <b>속도</b> 버튼으로 내레이션 속도를 바꾸고, <b>쉬운 문장</b> 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다. <b>뒤로</b>·<b>전시2</b> 버튼은 한 번 누르면 이름을 말해주고 테두리가 금빛으로 빛나며, 짧은 시간 안에 한 번 더 눌러야 실제로 실행됩니다.</p>
         <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
+        <p>지금 보고 계신 이 안내창은 화면 아무 곳이나 한 번 가볍게 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.</p>
 
         <div class="copyright">
             <p><b>저작권 안내</b></p>
@@ -812,8 +813,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="controls" role="group" aria-label="재생 제어">
     <button class="btn" id="btn-back" onclick="onBackClick()" data-tap-action="이전 내용으로 돌아갑니다">뒤로</button>
     <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 버튼입니다." data-tap-action="다음 이야기로 넘어갑니다">다음</button>
-    <button class="btn" id="btn-pause" onclick="onPauseClick()">멈춤</button>
-    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시실 2버튼입니다." data-tap-action="전시실2로 입장합니다.">전시2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="이 버튼은 전시실2 버튼입니다." data-tap-action="전시실2로 이동합니다.">전시2</button>
 </div>
 </div>
 
@@ -997,7 +997,7 @@ const detailSpotEl = document.getElementById('detail-spot');
 const effectSvg = document.getElementById('effect-svg');
 const badgeDots = document.querySelectorAll('#stage-badge .dot');
 const eyebrowEl = document.getElementById('eyebrow');
-const btnPause = document.getElementById('btn-pause');
+const btnPause = document.getElementById('btn-pause'); // v-remove-pause-btn — 버튼 요소는 제거되어 null이 되며, 아래 참조는 모두 null 체크로 안전하게 처리한다.
 
 function onCaptionAreaClick(e){
     if(e.target.closest('#controls')) return;
@@ -1746,8 +1746,7 @@ function jumpToStage(targetIdx){
     // 그대로 자동 재생이 이어지게 둔다 — 대신 일시정지 중이었다면 확실히
     // 풀어준다.
     isPaused = false;
-    btnPause.textContent = '멈춤';
-    btnPause.classList.remove('primary');
+    if(btnPause){ btnPause.textContent = '멈춤'; btnPause.classList.remove('primary'); }
     clearTimeout(autoTimer);
     window.speechSynthesis.cancel();
     speechGen++;
@@ -1783,12 +1782,10 @@ function onPauseClick(){
         clearTimeout(autoTimer);
         window.speechSynthesis.cancel();
         pausedContext = { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
-        btnPause.textContent = '다시 시작';
-        btnPause.classList.add('primary');
+        if(btnPause){ btnPause.textContent = '다시 시작'; btnPause.classList.add('primary'); }
     } else {
         isPaused = false;
-        btnPause.textContent = '멈춤';
-        btnPause.classList.remove('primary');
+        if(btnPause){ btnPause.textContent = '멈춤'; btnPause.classList.remove('primary'); }
         if(!pausedContext){ playLayer(0); return; }
         phase = pausedContext.phase;
         layerIdx = pausedContext.layerIdx;
@@ -1954,7 +1951,26 @@ function openInfo(){
     // 모두 자동으로 읽으면 오히려 불편하므로, "작품 소개" 항목(작품명과
     // 두 조각상 소개)만 화면 문구와 똑같은 내용으로 읽어준다.
     const introSpeech = '작품 소개입니다. 작품명은 침묵의 공명, 조우, 만나기입니다. 이 전시는 두 개의 조각상, 금동미륵보살반가사유상과 로댕의 생각하는 사람을 나란히 놓아 힘든 마음과 따뜻한 마음이라는 두 가지 태도를 비교합니다. 반가사유상은 부드러운 곡선으로 괴로운 마음을 내려놓은 편안함을, 생각하는 사람은 긴장한 근육으로 사람이 살아가며 짊어진 무거운 마음을 표현합니다. 두 조각상 모두 고개를 숙이고 손을 얼굴 가까이 둔 자세로, 이는 사유와 명상을 상징하는 공통된 조형 언어입니다. 금동미륵보살반가사유상은 삼국시대, 6세기에서 7세기 무렵 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 제작자는 삼국시대 장인으로 추정될 뿐, 개별 작가의 이름은 전해지지 않습니다. 생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년경 지옥의 문 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.';
-    try{ speak(introSpeech); }catch(err){}
+    // v-info-voice-2 — 참가자 요청: "작가 소개와 사용법에도 음성해설을
+    // 넣어달라." 안내창이 계속 열려 있을 때만 다음 구간으로 이어지도록,
+    // 매 구간이 끝날 때마다 #info-overlay가 아직 열려 있는지(=닫기를
+    // 누르지 않았는지) 확인한다 — 관람객이 도중에 닫으면 그 뒤 구간은
+    // 말하지 않는다.
+    const artistSpeech = "'침묵의 공명' 작가 소개입니다. 기획과 연출을 맡은 조준동은 성균관대학교 전자전기공학부 명예교수입니다. 성균관대학교에서 전자공학을 전공하고, 뉴욕 폴리테크닉 대학교에서 컴퓨터과학 석사를, 노스웨스턴 대학교에서 컴퓨터과학 박사 학위를 받았습니다. 성균관대학교 일반대학원 휴먼아이씨티융합학과를 창설했으며, 인간과 컴퓨터의 상호작용, 유엑스 디자인, 멀티모달 인터페이스 개발에 관심을 갖고, 인문학과 예술, 기술을 결합한 휴마트올로지라는 개념을 창안하여 디지털 인터랙티브 아트 작품을 만들고 있습니다.";
+    const usageSpeech = '이용 방법입니다. 관람 순서 화면에서 전시실 1 조우 버튼이나 화면 아무 곳이나 가볍게 두드리면 안내 음성이 나오고, 짧은 시간 안에 한 번 더 두드리면 실제로 시작됩니다. 화면 아래 뒤로 버튼으로 방금 들은 설명을 다시 들을 수 있고, 다음 버튼을 누르거나 자막이 떠 있는 화면 아무 곳이나 가볍게 두드리면 다음 단계로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있고, 왼쪽으로 쓸어넘기면 다음 이야기로, 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위쪽의 속도 버튼으로 내레이션 속도를 바꾸고, 쉬운 문장 버튼으로 더 쉬운 문장으로 설명을 들을 수 있습니다. 뒤로와 전시2 버튼은 한 번 누르면 이름을 말해주고, 짧은 시간 안에 한 번 더 눌러야 실제로 실행됩니다. 지금 보고 계신 이 안내창은 화면을 한 번 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.';
+    function infoStillOpen(){
+        const ov = document.getElementById('info-overlay');
+        return !!(ov && ov.classList.contains('show'));
+    }
+    try{
+        speak(introSpeech, function(){
+            if(!infoStillOpen()) return;
+            speak(artistSpeech, function(){
+                if(!infoStillOpen()) return;
+                speak(usageSpeech);
+            });
+        });
+    }catch(err){}
 }
 function closeInfo(){
     try{ window.speechSynthesis.cancel(); }catch(e){}
@@ -1996,21 +2012,42 @@ function _infoDialogKeydown(e){
 // 여기서는 #info-overlay가 실제로 열려 있을 때, 그 안에서 일어난
 // 터치에만 반응하도록 범위를 좁혀 넣었다 — 다른 화면에서의 TalkBack
 // 스와이프 탐색에는 전혀 영향을 주지 않는다.
-(function initInfoOverlaySwipeClose(){
+// v-info-tap-close — 참가자 요청: "닫기 버튼을 일부러 찾지 않아도,
+// 화면을 한 번 터치하면 안내창에서 빠져나올 수 있게 해달라." 오른쪽
+// 스와이프에 더해, 큰 움직임 없이 짧게 한 번 두드리기만 해도(=스크롤
+// 하려고 길게 끌지 않은 경우) 그 자리에서 곧장 닫히게 했다. 다만
+// "닫기"·"참고문헌 보기" 버튼처럼 스스로 다른 동작을 하는 요소 위를
+// 두드렸을 때는 그 버튼의 원래 동작만 실행되도록 닫기 대상에서 뺐다.
+(function initInfoOverlayExitGestures(){
     const overlay = document.getElementById('info-overlay');
     if(!overlay) return;
-    let startX = 0, startY = 0;
+    let startX = 0, startY = 0, startTime = 0;
+    function isOwnControl(t){
+        return !!(t && t.closest && t.closest('#info-close, #refs-toggle-btn, #refs-list a'));
+    }
     overlay.addEventListener('touchstart', (e)=>{
         if(!overlay.classList.contains('show')) return;
         startX = e.changedTouches[0].screenX;
         startY = e.changedTouches[0].screenY;
+        startTime = Date.now();
     }, { passive:true });
     overlay.addEventListener('touchend', (e)=>{
         if(!overlay.classList.contains('show')) return;
         const dx = e.changedTouches[0].screenX - startX;
-        const dy = Math.abs(e.changedTouches[0].screenY - startY);
-        if(dx > 60 && dy < 60) closeInfo(); // 오른쪽으로 스와이프 → 닫기
+        const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
+        const dt = Date.now() - startTime;
+        if(dx > 60 && dyAbs < 60){ closeInfo(); return; } // 오른쪽으로 스와이프 → 닫기
+        if(Math.abs(dx) < 12 && dyAbs < 12 && dt < 600 && !isOwnControl(e.target)){
+            closeInfo(); // 짧게 한 번 두드리기 → 닫기
+        }
     }, { passive:true });
+    // PC(마우스) 사용자를 위한 동일 동작 — 카드 바깥이든 안이든 한 번
+    // 클릭하면 닫힌다(단, 위 두 버튼은 자기 동작을 그대로 유지).
+    overlay.addEventListener('click', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        if(isOwnControl(e.target)) return;
+        closeInfo();
+    });
 })();
 
 // v-two-press-nav — 참가자 요청: "다음전시 버튼은 한 번 누르면 '다음전시
@@ -2210,13 +2247,16 @@ function goToRoom2(e) {
         }
     }
 
-    // v-two-press-controls — 참가자 요청: "뒤로·멈춤·전시2 버튼도 누르면
+    // v-two-press-controls — 참가자 요청: "뒤로·전시2 버튼도 누르면
     // 음성 해설을 먼저 해주고, 한 번 더 눌러야 실행되게 해달라." 기존엔
     // 되돌릴 수 없는 화면 전환인 "전시2"(다음전시) 버튼만 예외적으로
-    // 항상 "안내 후 빠른 재확인" 절차를 거쳤다. 이제 뒤로·멈춤 버튼도
-    // 같은 목록에 넣어, 세 버튼 모두 첫 탭엔 이름만 안내하고 짧은 시간
+    // 항상 "안내 후 빠른 재확인" 절차를 거쳤다. 이제 뒤로 버튼도
+    // 같은 목록에 넣어, 두 버튼 모두 첫 탭엔 이름만 안내하고 짧은 시간
     // 안에 한 번 더 눌러야 실제로 실행되게 통일한다.
-    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-back', 'btn-pause'];
+    // v-remove-pause-btn — 멈춤 버튼(#btn-pause)은 화면에서 제거되었다.
+    // 화면을 길게 누르면 멈추고/다시 시작하는 제스처(onPauseClick)는
+    // 그대로 남아 있다.
+    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-back'];
     const NEXT_EXHIBIT_CONFIRM_MS = 1500;
     function isNextExhibitBtn(el){ return !!(el && TWO_PRESS_CONFIRM_IDS.includes(el.id)); }
 
