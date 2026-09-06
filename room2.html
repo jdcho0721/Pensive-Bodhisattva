@@ -5052,23 +5052,61 @@ async function _processChatAnswer(q){
     // 생성보다 앞서 확정된 근거로 제시돼야 한다).
     if (kgTriples.length) pushFactCheckLog(kgTriples);
     if (isUngroundedFactual) pushUnverifiedNoticeLog();
-    // v6 — 토큰이 오는 대로 "생각하는 중…" 자리를 실시간으로(해설창에서)
-    // 채운다. TTS는 스트리밍 도중이 아니라, 완전히 끝난 뒤 한 번만
-    // 재생한다 — 문장이 채 끝나기 전에 읽기 시작하면 되읽기·중간에
-    // 끊기는 문제가 생기기 때문이다(화면은 실시간, 음성은 완성 후라는
-    // 점에서 index.html과 같은 설계).
+    // v-stream-speak-sooner — 참가자 지적: "LLM 답변 음성해설이 자막보다
+    // 한참 뒤에 나온다." 기존엔(v6, 아래 그대로 남겨둔 comment 참고)
+    // 스트리밍 도중엔 화면 자막만 실시간으로 갱신하고, 음성은 전체
+    // 응답이 다 도착한 뒤 한 번에 speak()로 읽었다 — 문장이 스트리밍
+    // 중간에 계속 바뀌는 걸 피하려던 의도였지만, 그 대가로 자막은
+    // 바로 보이는데 음성은 한참 있다 시작되는 체감 지연이 생겼다.
+    // 이제 "완결된 문장"이 도착하는 즉시(아직 나머지가 스트리밍
+    // 중이더라도) 그 문장부터 순서대로 큐에 넣어 읽는다. 아직 문장
+    // 부호(.!?)로 끝나지 않은 마지막 조각은 다음 토큰에 계속 바뀔 수
+    // 있으므로, 완결되기 전까지는 큐에 넣지 않고 기다린다 — 그래서
+    // "되읽기·중간에 끊기는 문제"는 문장 단위에서는 여전히 일어나지
+    // 않는다.
+    let _spokenSentenceCount = 0;
+    const _speechQueue = [];
+    let _speakingQueue = false;
+    let _streamFullyDone = false;
+    _chatAnswerActive = true;
+    function _drainSpeechQueue(){
+        if(_speakingQueue || !_speechQueue.length){
+            if(!_speechQueue.length && _streamFullyDone) _chatAnswerActive = false;
+            return;
+        }
+        _speakingQueue = true;
+        const sentence = _speechQueue.shift();
+        speak(sentence, ()=>{
+            _speakingQueue = false;
+            _drainSpeechQueue();
+        });
+    }
+    function _queueNewCompleteSentences(text, isFinalCall){
+        const sentences = splitToSentences(text);
+        let readyCount = sentences.length;
+        if(!isFinalCall && readyCount > 0 && !/[.!?。？！]$/.test(sentences[readyCount - 1])){
+            readyCount -= 1; // 아직 문장부호로 안 끝난 마지막 조각은 더 기다린다
+        }
+        for(let i = _spokenSentenceCount; i < readyCount; i++){
+            _speechQueue.push(sentences[i]);
+        }
+        _spokenSentenceCount = Math.max(_spokenSentenceCount, readyCount);
+        if(isFinalCall) _streamFullyDone = true;
+        _drainSpeechQueue();
+    }
     const answer = await fetchDetailAI(contextLine + '관람객의 질문: ' + q, fullRagBlock, (partial) => {
         const shown = String(partial || '생각하는 중…');
         document.getElementById('caption').innerHTML = shown.replace(/\n/g, '<br>');
         aiBubble.textContent = shown;
         const log = document.getElementById('chat-log');
         log.scrollTop = log.scrollHeight;
+        _queueNewCompleteSentences(shown, false);
     });
-    showChatAnswerInCaption('사유의 상담소 — 답변', answer);
+    document.getElementById('focus-tag').textContent = '사유의 상담소 — 답변';
+    document.getElementById('source-tag').textContent = '';
     aiBubble.textContent = answer;
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
-    _chatAnswerActive = true;
-    speak(answer, ()=>{ _chatAnswerActive = false; }); // 다중양식 원칙 — 챗봇 답도 텍스트만이 아니라 음성으로 함께 전달한다.
+    _queueNewCompleteSentences(answer, true); // 다중양식 원칙 — 챗봇 답도 텍스트만이 아니라 음성으로 함께 전달한다.
 }
 
 /* sendChat()의 두 응답 경로(KB 즉답 / AI·RAG 폴백) 모두에서 공통으로
