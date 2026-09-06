@@ -3005,8 +3005,8 @@ let _yeoilExitTimer = null;
    ── 답변 우선순위(index.html의 KB→AI 릴레이 구조를 축약 적용):
         1순위: PART_MEANINGS 지식베이스를 퍼지 매칭으로 검색(오프라인,
                즉시 응답, 정확한 사실 문장을 그대로 반환).
-        2순위: 지식베이스에 없는 질문은 로컬 LLM(index.html과 동일한
-               LM Studio 엔드포인트, localhost:1234)에 "지금 만지고
+        2순위: 지식베이스에 없는 질문은 클라우드 Claude API(Vercel Edge
+               Function을 거쳐 호출, v-cloud-api 참고)에 "지금 만지고
                있는 부위"를 문맥으로 얹어 물어보고, 도슨트 톤의 짧은
                사실 설명만 받아온다(철학적 사유·인생 조언은 배제).
    ══════════════════════════════════════════════════════ */
@@ -3991,6 +3991,11 @@ function _formatCorpusBlock(passages){
 // 있으면 최우선으로 쓰고, 없으면 기존 ?llmhost(http, 같은 Wi-Fi 내
 // PC 직접 접속용)로, 그것도 없으면 location.hostname으로 자동 대체한다
 // — 세 방식 모두 안 쓰는 예전 상황과 100% 하위 호환된다.
+// v-cloud-api — 위 llmbase/llmhost 관련 설명은 이제 RAG_BASE(선택 사항인
+// 로컬 코퍼스 검색 서버, 8800번)에만 해당한다. 챗봇의 실제 응답을 만드는
+// LLM 쪽은 로컬 LM Studio를 완전히 걷어내고 Claude API용 Vercel Edge
+// Function을 바라보도록 바뀌었다 — 아래 CLAUDE_PROXY_BASE 정의와 그 주석을
+// 참고하십시오.
 function _resolveApiBase(paramName, port){
     const qs = new URLSearchParams(location.search);
     const explicitBase = qs.get(paramName); // 예: https://xxxx.ngrok-free.app (mixed content 회피용, 최우선)
@@ -3999,9 +4004,30 @@ function _resolveApiBase(paramName, port){
     return `http://${host}:${port}`; // 기존 방식(같은 Wi-Fi, http 페이지에서만 동작)
 }
 const RAG_BASE = _resolveApiBase('ragbase', 8800);
-const LLM_BASE = _resolveApiBase('llmbase', 1234);
 const RAG_ENDPOINT        = `${RAG_BASE}/rag/search`;
 const RAG_STATUS_ENDPOINT = `${RAG_BASE}/status`;
+
+// v-cloud-api — 참가자 요청: "로컬 LM Studio 의존을 없애고 클라우드 API로
+// 전환해줘." 챗봇의 실제 두뇌였던 로컬 LM Studio(포트 1234)를 없애고,
+// 대신 Anthropic Claude API를 대신 호출해주는 Vercel Edge Function(중계
+// 서버) 하나만 바라보게 바꿨다. 이 페이지는 정적 파일이라 Claude API
+// 키를 여기 직접 넣으면 "페이지 소스 보기"만으로 키가 그대로 유출된다
+// (전시장뿐 아니라 인터넷 누구나). 그래서 실제 키는 그 함수 안에만
+// 저장해두고(Vercel 환경 변수), 이 페이지는 그 함수의 https 주소만
+// 알면 된다 — LM Studio 때와 달리 이제 PC가 켜져 있을 필요도, 같은
+// 와이파이일 필요도, cloudflared 터널을 매번 새로 켤 필요도 없다.
+// (v-vercel-switch — 참가자 요청으로 Cloudflare Worker에서 Vercel Edge
+// Function으로 프록시를 교체했다. 동작 방식은 동일하고 엔드포인트
+// 경로만 /v1/messages에서 /api/messages로 바뀌었다.)
+// 배포 방법은 함께 드린 README_CLOUD_API.md를 참고하십시오. 배포한 뒤
+// 아래 주소를 실제 Vercel 프로젝트 주소로 바꿔주십시오(예:
+// https://room2-claude-proxy.vercel.app). 테스트 중 주소를 바꿔가며
+// 확인하고 싶다면 이전과 같은 방식으로 ?claudeproxy=... 쿼리
+// 파라미터로도 덮어쓸 수 있다.
+const CLAUDE_PROXY_BASE = (new URLSearchParams(location.search).get('claudeproxy')
+    || 'https://claude-proxy-ochre.vercel.app').replace(/\/+$/, '');
+const CLAUDE_PROXY_ENDPOINT = `${CLAUDE_PROXY_BASE}/api/messages`; // Vercel의 api/messages.js 파일이 이 경로로 자동 배포된다
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001'; // 빠르고 저렴한 모델 — 짧은 해설/문답에 적합
 
 // room2 진입 시 한 번 호출 — 연결 여부를 콘솔에만 조용히 남긴다(UI 비차단).
 async function checkRAGStatus(){
@@ -4214,13 +4240,13 @@ const SUMMARIZE_SYSTEM_PROMPT = `아래 문장이 너무 깁니다. 같은 의�
 - "물론입니다" 같은 서두 인사말이나 메타 발언 없이 요약문 본문만 곧바로 출력하십시오.`;
 async function _summarizeToLimit(text){
     try{
-        const response = await fetch(`${LLM_BASE}/v1/chat/completions`, {
+        const response = await fetch(CLAUDE_PROXY_ENDPOINT, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                model: "qwen2.5-1.5b-instruct",
+                model: CLAUDE_MODEL,
+                system: SUMMARIZE_SYSTEM_PROMPT,
                 messages: [
-                    { role: "system", content: SUMMARIZE_SYSTEM_PROMPT },
                     { role: "user", content: text }
                 ],
                 temperature: 0.2,
@@ -4230,7 +4256,10 @@ async function _summarizeToLimit(text){
         });
         if(!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
-        const summarized = data.choices?.[0]?.message?.content;
+        // Claude Messages API 응답 형식 — content는 블록 배열이고, 텍스트는
+        // 그 중 type:'text'인 블록의 text 필드에 들어있다(OpenAI의
+        // choices[0].message.content 같은 단일 문자열이 아니다).
+        const summarized = data.content?.find(b => b.type === 'text')?.text;
         if(summarized && summarized.trim()){
             const cleaned = _trimToCompleteSentence(_stripMarkdownSymbols(summarized.trim()));
             // 요약 재요청도 150자를 못 지켰다면(드문 경우), 안전하게 한 번 더 자른다.
@@ -4254,13 +4283,18 @@ async function _summarizeToLimit(text){
 async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     const fullPrompt = ragBlock ? (prompt + ragBlock) : prompt;
     const sysPrompt = systemPrompt || DETAIL_SYSTEM_PROMPT;
-    const response = await fetch(`${LLM_BASE}/v1/chat/completions`, {
+    // v-cloud-api — LM Studio(OpenAI 호환 /v1/chat/completions) 대신,
+    // Vercel Edge Function(api/messages.js)을 거쳐 Anthropic Claude
+    // Messages API를 부른다. system 프롬프트는 messages 배열 안이 아니라
+    // 최상위 system 필드로 따로 보낸다(Claude API의 요청 형식 — OpenAI와
+    // 다른 부분).
+    const response = await fetch(CLAUDE_PROXY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            model: "qwen2.5-1.5b-instruct",
+            model: CLAUDE_MODEL,
+            system: sysPrompt,
             messages: [
-                { role: "system", content: sysPrompt },
                 { role: "user", content: fullPrompt }
             ],
             temperature: 0.3,
@@ -4284,20 +4318,31 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
         buffer = events.pop() || '';
 
         for(const evt of events){
-            const line = evt.trim();
-            if(!line.startsWith('data:')) continue;
-            const payload = line.slice(5).trim();
-            if(payload === '[DONE]') continue;
-            try{
-                const json = JSON.parse(payload);
-                const delta = json.choices?.[0]?.delta?.content;
-                if(delta){
-                    rawText += delta;
-                    if(onUpdate) onUpdate(_cleanAIText(rawText.trim(), false));
+            // Claude의 SSE 이벤트는 "event: <종류>"와 "data: <JSON>" 두 줄로
+            // 이루어진다. 우리가 필요한 정보(종류·내용)는 JSON 쪽에 이미
+            // 다 들어있으므로("type" 필드), data: 줄만 골라 파싱하면 된다.
+            for(const rawLine of evt.split('\n')){
+                const line = rawLine.trim();
+                if(!line.startsWith('data:')) continue;
+                const payload = line.slice(5).trim();
+                if(!payload) continue;
+                try{
+                    const json = JSON.parse(payload);
+                    if(json.type === 'content_block_delta' && json.delta?.type === 'text_delta'){
+                        rawText += json.delta.text;
+                        if(onUpdate) onUpdate(_cleanAIText(rawText.trim(), false));
+                    } else if(json.type === 'error'){
+                        // 예: 과부하(overloaded_error) 등 — 재시도 대상으로 던진다.
+                        throw new Error(json.error?.message || 'Claude API 스트림 오류');
+                    }
+                }catch(parseErr){
+                    if(parseErr instanceof SyntaxError){
+                        // 조각이 애매하게 잘려 JSON 파싱이 실패하면 무시하고
+                        // 다음 read()에서 이어붙여 다시 시도한다.
+                    } else {
+                        throw parseErr; // 위에서 직접 던진 API 오류는 그대로 위로 전파한다.
+                    }
                 }
-            }catch(parseErr){
-                // 조각이 애매하게 잘려 JSON 파싱이 실패하면 무시하고 다음
-                // read()에서 이어붙여 다시 시도한다.
             }
         }
     }
@@ -4331,7 +4376,7 @@ async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
         }
     }
     console.error('AI 연결 오류(재시도 후에도 실패):', lastErr);
-    const fallback = '지금은 답을 찾지 못했어요. 전시를 운영하는 컴퓨터와 같은 Wi-Fi에 연결돼 있는지 확인해주세요.';
+    const fallback = '지금은 답을 찾지 못했어요. 인터넷 연결을 확인하고 잠시 후 다시 물어봐 주세요.';
     if(onUpdate) onUpdate(fallback);
     return fallback;
 }
