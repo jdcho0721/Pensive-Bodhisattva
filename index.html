@@ -208,9 +208,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     box-sizing: border-box; /* 패딩과 테두리가 너비에 포함되도록 설정 */
 }
 
-/* 2. 멈춤/다시 시작 버튼(#btn-pause)에 고정 크기(min-width) 부여 */
+/* 2. 멈춤/다시 시작 버튼(#btn-pause) — v-btn-tight 참고(아래 최종
+   레이어에서 min-width를 없애 폰트 크기에 맞춰 여백 없이 줄임) */
 #btn-pause {
-    min-width: 110px; /* "다시 시작" 글자가 들어가도 여유 있게 수용할 수 있는 최소 너비 설정 */
     white-space: nowrap; /* 글자가 줄바꿈되면서 크기가 왜곡되는 현상 방지 */
 }
 
@@ -487,8 +487,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     flex:0 0 auto !important;
     white-space:nowrap !important;
 }
+/* v-btn-tight — 참가자 요청: "멈춤 버튼도 폰트 크기에 맞춰 여백 없이
+   줄여달라." 기존엔 "다시 시작"(더 긴 글자)이 들어가도 버튼 크기가
+   안 바뀌도록 min-width(70~110px)로 여유 폭을 미리 잡아뒀었다 — 그
+   래서 "멈춤"(두 글자)일 때는 글자 양옆으로 빈 여백이 두드러져 보였다.
+   min-width를 없애 다른 버튼(뒤로·다음·전시2)과 똑같이 padding만큼만
+   너비를 차지하게 한다. 다만 이러면 "멈춤"↔"다시 시작"으로 바뀔 때
+   버튼 너비 자체가 살짝 달라질 수 있다 — 이전엔 그걸 막으려고 일부러
+   여유를 뒀던 것이니, 다시 필요해지면 이 규칙만 되돌리면 된다. */
 #btn-pause{
-    min-width:clamp(70px, 22vw, 110px) !important;
+    min-width:0 !important;
 }
 
 /* 4단계 점 — 화면 폭에 따라 부드럽게 줄어들고, 상단 버튼 줄과 절대
@@ -647,10 +655,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
 
 
-    <button class="btn primary" onclick="handleGateEntryTap()" aria-label="화면을 두 번 탭하여 전시실 1 · 조우 (만나기)로 이동하세요.">
+    <button class="btn primary" onclick="handleGateEntryTap()" aria-label="전시실 1 입장 버튼입니다.">
         전시실 1 · 조우
     </button>
-    <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다.</p>
+    <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다. 화면의 다른 곳을 터치하면 바로 입장합니다.</p>
 </div>
 
 <style>
@@ -1088,7 +1096,20 @@ function getGateButtonLabel(){
         const text = (btn.textContent || '').trim();
         if(text) return text;
     }
-    return '전시실 1 · 조우로 이동합니다. 다시 누르면 입장합니다.';
+    return '전시실 1 입장 버튼입니다.';
+}
+// v-gate-single-tap — 참가자 요청: "화면을 한 번 터치하면 입장하도록
+// 바꿔달라." 전시실 1 · 조우 버튼 자체는 계속 2탭(안내 → 확인) 방식을
+// 쓰지만(handleGateEntryTap), 그 버튼이 아닌 화면의 다른 곳을 탭했을
+// 때는 곧장 한 번에 입장한다. 다만 room2.html에서 "다음전시"로 넘어온
+// 경우(?from=next)의 도착 안내(_tryArrivalMessage)는 자동재생이 막혔을
+// 때를 대비해 실제 사용자 탭 안에서 재생돼야 하므로, 그 안내가 아직
+// 소비되지 않았다면 이번 탭은 안내만 들려주고 입장은 그 다음 탭에서
+// 이어진다(이미 _tryArrivalMessage 안에서 "다음 탭은 곧장 입장"하도록
+// armed 상태가 되므로, 그 다음 탭도 이 함수를 통해 자연스럽게 입장한다).
+function handleGateScreenTap(){
+    if(_tryArrivalMessage()) return; // 도착 안내가 아직 안 나왔다면 이번 탭은 그것부터 — 입장은 다음 탭에
+    enterRoom();
 }
 
 function enterRoom(){
@@ -2263,12 +2284,13 @@ function goToRoom2(e) {
         if(dt < 600){
             if(isGateShowing()){
                 // 진입 화면: "시작" 버튼 자체를 짚었다면 버튼의 원래
-                // onclick(handleGateEntryTap)에 맡기고(중복 호출 방지),
-                // 그 외 화면 어디를 두드려도 같은 동작으로 취급한다.
+                // onclick(handleGateEntryTap, 2탭 방식)에 맡기고(중복 호출
+                // 방지), 그 외 화면 어디를 두드리면 한 번에 곧장 입장한다
+                // (handleGateScreenTap — 위 v-gate-single-tap 참고).
                 if(target && target.closest && target.closest('.btn.primary')) return;
                 suppressNextClick = true;
                 try{ hapticPulse('turn'); }catch(err){}
-                try{ handleGateEntryTap(); }catch(err){}
+                try{ handleGateScreenTap(); }catch(err){}
                 setTimeout(function(){ suppressNextClick = false; }, 400);
                 return;
             }
