@@ -681,7 +681,10 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 #yeoil-overlay.show{display:flex;}
 #yeoil-overlay.visible{opacity:1;}
 #yeoil-glyph{
-    font-family:'Cinzel Decorative', serif; font-size:clamp(3.2rem, 15vw, 6.5rem); color:var(--gold);
+    /* v-yeoil-glyph-shrink — 참가자 요청: "無자가 너무 크니 2/3으로
+       줄여달라." 이전 값 clamp(3.2rem, 15vw, 6.5rem)의 각 값에 2/3을
+       곱했다. */
+    font-family:'Cinzel Decorative', serif; font-size:clamp(2.1rem, 10vw, 4.3rem); color:var(--gold);
     text-shadow:0 0 40px rgba(212,175,55,.55), 0 0 100px rgba(212,175,55,.25);
     margin-bottom:26px; line-height:1; letter-spacing:.05em;
     animation: yeoilBreathe 4.5s ease-in-out infinite;
@@ -810,7 +813,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div id="yeoil-text">생각을 내려놓습니다.<br>손끝의 감촉도, 들었던 이야기도<br>지금 이 순간 가만히 놓아둡니다.</div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
-        <button class="btn" id="btn-yeoil-room2" onclick="closeYeoilOverlay()" aria-label="전시실 2로 돌아갑니다" data-tap-action="전시실 2로 돌아갑니다">전시2</button>
+        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2 표지로 이동합니다" data-tap-action="전시실 2 표지로 이동합니다">전시2</button>
         <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
@@ -2985,9 +2988,18 @@ function showCertificate(isComplete){
     // 여일로 바꾸어줘." 이 버튼이 실제로 하는 일(beginYeoilExit, 마음
     // 비우기 화면으로 이동)이 곧 "여일" 그 자체이므로, 이름을 그 행동과
     // 맞춰 통일했다.
+    // v-cert-yeoil-instant — 참가자 지적: "여일을 누르면 전시실 1로
+    // 잠시 돌아가지 말고 바로 여일 창이 나오게 해달라." 원인은 여기
+    // data-tap-action이 "전시실 1로 이동합니다"였던 것 — 두 번째(확인)
+    // 탭에서 이 문구를 먼저 다 말한 뒤에야 실제 클릭(beginYeoilExit)이
+    // 실행되는 두-번-탭 체계 특성상, 실제로는 곧장 여일 화면으로 가는데
+    // 마치 전시실 1로 먼저 이동하는 것처럼 들리는 데다 그만큼 화면
+    // 전환도 늦어졌다. data-tap-action을 없애 확인 탭 즉시 클릭이
+    // 실행되게 했다 — beginYeoilExit() 자신의 안내("이제, 마음을 비우고
+    // 돌아갑니다...")가 곧바로 이어진다.
     const primaryBtn = document.getElementById('btn-cert-primary');
     primaryBtn.textContent = isComplete ? '마음 비우고 여일' : '여일';
-    primaryBtn.setAttribute('data-tap-action', '전시실 1로 이동합니다');
+    primaryBtn.removeAttribute('data-tap-action');
     primaryBtn.onclick = beginYeoilExit;
 
     document.getElementById('certificate-overlay').classList.add('show');
