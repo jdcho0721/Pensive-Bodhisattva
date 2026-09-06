@@ -346,52 +346,23 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 #chat-panel.open{display:flex;}
 
 /* ══════════════════════════════════════════════════════
-   v-chat-fullscreen — 챗봇을 다른 화면 요소와 겹치지 않는 전체 화면
-   페이지처럼 보이게 한다. 열리면(.open) 작은 뜬 창 대신 #room-layout
-   안에서 #stage(조각상)가 있던 자리를 통째로 차지하는 전체 화면
-   패널로 바뀐다. #caption-wrap(답변이 표시되는 해설창)은 그대로
-   아래에 남아 있어, 챗봇 답변이 나오는 방식(showChatAnswerInCaption)은
-   전혀 손대지 않고도 화면 전체가 "챗봇 전용 페이지"처럼 보인다.
-   드래그·리사이즈 손잡이는 뜬 창일 때만 의미가 있으므로 이 모드에서
-   숨기고, 대신 위쪽에 '← 돌아가기' 헤더를 둔다. toggleChat()이
-   history.pushState로 이 상태를 기록해, 브라우저/기기의 뒤로가기로도
-   실제 페이지 이동처럼 닫을 수 있다.
+   v-chat-fullscreen — 예전에는 챗봇을 열면 #stage(조각상 배경 이미지)를
+   통째로 가리는 전체 화면 패널로 바뀌었다. 참가자 지적: "질문을 넣으면
+   두 조각상 배경 이미지가 나오는 현재 창에서 답이 진행돼야지, 배경
+   화면 크기의 새 창이 열리면 안 된다." 그래서 이 전체 화면 전환은
+   더 이상 쓰지 않는다 — #chat-panel은 항상 아래 기본 규칙(작은 뜬
+   창, #chat-panel.open{display:flex})만 따르고, #stage·상단 컨트롤은
+   챗봇이 열려 있어도 계속 보인다. (toggleChat()의 history.pushState/
+   popstate 처리는 그대로 두어, 브라우저 뒤로가기로 챗봇 창을 닫는
+   기능 자체는 유지된다.)
    ══════════════════════════════════════════════════════ */
-#chat-panel.open{
-    position:static; flex:1 1 auto; width:100%; max-width:none;
-    height:auto; min-height:0; max-height:none;
-    margin:0; border-radius:0; border-left:none; border-right:none; border-top:none;
-    overflow-y:auto;
-}
-#chat-page-header{display:none;}
-#chat-panel.open #chat-page-header{
-    display:flex; flex:0 0 auto; align-items:center; gap:12px;
-    margin:0 -14px; padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
-    border-bottom:1px solid rgba(212,175,55,.18);
-}
+#chat-page-header{display:none;} /* 이 헤더는 예전 전체화면 모드 전용이었다 — 작은 뜬 창에서는 항상 숨기고, 아래 #chat-drag-handle을 제목줄로 쓴다 */
 #chat-back-btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold-light);
     font-family:'Noto Serif KR',serif;font-size:.85rem;padding:7px 14px;border-radius:14px;cursor:pointer;
     min-height:44px;display:inline-flex;align-items:center;flex:0 0 auto;}
 #chat-back-btn:hover,#chat-back-btn:focus-visible{background:rgba(212,175,55,.15);border-color:var(--gold);}
 #chat-back-btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 #chat-page-title{color:var(--gold);letter-spacing:.05em;font-size:.9rem;font-family:'Cinzel Decorative',serif;}
-#chat-panel.open #chat-drag-handle,
-#chat-panel.open #chat-resize-handle,
-#chat-panel.open #chat-corner-resize,
-#chat-panel.open #chat-resize-edge-top,
-#chat-panel.open #chat-resize-edge-bottom,
-#chat-panel.open #chat-resize-edge-left,
-#chat-panel.open #chat-resize-edge-right{display:none;}
-#chat-panel.open #chat-log{font-size:1rem;}
-
-/* 챗봇이 전체화면으로 열려 있는 동안에는 조각상·상단 컨트롤·챗봇
-   진입 버튼을 숨겨, 다른 요소와 겹쳐 보이던 문제를 근본적으로 없앤다.
-   #caption-wrap(해설창)과 그 안의 하단 버튼들은 챗봇 답변을 보여주는
-   자리이므로 그대로 둔다. */
-body.chat-open #stage,
-body.chat-open #top-controls,
-body.chat-open #top-bar,
-body.chat-open #chat-toggle{display:none;}
 
 /* v47 — 참가자 요청: "챗봇창 폭이 너무 크다 / 창 크기를 사방으로 쉽게
    조절하고 싶다." 기존엔 max-width 440px로 넓었고, 크기 조절도 오른쪽
@@ -824,13 +795,14 @@ body.chat-open #chat-toggle{display:none;}
 <video id="hand-video" playsinline autoplay muted aria-hidden="true"></video>
 <div id="hand-cursor" aria-hidden="true"></div>
 <div id="chat-panel" role="region" aria-label="사유의 상담소 — 대화 내용">
-    <!-- v-chat-fullscreen — 참가자 요청: "챗봇 창 버튼을 클릭하면 전체
-         화면에 나타나게 해줘." 열리면 #chat-panel이 작은 뜬 창 대신
-         #stage 자리를 통째로 차지하는 전체 화면으로 바뀐다(아래
-         #chat-panel.open 참고). 이 헤더가 예전 드래그 손잡이를 대신해
-         "뒤로가기"로 원래 화면에 돌아가는 길을 준다. 히스토리
-         (history.pushState)에도 이 상태를 남겨, 실제 페이지 이동처럼
-         브라우저/기기의 뒤로가기로도 닫을 수 있다. -->
+    <!-- v-chat-fullscreen 되돌림 — 참가자 지적: "질문을 넣으면 조각상
+         배경 이미지가 나오는 현재 창에서 답이 진행돼야지, 배경 화면
+         크기의 새 창이 열리면 안 된다." 예전엔 열리면(.open) #chat-panel이
+         #stage 자리를 통째로 차지하는 전체 화면으로 바뀌었으나, 이제는
+         항상 작은 뜬 창(아래 #chat-drag-handle이 제목줄 역할)으로만
+         열린다. 이 헤더(#chat-page-header)는 그 전체화면 모드 전용이라
+         지금은 항상 숨겨져 있다(위 CSS #chat-page-header{display:none}
+         참고) — HTML에는 남겨두어, 필요해지면 되살릴 수 있게 했다. -->
     <div id="chat-page-header">
         <button type="button" id="chat-back-btn" onclick="toggleChat()" aria-label="대화를 닫고 전시 화면으로 돌아가기">← 돌아가기</button>
         <span id="chat-page-title">사유의 상담소</span>
@@ -1345,12 +1317,77 @@ function cycleSpeed(){
 // 올려, 실제 낭독 속도에 더 가깝게 맞췄다.
 const CHARS_PER_SEC_AT_1X = 7;     // 배속 1.0x 기준 대략적인 낭독 속도 추정치(자/초) — 문장별 자막 타이밍(_displaySentencesTimed)에 쓰인다.
 
-function speak(text, onEnd){
+// ── 화자별(로댕/반가사유상) 음성 배정 — index.html에서 이식 ──────────────
+// 참가자 확인: "index.html에서는 로댕이 남성 목소리로 제대로 나온다."
+// room2.html은 지금까지 모든 내레이션을 하나의 음색(pitch/rate 조정
+// 없음)으로만 읽어왔다. index.html이 쓰던 것과 똑같은 배정 로직을 그대로
+// 옮겨, room2에서도 로댕 해설을 만나면 같은 남성 음성이 나오게 한다.
+const VOICE_PROFILES = {
+    rodin:    { pitch: 0.90, rate: 0.94, volume: 1.0  },
+    maitreya: { pitch: 1.08, rate: 1.00, volume: 0.95 }
+};
+let _cachedVoices = null;
+let _voiceAssignment = null; // { rodin: SpeechSynthesisVoice|null, maitreya: SpeechSynthesisVoice|null, rodinConfident: boolean }
+function _refreshVoiceCache() {
+    try {
+        const v = window.speechSynthesis.getVoices();
+        if (v && v.length) { _cachedVoices = v; _voiceAssignment = null; }
+    } catch (e) {}
+}
+if (typeof window !== 'undefined' && window.speechSynthesis) {
+    _refreshVoiceCache();
+    window.speechSynthesis.onvoiceschanged = _refreshVoiceCache;
+}
+function _ensureVoiceAssignment() {
+    if (_voiceAssignment) return _voiceAssignment;
+    if (!_cachedVoices || !_cachedVoices.length) _refreshVoiceCache();
+    const voices = _cachedVoices || [];
+    if (voices.length < 2) return null;
+    const koVoices = voices.filter(v => /^ko/i.test(v.lang));
+    if (koVoices.length < 2) return null; // 한국어 음성이 1개뿐이면 pitch/rate만으로 구별
+    const pool = koVoices;
+    // 로댕의 '생각하는 사람'은 실제 남성을 모델로 한 조각상이므로 남성 힌트가
+    // 있는 목소리를 찾아 배정한다. 반가사유상(미륵보살)은 도상학적으로 성별이
+    // 뚜렷하지 않으므로 근거 없는 '여성' 배정은 하지 않는다.
+    const maleHint = pool.find(v =>
+        /male|man|남성|민수|현우|진호|영훈|준서|동현|지훈|석진|injoon|인준|jinho|yeongho|dongwon|jihun|seokjin|wavenet-[cd]|standard-[cd]/i.test(v.name)
+        && !/female|woman/i.test(v.name)
+    );
+    const knownFemale = /female|woman|여성|유나|지민|서현|heami|희애|sunhi|선히|yuna|seoyeon|서연|wavenet-[ab]|standard-[ab]/i;
+    const nonFemale = pool.find(v => !knownFemale.test(v.name));
+    const rodinVoice    = maleHint || nonFemale || pool[0];
+    const maitreyaVoice = pool.find(v => v !== rodinVoice) || pool[1];
+    _voiceAssignment = { rodin: rodinVoice, maitreya: maitreyaVoice, rodinConfident: !!maleHint };
+    return _voiceAssignment;
+}
+function _applyVoiceProfile(msg, speakerKey) {
+    const profile = VOICE_PROFILES[speakerKey];
+    if (profile) {
+        msg.pitch  = profile.pitch;
+        msg.rate   = profile.rate;
+        msg.volume = profile.volume;
+    }
+    const assignment = _ensureVoiceAssignment();
+    // 실제 남성 음성을 확보하지 못했을 때(한국어 음성이 1개뿐이거나, 있어도
+    // 소거법으로 고른 불확실한 경우)는 pitch/rate가 유일한 구별 수단이므로
+    // 더 낮춘다. 실제 남성 음성이 확보된 경우까지 과하게 낮추면 오히려
+    // 부자연스러우므로 그 경우는 기존의 온화한 값을 그대로 쓴다.
+    if (speakerKey === 'rodin' && (!assignment || !assignment.rodinConfident)) {
+        msg.pitch = 0.78;
+        msg.rate  = 0.90;
+    }
+    if (assignment && assignment[speakerKey]) {
+        msg.voice = assignment[speakerKey];
+    }
+}
+
+function speak(text, onEnd, speakerKey){
     _lastSpokenText = text;
     try{
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
         u.lang='ko-KR'; u.rate=TTS_RATE;
+        if (speakerKey) _applyVoiceProfile(u, speakerKey); // 화자(로댕/반가사유상)가 지정된 경우에만 음성·pitch·rate 구분 적용 — 지정 없으면 기존과 동일한 단일 음색
         // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
         // 문장 목록과 같은 텍스트라면, 브라우저가 실제로 보고하는 낭독 위치
         // (boundary 이벤트)로 자막 전환을 대신한다 — 위 _displaySentencesTimed
@@ -1589,7 +1626,7 @@ function _processTouch(key){
             // DETAILS의 embody 필드 자체는 남겨두되(나중에 다시 쓸 수
             // 있도록), 낭독이 끝나면 곧바로 다음 단계로 넘어간다.
             _afterNarrationBranch(key, d, remainingAfterThis);
-        });
+        }, d.body === '로댕' ? 'rodin' : 'maitreya'); // v-rodin-voice — 이 해설이 어느 조각상 것인지에 맞춰 화자 음성을 적용한다
     };
 
     // 원래 startNarration 콜백 안에 있던 "다음 안내" 분기를 별도 함수로
@@ -1664,7 +1701,7 @@ function repeatCurrent(){
         document.getElementById(currentKey)?.classList.remove('visited');
         document.getElementById(currentKey)?.classList.remove('narrating');
         document.getElementById(currentKey)?.classList.add('explored');
-    });
+    }, d.body === '로댕' ? 'rodin' : 'maitreya'); // v-rodin-voice
 }
 
 /* v2 — 6.3절 표3 감사 대응: '기억 회상(Recall) 지원'(△) 보완. 별도의
@@ -3421,8 +3458,8 @@ function _renderPhilosophyAnswer(item){
     pushLog('ai', text);
     _chatAnswerActive = true;
     speak(item.rodin, ()=>{
-        speak(item.maitreya, ()=>{ _chatAnswerActive = false; });
-    });
+        speak(item.maitreya, ()=>{ _chatAnswerActive = false; }, 'maitreya');
+    }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로
 }
 
 
@@ -3444,14 +3481,14 @@ const CHATBOT_CORPUS = [{"s":"금동미륵보살반가사유상_연구","t":"금
    톤(3.1절에서 의도적으로 바꾼 설계)과 맞지 않아 이식하지 않았다 —
    대신 이 그래프는 사실 조회 전용이라 어느 화자 톤에도 안전하게 붙는다. ── */
 const ARTWORK_KG = {
-    "로댕": { type: "조각가", aliases: ["오귀스트 로댕", "Rodin"], relations: {
+    "로댕": { type: "조각가", aliases: ["오귀스트 로댕", "Rodin"], sourceLink: "https://en.wikipedia.org/wiki/Auguste_Rodin", relations: {
         "본명": ["오귀스트 로댕(Auguste Rodin)"],
         "생몰": ["1840~1917"],
         "국적": ["프랑스"],
         "제작함": ["생각하는 사람", "지옥의 문", "칼레의 시민"],
         "평가": ["사실주의와 인상주의를 넘나든 근대 조각의 선구자"]
     }},
-    "생각하는 사람": { type: "조각상", aliases: ["Le Penseur", "생각하는사람"], relations: {
+    "생각하는 사람": { type: "조각상", aliases: ["Le Penseur", "생각하는사람"], sourceLink: "https://en.wikipedia.org/wiki/The_Thinker", relations: {
         "제작자": ["로댕"],
         "원제": ["시인(Le Poète) — 이후 생각하는 사람(Le Penseur)으로 개칭"],
         "유래": ["지옥의 문 상단부에 배치된 인물상"],
@@ -3465,13 +3502,13 @@ const ARTWORK_KG = {
         "자세": ["오른쪽 팔꿈치를 왼쪽 무릎 위에 얹고 손등에 턱을 괸 자세"],
         "소장처": ["파리 로댕미술관, 필라델피아 로댕미술관, 도쿄 국립서양미술관 등"]
     }},
-    "지옥의 문": { type: "조각상", aliases: ["La Porte de l'Enfer"], relations: {
+    "지옥의 문": { type: "조각상", aliases: ["La Porte de l'Enfer"], sourceLink: "https://en.wikipedia.org/wiki/The_Gates_of_Hell", relations: {
         "제작자": ["로댕"],
         "모티프": ["단테 알리기에리의 『신곡』 중 지옥편"],
         "규모": ["높이 6미터가 넘는 문, 인간 형상 200여 점"],
         "관련작품": ["생각하는 사람(최상부 중앙에 배치된 인물)"]
     }},
-    "반가사유상": { type: "조각상", aliases: ["금동미륵보살반가사유상", "半跏思惟像"], relations: {
+    "반가사유상": { type: "조각상", aliases: ["금동미륵보살반가사유상", "半跏思惟像"], sourceLink: "https://www.museum.go.kr", relations: {
         "정식명칭": ["금동미륵보살반가사유상"],
         "제작시대": ["삼국시대(6~7세기)"],
         "재질": ["금동"],
@@ -3480,7 +3517,7 @@ const ARTWORK_KG = {
         "관련개념": ["미륵보살"],
         "대표유물": ["국보 제78호", "국보 제83호"]
     }},
-    "국보 제78호": { type: "유물", aliases: ["78호"], relations: {
+    "국보 제78호": { type: "유물", aliases: ["78호"], sourceLink: "https://www.museum.go.kr", relations: {
         "명칭": ["금동미륵보살반가사유상"],
         "높이": ["약 80cm"],
         "제작연도": ["6세기 후반, 삼국시대"],
@@ -3488,14 +3525,14 @@ const ARTWORK_KG = {
         "이력": ["1912년 일본인 수집가 입수 → 1916년 총독부박물관 → 국립중앙박물관"],
         "특징": ["삼면보관(三面寶冠), 일월식(日月飾) 장식"]
     }},
-    "국보 제83호": { type: "유물", aliases: ["83호"], relations: {
+    "국보 제83호": { type: "유물", aliases: ["83호"], sourceLink: "https://www.museum.go.kr", relations: {
         "명칭": ["금동미륵보살반가사유상"],
         "제작연도": ["7세기 전반, 신라"],
         "지정연도": ["1962년 국보 지정, 2010년 현재 명칭으로 변경"],
         "소장처": ["국립중앙박물관"],
         "유사유물": ["일본 교토 고류지(廣隆寺) 소장 목조 반가사유상"]
     }},
-    "사유의 방": { type: "전시공간", relations: {
+    "사유의 방": { type: "전시공간", sourceLink: "https://www.museum.go.kr", relations: {
         "위치": ["국립중앙박물관 상설전시관 2층"],
         "개관": ["2021년 11월"],
         "전시내용": ["국보 제78호와 제83호 반가사유상을 나란히 전시"]
@@ -3605,6 +3642,30 @@ const ARTWORK_KG = {
         "위치": ["일본 교토"]
     } }
 };
+
+// v-hallucination-guard — 참가자 평가: "작품명·인물을 잘못 표현하고
+// 존재하지 않는 작가·역사적 사건을 사실처럼 생성하는 심각한 환각이
+// 확인됐다." 처음엔 근거 없는 사실형 질문을 LLM 호출 자체를 막는
+// 방식으로 처리했으나, "차단하지 말고 LLM이 답하되 출처를 함께
+// 표시하라"는 참가자 의견에 따라 방식을 바꿨다: LLM은 그대로 호출
+//하되(대화가 끊기지 않도록), 근거가 없다는 사실과 "추측하지 말라"는
+// 경고를 프롬프트에 강하게 넣고, 화면에는 LLM이 직접 만든(=지어낼 수
+// 있는) 출처가 아니라 미리 정해둔 실제 사이트 링크(국립중앙박물관·
+// 위키백과)를 코드가 붙여준다 — LLM에게 "출처도 같이 답하라"고 하면
+// 없는 링크를 그럴듯하게 지어낼 위험이 있어, 그 역할은 LLM에게 맡기지
+// 않는다.
+const FACTUAL_INTENT_RE = /(언제\s*(만들|제작|조성)|누가\s*(만들|제작|조각)|누구(입니까|예요|인가요|였|이었)|몇\s*(세기|년|호|cm|센티|미터)|연도|시대는|시대가|재질은|재질이|기법은|무슨\s*작가|어느\s*작가|작가가|제작자|소장(처|하고)|국보\s*제?\s*\d|높이는|높이가|크기는|정확한\s*사실|실제로\s*(있|일어)|진짜\s*(이름|이야기|사건)|원래\s*이름|어디에\s*있|어디\s*소장|출처가|누구를\s*모델)/;
+function _isFactualQuestion(text) {
+    return FACTUAL_INTENT_RE.test((text || '').trim());
+}
+function _hasGrounding(kgTriples, passages) {
+    return !!((kgTriples && kgTriples.length) || (passages && passages.length));
+}
+// 근거 없는 사실형 질문에서, 프롬프트에 덧붙일 경고 문구(LLM에게 추측
+// 금지를 한 번 더 강하게 못박는다).
+function _buildUngroundedCautionClause() {
+    return '\n[주의 — 이 질문에 대해서는 확인된 참고 자료(지식그래프·코퍼스)가 없습니다. 절대 추측으로 단정하지 말고, 확실하지 않은 부분은 "정확히 전해지지 않습니다"라고만 답하십시오. 새로운 인물명·연도·역사적 사건·작품명을 지어내지 마십시오.]\n';
+}
 
 // 질문에 등장한 노드(및 별칭)를 찾아 그 관계를 1-hop 순회한다 — 논문의
 // "Gemini가 키워드 추출 → Cypher 질의"를 단순화한 버전으로, 별도의 API
@@ -3917,6 +3978,7 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 [사실 관계 — 절대 원칙]
 - 두 조각상은 서로 다른 시대·국가의 작품입니다: 금동미륵보살반가사유상(삼국시대, 6~7세기, 한반도, 금동)과 로댕의 <생각하는 사람>(1880~1904년, 프랑스, 청동). 절대 두 작품의 시대·국가·재질·제작자 정보를 서로 뒤바꾸거나 섞지 마십시오.
 - 모르는 사실은 추측해 지어내지 말고 "정확히 전해지지 않습니다"라고 답하십시오.
+- 참고 자료에 등장하지 않는 새로운 인물명·연도·역사적 사건·작품명은 절대로 지어내지 마십시오. 참고 자료에 없는 내용을 답해야 할 것 같으면, 없는 사실을 만들어내는 대신 "정확히 전해지지 않습니다"라고만 답하십시오.
 
 [답하기 전에 스스로 점검할 것 — 절대 답변에 이 점검 과정 자체를 쓰지 말 것]
 - 지금 참고 자료에 실제로 있는 사실인가, 아니면 그럴듯해서 지어낸 것인가?
@@ -4597,6 +4659,52 @@ function pushLog(cls, text){
     log.appendChild(p); log.scrollTop = log.scrollHeight;
     return p;
 }
+// v-fact-citation — 참가자 평가: "핵심 사실(작품명·시대·제작기법 등)에는
+// 출처와 링크를 함께 표시해 사용자가 직접 확인할 수 있어야 한다."
+// #source-tag는 aria-hidden이라 스크린리더 사용자에게 링크를 숨기게
+// 되므로, 대신 항상 보이고 접근 가능한 #chat-log에 별도의 "확인된
+// 사실" 카드를 남긴다(pushLog와 달리 링크를 위해 innerHTML을 쓴다).
+function pushFactCheckLog(triples){
+    if (!triples || !triples.length) return;
+    const nodeNames = Array.from(new Set(triples.map(t => t.split(' —[')[0])));
+    const linksByNode = {};
+    nodeNames.forEach(name => {
+        const node = ARTWORK_KG[name];
+        if (node && node.sourceLink) linksByNode[name] = node.sourceLink;
+    });
+    const factLines = triples.map(t => `<li>${t.replace(/—\[(.+?)\]→/, '<b>$1</b> —')}</li>`).join('');
+    const linkLines = Object.entries(linksByNode)
+        .map(([name, url]) => `<a href="${url}" rel="noopener" style="color:var(--gold-light,#d4af37);">${name} 출처 보기 ↗</a>`)
+        .join(' · ');
+    const log = document.getElementById('chat-log');
+    const card = document.createElement('div');
+    card.className = 'fact-check-bubble';
+    card.style.cssText = 'margin:6px 0;padding:8px 10px;border:1px solid rgba(212,175,55,0.35);border-radius:10px;background:rgba(212,175,55,0.06);font-size:0.8rem;';
+    card.innerHTML = `<div style="color:var(--gold-light,#d4af37);font-weight:600;margin-bottom:4px;">✓ 확인된 사실 (AI가 지어낸 내용이 아닙니다)</div>
+        <ul style="margin:0 0 4px 0;padding-left:16px;color:#ddd;line-height:1.55;">${factLines}</ul>
+        ${linkLines ? `<div style="opacity:0.85;">${linkLines}</div>` : ''}`;
+    log.appendChild(card);
+    log.scrollTop = log.scrollHeight;
+}
+// v-hallucination-guard — 근거 없는 사실형 질문에서, LLM은 그대로
+// 호출하되(대화를 막지 않음) "이 답은 검증되지 않았다"는 사실과, 직접
+// 확인할 수 있는 실제·고정 사이트 링크를 코드가 붙인다. LLM에게 출처를
+// 만들라고 하면 없는 링크를 지어낼 위험이 있어, 링크는 항상 이 안전한
+// 목록(국립중앙박물관·위키백과)에서만 가져온다.
+function pushUnverifiedNoticeLog(){
+    const log = document.getElementById('chat-log');
+    const card = document.createElement('div');
+    card.className = 'unverified-notice-bubble';
+    card.style.cssText = 'margin:6px 0;padding:8px 10px;border:1px solid rgba(255,150,60,0.4);border-radius:10px;background:rgba(255,150,60,0.08);font-size:0.8rem;';
+    card.innerHTML = `<div style="color:#ffb066;font-weight:600;margin-bottom:4px;">⚠ 확인된 자료 없이 생성된 답변입니다</div>
+        <div style="color:#ddd;line-height:1.55;">아래 답변은 근거 자료 없이 AI가 생성한 내용이라 정확하지 않을 수 있습니다. 정확한 사실은 아래에서 직접 확인해 주세요.</div>
+        <div style="opacity:0.85;margin-top:4px;">
+            <a href="https://www.museum.go.kr" rel="noopener" style="color:#ffb066;">국립중앙박물관 ↗</a> ·
+            <a href="https://ko.wikipedia.org" rel="noopener" style="color:#ffb066;">위키백과 ↗</a>
+        </div>`;
+    log.appendChild(card);
+    log.scrollTop = log.scrollHeight;
+}
 // v47 — 참가자 요청: "챗봇창 답이 나올 때 자막이 챗봇창 안이 아니라
 // 아래 해설창에 나오도록 해줘." 조각상 부위를 만졌을 때 이미 쓰고 있는
 // #focus-tag/#caption(아래 넓은 해설창)에 챗봇 답변도 그대로 표시한다 —
@@ -4686,6 +4794,14 @@ async function _processChatAnswer(q){
     const kbAnswer = pickKBAnswer(q);
     if(kbAnswer){
         recordPartChatQA(q, kbAnswer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+        // v-fact-citation — 참가자 지적: "챗봇 답에 출처가 안 나온다."
+        // 원인은 이 1순위(KB 즉답) 경로가 사실 카드/출처 로직이 붙어있는
+        // 2순위(LLM) 경로보다 먼저 return 해버려, 대부분의 질문(예상
+        // 질문 칩 다수 포함)이 실제로는 여기서 끝나고 있었다는 것이었다.
+        // KB 답변도 국보 번호·재질·연도 같은 핵심 사실을 담고 있으므로,
+        // 여기서도 같은 방식으로 KG를 조회해 사실 카드를 붙인다.
+        const kbKgTriples = _queryKG((currentKey && DETAILS[currentKey] ? DETAILS[currentKey].title + ' ' : '') + q);
+        if (kbKgTriples.length) pushFactCheckLog(kbKgTriples);
         setTimeout(()=>{
             showChatAnswerInCaption('사유의 상담소 — 답변', kbAnswer);
             _chatAnswerActive = true;
@@ -4723,7 +4839,18 @@ async function _processChatAnswer(q){
     // 원칙을 그대로 따름).
     const kgTriples = _queryKG((d ? d.title + ' ' : '') + q);
     const kgBlock = _formatKGBlock(kgTriples);
-    const fullRagBlock = kgBlock + ragBlock;
+    // v-hallucination-guard — 사실형 질문인데 근거(KG·코퍼스)가 전혀
+    // 없으면(참가자 의견 반영: 더 이상 LLM 호출을 막지 않는다) 프롬프트에
+    // "추측 금지" 경고를 덧붙이고, 답변에는 LLM이 지어낼 수 없는 고정된
+    // 실제 출처 안내를 코드가 붙인다.
+    const isUngroundedFactual = _isFactualQuestion(q) && !_hasGrounding(kgTriples, grounding);
+    const cautionClause = isUngroundedFactual ? _buildUngroundedCautionClause() : '';
+    const fullRagBlock = kgBlock + ragBlock + cautionClause;
+    // v-fact-citation — LLM 답변이 나가기 전에, 검증된 KG 사실 + 출처
+    // 링크를 #chat-log에 먼저 보여준다(참가자 평가: 핵심 사실은 추측성
+    // 생성보다 앞서 확정된 근거로 제시돼야 한다).
+    if (kgTriples.length) pushFactCheckLog(kgTriples);
+    if (isUngroundedFactual) pushUnverifiedNoticeLog();
     // v6 — 토큰이 오는 대로 "생각하는 중…" 자리를 실시간으로(해설창에서)
     // 채운다. TTS는 스트리밍 도중이 아니라, 완전히 끝난 뒤 한 번만
     // 재생한다 — 문장이 채 끝나기 전에 읽기 시작하면 되읽기·중간에
