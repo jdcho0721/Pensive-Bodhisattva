@@ -480,10 +480,26 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         border:none; border-radius:0;
         padding:calc(10px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom));
     }
+    /* v-chat-mobile-hide-top — 참가자 요청: "사유의 상담소 창을 열면
+       전체화면으로 전환되면서 위의 3가지 버튼이 안 보이게 해줘."
+       #top-controls(정보·속도·쉬운 문장 3개 버튼)는 z-index가 챗봇창보다
+       높아, 챗봇이 화면 전체를 덮어도 그 위에 그대로 떠 보였다. 챗봇이
+       열려 있는 동안(body.chat-open)에는 모바일 전체화면 모드에서만
+       이 버튼들을 숨긴다 — 데스크톱의 작은 뜬 창 모드는 원래도 화면
+       대부분이 그대로 보이므로 그대로 둔다. */
+    body.chat-open #top-controls{ display:none; }
     #chat-panel #chat-page-header{
         display:flex; align-items:center; gap:10px; flex:0 0 auto;
         margin:0 0 6px; padding:0 0 10px;
         border-bottom:1px solid rgba(212,175,55,.18);
+    }
+    /* v-chat-mobile-back-btn-size — 참가자 요청: "돌아가기 버튼이 너무
+       큰데 작게 해주고." 원래 크기(min-height:44px, padding:7px 14px)는
+       작은 뜬 창 제목줄에서 쓰던 값을 그대로 물려받은 것이라 전체화면
+       헤더에서는 유독 커 보였다. 다른 보조 버튼들에서도 쓰는 36px
+       기준(손가락 터치엔 문제없는 최소 크기)으로 줄였다. */
+    #chat-panel #chat-back-btn{
+        font-size:.72rem; padding:0 12px; min-height:32px; height:32px; border-radius:12px;
     }
     #chat-panel #chat-drag-handle,
     #chat-panel #chat-resize-handle,
@@ -494,8 +510,22 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     #chat-panel #chat-resize-edge-right{
         display:none;
     }
+    /* v-chat-mobile-log-gap — 참가자 지적: "타이틀과 예상질문 사이에
+       여백이 많은데 그 여백이 없도록 해줘." #chat-log는 평소 flex:1로
+       남는 세로 공간을 모두 차지하도록 되어 있는데, 대화가 아직 없어
+       비어 있을 때도 그대로 늘어나 제목과 예상 질문 사이에 큰 빈
+       공간을 만들었다. 대화 내용이 하나도 없을 때(:empty)는 늘어나지
+       않게 하여 예상 질문이 제목 바로 아래로 붙게 하고, 대신 입력폼
+       (#chat-form)에 margin-top:auto를 줘서 화면 아래쪽 빈 공간은
+       거기로 모이게 한다 — 마이크·입력창은 여전히 화면 맨 아래
+       고정된 자리를 유지한다. 실제로 대화가 시작돼 #chat-log에
+       메시지가 쌓이면(더 이상 :empty가 아니게 되면) 자동으로 다시
+       flex:1로 늘어나 남는 공간을 채우고 자체 스크롤된다. */
+    #chat-panel #chat-log:empty{
+        flex:0 0 auto; min-height:0;
+    }
     #chat-panel #chat-form{
-        padding-bottom:2px;
+        padding-bottom:2px; margin-top:auto;
     }
 }
 /* 화면에는 보이지 않지만 스크린리더에는 읽히는 라벨용(챗봇 입력창 등) */
@@ -664,7 +694,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
      유지하면서, DOM 순서만 앞으로 당겨 "화면을 열자마자 두 번째로
      만나는 버튼"이 되도록 했다 — 스크린리더는 시각적 위치가 아니라
      이 순서대로 탐색하기 때문이다. -->
-<button id="chat-toggle" onclick="toggleChat()" aria-label="사유의 상담소 — 질문하기" data-tap-name="사유의 상담소" data-tap-action="사유의 상담소를 엽니다">💬</button>
+<button id="chat-toggle" onclick="toggleChat()" aria-label="사유의 상담소 — 질문하기" data-tap-name="사유의 상담소" data-tap-action="사유의 상담소로 입장합니다">💬</button>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
         <h2>작품·작가 소개</h2>
@@ -755,7 +785,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <h1>침묵의 공명<br><span style="color:rgba(212,175,55,.7);">전시실 2 · 사유 및 체화 (몸으로 생각하기)</span></h1>
 
     <p> 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. <br>궁금한 것은 언제든 챗봇에게 물어보세요.</p>
-    <button class="btn primary" onclick="event.stopPropagation();enterRoom()">시작할께요</button>
+    <button class="btn primary" data-tap-action="전시실2로 입장합니다." onclick="event.stopPropagation();enterRoom()">시작할께요</button>
 </div>
 
 
@@ -3539,8 +3569,15 @@ function _renderPhilosophyAnswer(item){
 반가사유상 — ${item.maitreya}`;
     pushLog('ai', text);
     _chatAnswerActive = true;
-    speak(item.rodin, ()=>{
-        speak(item.maitreya, ()=>{ _chatAnswerActive = false; }, 'maitreya');
+    // v-speaker-name-prefix — 참가자 요청: "답변에서 로댕과 반가사유상의
+    // 답이 나올 때 음성해설에서 '로댕입니다. ~~~. 반가사유상입니다. ~~~'
+    // 로 시작하게 해줘." 화면 자막(text, 위)에는 이미 "로댕 — "/
+    // "반가사유상 — "로 화자가 구분돼 있었지만, 음성은 그 구분 없이
+    // 본문만 곧바로 읽고 있어 화면을 보기 어려운 관람객은 지금 누가
+    // 말하는지 소리만으로 알 수 없었다. 음성에도 화자 이름을 문장으로
+    // 붙여 읽는다.
+    speak(`로댕입니다. ${item.rodin}`, ()=>{
+        speak(`반가사유상입니다. ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
     }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로
 }
 
@@ -4899,16 +4936,20 @@ async function sendChat(e, overrideText){
 }
 
 async function _processChatAnswer(q){
-    // v47 — 참가자 요청: 챗봇 답(자막)은 챗봇창 안이 아니라 아래
-    // 해설창(#caption)에 나오도록 한다. 아래 모든 응답 경로에서
-    // pushLog('ai', ...) 대신 showChatAnswerInCaption()을 쓴다 —
-    // 챗봇창(#chat-log)에는 이제 내가 보낸 질문만 남는다.
+    // v47 — 원래는 챗봇 답을 챗봇창이 아니라 아래 해설창(#caption)에만
+    // 보여줬었다. v-chat-log-stream/v-chat-log-all-answers 이후, 참가자
+    // 요청("예상 질문 및 그 응답도 챗봇창에 나오게 해줘")에 따라 모든
+    // 응답 경로가 pushLog('ai', ...)로 챗봇창(#chat-log)에도 답을 남기고,
+    // 동시에 showChatAnswerInCaption()으로 아래 해설창·음성 자막 동기화도
+    // 그대로 유지한다 — 화면을 보기 어려운 관람객을 위한 기존 경험은
+    // 그대로 두고, 챗봇창을 여는 관람객에게는 대화 형태로도 보이게 한다.
 
     // 0순위: '요약해줘/복습해줘/지금까지 뭘 만졌어' 같은 회상 요청 —
     // 실제 방문 기록을 근거로 즉시 응답(6.3절 표3 '기억 회상 지원' 보완).
     if(RECAP_TRIGGER.test(q)){
         const recap = buildRecapAnswer();
         setTimeout(()=>{
+            pushLog('ai', recap);
             showChatAnswerInCaption('사유의 상담소 — 요약', recap);
             _chatAnswerActive = true;
             speak(recap, ()=>{ _chatAnswerActive = false; });
@@ -4929,6 +4970,7 @@ async function _processChatAnswer(q){
         const kbKgTriples = _queryKG((currentKey && DETAILS[currentKey] ? DETAILS[currentKey].title + ' ' : '') + q);
         if (kbKgTriples.length) pushFactCheckLog(kbKgTriples);
         setTimeout(()=>{
+            pushLog('ai', kbAnswer);
             showChatAnswerInCaption('사유의 상담소 — 답변', kbAnswer);
             _chatAnswerActive = true;
             speak(kbAnswer, ()=>{ _chatAnswerActive = false; });
@@ -4954,6 +4996,19 @@ async function _processChatAnswer(q){
     // "지금 처리 중"임을 놓치지 않도록 짧게 음성으로도 알린다.
     showChatAnswerInCaption('사유의 상담소 — 생각하는 중…', '생각하는 중…');
     speak('잠시만요, 생각하고 있어요.');
+    // v-chat-log-stream — 참가자 요청: "LLM 응답은 챗봇창에 나오게 해주고,
+    // 오래 기다리지 않게 문장이 스트리밍으로 나오게 해줘." 기존 v47은
+    // 답변을 챗봇창(#chat-log)이 아니라 아래 해설창(#caption)에만
+    // 보여주도록 바꿨었는데, 그 뒤 챗봇창이 (모바일에서는) 화면 전체를
+    // 차지하는 대화창 모습으로 바뀌면서, 정작 그 창 안에는 내가 보낸
+    // 질문만 있고 답은 안 보이는 게 더 어색해졌다. 그래서 챗봇창 안에도
+    // 답변 말풍선을 새로 만들어, 이미 구현돼 있던 SSE 스트리밍
+    // (fetchDetailAI의 onUpdate 콜백 — v6 참고)이 토큰을 보내주는 대로
+    // 그 말풍선 텍스트를 실시간으로 채운다 — "생각하는 중…"에 멈춰
+    // 있지 않고 문장이 흐르듯 나타나 체감 대기 시간이 줄어든다. 아래
+    // 해설창(#caption) 동기화는 화면을 보기 어려운 관람객을 위해 그대로
+    // 유지한다(음성 자막 동기화, v-chat-caption-sync).
+    const aiBubble = pushLog('ai', '생각하는 중…');
     const d = currentKey ? DETAILS[currentKey] : null;
     const contextLine = d ? `지금 관람객은 두 조각상 중 ${d.title} 부위를 만지고 있습니다. ` : '';
     const grounding = await _searchBestGrounding(q, d ? d.title : null, 3);
@@ -4983,9 +5038,14 @@ async function _processChatAnswer(q){
     // 끊기는 문제가 생기기 때문이다(화면은 실시간, 음성은 완성 후라는
     // 점에서 index.html과 같은 설계).
     const answer = await fetchDetailAI(contextLine + '관람객의 질문: ' + q, fullRagBlock, (partial) => {
-        document.getElementById('caption').innerHTML = String(partial || '생각하는 중…').replace(/\n/g, '<br>');
+        const shown = String(partial || '생각하는 중…');
+        document.getElementById('caption').innerHTML = shown.replace(/\n/g, '<br>');
+        aiBubble.textContent = shown;
+        const log = document.getElementById('chat-log');
+        log.scrollTop = log.scrollHeight;
     });
     showChatAnswerInCaption('사유의 상담소 — 답변', answer);
+    aiBubble.textContent = answer;
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
     _chatAnswerActive = true;
     speak(answer, ()=>{ _chatAnswerActive = false; }); // 다중양식 원칙 — 챗봇 답도 텍스트만이 아니라 음성으로 함께 전달한다.
