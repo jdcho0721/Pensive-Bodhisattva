@@ -537,12 +537,21 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 
 #intro-gate{position:fixed;inset:0;z-index:50;background:#000;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;gap:36px;text-align:center;padding:32px;
-    /* v-intro-scroll — 참가자 요청: "전시실 스크롤 바를 넣어줘." 세로 폭이
-       좁은 화면(가로 모드 모바일 등)에서 제목·설명·버튼이 뷰포트보다
-       길어지면 위/아래가 잘려 보이지 않았다. 세로 스크롤을 허용해, 잘리는
-       대신 스크롤로 나머지 내용을 볼 수 있게 한다. */
-    overflow-y:auto;}
+    /* v-intro-clip-fix — 참가자 지적: "초기 화면의 윗부분이 잘려서 안
+       보인다." 원인은 flexbox의 잘 알려진 함정이었다 — justify-content:
+       center로 세로 중앙 정렬을 하면서 내용이 뷰포트보다 커지면, 아래로
+       넘치는 부분은 overflow-y:auto로 스크롤할 수 있지만 "위로" 넘치는
+       부분은 스크롤을 아무리 올려도 닿지 않는다(브라우저가 중앙 정렬
+       기준점을 고정해버리기 때문). 그래서 지난번에 overflow-y:auto만
+       추가했을 때는 이 위쪽 잘림 문제가 그대로 남아 있었다. 표준적인
+       해결책대로, 이 바깥 컨테이너는 justify-content를 안 쓰는 기본값
+       (flex-start)으로 두고 overflow-y:auto만 스크롤을 담당하게 하고,
+       실제 세로 중앙 정렬은 안쪽 래퍼(.intro-gate-inner)의
+       margin:auto 0으로 옮긴다 — margin:auto 방식은 내용이 넘칠 때
+       자연스럽게 0으로 줄어들어(위로 넘치는 만큼 스크롤로 그대로 접근
+       가능해짐) 이런 잘림이 생기지 않는다. */
+    overflow-y:auto;padding:32px;}
+.intro-gate-inner{display:flex;flex-direction:column;align-items:center;gap:36px;text-align:center;margin:auto 0;}
 #intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.6rem,5vw,2.4rem);letter-spacing:.1em;line-height:1.5;}
 #intro-gate h1 span{display:inline-block;margin-top:10px;font-size:clamp(0.85rem,2.2vw,1.05rem);letter-spacing:.04em;}
 #intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.9rem,2vw,1.1rem);word-break:keep-all;}
@@ -933,6 +942,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 
 <div id="intro-gate" onclick="enterRoom()" role="button" tabindex="0" aria-label="침묵의 공명, 전시실 2 · 사유 및 체화 — 화면을 터치하면 시작합니다"
      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterRoom();}">
+    <!-- v-intro-clip-fix — 세로 중앙 정렬(margin:auto)을 담당하는 안쪽
+         래퍼. 위 #intro-gate CSS 주석 참고. -->
+    <div class="intro-gate-inner">
     <h1>침묵의 공명<br><span style="color:rgba(212,175,55,.7);">전시실 2 · 사유 및 체화 (몸으로 생각하기)</span></h1>
 
     <p> 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. <br>궁금한 것은 언제든 챗봇에게 물어보세요.</p>
@@ -942,17 +954,30 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
          크기는 이 래퍼 스코프 안에서만 줄인다(다른 화면의 .btn 크기에는
          영향 없음). -->
     <div class="intro-btn-row">
-        <button class="btn primary" data-tap-action="전시실2로 입장합니다." onclick="event.stopPropagation();enterRoom()">전시실2 체화</button>
+        <!-- v-button-rename — 참가자 요청: "전시실2 버튼의 이름을 전시2로
+             바꿔줘." 표시 문구만 줄이고, 실제 동작(onclick)과 두 번째
+             탭에서 읽어주는 안내(data-tap-action)는 그대로 둔다. -->
+        <button class="btn primary" data-tap-action="전시실2로 입장합니다." onclick="event.stopPropagation();enterRoom()">전시2</button>
         <!-- v-bgm-toggle — 참가자 요청: "배경음악 버튼을 초기 화면에 두어
              on/off 하게 해달라." #intro-gate 전체가 role="button"으로 터치하면
              입장되므로(onclick="enterRoom()"), 이 버튼을 눌렀을 때 그대로 같이
              입장돼버리지 않도록 event.stopPropagation()을 반드시 먼저 부른다
-             (바로 위 "전시실2 체화" 버튼과 같은 패턴). aria-pressed로 지금
-             상태(켜짐/꺼짐)를 스크린리더에도 전달한다. -->
+             (바로 위 "전시2" 버튼과 같은 패턴). aria-pressed로 지금
+             상태(켜짐/꺼짐)를 스크린리더에도 전달한다.
+             v-button-rename — 참가자 요청: "배경음악 켜짐 버튼의 이름을
+             배경음악으로 바꿔줘." 아이콘(🔊/🔇)이 이미 상태를 나타내므로
+             글자는 "배경음악"만 남긴다.
+             v-bgm-toggle-speech — 참가자 요청: "배경음악이 켜질 때는
+             '배경음악이 켜집니다.', 꺼질 때는 '배경음악이 꺼집니다.'라고
+             해달라." 상태에 따라 다른 문장을 말해야 하므로, 미리 정해둔
+             한 가지 문구만 읽어주던 data-tap-action(두 번째 탭 안내)은
+             빼고, toggleBgm() 함수 안에서 실제 켜지는지/꺼지는지에 맞는
+             문장을 직접 speak()로 읽는다(중복 안내 방지). -->
         <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
                 aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
-                data-tap-action="배경음악을 켜고 끕니다."
-                onclick="event.stopPropagation();toggleBgm()">🔊 배경음악 켜짐</button>
+                data-tap-name="배경음악"
+                onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
+    </div>
     </div>
 </div>
 
@@ -1512,9 +1537,18 @@ function toggleBgm(){
     const btn = document.getElementById('btn-bgm-toggle');
     if(btn){
         btn.setAttribute('aria-pressed', String(bgmMuted));
-        btn.textContent = bgmMuted ? '🔇 배경음악 꺼짐' : '🔊 배경음악 켜짐';
+        // v-button-rename — 참가자 요청: "배경음악 켜짐 버튼의 이름을
+        // 배경음악으로 바꿔줘." 아이콘(🔊/🔇)이 이미 상태를 나타내므로
+        // 글자는 "배경음악"만 남긴다.
+        btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
         btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
     }
+    // v-bgm-toggle-speech — 참가자 요청: "배경음악이 켜질 때는 '배경음악이
+    // 켜집니다.', 꺼질 때는 '배경음악이 꺼집니다.'라고 해달라." 이 버튼의
+    // data-tap-action(두 번째 탭 때 미리 읽어주던 고정 문구)은 제거했고,
+    // 실제로 어느 방향으로 토글됐는지는 이 함수만 알기 때문에 여기서
+    // 직접 방향에 맞는 문장을 읽는다.
+    speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.');
 }
 // snd-arrival: 입장 직후 한 번만 차올랐다가, 첫 부위를 만지는 순간(또는
 // 가운데 빈 자리에 들어서는 순간) 조용히 사라지는 "도착"의 소리.
@@ -3635,7 +3669,14 @@ const PART_MEANINGS = {
     },
     '반가사유상': {
         '원융|원융과 조화|원융이 뭐야|원융이 무슨 뜻|원융과 조화가 무슨 뜻|원융 뜻|원융 무슨 말|원융 설명해줘|원융이 뭔지 궁금해|원융에 대해 알려줘': '원융(圓融)은 모든 이치가 모여 하나로 조화롭게 융합되고, 걸림이나 막힘이 없이 원만한 상태를 뜻하는 불교 및 동양 철학 용어입니다. 미술사학자 강우방은 반가사유상처럼 둥글고 조화로운 형태를 이 개념으로 설명했습니다 — 날카로운 각이 아니라, 서로 다른 부분들이 하나로 둥글게 어우러지는 데서 나오는 아름다움입니다.',
-        '모자|보관|왕관|머리에 쓴': '머리에 쓴 것은 모자가 아니라 보관이라는 화려한 장신구입니다. 미래에 중생을 구제할 미륵보살이라는 신분을 나타내는 장식입니다.',
+        // v-head-vs-face — 참가자 지적: "사유상 머리는 사유상 얼굴과
+        // 다르다. 사유상 머리는 사유상의 머리 모양 및 보관과 그 철학적
+        // 의미를 답해야 한다." 지난번엔 "머리"를 미소(얼굴) 항목에
+        // 붙였는데, 그건 "머리"가 아니라 "얼굴"에 대한 답이었다. "머리"는
+        // 이 보관(머리에 쓴 장식) 항목으로 옮기고, 실제 연구 자료
+        // (금동미륵보살반가사유상_연구)에 있는 삼면보관·일월식 장식의
+        // 유래와 상징까지 담아 철학적 의미를 보강한다.
+        '머리|모자|보관|왕관|머리에 쓴|머리 모양': '머리에 쓴 것은 모자가 아니라 삼면보관이라는 화려한 장신구입니다. 보관 위에는 초승달과 둥근 해를 함께 얹은 일월식 장식이 있어 \'일월식삼산관사유상\'이라는 별칭으로도 불립니다. 해와 달을 함께 얹는 이 양식은 페르시아에서 비롯돼 중국을 거쳐 전해진 것으로, 미래에 중생을 구제할 미륵보살이라는 신분과, 세속을 넘어선 영원한 진리를 함께 나타낸다고 해석됩니다.',
         '다리|자세|반가좌|앉은 자세|왜 저러고': '오른발을 왼쪽 무릎 위에 살짝 얹은 반가좌 자세입니다. "반쯤 책상다리를 하고 앉았다"는 뜻으로, 사유에 잠긴 자세를 나타냅니다.',
         '재질|금동|금|무엇으로 만들': '청동에 얇게 금을 입힌 금동으로 만들어졌습니다. 그래서 표면이 잘 익은 꿀이나 늦가을 은행잎처럼 진한 금빛 광채를 냅니다.',
         '이름|제목|무슨 상': '정식 명칭은 금동미륵보살반가사유상입니다. 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현한 것입니다.',
@@ -3657,7 +3698,7 @@ const PART_MEANINGS = {
         // 아예 못 찾아 null이 되고, "얼굴"은 (반가사유상 쪽에서 못 찾고)
         // 로댕 KB로 넘어가 엉뚱하게 로댕의 표정 설명이 나왔다. 가장
         // 상징적인 얼굴 특징인 미소 항목에 세 단어를 추가한다.
-        '얼굴|머리|미소|미소의 의미가 뭐야|왜 웃고 있어|입가의 미소 뜻|신비로운 미소라고 불리는 이유|알듯말듯한 미소 뜻|미소의 의미 뭐야|미소의 의미 알려줘|미소의 의미 궁금해|미소의 의미 설명해줘|미소의 의미가 뭔지 궁금해|미소의 의미에 대해 알려줘|미소의 의미 뜻이 뭐야': '입가에 은은하게 번진 미소는 흔히 \'신비로운 미소\'로 불리며, 괴로움을 넘어선 평온하고 따뜻한 마음 상태를 얼굴로 나타낸 것으로 해석됩니다.',
+        '얼굴|미소|미소의 의미가 뭐야|왜 웃고 있어|입가의 미소 뜻|신비로운 미소라고 불리는 이유|알듯말듯한 미소 뜻|미소의 의미 뭐야|미소의 의미 알려줘|미소의 의미 궁금해|미소의 의미 설명해줘|미소의 의미가 뭔지 궁금해|미소의 의미에 대해 알려줘|미소의 의미 뜻이 뭐야': '입가에 은은하게 번진 미소는 흔히 \'신비로운 미소\'로 불리며, 괴로움을 넘어선 평온하고 따뜻한 마음 상태를 얼굴로 나타낸 것으로 해석됩니다.',
         '미륵보살이 누구야|미래불이 뭐야|미륵신앙이 뭔데|미륵보살 뜻 설명해줘|미륵보살 뜻 뭐야|미륵보살 뜻 알려줘|미륵보살 뜻 궁금해|미륵보살 뜻가 뭔지 궁금해|미륵보살 뜻에 대해 알려줘|미륵보살 뜻 뜻이 뭐야|미륵보살 뜻 왜 그런거야|미륵보살 뜻 무슨 의미야': '미륵보살은 먼 미래에 세상에 내려와 중생을 구제한다고 믿어지는 보살로, 삼국시대에는 이 미륵을 기다리는 미륵신앙이 크게 유행했습니다.',
         '왜 국보 걸작으로 평가받아|이 작품이 걸작인 이유|동양조각사에서 왜 중요해|걸작으로 평가받는 이유 뭐야|걸작으로 평가받는 이유 알려줘|걸작으로 평가받는 이유 궁금해|걸작으로 평가받는 이유 설명해줘|걸작으로 평가받는 이유가 뭔지 궁금해|걸작으로 평가받는 이유에 대해 알려줘|걸작으로 평가받는 이유 뜻이 뭐야|걸작으로 평가받는 이유 왜 그런거야|걸작으로 평가받는 이유 무슨 의미야': '반가좌라는 까다로운 자세에서 신체 각 부분의 비례와 균형을 유기적으로 맞추고 뛰어난 주조 기술까지 보여줘, 동양 불교조각사의 걸작으로 평가받습니다.',
         '밀랍주조법이 뭐야|제작기법 설명해줘|어떻게 만들었어 기법|주조 방식이 궁금해|밀랍주조법 뭐야|밀랍주조법 알려줘|밀랍주조법 궁금해|밀랍주조법 설명해줘|밀랍주조법가 뭔지 궁금해|밀랍주조법에 대해 알려줘|밀랍주조법 뜻이 뭐야|밀랍주조법 왜 그런거야': '밀랍으로 원형을 만들고 그 겉에 거푸집을 씌운 뒤 열을 가해 밀랍을 녹여내고 그 자리에 청동을 부어 굳히는 밀랍주조법으로 제작됐습니다.',
@@ -5484,15 +5525,31 @@ function pushLog(cls, text){
     const log = document.getElementById('chat-log');
     const p = document.createElement('div');
     p.className = cls; p.textContent = text;
-    log.appendChild(p); log.scrollTop = log.scrollHeight;
+    log.appendChild(p);
+    // v-chat-scroll-to-top — 참가자 지적: "예상질문이 항상 보이고 답변은
+    // 화면 위에 나와 스크롤해서 위로 올려야 보이는데 불편하다." 원인:
+    // 새 메시지가 추가될 때마다 log.scrollTop = log.scrollHeight로 맨
+    // '아래'로 스크롤했다. #chat-log 자체 높이가 작은 데다(예상질문·
+    // 입력폼이 고정 공간을 차지) 답변이 여러 줄이면, 맨 아래로 스크롤한
+    // 결과 화면엔 답변의 "끝부분"만 보이고 정작 읽어야 할 "시작 부분"은
+    // 화면 위로 밀려나 안 보이는 상태가 됐다 — 그래서 매번 손으로 위로
+    // 스크롤해야 답을 처음부터 읽을 수 있었다. scrollIntoView({block:
+    // 'start'})로 바꿔, 새 메시지의 "시작"이 보이는 영역 맨 위에 오도록
+    // 한다 — 답을 처음부터 그대로 읽을 수 있고, 길면 아래로(자연스러운
+    // 읽기 방향으로) 스크롤하면 된다. 예상 질문 칩은 이 요청과 무관하게
+    // (참가자가 전에 요청한 대로) 계속 그대로 보인다.
+    p.scrollIntoView({ block: 'start' });
     return p;
 }
-// v-fact-citation — 참가자 평가: "핵심 사실(작품명·시대·제작기법 등)에는
-// 출처와 링크를 함께 표시해 사용자가 직접 확인할 수 있어야 한다."
-// #source-tag는 aria-hidden이라 스크린리더 사용자에게 링크를 숨기게
-// 되므로, 대신 항상 보이고 접근 가능한 #chat-log에 별도의 "확인된
-// 사실" 카드를 남긴다(pushLog와 달리 링크를 위해 innerHTML을 쓴다).
+// v-hide-fact-check-card — 참가자 요청: "'확인된 사실 (AI가 지어낸
+// ~~~)' 이것은 나오지 않게 해줘." 이 카드를 만들던 로직(아래 함수 본문)은
+// 그대로 남겨두되, 호출은 아무 것도 하지 않게 해서 두 호출부(KB 즉답
+// 경로·LLM 답변 경로) 모두에서 더 이상 이 카드가 챗봇창에 나오지 않게
+// 한다. pushUnverifiedNoticeLog(근거 없이 생성된 답변 경고, 주황색
+// 카드)는 이번 요청과 다른 카드라 그대로 둔다.
 function pushFactCheckLog(triples){
+    return;
+    // eslint-disable-next-line no-unreachable
     if (!triples || !triples.length) return;
     const nodeNames = Array.from(new Set(triples.map(t => t.split(' —[')[0])));
     const linksByNode = {};
@@ -5531,7 +5588,7 @@ function pushUnverifiedNoticeLog(){
             <a href="https://ko.wikipedia.org" rel="noopener" style="color:#ffb066;">위키백과 ↗</a>
         </div>`;
     log.appendChild(card);
-    log.scrollTop = log.scrollHeight;
+    card.scrollIntoView({ block: 'start' });
 }
 // v47 — 참가자 요청: "챗봇창 답이 나올 때 자막이 챗봇창 안이 아니라
 // 아래 해설창에 나오도록 해줘." 조각상 부위를 만졌을 때 이미 쓰고 있는
@@ -5629,7 +5686,8 @@ const TWO_VOICE_LIFE_SYSTEM_PROMPT = `당신은 미술관에 나란히 놓인 �
 [내용 원칙]
 - 없는 사실(인물명·연도·역사적 사건)을 지어내지 마십시오 — 이 답은 위로와 통찰을 나누는 것이지 새로운 사실 정보를 알려주는 것이 아닙니다.
 - 관람객의 질문에 실제로 응답하는 내용이어야 하며, 무관한 일반론으로 흐르지 마십시오.
-- 관람객이 자해·자살 등 위기를 암시하면, 조각상의 목소리는 유지하되 전문가나 주변 사람에게 직접 도움을 요청하라고 분명히 안내하십시오.`;
+- 관람객이 자해·자살 등 위기를 암시하면, 조각상의 목소리는 유지하되 전문가나 주변 사람에게 직접 도움을 요청하라고 분명히 안내하십시오.
+- 이 답은 정해진 정답이 아니라 "이 조각상이라면 이렇게 답했을 법하다"는 상상된 목소리입니다. 위 [화자 성격]에 이미 정해둔 성격에서 벗어난 새로운 철학적 입장을 지어내지 말고, 그 성격의 자연스러운 연장선 안에서만 답하십시오(예: 생각하는 사람은 괴로움을 피하지 않고 정면으로 마주하는 쪽이므로, "판단을 내려놓는다"보다 "판단을 멈출 수 없다" 쪽이 이 조각상의 성격과 맞습니다).`;
 
 // LLM이 위 형식을 지켜 보낸 답을 { rodin, maitreya }로 분리한다. 줄바꿈
 // 개수·공백은 모델마다 조금씩 다를 수 있어 유연하게 매칭한다.
@@ -5653,8 +5711,10 @@ async function _answerFreeformTwoVoice(q){
     const raw = await fetchDetailAI('관람객의 질문: ' + q, '', (partial) => {
         const shown = String(partial || '생각하는 중…');
         aiBubble.textContent = shown;
-        const log = document.getElementById('chat-log');
-        log.scrollTop = log.scrollHeight;
+        // v-chat-scroll-to-top — pushLog가 이미 이 말풍선을 화면 위쪽에
+        // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
+        // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
+        // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
     }, TWO_VOICE_LIFE_SYSTEM_PROMPT);
     recordPartChatQA(q, raw); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
     const parsed = _parseTwoVoiceReply(raw);
@@ -5786,8 +5846,10 @@ async function _processChatAnswer(q){
         const shown = String(partial || '생각하는 중…');
         document.getElementById('caption').innerHTML = shown.replace(/\n/g, '<br>');
         aiBubble.textContent = shown;
-        const log = document.getElementById('chat-log');
-        log.scrollTop = log.scrollHeight;
+        // v-chat-scroll-to-top — pushLog가 이미 이 말풍선을 화면 위쪽에
+        // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
+        // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
+        // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
     });
     showChatAnswerInCaption('사유의 상담소 — 답변', answer);
     aiBubble.textContent = answer;
