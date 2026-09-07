@@ -660,15 +660,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         전시실 1 · 조우
     </button>
     <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다. 화면의 다른 곳을 터치하면 바로 입장합니다.</p>
-    <!-- v-bgm-toggle — 참가자 요청: "room2에서 만든 것과 같이 초기화면
-         맨 아래에 배경음악 버튼을 넣어달라." room2.html과 같은 방식으로
-         구현한다. 이 화면은 "화면 아무 곳이나 탭하면 입장"하는 제스처가
-         있어(아래 initNoScreenReaderGestures IIFE의 pointerup 처리 —
-         target.closest('.btn.primary')만 예외로 뒀던 부분에 이 버튼도
-         추가해뒀다), 이 버튼을 눌러도 그대로 입장되지 않는다. -->
-    <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
-            aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
-            onclick="toggleBgm()">🔊 배경음악</button>
 </div>
 
 <style>
@@ -730,14 +721,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     color: #888;
     margin-top: 12px;
     word-break: keep-all;
-}
-
-/* v-bgm-toggle — room2.html과 같은 톤으로, 주 입장 버튼(.btn.primary)보다
-   작고 눈에 덜 띄게 둔다. */
-#intro-gate #btn-bgm-toggle{
-    margin-top:14px; font-size:.78rem; padding:6px 14px;
-    background:transparent; color:var(--gold-light,#d4af37);
-    border:1px solid rgba(212,175,55,.4); border-radius:16px;
 }
 
 #intro-gate .btn.primary {
@@ -1183,33 +1166,6 @@ function startAmbientSound(){
         el.volume = v;
         if(v >= AMBIENT_VOLUME) clearInterval(fadeIn);
     }, 60);
-}
-
-// v-bgm-toggle — 참가자 요청: "room2에서 만든 것과 같이 초기화면 맨
-// 아래에 배경음악 버튼을 넣어달라." room2.html의 구현을 그대로 옮긴다.
-// 이 전시(index.html)는 room2와 달리 Web Audio(합성 사운드스케이프)를
-// 쓰지 않고 5개의 <audio> 태그만 쓰므로, masterGain 없이 각 태그의
-// 네이티브 muted 속성만 켜고 끈다 — 크로스페이드가 관리하는 volume
-// 값(_fadeStatueAudio)은 건드리지 않아, 다시 켜면 그 순간의 진짜
-// 볼륨으로 바로 돌아온다.
-let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-base','snd-arrival','snd-rodin','snd-maitreya','snd-meeting'];
-function _applyBgmMuteState(){
-    BGM_AUDIO_IDS.forEach(id=>{
-        const el = document.getElementById(id);
-        if(el) el.muted = bgmMuted;
-    });
-}
-function toggleBgm(){
-    bgmMuted = !bgmMuted;
-    _applyBgmMuteState();
-    const btn = document.getElementById('btn-bgm-toggle');
-    if(btn){
-        btn.setAttribute('aria-pressed', String(bgmMuted));
-        btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
-        btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
-    }
-    try{ speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.'); }catch(err){}
 }
 
 const STATUE_SOUND_VOLUME = 0.18;
@@ -2383,9 +2339,7 @@ function goToRoom2(e) {
                 // onclick(handleGateEntryTap, 2탭 방식)에 맡기고(중복 호출
                 // 방지), 그 외 화면 어디를 두드리면 한 번에 곧장 입장한다
                 // (handleGateScreenTap — 위 v-gate-single-tap 참고).
-                // v-bgm-toggle — 배경음악 버튼도 같은 이유로 제외한다
-                // (누르면 곧장 입장해버리지 않고 toggleBgm()만 실행돼야 함).
-                if(target && target.closest && target.closest('.btn.primary, #btn-bgm-toggle')) return;
+                if(target && target.closest && target.closest('.btn.primary')) return;
                 suppressNextClick = true;
                 try{ hapticPulse('turn'); }catch(err){}
                 try{ handleGateScreenTap(); }catch(err){}
