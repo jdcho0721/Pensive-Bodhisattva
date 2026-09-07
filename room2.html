@@ -969,15 +969,15 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div id="hotspot-layer">
     <!-- ── 로댕: 생각하는 사람 ── -->
     <div class="hotspot" id="rodin-forehead" data-key="rodin-forehead" role="button" tabindex="0" aria-pressed="false"
-         style="top:15%; left:27%; width:8%; height:6%;" aria-label="로댕의 생각하는 사람— 이마와 미간"></div>
+         style="top:15%; left:27%; width:8%; height:6%;" aria-label="로댕 — 이마와 미간"></div>
     <div class="hotspot" id="rodin-fist" data-key="rodin-fist" role="button" tabindex="0" aria-pressed="false"
-         style="top:25%; left:26%; width:7%; height:6%;" aria-label="로댕의 생각하는 사람 — 턱 아래 주먹 쥔 손"></div>
+         style="top:25%; left:26%; width:7%; height:6%;" aria-label="로댕 — 턱 아래 주먹 쥔 손"></div>
     <div class="hotspot" id="rodin-elbow" data-key="rodin-elbow" role="button" tabindex="0" aria-pressed="false"
-         style="top:40%; left:23%; width:8%; height:6%;" aria-label="로댕의 생각하는 사람 — 팔꿈치가 무릎에 닿은 지점"></div>
+         style="top:40%; left:23%; width:8%; height:6%;" aria-label="로댕 — 팔꿈치가 무릎에 닿은 지점"></div>
     <div class="hotspot" id="rodin-muscle" data-key="rodin-muscle" role="button" tabindex="0" aria-pressed="false"
-         style="top:22%; left:12%; width:10%; height:20%; border-radius:40%;" aria-label="로댕의 생각하는 사람 — 등과 어깨 근육"></div>
+         style="top:22%; left:12%; width:10%; height:20%; border-radius:40%;" aria-label="로댕 — 등과 어깨 근육"></div>
     <div class="hotspot" id="rodin-toes" data-key="rodin-toes" role="button" tabindex="0" aria-pressed="false"
-         style="top:77%; left:20%; width:9%; height:6%;" aria-label="로댕의 생각하는 사람 — 대지를 움켜쥔 발가락"></div>
+         style="top:77%; left:20%; width:9%; height:6%;" aria-label="로댕 — 대지를 움켜쥔 발가락"></div>
 
     <div class="hotspot center-zone" id="center-zone" data-key="center-zone" role="button" tabindex="0" aria-pressed="false"
          style="top:32%; left:41%; width:18%; height:30%;" aria-label="두 조각상 사이, 비어 있는 가운데 자리"></div>
@@ -1057,10 +1057,10 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 뭐가 달라요?')">두 조각상은 뭐가 달라요?</button>
         <button type="button" class="chip" onclick="askSuggested('지금까지 만진 곳 요약해줘')">지금까지 만진 곳 요약해줘</button>
         <button type="button" class="chip" onclick="askSuggested('원융이 무슨 뜻이에요?')">원융이 무슨 뜻이에요?</button>
-        <button type="button" class="chip" onclick="askSuggested('로댕의 생각하는 사람은 왜 옷을 안 입었어요?')">로댕의 생각하는 사람은 왜 옷을 안 입었어요?</button>
+        <button type="button" class="chip" onclick="askSuggested('로댕은 왜 옷을 안 입었어요?')">로댕은 왜 옷을 안 입었어요?</button>
         <button type="button" class="chip" onclick="askSuggested('반가사유상은 왜 미소 짓고 있나요?')">반가사유상은 왜 미소 짓고 있나요?</button>
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 재질이 뭐가 달라요?')">두 조각상은 재질이 뭐가 달라요?</button>
-        <button type="button" class="chip" onclick="askSuggested('로댕의 생각하는 사람은 원래 이름이 뭐였어요?')">생각하는 사람은 원래 이름이 뭐였어요?</button>
+        <button type="button" class="chip" onclick="askSuggested('생각하는 사람은 원래 이름이 뭐였어요?')">생각하는 사람은 원래 이름이 뭐였어요?</button>
         <button type="button" class="chip" onclick="askSuggested('진인사대천명이 조각상과 무슨 관계예요?')">진인사대천명이 조각상과 무슨 관계예요?</button>
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
@@ -1213,43 +1213,43 @@ if(window.visualViewport){
    남기고 모두 제거했다. */
 const DETAILS = {
     'rodin-forehead': {
-        title:'로댕의 생각하는 사람 · 이마와 미간', body:'로댕의 생각하는 사람',
+        title:'로댕 · 이마와 미간', body:'로댕',
         source:'출처: 관찰+연출 [16,23]; 키에르케고어 [30]',
-        focus:'로댕의 생각하는 사람, 얼굴 정중앙 이마입니다.',
+        focus:'생각하는 사람, 얼굴 정중앙 이마입니다.',
         detail:'깊게 파인 주름과, 팽팽히 당겨진 미간이 만져집니다. 고통스러운 사유의 흔적입니다. 인간이 삶에서 마주하는 무거운 책임과 내면의 실존적 고뇌, 그리고 부조리한 현실 앞에서 홀로 사유하는 인간의 모습을 드러냅니다. 실존주의 철학자 키에르케고어는 이러한 절망과 불안을 없애야 할 병이 아니라, 유한하면서 동시에 무한을 지향하는 인간이라면 피할 수 없는 조건으로 보았습니다. 그 절망을 회피하지 않고 정면으로 마주할 때에야 비로소 자기 자신에 대한 참된 이해에 이를 수 있다는 것입니다. 지금 이 미간을 짚은 손끝이, 눈으로는 다 읽을 수 없던 그 사유의 무게를 몸으로 대신 느끼고 있습니다.',
         detailSimple:'이마에 깊은 주름이 있습니다. 미간도 팽팽하게 당겨져 있습니다. 힘든 생각을 오래 한 흔적입니다. 사람은 살면서 무거운 걱정을 안고, 혼자 그 걱정과 마주할 때가 있습니다. 이 이마를 만지는 손끝이, 그 힘든 생각의 무게를 몸으로 느껴봅니다.',
         touchInvite:'이번엔 그 아래, 턱을 받친 주먹도 만져보세요.',
         embody:'당신도 눈썹을 살짝 찌푸리고, 눈을 아래로 내리깔아 보세요.'
     },
     'rodin-fist': {
-        title:'로댕의 생각하는 사람 · 주먹 쥔 손', body:'로댕의 생각하는 사람',
+        title:'로댕 · 주먹 쥔 손', body:'로댕',
         source:'출처: 관찰+연출 [16,23]; 스피노자 [31]',
-        focus:'로댕의 생각하는 사람, 턱 바로 아래입니다.',
+        focus:'생각하는 사람, 턱 바로 아래입니다.',
         detail:'단단하게 말아쥔 주먹이 턱을 떠받치고 있습니다. 손등 위 힘줄까지 도드라져 있습니다. 단순한 체념이 아니라, 끊임없이 생각하고 번민하며 진리를 찾아내려는 인간의 치열한 지적·육체적 투쟁을 상징합니다. 스피노자는 모든 존재가 자기 안에 머무르려는 근원적 노력, 곧 코나투스를 지닌다고 보았습니다. 이 주먹은 그 노력이 아직 외부 원인에 부딪혀 격렬하게, 그러나 수동적으로 작동하는 상태 — 세계를 자기 힘으로 움켜쥐고 이해하려는, 아직 자유에 이르지 못한 분투로도 읽을 수 있습니다. 손끝으로 이 긴장을 따라가는 것은, 그가 끝까지 손에서 놓지 못한 물음을 몸으로 함께 붙들어보는 일입니다.',
         detailSimple:'주먹을 꽉 쥔 손이 턱을 받치고 있습니다. 손등에 힘줄이 도드라져 보입니다. 포기한 게 아니라, 답을 찾으려고 끝까지 애쓰는 모습입니다. 이 긴장을 손끝으로 따라가 보면, 그 물음을 몸으로 함께 붙드는 것 같습니다.',
         touchInvite:'이번엔 그 팔꿈치가 무릎에 닿은 지점을 만져보세요.'
     },
     'rodin-elbow': {
-        title:'로댕의 생각하는 사람 · 팔꿈치와 무릎', body:'로댕의 생각하는 사람',
+        title:'로댕 · 팔꿈치와 무릎', body:'로댕',
         source:'출처: 관찰+연출 [16,23]; 스피노자 [31]',
-        focus:'로댕의 생각하는 사람, 오른쪽 팔꿈치가 왼쪽 무릎 위에 닿은 지점입니다.',
+        focus:'생각하는 사람, 오른쪽 팔꿈치가 왼쪽 무릎 위에 닿은 지점입니다.',
         detail:'팔꿈치가 무릎 위에 단단히 눌려 있습니다. 몸 전체를 지탱하는 무게가 그 한 점에 쏠려 있습니다. 외부 세계의 거대한 압박과 내면의 무게를 온몸으로 견뎌내는 인간의 실존적 한계와, 그 속에서 꿋꿋이 버텨내는 의지의 응축을 보여줍니다. 스피노자가 말한 코나투스 — 자신의 존재 안에 머무르려는 근원적 노력 — 이 아직 외부의 압박과 격렬히 부딪히면서도 결코 물러서지 않고 버텨내는 순간이, 바로 이 팔꿈치가 짊어진 무게에 담겨 있습니다. 이 무게 중심을 손끝으로 짚는 순간, 버텨낸다는 것이 무엇인지 관념이 아니라 감각으로 다가옵니다.',
         detailSimple:'팔꿈치가 무릎 위를 꾹 누르고 있습니다. 몸의 무게가 그 한 곳에 실려 있습니다. 힘든 일을 온몸으로 버텨내는 모습입니다. 아직은 다 내려놓지 못하고, 있는 힘을 다해 버티는 자세입니다. 이 무게를 손끝으로 짚으면, 버틴다는 것이 어떤 느낌인지 몸으로 알게 됩니다.',
         touchInvite:'이제 등과 어깨의 근육을 만져보세요.'
     },
     'rodin-muscle': {
-        title:'의 생각하는 사람 · 등과 어깨 근육', body:'로댕의 생각하는 사람',
+        title:'로댕 · 등과 어깨 근육', body:'로댕',
         source:'출처: 관찰+연출 [16,23]; 스피노자 [31]',
-        focus:'로댕의 생각하는 사람, 등에서 어깨로 이어지는 넓은 면입니다.',
+        focus:'생각하는 사람, 등에서 어깨로 이어지는 넓은 면입니다.',
         detail:'밧줄처럼 팽팽히 당겨진 근육이 만져집니다. 살아있는 무게 전체가 그리로 쏠린 듯합니다. 단순한 육체적 긴장을 넘어, 인간이 짊어진 역사적·존재론적 짐의 무거움과, 그 고통을 고스란히 끌어안은 채 침묵 속에서 사유하는 생명의 역동성을 담아냅니다. 근육이 이토록 긴장한 채 응결된 모습은, 스피노자가 말한 코나투스가 아직 외부 세계와 격렬히 부딪히며 작동하는 수동의 상태에 가깝습니다. 자유란 이 부딪힘에서 벗어나는 것이 아니라, 그 필연성을 스스로 이해하고 받아들이는 데서 비로소 시작된다고 그는 보았습니다. 이 팽팽함을 손바닥으로 느끼는 것 자체가, 그가 몸으로 앓았던 사유를 지금 이 순간 그대로 되짚어보는 체화의 순간입니다.',
         detailSimple:'등과 어깨 근육이 밧줄처럼 팽팽합니다. 온몸의 무게가 거기 실린 것 같습니다. 힘든 마음을 혼자 끌어안고 버티는 모습입니다. 이 팽팽함을 손으로 느끼는 것 자체가, 그 힘든 마음을 몸으로 되짚어보는 일입니다.',
         touchInvite:'이제 대지를 딛은 발가락도 만져보세요.',
         embody:'당신도 어깨에 살짝 힘을 주어보세요.'
     },
     'rodin-toes': {
-        title:'로댕의 생각하는 사람 · 발가락', body:'로댕의 생각하는 사람',
+        title:'로댕 · 발가락', body:'로댕',
         source:'출처: 관찰+연출 [16,23]; 진인사대천명(전통 격언)',
-        focus:'로댕의 생각하는 사람, 가장 아래 발입니다.',
+        focus:'생각하는 사람, 가장 아래 발입니다.',
         detail:'발가락이 바위를 움켜쥐듯 힘주어 대지를 딛고 있습니다. 떠나지 못하는 발입니다. 이상과 관념의 세계를 헤매면서도, 결국 현실이라는 구체적이고 단단한 대지 위에 두 발을 붙박인 채 살아갈 수밖에 없는 인간의 근원적 조건과 숙명을 상징합니다. ‘진인사대천명’의 앞부분, 사람으로서 할 수 있는 일을 다한다는 ‘진인사’가 바로 이 발끝에 있습니다. 아직 내려놓을 때가 아니라는 듯, 결과를 하늘에 맡기기 전 마지막까지 땅을 붙드는 자세입니다. 이 발끝의 힘을 손끝으로 따라가 보는 것은, 아직 내려놓지 못한 마음이 몸에서는 어떤 모습인지를 직접 확인하는 일입니다.',
         detailSimple:'발가락이 바위를 움켜쥐듯 힘주어 땅을 딛고 있습니다. 아직 이 자리를 떠나지 못하는 발입니다. 마음은 멀리 헤매도, 두 발은 현실을 딛고 서 있어야 하는 사람의 모습입니다. 이 발끝의 힘을 따라가 보면, 아직 내려놓지 못한 마음이 몸에서는 어떤 모습인지 알게 됩니다.',
         touchInvite:'이번엔 오른쪽, 반가사유상의 귀를 만져보세요.'
@@ -1266,7 +1266,7 @@ const DETAILS = {
         title:'반가사유상 · 얼굴의 미소', body:'반가사유상',
         source:'출처: 사실 [22,26]+연출; 명법 스님 [32]',
         focus:'반가사유상, 얼굴 정중앙입니다.',
-        detail:'입가에 옅은 미소가 걸려 있고, 눈은 반쯤 감겨 있습니다. 괴로운 마음을 내려놓은 표정입니다. 머리 위에는 화려한 보관을 썼습니다. 미륵보살이라는 신분을 나타내는 장식입니다. 인간의 끝없는 번뇌와 고통을 어떻게 해탈할 것인가에 대한 깊은 명상을 상징합니다. 모든 인위적 집착을 내려놓은 상태에서의 고요한 침묵을 담고 있습니다. 불교미학을 연구한 명법 스님은 이 미소를 세속적 기쁨이 아니라 ‘적멸의 즐거움’ — 조건 없이 일어나지도 사라지지도 않는, 불생불멸의 즐거움이라 풀이합니다. 로댕의 생각하는 사람이 무언가를 움켜쥐려는 비극적인 힘으로 사유한다면, 이 미소는 있는 그대로 바라보는 것만으로 충분한 고요를 보여줍니다. 이 미소를 손끝으로 스치는 순간, 말로 설명되지 않던 평온이 감각으로 먼저 전해질 것입니다.',
+        detail:'입가에 옅은 미소가 걸려 있고, 눈은 반쯤 감겨 있습니다. 괴로운 마음을 내려놓은 표정입니다. 머리 위에는 화려한 보관을 썼습니다. 미륵보살이라는 신분을 나타내는 장식입니다. 인간의 끝없는 번뇌와 고통을 어떻게 해탈할 것인가에 대한 깊은 명상을 상징합니다. 모든 인위적 집착을 내려놓은 상태에서의 고요한 침묵을 담고 있습니다. 불교미학을 연구한 명법 스님은 이 미소를 세속적 기쁨이 아니라 ‘적멸의 즐거움’ — 조건 없이 일어나지도 사라지지도 않는, 불생불멸의 즐거움이라 풀이합니다. 로댕의 인물이 무언가를 움켜쥐려는 비극적인 힘으로 사유한다면, 이 미소는 있는 그대로 바라보는 것만으로 충분한 고요를 보여줍니다. 이 미소를 손끝으로 스치는 순간, 말로 설명되지 않던 평온이 감각으로 먼저 전해질 것입니다.',
         detailSimple:'입가에 옅은 미소가 있고, 눈은 반쯤 감겨 있습니다. 힘든 마음을 내려놓은 표정입니다. 머리 위 화려한 관은 미륵보살이라는 것을 보여줍니다. 모든 걱정을 내려놓은 뒤에 오는 조용한 평화를 담고 있습니다. 이 미소를 스치는 순간, 말로 다 못한 평온이 손끝으로 먼저 전해집니다.',
         touchInvite:'그 아래, 뺨에 닿은 손가락 두 개를 만져보세요.',
         embody:'당신도 입가에 옅은 미소를 지어보세요.'
@@ -1301,8 +1301,8 @@ const DETAILS = {
         title:'반가사유상 · 발가락', body:'반가사유상',
         source:'출처: 관찰+연출 [23]; 진인사대천명(전통 격언)',
         focus:'반가사유상, 가장 아래 발입니다.',
-        detail:'발가락 다섯 개가 대좌 위에 가지런히 놓여 있습니다. 힘을 완전히 뺀 발입니다. 로댕의생각하는 사람 발가락이 현실의 무게를 움켜쥐는 긴장과 집착을 대변한다면, 이 발가락은 모든 육체적·정신적 긴장을 내려놓은 완전한 이완과 해탈, 그리고 평온의 경지를 상징합니다. 로댕의 생각하는 사람 발끝이 아직 내려놓지 못한 ‘진인사’라면, 이 발가락은 결과를 하늘에 맡기고 내려놓은 ‘대천명’입니다. 같은 대지를 딛고 있지만, 그 위에 실린 마음의 무게는 서로 반대편에 있습니다. 이 발끝의 이완을 손끝으로 느껴보는 것은, 내려놓음이라는 마음의 상태가 몸에서는 어떤 감촉인지를 직접 확인하는 일입니다.',
-        detailSimple:'발가락 다섯 개가 대좌 위에 가지런히 놓여 있습니다. 힘을 완전히 뺀 발입니다. 로댕의 생각하는 사람 발이 힘주어 땅을 붙드는 모습이라면, 이 발은 모든 긴장을 내려놓고 편안히 쉬는 모습입니다. 이 이완을 느껴보면, 내려놓음이 몸에서는 어떤 감촉인지 알게 됩니다.',
+        detail:'발가락 다섯 개가 대좌 위에 가지런히 놓여 있습니다. 힘을 완전히 뺀 발입니다. 로댕의 발가락이 현실의 무게를 움켜쥐는 긴장과 집착을 대변한다면, 이 발가락은 모든 육체적·정신적 긴장을 내려놓은 완전한 이완과 해탈, 그리고 평온의 경지를 상징합니다. 로댕의 발끝이 아직 내려놓지 못한 ‘진인사’라면, 이 발가락은 결과를 하늘에 맡기고 내려놓은 ‘대천명’입니다. 같은 대지를 딛고 있지만, 그 위에 실린 마음의 무게는 서로 반대편에 있습니다. 이 발끝의 이완을 손끝으로 느껴보는 것은, 내려놓음이라는 마음의 상태가 몸에서는 어떤 감촉인지를 직접 확인하는 일입니다.',
+        detailSimple:'발가락 다섯 개가 대좌 위에 가지런히 놓여 있습니다. 힘을 완전히 뺀 발입니다. 로댕의 발이 힘주어 땅을 붙드는 모습이라면, 이 발은 모든 긴장을 내려놓고 편안히 쉬는 모습입니다. 이 이완을 느껴보면, 내려놓음이 몸에서는 어떤 감촉인지 알게 됩니다.',
         touchInvite:'열한 곳 중 필요한 곳을 자유롭게 더 만져보세요.'
     }
 };
@@ -1789,7 +1789,7 @@ function _stopCaptionSync(){
 function _sideOfKey(key){
     if(key === '__center__') return 'center';
     const d = DETAILS[key];
-    return (d && d.body === '로댕의 생각하는 사람') ? 'rodin' : 'maitreya';
+    return (d && d.body === '로댕') ? 'rodin' : 'maitreya';
 }
 
 function touchPart(key){
@@ -1812,7 +1812,7 @@ function _processTouch(key){
     const _sound = SOUND_MAP[key];
     if(_sound) scheduleHapticSyncTone(HAPTIC_PATTERNS.confirm, _sound.freq, _sound.soundType);
     fadeArrivalOut(); // v36 — 첫 접촉이 일어나는 순간 "도착"의 소리를 내려보낸다
-    updateStatueSound(d.body === '로댕의 생각하는 사람' ? 'rodin' : 'maitreya'); // 만진 부위의 조각상에 맞춰 배경음악 크로스페이드
+    updateStatueSound(d.body === '로댕' ? 'rodin' : 'maitreya'); // 만진 부위의 조각상에 맞춰 배경음악 크로스페이드
     if(_chatAnswerActive){
         // 챗봇 답변이 재생되는 도중 새 부위를 만졌다 — 소리는 speak()가
         // 알아서 안전하게 정리하지만(자동 취소), 왜 답변이 갑자기
@@ -1879,7 +1879,7 @@ function _processTouch(key){
             // DETAILS의 embody 필드 자체는 남겨두되(나중에 다시 쓸 수
             // 있도록), 낭독이 끝나면 곧바로 다음 단계로 넘어간다.
             _afterNarrationBranch(key, d, remainingAfterThis);
-        }, d.body === '로댕의 생각하는 사람' ? 'rodin' : 'maitreya'); // v-rodin-voice — 이 해설이 어느 조각상 것인지에 맞춰 화자 음성을 적용한다
+        }, d.body === '로댕' ? 'rodin' : 'maitreya'); // v-rodin-voice — 이 해설이 어느 조각상 것인지에 맞춰 화자 음성을 적용한다
     };
 
     // 원래 startNarration 콜백 안에 있던 "다음 안내" 분기를 별도 함수로
@@ -1974,7 +1974,7 @@ function repeatCurrent(){
         document.getElementById(currentKey)?.classList.remove('visited');
         document.getElementById(currentKey)?.classList.remove('narrating');
         document.getElementById(currentKey)?.classList.add('explored');
-    }, d.body === '로댕의 생각하는 사람' ? 'rodin' : 'maitreya'); // v-rodin-voice
+    }, d.body === '로댕' ? 'rodin' : 'maitreya'); // v-rodin-voice
 }
 
 /* v2 — 6.3절 표3 감사 대응: '기억 회상(Recall) 지원'(△) 보완. 별도의
@@ -1986,10 +1986,10 @@ function buildRecapAnswer(){
         return '아직 만지신 부위가 없습니다. 조각상의 특징적인 부분을 손끝으로 만지시면, 그때부터 하나씩 정리해 들려드릴게요.';
     }
     const shortName = k => DETAILS[k].title.split(' · ')[1];
-    const rodinDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='로댕의 생각하는 사람').map(shortName);
+    const rodinDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='로댕').map(shortName);
     const maitreyaDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='반가사유상').map(shortName);
     const parts = [];
-    if(rodinDone.length) parts.push(`로댕의 생각하는 사람은 ${rodinDone.join(', ')}`);
+    if(rodinDone.length) parts.push(`로댕은 ${rodinDone.join(', ')}`);
     if(maitreyaDone.length) parts.push(`반가사유상은 ${maitreyaDone.join(', ')}`);
     const done = parts.join(', ') + (parts.length ? '을(를) 만지셨습니다' : '');
     const remain = ORDER.length - visited.size;
@@ -3038,7 +3038,7 @@ async function _playCenterSynthesis(moodEl){
    않는다. */
 function showCertificate(isComplete){
     const shortName = k => DETAILS[k].title.split(' · ')[1];
-    const rodinDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='로댕의 생각하는 사람').map(shortName);
+    const rodinDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='로댕').map(shortName);
     const maitreyaDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='반가사유상').map(shortName);
     const remain = ORDER.length - visited.size;
 
@@ -3218,7 +3218,7 @@ function beginYeoilExit(){
     // #yeoil-text 내용도 함께 읽도록 넣는다(HTML의 <br>은 문장 사이
     // 공백으로 바꿔, 이어 읽을 때 단어가 붙어버리지 않게 한다).
     const yeoilText = "생각을 내려놓습니다. 손끝의 감촉도, 들었던 이야기도 지금 이 순간 가만히 놓아둡니다.";
-    const meaningText = "여일(如一)은 '한결같다'는 뜻으로, 로댕의 생각하는 사람처럼 움켜쥐려는 마음과 반가사유상처럼 내려놓으려는 마음 사이를 늘 오가는 인간의 흔들림을 그대로 받아들이는 자리로 돌아간다는 의미입니다.";
+    const meaningText = "여일(如一)은 '한결같다'는 뜻으로, 로댕처럼 움켜쥐려는 마음과 반가사유상처럼 내려놓으려는 마음 사이를 늘 오가는 인간의 흔들림을 그대로 받아들이는 자리로 돌아간다는 의미입니다.";
     const meaningEl = document.getElementById('yeoil-meaning');
     if(meaningEl) meaningEl.textContent = meaningText;
 
@@ -3348,7 +3348,7 @@ function _searchKBFuzzy(kbObj, query){
     // 동사·관형형이라 어미가 어색하게 잘려 목록에 없으면 새 나간다. 그래서
     // 원본과 조사 제거형을 "둘 다" 확인하고, 어색하게 잘린 동사 어간도
     // 목록에 직접 추가해뒀다.
-    const STOPWORDS=new Set(['로댕의 생각하는 사람','반가사유상','사유상','조각상','생각하는','생각하','사람','뭐야','궁금해','알려줘','설명해줘','어디',
+    const STOPWORDS=new Set(['로댕','반가사유상','사유상','조각상','생각하는','생각하','사람','뭐야','궁금해','알려줘','설명해줘','어디',
         // v9 — 참가자 테스트에서 발견된 오탐: "이 미술관은 몇 시에 문 닫아요"
         // (전혀 무관한 질문)가 "미술관"이라는 단어 하나가 "로댕미술관"이라는
         // 복합어 속에 부분 문자열로 들어있다는 이유만으로 로댕미술관 위치
@@ -3431,14 +3431,14 @@ function _searchKBFuzzy(kbObj, query){
    더 물어볼 만한" 사실 정보를 담는다. 철학적 해석이 아니라 겉모습·자세
    이름·재질·시대·장신구 같은 도상학적·물리적 사실 위주로 구성했다. ── */
 const PART_MEANINGS = {
-    '로댕의 생각하는 사람': {
-        '옷|벗은|나체|알몸': '로댕의 생각하는 사람은 아무것도 걸치지 않은 맨몸으로 표현됐습니다. 장신구나 옷을 걷어내고, 오직 근육과 뼈대만으로 힘든 마음의 무게를 드러내기 위해서입니다.',
+    '로댕': {
+        '옷|벗은|나체|알몸': '로댕은 아무것도 걸치지 않은 맨몸으로 표현됐습니다. 장신구나 옷을 걷어내고, 오직 근육과 뼈대만으로 힘든 마음의 무게를 드러내기 위해서입니다.',
         '이름|제목|무슨 상': '이 조각의 이름은 <생각하는 사람>(Le Penseur)입니다. 원래는 <지옥의 문> 꼭대기에 앉아 인간 군상을 내려다보는 인물로 처음 만들어졌습니다.',
         '작가|누가 만들|만든 사람': '프랑스 조각가 오귀스트 로댕이 1880년경 처음 제작했고, 1904년에 독립된 대형 청동상으로 다시 만들었습니다.',
         '재질|청동|금속|무엇으로 만들': '청동으로 만들어졌습니다. 표면을 매끈하게 다듬지 않고 거칠게 남겨, 그을린 나무껍질처럼 짙고 어두운 흙빛 질감이 힘든 마음의 흔적처럼 보이게 했습니다.',
         '자세|앉은|웅크린|왜 저러고': '오른쪽 팔꿈치를 왼쪽 무릎에 괴고 몸을 잔뜩 웅크린 자세입니다. 온몸의 근육이 팽팽히 당겨져 있어 긴장감을 만들어냅니다.',
         '크기|얼마나 커': '실물 크기의 청동상으로 처음 제작됐고, 이후 확대·축소된 여러 점이 세계 곳곳의 미술관에 전시돼 있습니다.',
-        '로댕의 생각하는 사람 원래 이름|생각하는 사람 원제|시인이라고도 불렸다는게 사실|생각하는 사람 별칭|le penseur 뜻|작품 원래 명칭|처음엔 뭐라고 불렸어|시인 조각상|생각하는 사람 초기 제목|생각하는 사람 원래 이름 뭐야|생각하는 사람 원래 이름 알려줘|생각하는 사람 원래 이름 궁금해': '처음 만들어질 때는 <시인>이라는 이름으로, 단테의 <신곡>을 떠올리며 지옥문 앞에 앉은 단테 자신의 모습을 본떠 새긴 것이었습니다. 지금의 <생각하는 사람>이라는 이름은 이후에 붙여졌습니다.',
+        '로댕 생각하는 사람 원래 이름|생각하는 사람 원제|시인이라고도 불렸다는게 사실|생각하는 사람 별칭|le penseur 뜻|작품 원래 명칭|처음엔 뭐라고 불렸어|시인 조각상|생각하는 사람 초기 제목|생각하는 사람 원래 이름 뭐야|생각하는 사람 원래 이름 알려줘|생각하는 사람 원래 이름 궁금해': '처음 만들어질 때는 <시인>이라는 이름으로, 단테의 <신곡>을 떠올리며 지옥문 앞에 앉은 단테 자신의 모습을 본떠 새긴 것이었습니다. 지금의 <생각하는 사람>이라는 이름은 이후에 붙여졌습니다.',
         '지옥의 문이 뭐야|생각하는 사람 지옥의 문 관계|지옥문 위에 앉아있는 이유|단테 신곡이랑 무슨 관계|왜 지옥문 꼭대기에 있어|지옥의 문 조각 설명해줘|생각하는 사람 원래 위치|단테랑 관련있어|지옥의 문 프로젝트가 뭐야|지옥의 문 뭐야|지옥의 문 알려줘|지옥의 문 궁금해': '<생각하는 사람>은 원래 로댕이 단테의 <신곡> 지옥편을 주제로 제작한 대형 조각 <지옥의 문> 꼭대기에 앉아, 아래 펼쳐진 인간 군상을 내려다보는 인물로 처음 구상됐습니다.',
         '언제 독립된 작품이 됐어|생각하는 사람 확대 제작 연도|1904년에 무슨 일이 있었어|독립상으로 만든 이유|언제 커다란 청동상이 됐어|확대판은 언제 만들어졌어|생각하는 사람 대형화 시기|단독 작품으로 언제 분리됐어|독립상 확대 제작 시기 뭐야|독립상 확대 제작 시기 알려줘|독립상 확대 제작 시기 궁금해|독립상 확대 제작 시기 설명해줘': '1880년경 지옥의 문 일부로 작게 구상됐던 인물을, 1904년에 로댕이 독립된 대형 청동상으로 따로 확대 제작하면서 오늘날 알려진 <생각하는 사람>이 됐습니다.',
         '파리 어디에 있어|로댕미술관이 어디야|생각하는 사람 원본 소장처|진품은 어디있어|로댕 박물관 위치|파리 로댕미술관 소개해줘|원작 지금 어디 있어|프랑스 어느 박물관|로댕미술관 위치 뭐야|로댕미술관 위치 알려줘|로댕미술관 위치 궁금해|로댕미술관 위치 설명해줘': '대형 청동상 원본 중 하나는 프랑스 파리의 로댕미술관 정원에 있습니다. 처음엔 팡테옹 앞 광장에 세워졌다가 이후 로댕미술관으로 옮겨졌습니다.',
@@ -3559,7 +3559,7 @@ const PART_MEANINGS = {
         '장신구가 왜 적어|왜 화려하지 않아|소박한 이유가 뭐야|장신구 적은 이유 궁금해|왜 꾸미지 않았어': '화려한 장식을 덜어낼수록 사람 본연의 품격이 더 잘 드러난다는 생각이 담겨 있다고 해석됩니다. 보관 외에는 몸에 걸친 장식이 거의 없습니다.',
         '왜 금빛이야|금박은 무슨 뜻|금동인 이유가 뭐야|금빛 의미|금박 의미 궁금해|금빛 의미가 뭐야|금빛 의미 뭐야|금박 의미 뭐야|금빛이 뜻하는 것|금빛의 의미': '표면의 은은한 금빛은 잘 익은 감처럼 따뜻하게 반짝이며, 단순한 장식이 아니라 변하지 않는 소중한 가치를 나타낸다고 여겨집니다.',
         '곡선이 왜 부드러워|부드러운 곡선 뜻|왜 곡선으로 표현했어|곡선의 의미 궁금해|곡선 의미 알려줘': '몸 전체를 감싸는 부드러운 곡선은 억지로 힘주지 않은, 자연스럽고 편안한 마음 상태를 보여준다고 해석됩니다.',
-        '빈 공간이 왜 있어|여백은 무슨 뜻|팔다리 사이 빈 공간|여백의 의미 궁금해|여백 뭐야': '팔과 다리 사이에 남겨진 빈 공간은 보는 사람의 마음이 잠시 머물다 갈 자리로 해석되기도 합니다. 로댕의 생각하는 사람 쪽의 빽빽한 근육 표현과 대비되는 지점입니다.',
+        '빈 공간이 왜 있어|여백은 무슨 뜻|팔다리 사이 빈 공간|여백의 의미 궁금해|여백 뭐야': '팔과 다리 사이에 남겨진 빈 공간은 보는 사람의 마음이 잠시 머물다 갈 자리로 해석되기도 합니다. 로댕 쪽의 빽빽한 근육 표현과 대비되는 지점입니다.',
         '모나리자랑 비교하면|모나리자와 무슨 차이|서양 명화와 비교|반가사유상 모나리자 비교 궁금해': '모나리자의 미소가 개인적인 비밀을 감춘 표정이라면, 반가사유상의 미소는 감춤 없이 마음의 평온을 그대로 보여주는 표정으로 해석됩니다.',
         '왜 청동이고 반가사유상은 금동이야|재질이 왜 서로 달라|청동과 금동 차이가 뭐야|두 조각상 재료 차이 궁금해': '청동은 무겁고 거친 질감으로 삶의 고단함을 느끼게 하고, 금동은 은은한 금빛으로 마음의 짐을 내려놓은 듯한 평온함을 보여줍니다. 각자의 주제에 어울리는 재료가 골라진 것으로 해석됩니다.',
         '제작 이유가 뭐야|반가사유상을 왜 만들었어|무슨 의도로 만들었어|만든 이유 궁금해|만든 이유 알려줘': '고통받는 사람들의 마음을 함께 나누고, 언젠가 그들에게 다가가 돕겠다는 미륵보살의 마음을 형상으로 옮기기 위해 만들어졌다고 해석됩니다.',
@@ -3788,7 +3788,7 @@ const PHILOSOPHY_QA = [
   // 무슨 이야기를 할까요?" 같은 질문이, 결이 다른 기존 근처 항목("왜 두
   // 조각상은 서로 마주 보지 않나요")으로는 답이 되지 않아 KB 오탐(반가사유상
   // 기원 등)이나 LLM 폴백으로 빠지고 있었다.
-  { q: ["두 조각상이 만나면 처음 무슨 이야기를 할까요", "두 조각상이 만나면 무슨 이야기를 할까요", "두 조각상이 대화한다면 무슨 말을 할까요", "로댕의 생각하는 사람과 반가사유상이 만나면 무슨 얘기를 나눌까요", "이 두 조각상은 서로에게 무슨 말을 할까요", "두 조각상이 서로 만난다면 처음 하는 말은 뭘까요", "두 조각상이 서로에게 하고 싶은 말이 있을까요"], rodin: "저는 아마 먼저 물을 것입니다 — 당신은 그 무거운 물음을 어떻게 내려놓았느냐고. 저는 아직 그 답을 몸으로 찾는 중입니다.", maitreya: "저는 그저 가만히 그의 곁에 머물 것입니다. 애써 묻지 않아도, 나란히 앉아 있는 것만으로 이미 서로의 사유에 응답하고 있으니까요." },
+  { q: ["두 조각상이 만나면 처음 무슨 이야기를 할까요", "두 조각상이 만나면 무슨 이야기를 할까요", "두 조각상이 대화한다면 무슨 말을 할까요", "로댕과 반가사유상이 만나면 무슨 얘기를 나눌까요", "이 두 조각상은 서로에게 무슨 말을 할까요", "두 조각상이 서로 만난다면 처음 하는 말은 뭘까요", "두 조각상이 서로에게 하고 싶은 말이 있을까요"], rodin: "저는 아마 먼저 물을 것입니다 — 당신은 그 무거운 물음을 어떻게 내려놓았느냐고. 저는 아직 그 답을 몸으로 찾는 중입니다.", maitreya: "저는 그저 가만히 그의 곁에 머물 것입니다. 애써 묻지 않아도, 나란히 앉아 있는 것만으로 이미 서로의 사유에 응답하고 있으니까요." },
 ];
 
 /* ══════════════════════════════════════════════════════
@@ -3830,7 +3830,7 @@ function _searchPhilosophyQA(query){
     const PHIL_STOPWORDS = new Set(['무엇','어떤','어느','이런','저런','그런','뭔가','왜','어떻게',
         '궁금한데','알고싶어','뭔지','뜻이','이유','의미야','그런거야','뭐예요','뭘까요','싶어요',
         '인가요','인가','되나요','것은','거예요','거죠','당신은','당신에게','저는',
-        '로댕의 생각하는 사람','반가사유상','사유상','조각상','생각하는','생각하','사람','뭐야','궁금해','알려줘','어디',
+        '로댕','반가사유상','사유상','조각상','생각하는','생각하','사람','뭐야','궁금해','알려줘','어디',
         '미술관','박물관','실존','처음','서로','의미','의미가','의미는','의미도','사유','있어요']);
     // v-phil-ending-strip — 위와 같은 테스트에서 발견: "삶이란 무엇인가요"가 "죽음은
     // 무엇인가요"와 잘못 매칭됐다. 원인은 "무엇인가요"라는 토큰 전체가 stopword
@@ -3872,7 +3872,7 @@ function _renderPhilosophyAnswer(item){
     // pushLog는 textContent로만 넣으므로(마크업 렌더링 안 함), HTML
     // 태그 대신 줄바꿈으로 두 화자를 구분한다 — #chat-log .ai에 준
     // white-space:pre-line이 이 줄바꿈을 그대로 살려서 보여준다.
-    const text = `로댕의 생각하는 사람 — ${item.rodin}
+    const text = `로댕 — ${item.rodin}
 
 반가사유상 — ${item.maitreya}`;
     pushLog('ai', text);
@@ -3888,7 +3888,7 @@ function _renderPhilosophyAnswer(item){
     // 말하는 동안은 로댕의 문장을, 반가사유상 차례로 넘어가면 그
     // 문장으로 자막을 갈아 끼워 speak() 호출 각각의 바로 앞에서 자막을
     // 먼저 채운다(다른 경로와 동일한 순서).
-    showChatAnswerInCaption('사유의 상담소 — 답변', `로댕의 생각하는 사람 — ${item.rodin}`);
+    showChatAnswerInCaption('사유의 상담소 — 답변', `로댕 — ${item.rodin}`);
     // v-speech-match-caption — 참가자 요청: "챗봇 응답의 음성해설은
     // 자막의 내용과 같은 내용으로 나오게 해줘. 예를 들면 '로댕 — 집착은'
     // 이라는 자막에 대해서는 '로댕 집착은'으로 음성해설이 나오도록
@@ -3897,7 +3897,7 @@ function _renderPhilosophyAnswer(item){
     // 해뒀던 것이 자막과 문구가 달라 서로 어긋났다. 자막의 "—"(줄
     // 구분 기호)는 그대로 소리 내 읽지 않되, 화자 이름 뒤에 곧장
     // 내용을 붙여 자막과 같은 문구가 되도록 맞춘다.
-    speak(`로댕의 생각하는 사람 ${item.rodin}`, ()=>{
+    speak(`로댕 ${item.rodin}`, ()=>{
         showChatAnswerInCaption('사유의 상담소 — 답변', `반가사유상 — ${item.maitreya}`);
         speak(`반가사유상 ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
     }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로
@@ -3922,14 +3922,14 @@ const CHATBOT_CORPUS = [{"s":"금동미륵보살반가사유상_연구","t":"금
    톤(3.1절에서 의도적으로 바꾼 설계)과 맞지 않아 이식하지 않았다 —
    대신 이 그래프는 사실 조회 전용이라 어느 화자 톤에도 안전하게 붙는다. ── */
 const ARTWORK_KG = {
-    "로댕의 생각하는 사람": { type: "조각가", aliases: ["오귀스트 로댕", "Rodin"], sourceLink: "https://en.wikipedia.org/wiki/Auguste_Rodin", relations: {
+    "로댕": { type: "조각가", aliases: ["오귀스트 로댕", "Rodin"], sourceLink: "https://en.wikipedia.org/wiki/Auguste_Rodin", relations: {
         "본명": ["오귀스트 로댕(Auguste Rodin)"],
         "생몰": ["1840~1917"],
         "국적": ["프랑스"],
         "제작함": ["생각하는 사람", "지옥의 문", "칼레의 시민"],
         "평가": ["사실주의와 인상주의를 넘나든 근대 조각의 선구자"]
     }},
-    "로댕의 생각하는 사람": { type: "조각상", aliases: ["Le Penseur", "생각하는사람"], sourceLink: "https://en.wikipedia.org/wiki/The_Thinker", relations: {
+    "생각하는 사람": { type: "조각상", aliases: ["Le Penseur", "생각하는사람"], sourceLink: "https://en.wikipedia.org/wiki/The_Thinker", relations: {
         "제작자": ["로댕"],
         "원제": ["시인(Le Poète) — 이후 생각하는 사람(Le Penseur)으로 개칭"],
         "유래": ["지옥의 문 상단부에 배치된 인물상"],
@@ -4016,7 +4016,7 @@ const ARTWORK_KG = {
     } },
     "명법스님": { type: "인물", relations: {
         "역할": ["불교미학 연구자"],
-        "논함": ["로댕의 생각하는 사람과 반가사유상의 비교"]
+        "논함": ["로댕과 반가사유상의 비교"]
     } },
     "하이데거": { type: "사상가", relations: {
         "논함": ["존재"]
@@ -4464,7 +4464,7 @@ const CENTER_SYNTHESIS_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 
 [규칙]
 - 핵심만 추려 150자 이내로 요약한다는 생각으로, 2~3문장 안에 담으십시오. 한 문장에 여러 생각을 욱여넣지 마십시오.
 - 주어진 부위 설명에 이미 담긴 내용을 바탕으로 통합하십시오. 새로운 사실이나 인용, 인물을 지어내지 마십시오.
-- 개별 부위를 하나씩 나열하지 말고, 로댕의 생각하는 사람 쪽과 반가사유상 쪽이 보여주는 대비나 공명을 짧게 묶어내십시오.
+- 개별 부위를 하나씩 나열하지 말고, 로댕 쪽과 반가사유상 쪽이 보여주는 대비나 공명을 짧게 묶어내십시오.
 - "사랑", "신비로운 감정"처럼 근거 없는 감정적 해석이나 인생 조언은 하지 마십시오.
 - "물론입니다" 같은 서두 인사말이나 메타 발언 없이 본문만 곧바로 출력하십시오.
 - 별표(*), 굵게(**), 해시(#), 백틱 같은 마크다운 기호나 글머리 목록을 쓰지 마십시오.
@@ -4475,11 +4475,11 @@ const CENTER_SYNTHESIS_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 
 // 블록으로 정리한다. buildRecapAnswer()와 같은 visited Set을 그대로
 // 써서, 안 만진 부위를 만진 것처럼 지어내지 않는다.
 function _buildTouchedPartsBlock(){
-    const rodinKeys = ORDER.filter(k => visited.has(k) && DETAILS[k].body === '로댕의 생각하는 사람');
+    const rodinKeys = ORDER.filter(k => visited.has(k) && DETAILS[k].body === '로댕');
     const maitreyaKeys = ORDER.filter(k => visited.has(k) && DETAILS[k].body === '반가사유상');
     const line = k => `- ${DETAILS[k].title.split(' · ')[1]}: ${DETAILS[k].detail}`;
     const parts = [];
-    if(rodinKeys.length) parts.push(`[로댕의 생각하는 사람 쪽에서 만진 부위]\n${rodinKeys.map(line).join('\n')}`);
+    if(rodinKeys.length) parts.push(`[로댕 쪽에서 만진 부위]\n${rodinKeys.map(line).join('\n')}`);
     if(maitreyaKeys.length) parts.push(`[반가사유상 쪽에서 만진 부위]\n${maitreyaKeys.map(line).join('\n')}`);
     return parts.join('\n\n');
 }
@@ -4705,7 +4705,7 @@ async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
    없으면 반대쪽 조각상 지식베이스도 확인한다. ── */
 function pickKBAnswer(query){
     const d = currentKey ? DETAILS[currentKey] : null;
-    let order = (d && d.body==='로댕의 생각하는 사람') ? ['로댕의 생각하는 사람','반가사유상'] : ['반가사유상','로댕의 생각하는 사람'];
+    let order = (d && d.body==='로댕') ? ['로댕','반가사유상'] : ['반가사유상','로댕'];
     // v3: 질문에 조각상 이름이 명시돼 있으면(예: "로댕 재질"), 지금 만지고
     // 있는 부위와 무관하게 그 조각상의 KB를 먼저 찾는다. "로댕"/"반가사유상"
     // 같은 이름은 매칭 점수 계산에서는 제외했지만(비변별 단어라 오탐을
@@ -4715,8 +4715,8 @@ function pickKBAnswer(query){
     // 못 알아채고 반가사유상 KB를 먼저 뒤지다가, 우연히 단어가 겹치는
     // 무관한 항목(예: 반가좌 자세 설명)에 잘못 매칭되는 사례가 있었다.
     // "생각하는 사람"도 로댕 작품의 통칭이므로 같은 라우팅 신호로 취급한다.
-    if(query.includes('로댕의 생각하는 사람') || query.includes('생각하는 사람')) order=['로댕의 생각하는 사람','반가사유상'];
-    else if(query.includes('반가사유상')||query.includes('미륵')) order=['반가사유상','로댕의 생각하는 사람'];
+    if(query.includes('로댕') || query.includes('생각하는 사람')) order=['로댕','반가사유상'];
+    else if(query.includes('반가사유상')||query.includes('미륵')) order=['반가사유상','로댕'];
     for(const body of order){
         const hit = _searchKBFuzzy(PART_MEANINGS[body], query);
         // tier:1(정확 포함 매칭)과 tier:2(어절 경계 매칭, v3 이후 안전)는
@@ -4740,7 +4740,7 @@ function pickKBCandidates(query){
     // 답변 텍스트로 중복 등록돼 있다. 그대로 두면 LLM 근거 프롬프트에
     // 같은 문장이 "로댕 KB"·"반가사유상 KB" 두 번 실려 답변도 중복되기
     // 쉬우므로, 이미 담긴 것과 텍스트가 같은 후보는 건너뛴다.
-    for(const body of ['로댕의 생각하는 사람','반가사유상']){
+    for(const body of ['로댕','반가사유상']){
         const hit = _searchKBFuzzy(PART_MEANINGS[body], query);
         if(hit && !out.some(c=>c.t===hit.text)) out.push({s:`${body} KB`, t:hit.text});
     }
