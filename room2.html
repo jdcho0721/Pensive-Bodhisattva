@@ -676,22 +676,77 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    wrap으로 바꾼다(gap이 이미 있어 줄바꿈돼도 버튼 사이 간격은 유지된다). */
 #certificate-actions{ display:flex; gap:8px; row-gap:10px; justify-content:center; margin-top:26px; flex-wrap:wrap; }
 #certificate-actions .btn{ min-height:36px; font-size:.75rem; padding:6px 14px; white-space:nowrap; }
-/* v-cert-print — 인쇄(또는 "PDF로 저장") 시에는 화면 전체가 아니라 수료증
-   카드 내용만 하얀 바탕에 검은 글씨로 출력되도록 한다. 버튼들과 배경 이미지,
-   나머지 UI는 인쇄물에 전혀 필요 없으므로 전부 감춘다. */
+/* v-cert-print-design — 참가자 요청: "수료증 출력 디자인을 멋지게 해줘."
+   기존 인쇄 스타일은 카드 테두리 하나에 검정 글씨뿐인 소박한 모습이었다.
+   화면에 쓰던 색상 변수(--gold 등)는 어두운 배경을 전제로 골라진 색이라
+   흰 종이 위에서는 너무 옅게 보이므로, 인쇄 전용으로 더 짙은 금갈색
+   (#8a6a1e)을 따로 쓴다. 이중 테두리(둘레 double + 안쪽 실선)로 정식
+   증서 느낌을 내고, 제목 좌우에 작은 별 장식을 붙이고, 각 구간(만난
+   부위·챗봇 대화·마무리 인사·서명)을 얇은 금색 선으로 나눈다. 만난
+   부위 목록에는 체크 표시를, 마무리 인사(cert-line)에는 인용부호를
+   붙여 시각적으로 "완주를 기념하는 문서"처럼 보이게 했다. 화면(스크린)
+   쪽 스타일은 전혀 건드리지 않고 @media print 안에서만 색과 장식을
+   덧씌운다 — 인쇄되지 않는 #certificate-actions는 기존처럼 감춘다. */
 @media print{
+    @page{ margin:14mm; }
     body *{ visibility:hidden !important; }
     #certificate-overlay, #certificate-overlay *{ visibility:visible !important; }
     #certificate-overlay{
         position:absolute; inset:auto; left:0; top:0; width:100%; height:auto;
-        background:#fff !important; display:block !important; padding:24px 0;
+        background:#fff !important; display:block !important; padding:0;
     }
     #certificate-card{
-        margin:0 auto; max-width:600px; background:#fff !important; border:1px solid #333 !important;
-        box-shadow:none !important;
+        margin:0 auto; max-width:640px; width:100%; position:relative;
+        font-family:'Noto Serif KR', serif;
+        background:#fdfaf2 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+        border:3px double #9c7a2e !important; border-radius:0;
+        padding:58px 56px 46px; box-shadow:none !important;
     }
-    #certificate-card, #certificate-card *{ color:#000 !important; }
-    #certificate-card h2{ color:#000 !important; }
+    /* 이중 테두리의 안쪽 실선 — 실제 요소가 아니라 장식용 가상 테두리라
+       카드 안쪽 여백을 밀어내지 않는다. */
+    #certificate-card::before{
+        content:''; position:absolute; inset:10px; border:1px solid #c9ad6a; pointer-events:none;
+    }
+    #certificate-card, #certificate-card *{ color:#2a2210 !important; }
+    #certificate-card h2{
+        font-family:'Cinzel Decorative',serif; color:#8a6a1e !important;
+        letter-spacing:.3em; font-size:1.9rem; margin:0 0 6px;
+    }
+    #certificate-card h2::before, #certificate-card h2::after{
+        content:'✦'; color:#c9ad6a; font-size:.85rem; margin:0 12px; vertical-align:middle;
+    }
+    #certificate-card .cert-sub{
+        display:inline-block; font-family:'Cinzel Decorative',serif; text-transform:uppercase;
+        letter-spacing:.22em; font-size:.7rem; color:#8a6a1e !important;
+        margin:0 0 28px; padding-bottom:14px; border-bottom:1px solid #d8c48a;
+    }
+    #certificate-card .cert-stat{
+        font-size:2.6rem; color:#8a6a1e !important; margin:8px 0 0;
+    }
+    #certificate-card .cert-stat-label{ margin-bottom:8px; font-size:.8rem; letter-spacing:.03em; }
+    #certificate-card .cert-list, #certificate-card .cert-chat-log{
+        max-width:460px; margin:0 auto;
+    }
+    #certificate-card .cert-list h3, #certificate-card .cert-chat-log h3{
+        font-family:'Cinzel Decorative',serif; text-transform:uppercase; font-weight:400;
+        letter-spacing:.16em; font-size:.7rem; color:#8a6a1e !important;
+        border-bottom:1px solid #d8c48a; padding-bottom:6px; margin:26px 0 10px;
+    }
+    #certificate-card .cert-list p{ position:relative; padding-left:22px; font-size:.86rem; }
+    #certificate-card .cert-list p::before{
+        content:'✓'; position:absolute; left:0; top:0; color:#8a6a1e !important; font-weight:700;
+    }
+    #certificate-card .cert-chat-log p b{ color:#8a6a1e !important; }
+    #certificate-card .cert-line{
+        border-top:none; margin-top:32px; padding-top:0; font-style:italic; font-size:.95rem;
+    }
+    #certificate-card .cert-line::before{ content:'“'; font-family:Georgia,serif; font-size:1.6rem; color:#c9ad6a; margin-right:3px; }
+    #certificate-card .cert-line::after{ content:'”'; font-family:Georgia,serif; font-size:1.6rem; color:#c9ad6a; margin-left:3px; }
+    #certificate-card .cert-date{ margin-top:36px; font-size:.78rem; }
+    #certificate-card .cert-copyright{
+        margin-top:8px; padding-top:14px; border-top:1px solid #e2d4ab;
+        font-style:italic; font-size:.68rem; letter-spacing:.02em;
+    }
     #certificate-actions{ display:none !important; }
 }
 /* v48 — "여일(如一)" 마무리 장면: 수료증에서 나가기를 누르면 곧바로
