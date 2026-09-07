@@ -542,6 +542,10 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 #intro-gate h1 span{display:inline-block;margin-top:10px;font-size:clamp(0.85rem,2.2vw,1.05rem);letter-spacing:.04em;}
 #intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.9rem,2vw,1.1rem);word-break:keep-all;}
 #intro-gate .btn{font-size:clamp(0.9rem,1.6vw,1.05rem);padding:10px 22px;}
+/* v-bgm-toggle — 초기 화면의 배경음악 토글은 부가 기능이므로, 주
+   행동버튼("전시실2 체화")과 같은 36px 간격 대신 더 가깝게 붙이고
+   글자를 작게 해 시각적 위계를 낮춘다. */
+#btn-bgm-toggle{ margin-top:-20px; font-size:.8rem; padding:8px 16px; opacity:.85; }
 
 /* ══════════════════════════════════════════════════════
    작품·작가 소개 / 저작권 — 공통 정보 오버레이
@@ -927,6 +931,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 
     <p> 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. <br>궁금한 것은 언제든 챗봇에게 물어보세요.</p>
     <button class="btn primary" data-tap-action="전시실2로 입장합니다." onclick="event.stopPropagation();enterRoom()">전시실2 체화</button>
+    <!-- v-bgm-toggle — 참가자 요청: "배경음악 버튼을 초기 화면에 두어
+         on/off 하게 해달라." #intro-gate 전체가 role="button"으로 터치하면
+         입장되므로(onclick="enterRoom()"), 이 버튼을 눌렀을 때 그대로 같이
+         입장돼버리지 않도록 event.stopPropagation()을 반드시 먼저 부른다
+         (바로 위 "전시실2 체화" 버튼과 같은 패턴). aria-pressed로 지금
+         상태(켜짐/꺼짐)를 스크린리더에도 전달한다. -->
+    <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
+            aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
+            data-tap-action="배경음악을 켜고 끕니다."
+            onclick="event.stopPropagation();toggleBgm()">🔊 배경음악 켜짐</button>
 </div>
 
 
@@ -1371,7 +1385,9 @@ let currentMode = 1;
    방식이다. 지금 만지고 있는 부위의 조각상(로댕/반가사유상)에 따라
    snd-rodin/snd-maitreya를 낮은 볼륨(0.18)으로 서서히 켜고, 반대쪽은
    서서히 끈다. touchPart()에서 d.body를 기준으로 호출한다. ── */
-const STATUE_SOUND_VOLUME = 0.18;
+// v-bgm-quieter — 참가자 요청: "배경음악이 방해가 되는 경우가 있으니
+// 좀 더 작게 해달라." 0.18 → 0.12로 낮췄다.
+const STATUE_SOUND_VOLUME = 0.12;
 const _statueFadeTimers = {};   // elementId -> interval id
 let _currentStatueSound = null; // 'rodin' | 'maitreya' | null
 
@@ -1427,7 +1443,9 @@ function updateStatueSound(speaker){
 // v36 — room1과 동일한 두 가지 보조 사운드.
 // snd-base: 입장부터 끝까지 늘 켜져 있는 아주 낮은 배경음(아무 부위도
 // 만지지 않은 빈 시간에도 완전한 무음이 되지 않도록).
-const AMBIENT_VOLUME = 0.09;
+// v-bgm-quieter — 참가자 요청: "배경음악이 방해가 되는 경우가 있으니
+// 좀 더 작게 해달라." 0.09 → 0.06으로 낮췄다.
+const AMBIENT_VOLUME = 0.06;
 function startAmbientSound(){
     const el = document.getElementById('snd-base');
     if(!el) return;
@@ -1443,6 +1461,43 @@ function startAmbientSound(){
         el.volume = v;
         if(v >= AMBIENT_VOLUME) clearInterval(fadeIn);
     }, 60);
+}
+// v-bgm-toggle — 참가자 요청: "배경음악 버튼을 초기 화면에 두어 on/off
+// 하게 해달라." 여기서 말하는 "배경음악"은 계속 깔리는 배경 사운드
+// 전부를 뜻한다 — snd-base(늘 켜진 저음), snd-arrival/snd-meeting(도착·
+// 가운데 자리 전용), snd-rodin/snd-maitreya(부위별 크로스페이드), 그리고
+// ResonanceEngine의 합성 사운드스케이프(masterGain 경유)까지. 음성 해설
+// (speak())과 손끝 확인음(playIdentityTone 같은 짧은 피드백음)은 안내
+// 채널이지 "배경음악"이 아니므로 이 토글의 대상이 아니다 — 꺼도 음성
+// 안내와 촉각 피드백음은 그대로 들린다.
+// 각 <audio> 태그의 네이티브 muted 속성만 켜고 끄기 때문에, 크로스페이드가
+// 관리하는 volume 값(예: _fadeStatueAudio가 서서히 올리고 내리는 값)은
+// 전혀 건드리지 않는다 — 다시 켜면 그 순간의 진짜 볼륨으로 바로
+// 돌아온다.
+let bgmMuted = false;
+const BGM_AUDIO_IDS = ['snd-base','snd-arrival','snd-rodin','snd-maitreya','snd-meeting'];
+function _applyBgmMuteState(){
+    BGM_AUDIO_IDS.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.muted = bgmMuted;
+    });
+    // initAudio()가 아직 한 번도 안 불려 audioCtx·masterGain이 없을 수도
+    // 있다(초기 화면에서 입장 전에 버튼을 눌렀을 때). 그런 경우는 여기서
+    // 할 일이 없고, enterRoom()이 initAudio() 바로 뒤에서 이 함수를 다시
+    // 불러 그때 만들어진 masterGain에 지금의 선택을 반영한다.
+    if(masterGain && audioCtx){
+        masterGain.gain.setValueAtTime(bgmMuted ? 0 : RESONANCE_MASTER_GAIN, audioCtx.currentTime);
+    }
+}
+function toggleBgm(){
+    bgmMuted = !bgmMuted;
+    _applyBgmMuteState();
+    const btn = document.getElementById('btn-bgm-toggle');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(bgmMuted));
+        btn.textContent = bgmMuted ? '🔇 배경음악 꺼짐' : '🔊 배경음악 켜짐';
+        btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
+    }
 }
 // snd-arrival: 입장 직후 한 번만 차올랐다가, 첫 부위를 만지는 순간(또는
 // 가운데 빈 자리에 들어서는 순간) 조용히 사라지는 "도착"의 소리.
@@ -2319,6 +2374,11 @@ function hapticZoneSync(key){
 // 조각상 안에서도 머리 쪽 부위는 높게, 다리 쪽 부위는 낮게 배치해
 // "위/아래" 감각이 소리의 높낮이에도 그대로 실리도록 했다.
 let audioCtx = null, masterGain = null;
+// v-bgm-quieter — 참가자 요청: "배경음악이 방해가 되는 경우가 있으니
+// 좀 더 작게 해달라." ResonanceEngine 합성 사운드스케이프 전체가 이
+// masterGain 하나를 거치므로, 여기 값을 낮추면 그 전체 볼륨이 낮아진다.
+// 0.4 → 0.25로 낮췄다.
+const RESONANCE_MASTER_GAIN = 0.25;
 function initAudio(){
     if(audioCtx){
         if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -2327,10 +2387,11 @@ function initAudio(){
     try{
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        masterGain.gain.setValueAtTime(RESONANCE_MASTER_GAIN, audioCtx.currentTime);
         masterGain.connect(audioCtx.destination);
         if(audioCtx.state === 'suspended') audioCtx.resume();
         ResonanceEngine.init(audioCtx, masterGain); // v-resonance-engine — 3-Zone 합성 사운드스케이프 시작
+        _applyBgmMuteState(); // v-bgm-toggle — 입장 전에 이미 배경음악을 껐다면, 방금 만든 masterGain에도 그 선택을 곧바로 반영한다
     }catch(e){ /* Web Audio 미지원 — 조용히 무시 */ }
 }
 function playIdentityTone(freq, type, duration, gain){
@@ -3868,14 +3929,26 @@ function _searchPhilosophyQA(query){
 
 // 두 화자의 답을 하나의 채팅 로그 항목에 함께 보여주고, 순서대로
 // 이어서 낭독한다(동시에 두 목소리가 겹치면 알아듣기 어려우므로).
-function _renderPhilosophyAnswer(item){
+function _renderPhilosophyAnswer(item, existingBubble){
     // pushLog는 textContent로만 넣으므로(마크업 렌더링 안 함), HTML
     // 태그 대신 줄바꿈으로 두 화자를 구분한다 — #chat-log .ai에 준
     // white-space:pre-line이 이 줄바꿈을 그대로 살려서 보여준다.
-    const text = `로댕 — ${item.rodin}
+    // v-rodin-to-thinker-label — 참가자 요청: "답변은 로댕이라고 하지
+    // 말고 생각하는 사람으로 바꾸어줘." "로댕"은 조각가(사람) 이름이고
+    // 실제로 말하는 화자는 그 작품인 조각상이므로, 반가사유상과 같은
+    // 격으로 작품명("생각하는 사람")을 화자 이름으로 쓴다.
+    const text = `생각하는 사람 — ${item.rodin}
 
 반가사유상 — ${item.maitreya}`;
-    pushLog('ai', text);
+    // v-freeform-two-voice — _answerFreeformTwoVoice()는 "생각하는 중…"
+    // 말풍선을 이미 만들어 스트리밍으로 채워온 상태라, 여기서 또
+    // pushLog로 새 말풍선을 만들면 같은 답이 두 번(빈 스트리밍 말풍선 +
+    // 이 함수가 새로 만드는 말풍선) 남는다. existingBubble이 오면 그
+    // 말풍선의 내용만 최종 형식으로 바꿔치기하고, 없으면(1.5순위 200개
+    // 질문 경로처럼 스트리밍 말풍선이 애초에 없는 경우) 기존처럼 새로
+    // 만든다.
+    if(existingBubble) existingBubble.textContent = text;
+    else pushLog('ai', text);
     _chatAnswerActive = true;
     // v-phil-caption-sync — 참가자 지적: "자막 출력보다 음성해설이 먼저
     // 나오는 경우가 있다." 원인은 이 함수였다 — _processChatAnswer의 다른
@@ -3884,23 +3957,21 @@ function _renderPhilosophyAnswer(item){
     // 채우는데, 이 철학 문답(200개 질문) 경로만 챗봇창(#chat-log)에는
     // pushLog로 기록해두고 정작 #caption은 전혀 갱신하지 않은 채 곧바로
     // speak()부터 불렀다 — 그래서 음성은 새 답으로 바뀌는데 화면 아래
-    // 자막은 이전 내용(또는 "생각하는 중…")에 그대로 멈춰 있었다. 로댕이
-    // 말하는 동안은 로댕의 문장을, 반가사유상 차례로 넘어가면 그
+    // 자막은 이전 내용(또는 "생각하는 중…")에 그대로 멈춰 있었다. 생각하는
+    // 사람이 말하는 동안은 그 문장을, 반가사유상 차례로 넘어가면 그
     // 문장으로 자막을 갈아 끼워 speak() 호출 각각의 바로 앞에서 자막을
     // 먼저 채운다(다른 경로와 동일한 순서).
-    showChatAnswerInCaption('사유의 상담소 — 답변', `로댕 — ${item.rodin}`);
+    showChatAnswerInCaption('사유의 상담소 — 답변', `생각하는 사람 — ${item.rodin}`);
     // v-speech-match-caption — 참가자 요청: "챗봇 응답의 음성해설은
-    // 자막의 내용과 같은 내용으로 나오게 해줘. 예를 들면 '로댕 — 집착은'
-    // 이라는 자막에 대해서는 '로댕 집착은'으로 음성해설이 나오도록
-    // 해줘." 화면 자막(text, 위)은 "로댕 — 내용" 형식인데, 방금 전
-    // v-speaker-name-prefix에서 음성은 "로댕입니다. 내용"으로 읽게
-    // 해뒀던 것이 자막과 문구가 달라 서로 어긋났다. 자막의 "—"(줄
-    // 구분 기호)는 그대로 소리 내 읽지 않되, 화자 이름 뒤에 곧장
-    // 내용을 붙여 자막과 같은 문구가 되도록 맞춘다.
-    speak(`로댕 ${item.rodin}`, ()=>{
+    // 자막의 내용과 같은 내용으로 나오게 해줘. 예를 들면 '생각하는 사람 —
+    // 집착은' 이라는 자막에 대해서는 '생각하는 사람 집착은'으로
+    // 음성해설이 나오도록 해줘." 자막의 "—"(줄 구분 기호)는 그대로 소리
+    // 내 읽지 않되, 화자 이름 뒤에 곧장 내용을 붙여 자막과 같은 문구가
+    // 되도록 맞춘다.
+    speak(`생각하는 사람 ${item.rodin}`, ()=>{
         showChatAnswerInCaption('사유의 상담소 — 답변', `반가사유상 — ${item.maitreya}`);
         speak(`반가사유상 ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
-    }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로
+    }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로 (내부 식별자 'rodin'은 음성 프로필 키일 뿐 화면에 노출되지 않는다)
 }
 
 
@@ -4734,13 +4805,31 @@ function pickKBAnswer(query){
    LLM이 실제 질문과 맞는지 판단해 답을 만들게 한다. */
 function pickKBCandidates(query){
     const out=[];
+    // v-cross-statue-noise — 참가자 지적: "챗봇 응답에 반가사유상 관련
+    // 정보가 항상 나오는데 안 나오게 해줘." 원인은 이 함수였다 —
+    // pickKBAnswer()(1순위 확정 답변)는 지금 만지고 있는 조각상이나
+    // 질문에 적힌 이름으로 어느 KB부터 볼지 라우팅하는데, 이 함수(2순위
+    // LLM 근거 후보 수집)는 그런 라우팅 없이 매번 로댕·반가사유상 KB
+    // 양쪽을 전부 뒤져 근거로 붙였다. 그러다 보니 질문이 로댕 얘기(또는
+    // 지금 만지고 있는 부위가 로댕)인데도, 반가사유상 KB에서 우연히
+    // tier:3(느슨한 문자열 유사도) 매칭이 하나만 걸려도 그 내용이 LLM
+    // 프롬프트에 "근거"로 실려 답변에 반가사유상 이야기가 섞여 나왔다.
+    // pickKBAnswer와 같은 라우팅 신호(질문에 적힌 이름, 지금 만지고
+    // 있는 조각상)를 써서 한쪽이 분명하면 그 KB만 근거로 쓰고, 정말
+    // 어느 쪽인지 알 수 없을 때(이름도 없고 만지는 부위도 없을 때)만
+    // 예전처럼 양쪽 다 후보로 준다.
+    const d = currentKey ? DETAILS[currentKey] : null;
+    let bodies;
+    if(query.includes('로댕') || query.includes('생각하는 사람') || (d && d.body==='로댕')) bodies=['로댕'];
+    else if(query.includes('반가사유상') || query.includes('미륵') || (d && d.body==='반가사유상')) bodies=['반가사유상'];
+    else bodies=['로댕','반가사유상'];
     // v-dedupe-kb-candidates — 참가자 요청: "생각하는 사람과 반가사유상의
     // 답변이 같으면 한 번만 나오게 해줘." 조준동 교수 소개, 휴마톨로지,
     // 인터랙션 같은 전시 공통 개념은 두 KB(로댕/반가사유상)에 똑같은
     // 답변 텍스트로 중복 등록돼 있다. 그대로 두면 LLM 근거 프롬프트에
     // 같은 문장이 "로댕 KB"·"반가사유상 KB" 두 번 실려 답변도 중복되기
     // 쉬우므로, 이미 담긴 것과 텍스트가 같은 후보는 건너뛴다.
-    for(const body of ['로댕','반가사유상']){
+    for(const body of bodies){
         const hit = _searchKBFuzzy(PART_MEANINGS[body], query);
         if(hit && !out.some(c=>c.t===hit.text)) out.push({s:`${body} KB`, t:hit.text});
     }
@@ -5396,6 +5485,75 @@ async function sendChat(e, overrideText){
     return false;
 }
 
+// v-freeform-two-voice — 참가자 지적: "'걱정'이라고 입력하면 '질문이
+// 불명확하여 답변드리기 어렵습니다'라고 나오는데, 이런 인생조언 등
+// 어떤 질문이라도 LLM으로 보내서 생각하는 사람과 반가사유상이 자신의
+// 특징적인 답변을 주는 형식으로 바꿔달라." 원인: 아래 2순위 경로가 쓰는
+// DETAIL_SYSTEM_PROMPT는 "인생 조언, 개인적 위로는 하지 마십시오"라고
+// 명시적으로 금지하는 사실 확인 전용(도슨트) 프롬프트다. "걱정"처럼
+// 사실 질문이 아닌 입력은 이 프롬프트 아래에서 LLM이 답을 거부하거나
+// 애매한 문장만 내놓을 수밖에 없었다. 200개 철학 문답(PHILOSOPHY_QA)과
+// 같은 형식(생각하는 사람 / 반가사유상, 두 문장)으로 LLM이 그 자리에서
+// 새 답을 지어내도록 전용 시스템 프롬프트를 따로 둔다 — 200개 목록에
+// 없는 자유로운 질문(예: "걱정", "요즘 지쳐요")도 이제 이 경로로 답을
+// 받는다.
+const TWO_VOICE_LIFE_SYSTEM_PROMPT = `당신은 미술관에 나란히 놓인 두 조각상, "생각하는 사람"(로댕, 1880년경, 프랑스, 청동)과 "반가사유상"(삼국시대, 6~7세기, 한반도, 금동)입니다. 관람객이 사실 정보가 아니라 걱정·고민·인생·감정에 관한 질문을 건넸습니다. 두 조각상이 각자의 관점에서 짧게 답하십시오.
+
+[화자 성격]
+- 생각하는 사람: 서양 실존주의와 스피노자의 코나투스(자기 존재를 지키려는 근원적 노력) 언어로 말합니다. 세계의 무게를 온몸으로 짊어지고 버텨내는, 긴장되고 무거운 어조입니다. 괴로움을 피하지 말고 정면으로 마주하라는 쪽입니다.
+- 반가사유상: 불교의 무상·자비·내려놓음 언어로 말합니다. 집착에서 놓여나 고요히 관조하는, 부드럽고 평온한 어조입니다. 괴로움을 있는 그대로 바라보고 내려놓으라는 쪽입니다.
+
+[형식 — 반드시 이대로만 출력할 것]
+생각하는 사람 — (한두 문장, 45자 내외)
+
+반가사유상 — (한두 문장, 45자 내외)
+
+- 위 두 줄 사이에는 빈 줄을 하나 두십시오. 그 외 다른 말(서두 인사, "물론입니다" 같은 메타 발언, 마크다운 기호)은 절대 덧붙이지 마십시오.
+- 각 문장은 완결된 문장으로 끝나야 합니다.
+
+[내용 원칙]
+- 없는 사실(인물명·연도·역사적 사건)을 지어내지 마십시오 — 이 답은 위로와 통찰을 나누는 것이지 새로운 사실 정보를 알려주는 것이 아닙니다.
+- 관람객의 질문에 실제로 응답하는 내용이어야 하며, 무관한 일반론으로 흐르지 마십시오.
+- 관람객이 자해·자살 등 위기를 암시하면, 조각상의 목소리는 유지하되 전문가나 주변 사람에게 직접 도움을 요청하라고 분명히 안내하십시오.`;
+
+// LLM이 위 형식을 지켜 보낸 답을 { rodin, maitreya }로 분리한다. 줄바꿈
+// 개수·공백은 모델마다 조금씩 다를 수 있어 유연하게 매칭한다.
+function _parseTwoVoiceReply(raw){
+    const text = String(raw || '').trim();
+    const m = text.match(/생각하는\s*사람\s*[—\-:]\s*([\s\S]*?)\n+\s*반가사유상\s*[—\-:]\s*([\s\S]*)$/);
+    if(!m) return null;
+    const rodin = m[1].trim();
+    const maitreya = m[2].trim();
+    if(!rodin || !maitreya) return null;
+    return { rodin, maitreya };
+}
+
+// 200개 철학 문답(PHILOSOPHY_QA)에 없는 자유 질문 — LLM에게 같은
+// 두 화자 형식으로 새 답을 요청한다. 형식을 못 지킨 드문 경우에는
+// 원문을 한 번에(두 화자로 나누지 않고) 보여주고 읽어준다.
+async function _answerFreeformTwoVoice(q){
+    showChatAnswerInCaption('사유의 상담소 — 생각하는 중…', '생각하는 중…');
+    speak('잠시만요, 생각하고 있어요.');
+    const aiBubble = pushLog('ai', '생각하는 중…');
+    const raw = await fetchDetailAI('관람객의 질문: ' + q, '', (partial) => {
+        const shown = String(partial || '생각하는 중…');
+        aiBubble.textContent = shown;
+        const log = document.getElementById('chat-log');
+        log.scrollTop = log.scrollHeight;
+    }, TWO_VOICE_LIFE_SYSTEM_PROMPT);
+    recordPartChatQA(q, raw); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    const parsed = _parseTwoVoiceReply(raw);
+    if(parsed){
+        _renderPhilosophyAnswer(parsed, aiBubble);
+    } else {
+        aiBubble.textContent = raw;
+        showChatAnswerInCaption('사유의 상담소 — 답변', raw);
+        _chatAnswerActive = true;
+        speak(raw, ()=>{ _chatAnswerActive = false; });
+    }
+}
+
+
 async function _processChatAnswer(q){
     // v47 — 원래는 챗봇 답을 챗봇창이 아니라 아래 해설창(#caption)에만
     // 보여줬었다. v-chat-log-stream/v-chat-log-all-answers 이후, 참가자
@@ -5445,6 +5603,17 @@ async function _processChatAnswer(q){
     const philItem = _searchPhilosophyQA(q);
     if(philItem){
         setTimeout(()=>{ _renderPhilosophyAnswer(philItem); }, 250);
+        return;
+    }
+
+    // 1.7순위 — v-freeform-two-voice: 200개 목록에도 없고, 사실 확인형
+    // 질문(_isFactualQuestion — 재질·연도·작가 등)도 아니라면, 뒤이은
+    // 2순위 경로(DETAIL_SYSTEM_PROMPT)로 보내지 않는다. 그 프롬프트는
+    // "인생 조언, 개인적 위로는 하지 마십시오"라고 명시돼 있어 "걱정"
+    // 같은 입력에는 애매한 거부 답변만 돌아왔다. 대신 두 조각상이 각자
+    // 형식으로 답하는 전용 LLM 경로로 보낸다.
+    if(!_isFactualQuestion(q)){
+        setTimeout(()=>{ _answerFreeformTwoVoice(q); }, 250);
         return;
     }
 
