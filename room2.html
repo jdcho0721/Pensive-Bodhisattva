@@ -556,12 +556,18 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
        실제 세로 중앙 정렬은 안쪽 래퍼(.intro-gate-inner)의
        margin:auto 0으로 옮긴다 — margin:auto 방식은 내용이 넘칠 때
        자연스럽게 0으로 줄어들어(위로 넘치는 만큼 스크롤로 그대로 접근
-       가능해짐) 이런 잘림이 생기지 않는다. */
-    overflow-y:auto;padding:32px;}
-.intro-gate-inner{display:flex;flex-direction:column;align-items:center;gap:36px;text-align:center;margin:auto 0;}
-#intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.6rem,5vw,2.4rem);letter-spacing:.1em;line-height:1.5;}
-#intro-gate h1 span{display:inline-block;margin-top:10px;font-size:clamp(0.85rem,2.2vw,1.05rem);letter-spacing:.04em;}
-#intro-gate p{max-width:520px;color:#ccc;line-height:1.7;font-size:clamp(0.9rem,2vw,1.1rem);word-break:keep-all;}
+       가능해짐) 이런 잘림이 생기지 않는다.
+       v-intro-gate-tighter-lines — 참가자 요청: "첫 페이지에 줄간의
+       여백을 줄여서 스크롤링 다운 하지 않아도 아래 버튼이 한 페이지에
+       보이게 해달라." 바깥 패딩(32px→18px)과 안쪽 요소 간 gap
+       (36px→14px), 문단 줄간격(아래 h1/p 규칙)을 함께 좁혀 전체
+       콘텐츠 높이를 줄였다 — 화면을 열자마자 "전시2"/"배경음악" 버튼
+       줄까지 스크롤 없이 보일 가능성이 훨씬 높아진다. */
+    overflow-y:auto;padding:18px;}
+.intro-gate-inner{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;margin:auto 0;}
+#intro-gate h1{font-family:'Cinzel Decorative',serif;color:var(--gold);font-size:clamp(1.6rem,5vw,2.4rem);letter-spacing:.1em;line-height:1.25;}
+#intro-gate h1 span{display:inline-block;margin-top:6px;font-size:clamp(0.85rem,2.2vw,1.05rem);letter-spacing:.04em;}
+#intro-gate p{max-width:520px;color:#ccc;line-height:1.4;font-size:clamp(0.9rem,2vw,1.1rem);word-break:keep-all;}
 /* v-intro-buttons-row — 참가자 요청: "전시실 체화 버튼이 너무 크다.
    배경음악 버튼도 사이즈를 작게 해서 두 버튼이 한 줄에 들어가게 해줘."
    두 버튼을 한 가로줄에 두고(좁은 화면에서는 자연스럽게 다음 줄로
