@@ -697,7 +697,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 
     <div class="intro-btn-row">
-        <button class="btn primary" onclick="handleGateEntryTap()" aria-label="전시실 1 입장 버튼입니다.">전시1</button>
+        <button class="btn primary" onclick="handleGateEntryTap()" aria-label="전시실 1 입장 버튼입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.">전시1</button>
         <!-- v-bgm-toggle — room2.html의 배경음악 버튼과 같은 형식으로 추가.
              #intro-gate 자체를 두드리면 입장 관련 동작이 걸리므로, 이 버튼을
              눌렀을 때 함께 실행되지 않도록 event.stopPropagation()을 먼저
@@ -707,7 +707,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
                 data-tap-name="배경음악"
                 onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
     </div>
-    <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다. 화면의 다른 곳을 터치하면 바로 입장합니다.</p>
+    <!-- v-usage-update — 참가자 요청: "사용법도 업데이트 해주고, 첫
+         페이지에 좌우 탭 사용법을 음성안내로도 해줘." 화면에 보이는
+         이 안내문에도 좌우 탭 사용법을 추가했다(음성 안내는 위 전시1
+         버튼의 aria-label에 같은 문장을 넣어, 버튼을 누르면 함께
+         들리게 했다). -->
+    <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다. 화면의 다른 곳을 터치하면 바로 입장합니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.</p>
 </div>
 
 <style>
@@ -863,7 +868,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          남겨둬 비장애 사용자의 빠른 진행은 유지). -->
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
 <div id="controls" role="group" aria-label="재생 제어">
-    <button class="btn" id="btn-back" onclick="onBackClick()" data-tap-action="이전 내용으로 돌아갑니다">뒤로</button>
+    <!-- v-remove-back-next — 참가자 요청: "뒤로가기와 다음 버튼을
+         제거해줘." 화면 왼쪽/오른쪽 절반을 탭하는 좌우 인터랙션과
+         스크린리더용 좌우 스와이프(onBackClick/onNextClick, 아래 그대로
+         유지)가 이 두 버튼의 역할을 대신한다. -->
     <!-- v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을
          수 있는 기능." 지금 있는 레이어(또는 대화 턴)의 시작으로 되돌아가
          다시 들려준다. -->
@@ -872,8 +880,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          길게 누르면 동작하던 onPauseClick()을 그대로 재사용하되, 눈에
          보이는 버튼으로도 눌러 쓸 수 있게 되살렸다. -->
     <button class="btn" id="btn-pause" onclick="onPauseClick()" aria-label="멈춤 버튼입니다. 누르면 일시정지합니다." data-tap-action="지금 재생을 멈추거나 다시 시작합니다.">멈춤</button>
-    <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 버튼입니다." data-tap-action="다음 이야기로 넘어갑니다">다음</button>
-    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="이 버튼은 전시실2 버튼입니다." data-tap-action="전시실2로 이동합니다.">전시2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="전시실2 이동 버튼입니다." data-tap-action="전시실2로 이동합니다.">전시2</button>
 </div>
 </div>
 
@@ -1118,7 +1125,7 @@ function _tryArrivalMessage(){
     _gateArmedAt = Date.now();
     _gateArmedNoExpiry = true;
     _setGateArmedVisual(true);
-    try{ speak('침묵의 공명 제1전시 조우입니다. 화면의 아무곳이나 터치하면 바로 시작됩니다.'); }catch(err){}
+    try{ speak('침묵의 공명 제1전시 조우입니다. 화면의 아무곳이나 터치하면 바로 시작됩니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.'); }catch(err){}
     return true;
 }
 // 자동재생 제약이 있는 브라우저를 위해, 로드 직후에도 한 번 시도해본다
@@ -1163,7 +1170,7 @@ function getGateButtonLabel(){
         const text = (btn.textContent || '').trim();
         if(text) return text;
     }
-    return '전시실 1 입장 버튼입니다. 각 자막 창은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.';
+    return '전시실 1 입장 버튼입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.';
 }
 // v-gate-single-tap — 참가자 요청: "화면을 한 번 터치하면 입장하도록
 // 바꿔달라." 전시실 1 · 조우 버튼 자체는 계속 2탭(안내 → 확인) 방식을
@@ -1957,10 +1964,8 @@ function onReplayClick(){
     speak('처음부터 다시 들려드립니다.', ()=>{
         if(phase === 'screen'){
             playLayer(layerIdx);
-        } else if(announcing){
-            showNextStageAnnouncement();
         } else {
-            playTurn(turnIdx);
+            startDetailPhase();
         }
     });
 }
@@ -2433,8 +2438,15 @@ function goToRoom2(e) {
     // v-remove-pause-btn — 멈춤 버튼(#btn-pause)은 화면에서 제거되었다.
     // 화면을 길게 누르면 멈추고/다시 시작하는 제스처(onPauseClick)는
     // 그대로 남아 있다.
-    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-back', 'btn-exit'];
-    const NEXT_EXHIBIT_CONFIRM_MS = 1500;
+    // v-confirm-no-expiry — 참가자 요청: "전시2 버튼은 한 번 누르면
+    // 안내하고, 한 번 더 클릭하거나 두 번 빨리 클릭하면 이동하게 해줘."
+    // 기존엔 NEXT_EXHIBIT_CONFIRM_MS(1.5초) 안에 두 번째 탭이 와야만
+    // 확인으로 인정했는데, 첫 탭이 들려주는 안내 문구 자체가 보통
+    // 1.5초 넘게 걸린다 — 안내를 끝까지 듣고 나서 "한 번 더" 누르면
+    // 이미 시간이 지나버려 확인되지 않는, 앞서 게이트 버튼에서 고쳤던
+    // 것과 같은 유형의 문제가 생긴다. 게이트와 동일하게, 시간 제한 없이
+    // "같은 버튼을 다시 눌렀는지"만으로 확인하도록 통일한다.
+    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-exit'];
     function isNextExhibitBtn(el){ return !!(el && TWO_PRESS_CONFIRM_IDS.includes(el.id)); }
 
     function handlePointerUp(x, y, upTarget){
@@ -2450,8 +2462,8 @@ function goToRoom2(e) {
             if(!draggedFar && landedControl){
                 if(isNextExhibitBtn(landedControl)){
                     const now = Date.now();
-                    if(armedControl === landedControl && (now - armedAt) < NEXT_EXHIBIT_CONFIRM_MS){
-                        // 빠르게 두 번째로 눌렀다 — 실제로 이동한다.
+                    if(armedControl === landedControl){
+                        // 두 번째로 눌렀다(빠르게든, 안내를 다 듣고서든) — 실제로 이동한다.
                         setArmedControl(null);
                         suppressNextClick = false; // 직전 눌렀을 때 걸어둔 억제가 아직
                                                     // 안 풀렸더라도, 이 click은 확실히
@@ -2479,7 +2491,7 @@ function goToRoom2(e) {
                 return;
             }
             if(!draggedFar && armedControl && dt < 600 &&
-               (Date.now() - armedAt) < (isNextExhibitBtn(armedControl) ? NEXT_EXHIBIT_CONFIRM_MS : ARM_WINDOW_MS)){
+               (isNextExhibitBtn(armedControl) || (Date.now() - armedAt) < ARM_WINDOW_MS)){
                 // 버튼 영역 안이지만 정확한 버튼은 아닌 자리(여백 등)를
                 // 살짝 다시 두드렸다 — 방금 손끝으로 훑어 찾아낸 버튼을
                 // 실행한다.
