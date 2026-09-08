@@ -1633,7 +1633,7 @@ function enterRoom(){
     const introLine = '침묵의 공명. 전시실 2 · 사유 및 체화, 몸으로 생각하기입니다. 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요.';
     _displaySentencesTimed(introLine, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
-    speak(introLine);
+    waitForVoices().then(() => speak(introLine));
     checkRAGStatus(); // 원격 RAG 검색 서버 연결 여부 콘솔 확인(실패해도 무시, UI 비차단)
     // v11 — 중앙 공간 표시는 이제 페이지가 뜰 때 한 번만 조용히 옅게
     // 나타나는 CSS 애니메이션(centerFadeIn)만 있고, 반복 펄스는 없앴다.
@@ -1744,6 +1744,34 @@ if (typeof window !== 'undefined' && window.speechSynthesis) {
 function _isMobileTTS(){
     return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
 }
+
+
+function _isAndroidChrome(){
+    const ua = navigator.userAgent || '';
+    return /Android/i.test(ua) && /Chrome\//i.test(ua);
+}
+function waitForVoices(timeoutMs = 1200){
+    return new Promise(resolve => {
+        let done = false;
+        const finish = () => {
+            if (done) return;
+            done = true;
+            try { window.speechSynthesis.onvoiceschanged = _refreshVoiceCache; } catch(e) {}
+            _refreshVoiceCache();
+            resolve(_cachedVoices || []);
+        };
+        try { _refreshVoiceCache(); } catch(e) {}
+        if (_cachedVoices && _cachedVoices.length) return finish();
+        try {
+            window.speechSynthesis.onvoiceschanged = () => { _refreshVoiceCache(); finish(); };
+        } catch(e) {}
+        setTimeout(() => finish(), timeoutMs);
+    });
+}
+function _clampAndroidPitch(u){
+    if (!_isAndroidChrome()) return;
+    if (typeof u.pitch === 'number' && u.pitch > 0.95) u.pitch = 0.95;
+}
 let _cachedComfortVoice = null, _comfortVoiceChecked = false;
 function _pickComfortableVoice(){
     if (_comfortVoiceChecked) return _cachedComfortVoice;
@@ -1757,10 +1785,13 @@ function _pickComfortableVoice(){
     // 흔히 제공하는 부드러운 톤의 한국어 음성 이름을 우선한다. 하나도
     // 못 찾으면 그냥 첫 한국어 음성을 쓴다 — 지정을 아예 안 하는 것보다는
     // 낫다.
-    const preferred = koVoices.find(v =>
-        /neural|wavenet|enhanced|premium|natural|고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name)
-    );
-    _cachedComfortVoice = preferred || koVoices[0];
+    const by = (pred) => koVoices.find(pred) || null;
+// ✅ Android Chrome에서는 Google 계열 한국어 음성이 있는 경우가 많고, 대체로 톤이 안정적이다.
+const preferred =
+    by(v => /google/i.test(v.name)) ||
+    by(v => /neural|wavenet|enhanced|premium|natural/i.test(v.name)) ||
+    by(v => /고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name));
+_cachedComfortVoice = preferred || koVoices[0];
     return _cachedComfortVoice;
 }
 function _ensureVoiceAssignment() {
@@ -1814,6 +1845,13 @@ function speak(text, onEnd, speakerKey){
         u.lang='ko-KR'; u.rate=TTS_RATE;
         if (speakerKey) {
             _applyVoiceProfile(u, speakerKey); // 화자(로댕/반가사유상)가 지정된 경우에만 음성·pitch·rate 구분 적용 — 지정 없으면 기존과 동일한 단일 음색
+            _clampAndroidPitch(u); // ✅ Android Chrome에서 과도하게 높은 pitch 상한 제한
+        } else if (_isAndroidChrome()) {
+            // ✅ Android Chrome: 보이스/피치/속도를 좀 더 편안한 쪽으로 고정
+            const comfortVoice = _pickComfortableVoice();
+            if (comfortVoice) u.voice = comfortVoice;
+            u.pitch = 0.85;
+            u.rate = 0.95;
         } else if (_isMobileTTS()) {
             // v-mobile-voice-comfort — 대부분의 부위 해설·안내처럼 화자
             // 구분이 없는 낭독은, 모바일에서만 더 자연스러운 음성을 골라
