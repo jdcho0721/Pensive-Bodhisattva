@@ -185,6 +185,28 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px); flex:0 0 auto;
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+/* v-in-app-volume — 화면 안 소리 조절 슬라이더. 다른 상단 컨트롤과 같은
+   높이·배경으로 통일해, 하나의 알약형 캡슐처럼 보이게 한다. */
+#volume-control{
+    height:44px; display:flex; align-items:center; gap:6px; padding:0 10px;
+    border-radius:22px; background:rgba(0,0,0,.72); border:1px solid var(--gold-dim);
+    flex:0 0 auto; color:var(--gold);
+}
+#volume-control span{font-size:.95rem; line-height:1;}
+#volume-slider{
+    width:70px; accent-color:var(--gold); cursor:pointer;
+}
+/* v-exit-btn — 참가자 요청: 오른쪽 상단에 "나가기" X 버튼 추가. #info-btn과
+   같은 원형 스타일을 쓰고, margin-left:auto로 같은 #top-controls 줄
+   안에서 오른쪽 끝으로 밀어낸다(새 fixed 컨테이너를 따로 만들지 않아,
+   기존 EXCLUDE_SELECTOR·inert 처리·모바일 반응형 규칙을 그대로 물려받는다). */
+#btn-exit{
+    width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.95rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    flex:0 0 auto; margin-left:auto; font-weight:700;
+}
+#btn-exit:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #btn-speed{
     height:44px; min-width:44px; padding:0 12px; border-radius:22px; background:rgba(0,0,0,.72);
     border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; backdrop-filter:blur(8px); flex:0 0 auto;
@@ -457,7 +479,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     -webkit-overflow-scrolling:touch;
     padding-bottom:2px;
 }
-#top-controls .btn, #info-btn{
+#top-controls .btn, #info-btn, #btn-exit, #volume-control{
     height:clamp(30px, 8.6vw, 44px) !important;
     min-height:clamp(30px, 8.6vw, 44px) !important;
     font-size:clamp(0.62rem, 2.5vw, 0.85rem) !important;
@@ -466,9 +488,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     flex:0 0 auto !important;
     white-space:nowrap !important;
 }
-#info-btn{
+#info-btn, #btn-exit{
     width:clamp(30px, 8.6vw, 44px) !important;
     padding:0 !important;
+}
+#volume-slider{
+    width:clamp(44px, 14vw, 70px) !important;
 }
 
 /* 하단(뒤로 · 멈춤/다시 시작 · 다음 전시) — 항상 한 줄 */
@@ -557,6 +582,21 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><span aria-hidden="true" style="font-style:italic;font-weight:700;">i</span></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장: 꺼짐</button>
+    <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
+         기능." 슬라이더 하나로 내레이션(TTS)과 배경 사운드를 함께
+         조절한다. TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
+         쓸어넘기면 값을 조절할 수 있다(표준 range 컨트롤 동작). -->
+    <div id="volume-control" role="group" aria-label="소리 크기">
+        <span aria-hidden="true">🔊</span>
+        <input type="range" id="volume-slider" min="0" max="100" value="100" step="10"
+               aria-label="소리 크기 조절, 현재 100퍼센트"
+               oninput="onVolumeChange(this.value)">
+    </div>
+    <!-- v-exit-btn — 참가자 요청: 오른쪽 상단에 "나가기" X 버튼. 뒤로·전시2와
+         같은 "안내 후 재확인"(2탭) 방식을 쓰도록 아래 스크립트의
+         TWO_PRESS_CONFIRM_IDS에 이 버튼의 id를 등록해뒀다 — 실수로 한 번
+         스치듯 눌러 바로 종료되는 일이 없도록 하기 위함이다. -->
+    <button class="btn" id="btn-exit" onclick="exitExhibit()" aria-label="이 버튼은 나가기 버튼입니다." data-tap-action="처음 화면으로 돌아가 전시를 종료합니다."><span aria-hidden="true">✕</span></button>
 </div>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
     <div id="info-card">
@@ -656,9 +696,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
 
 
-    <button class="btn primary" onclick="handleGateEntryTap()" aria-label="전시실 1 입장 버튼입니다.">
-        전시실 1 · 조우
-    </button>
+    <div class="intro-btn-row">
+        <button class="btn primary" onclick="handleGateEntryTap()" aria-label="전시실 1 입장 버튼입니다.">전시1</button>
+        <!-- v-bgm-toggle — room2.html의 배경음악 버튼과 같은 형식으로 추가.
+             #intro-gate 자체를 두드리면 입장 관련 동작이 걸리므로, 이 버튼을
+             눌렀을 때 함께 실행되지 않도록 event.stopPropagation()을 먼저
+             부른다(room2와 동일한 패턴). -->
+        <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
+                aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
+                data-tap-name="배경음악"
+                onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
+    </div>
     <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다. 화면의 다른 곳을 터치하면 바로 입장합니다.</p>
 </div>
 
@@ -723,15 +771,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     word-break: keep-all;
 }
 
-#intro-gate .btn.primary {
-    min-width: clamp(160px, 60vw, 280px);
-    padding: clamp(11px, 3vw, 14px) clamp(20px, 6vw, 28px);
-    font-size: clamp(0.85rem, 3.2vw, 1rem);
-    font-weight: bold;
-    white-space: nowrap;
-    border: 1px solid #1a1a1a;
-    border-top: 1px solid #444;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+/* v-intro-btn-row — 참가자 요청: room2.html의 "전시2 · 배경음악" 버튼
+   줄과 같은 형식으로, "전시1"과 "배경음악" 두 버튼을 같은 크기로 한
+   줄에 나란히 배치한다. */
+#intro-gate .intro-btn-row{
+    display:flex; flex-direction:row; flex-wrap:wrap;
+    justify-content:center; align-items:center; gap:10px; margin-top:4px;
+}
+#intro-gate .intro-btn-row .btn{
+    font-size:clamp(0.8rem, 2.4vw, 0.95rem);
+    padding:5px 11px;
+    white-space:nowrap;
+    min-width:0;
+    font-weight:700;
 }
 
 /* v-hearing-caption-parity — 접근성 최종 점검: 첫 탭에서 안내 음성만
@@ -812,6 +864,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
 <div id="controls" role="group" aria-label="재생 제어">
     <button class="btn" id="btn-back" onclick="onBackClick()" data-tap-action="이전 내용으로 돌아갑니다">뒤로</button>
+    <!-- v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을
+         수 있는 기능." 지금 있는 레이어(또는 대화 턴)의 시작으로 되돌아가
+         다시 들려준다. -->
+    <button class="btn" id="btn-replay" onclick="onReplayClick()" aria-label="다시듣기 버튼입니다. 누르면 지금 내용을 처음부터 다시 들려드립니다." data-tap-action="지금 내용을 처음부터 다시 들려드립니다.">다시듣기</button>
+    <!-- v-pause-btn — 참가자 요청: "중간에 잠시 일시정지." 기존에 화면을
+         길게 누르면 동작하던 onPauseClick()을 그대로 재사용하되, 눈에
+         보이는 버튼으로도 눌러 쓸 수 있게 되살렸다. -->
+    <button class="btn" id="btn-pause" onclick="onPauseClick()" aria-label="멈춤 버튼입니다. 누르면 일시정지합니다." data-tap-action="지금 재생을 멈추거나 다시 시작합니다.">멈춤</button>
     <button class="btn" id="btn-next" onclick="onNextClick()" aria-label="다음 버튼입니다." data-tap-action="다음 이야기로 넘어갑니다">다음</button>
     <button class="btn primary" id="btn-next-exhibit" onclick="goToRoom2(event)" aria-label="이 버튼은 전시실2 버튼입니다." data-tap-action="전시실2로 이동합니다.">전시2</button>
 </div>
@@ -997,11 +1057,18 @@ const detailSpotEl = document.getElementById('detail-spot');
 const effectSvg = document.getElementById('effect-svg');
 const badgeDots = document.querySelectorAll('#stage-badge .dot');
 const eyebrowEl = document.getElementById('eyebrow');
-const btnPause = document.getElementById('btn-pause'); // v-remove-pause-btn — 버튼 요소는 제거되어 null이 되며, 아래 참조는 모두 null 체크로 안전하게 처리한다.
+const btnPause = document.getElementById('btn-pause'); // v-pause-btn — 참가자 요청으로 되살아난 멈춤 버튼과 연결된다.
 
+// v-left-right-nav — 참가자 요청: "왼쪽 영역을 클릭하면 이전으로, 오른쪽
+// 영역을 클릭하면 이후로 넘어가는 인터랙션." 사진 갤러리·스토리 뷰어에서
+// 흔히 쓰는 방식이다. 화면을 보지 않아도 되는 스크린리더 사용자를 위한
+// 좌우 스와이프(뒤로/다음)는 그대로 남아 있고, 이 좌우 탭 구분은 화면을
+// 보는 사용자를 위한 보조 수단이다.
 function onCaptionAreaClick(e){
     if(e.target.closest('#controls')) return;
-    onNextClick();
+    const x = (e.clientX != null && e.clientX !== 0) ? e.clientX
+        : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : window.innerWidth);
+    if(x < window.innerWidth / 2){ onBackClick(); } else { onNextClick(); }
 }
 
 // v-require-tap — 참가자 요청: "첫 페이지에서 시간이 지나 자동으로
@@ -1150,10 +1217,59 @@ speak(gateText, ()=> playLayer(0));
     fadeArrivalIn();
 }
 
+// v-bgm-toggle — room2.html과 동일한 취지: 첫 화면의 "배경음악" 버튼으로
+// 계속 깔리는 배경 사운드(snd-base·snd-arrival·snd-rodin·snd-maitreya·
+// snd-meeting)를 한꺼번에 켜고 끈다. index.html(전시실 1)에는 room2의
+// ResonanceEngine 같은 합성 오디오 엔진(masterGain/audioCtx)이 없으므로,
+// 각 <audio> 요소의 muted 속성만 토글한다 — 음성 해설(speak())은 이
+// 토글의 대상이 아니라 꺼도 그대로 들린다.
+let bgmMuted = false;
+const BGM_AUDIO_IDS = ['snd-base','snd-arrival','snd-rodin','snd-maitreya','snd-meeting'];
+function _applyBgmMuteState(){
+    BGM_AUDIO_IDS.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.muted = bgmMuted;
+    });
+}
+function toggleBgm(){
+    bgmMuted = !bgmMuted;
+    _applyBgmMuteState();
+    const btn = document.getElementById('btn-bgm-toggle');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(bgmMuted));
+        btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
+        btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
+    }
+    speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.');
+}
+
+// v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
+// 기능." 슬라이더 하나로 내레이션(speak())과 배경 사운드(다섯 개
+// <audio>)의 크기를 함께 조절한다. 각 배경 사운드는 크로스페이드
+// 중에도 계속 "논리적 목표 볼륨"(예: STATUE_SOUND_VOLUME)이 바뀌므로,
+// 그 논리적 목표를 _audioBaseTarget에 따로 기억해뒀다가, 슬라이더 값이
+// 바뀔 때마다 그 값에 masterVolume을 곱해 즉시 반영한다(진행 중이던
+// 크로스페이드 타이머는 정리해, 슬라이더 조작과 서로 다투지 않게 한다).
+let masterVolume = 1;
+const _audioBaseTarget = {};
+function onVolumeChange(v){
+    masterVolume = Math.max(0, Math.min(1, Number(v) / 100));
+    BGM_AUDIO_IDS.forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(_statueFadeTimers[id]){ clearInterval(_statueFadeTimers[id]); _statueFadeTimers[id] = null; }
+        const base = _audioBaseTarget[id] || 0;
+        el.volume = base * masterVolume;
+    });
+    const slider = document.getElementById('volume-slider');
+    if(slider) slider.setAttribute('aria-label', '소리 크기 조절, 현재 ' + Math.round(masterVolume * 100) + '퍼센트');
+}
+
 const AMBIENT_VOLUME = 0.18;
 function startAmbientSound(){
     const el = document.getElementById('snd-base');
     if(!el) return;
+    _audioBaseTarget['snd-base'] = AMBIENT_VOLUME;
     el.volume = 0;
     el.loop = true;
     const p = el.play();
@@ -1161,10 +1277,11 @@ function startAmbientSound(){
         p.catch(e => console.warn('[앰비언트] 자동재생 차단:', e.message));
     }
     let v = 0;
+    const effectiveTarget = AMBIENT_VOLUME * masterVolume;
     const fadeIn = setInterval(()=>{
-        v = Math.min(AMBIENT_VOLUME, v + 0.01);
+        v = Math.min(effectiveTarget, v + 0.01);
         el.volume = v;
-        if(v >= AMBIENT_VOLUME) clearInterval(fadeIn);
+        if(v >= effectiveTarget) clearInterval(fadeIn);
     }, 60);
 }
 
@@ -1179,6 +1296,8 @@ function hapticPulse(type){
 
 function _fadeStatueAudio(el, target){
     if(!el) return;
+    _audioBaseTarget[el.id] = target;
+    const effectiveTarget = target * masterVolume;
     if(_statueFadeTimers[el.id]){ clearInterval(_statueFadeTimers[el.id]); _statueFadeTimers[el.id] = null; }
     if(target > 0 && el.paused){
         el.volume = 0;
@@ -1187,12 +1306,12 @@ function _fadeStatueAudio(el, target){
             p.catch(e => console.warn('[조각상 사운드] 자동재생 차단:', e.message));
         }
     }
-    const step = target > el.volume ? 0.01 : -0.01;
+    const step = effectiveTarget > el.volume ? 0.01 : -0.01;
     _statueFadeTimers[el.id] = setInterval(()=>{
         let v = el.volume + step;
-        const done = (step > 0 && v >= target) || (step < 0 && v <= target);
+        const done = (step > 0 && v >= effectiveTarget) || (step < 0 && v <= effectiveTarget);
         if(done){
-            v = target;
+            v = effectiveTarget;
             clearInterval(_statueFadeTimers[el.id]);
             _statueFadeTimers[el.id] = null;
             if(target <= 0){ el.pause(); el.currentTime = 0; }
@@ -1363,6 +1482,9 @@ function speak(text, onEnd, speaker){
             if(speaker==='rodin'){ u.rate = TTS_RATE; u.pitch = 0.90; }
             else if(speaker==='maitreya'){ u.rate = TTS_RATE; u.pitch = 1.08; }
             else { u.rate = TTS_RATE; u.pitch = 1.0; }
+            // v-in-app-volume — 참가자 요청: 화면 안 소리 조절 슬라이더가
+            // 내레이션 음량에도 적용되도록 한다.
+            u.volume = masterVolume;
             // v49 — 참가자 요청: "자막이 빨리 지나간다." 일부 기기·음성엔진은
             // 실제 발화 속도가 사람이 자막을 읽는 속도보다 빨라서, 음성이
             // 끝나는 이벤트(onend)가 예상보다 일찍 와버리면 자막도 그만큼
@@ -1782,28 +1904,65 @@ function onPauseClick(){
         clearTimeout(autoTimer);
         window.speechSynthesis.cancel();
         pausedContext = { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
-        if(btnPause){ btnPause.textContent = '다시 시작'; btnPause.classList.add('primary'); }
+        if(btnPause){
+            btnPause.textContent = '다시 시작';
+            btnPause.classList.add('primary');
+            btnPause.setAttribute('aria-label', '다시 시작 버튼입니다. 누르면 이어서 재생합니다.');
+        }
+        speak('일시정지합니다.');
     } else {
         isPaused = false;
-        if(btnPause){ btnPause.textContent = '멈춤'; btnPause.classList.remove('primary'); }
-        if(!pausedContext){ playLayer(0); return; }
-        phase = pausedContext.phase;
-        layerIdx = pausedContext.layerIdx;
-        lineIdx = pausedContext.lineIdx;
-        turnIdx = pausedContext.turnIdx;
-        dLineIdx = pausedContext.dLineIdx;
-        announcing = pausedContext.announcing;
+        if(btnPause){
+            btnPause.textContent = '멈춤';
+            btnPause.classList.remove('primary');
+            btnPause.setAttribute('aria-label', '멈춤 버튼입니다. 누르면 일시정지합니다.');
+        }
+        // v-pause-voice — 참가자 요청으로 되살린 멈춤 버튼에 TalkBack 음성
+        // 안내를 추가하면서, "다시 재생합니다." 안내가 끝난 뒤에야(콜백)
+        // 원래 있던 재생 재개 로직을 그대로 잇는다 — 안내와 본편 음성이
+        // 겹치거나 서로를 잘라먹지 않도록 하기 위함이다(speak()는 호출될
+        // 때마다 내부에서 cancel()을 부르므로, 두 speak()를 동시에 부르면
+        // 먼저 것이 거의 즉시 끊긴다).
+        speak('다시 재생합니다.', ()=>{
+            if(!pausedContext){ playLayer(0); return; }
+            phase = pausedContext.phase;
+            layerIdx = pausedContext.layerIdx;
+            lineIdx = pausedContext.lineIdx;
+            turnIdx = pausedContext.turnIdx;
+            dLineIdx = pausedContext.dLineIdx;
+            announcing = pausedContext.announcing;
+            if(phase === 'screen'){
+                updateBadgeUI();
+                eyebrowEl.textContent = '전시실 1 · 소개';
+                tagEl.textContent = LAYERS[layerIdx].tag;
+                playLine();
+            } else if(announcing){
+                showNextStageAnnouncement();
+            } else {
+                playTurn(turnIdx);
+            }
+        });
+    }
+}
+
+// v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을 수
+// 있는 기능." 지금 있는 화면 단계(레이어)나 대화 턴의 시작으로 되돌아가
+// 다시 들려준다 — 마무리 안내 화면에서는 그 안내를 처음부터 다시
+// 들려준다.
+function onReplayClick(){
+    clearTimeout(autoTimer);
+    window.speechSynthesis.cancel();
+    speechGen++;
+    try{ hapticPulse('turn'); }catch(err){}
+    speak('처음부터 다시 들려드립니다.', ()=>{
         if(phase === 'screen'){
-            updateBadgeUI();
-            eyebrowEl.textContent = '전시실 1 · 소개';
-            tagEl.textContent = LAYERS[layerIdx].tag;
-            playLine();
+            playLayer(layerIdx);
         } else if(announcing){
             showNextStageAnnouncement();
         } else {
             playTurn(turnIdx);
         }
-    }
+    });
 }
 
 // v18 — 참가자 요청: "뒤로가기 버튼은 바로 이전 해설창으로 돌아가도록."
@@ -2059,6 +2218,24 @@ function _infoDialogKeydown(e){
 // 순간 이 문서는 곧 사라지므로, 그 멘트는 도착지(room2.html)가 자기
 // 페이지에서 직접 말하도록 넘겼다(?from=next 파라미터로 신호를 준다 —
 // room2.html의 speakOnboardingIfNeeded 참고).
+// v-exit-btn — 참가자 요청: 오른쪽 상단 "나가기" X 버튼의 실제 동작.
+// 참가자 지적: "처음화면으로 돌아가지 말고 그냥 종료해줘 — 모바일에서
+// 쓰는 것이라 그게 낫다." 모바일 브라우저 정책상 스크립트가 연 탭이
+// 아니면 window.close()가 항상 성공하는 것은 아니지만, 시도는 해본다.
+// 대부분의 경우 브라우저가 이를 막으므로, 그 직후 화면을 완전히
+// 비워(about:blank) 최소한 전시 화면에서는 확실히 벗어나게 한다 —
+// 이 앱을 모바일 웹뷰(홈 화면에 추가한 형태 등)로 열었을 때는 이렇게
+// 비운 화면이 사실상 "종료"와 같은 효과를 낸다.
+function exitExhibit(){
+    try{ window.speechSynthesis.cancel(); }catch(err){}
+    speechGen++;
+    clearTimeout(autoTimer);
+    try{ window.close(); }catch(err){}
+    setTimeout(function(){
+        try{ location.href = 'about:blank'; }catch(err){}
+    }, 250);
+}
+
 let _leavingRoom1 = false;
 function goToRoom2(e) {
     if (e) {
@@ -2256,7 +2433,7 @@ function goToRoom2(e) {
     // v-remove-pause-btn — 멈춤 버튼(#btn-pause)은 화면에서 제거되었다.
     // 화면을 길게 누르면 멈추고/다시 시작하는 제스처(onPauseClick)는
     // 그대로 남아 있다.
-    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-back'];
+    const TWO_PRESS_CONFIRM_IDS = ['btn-next-exhibit', 'btn-back', 'btn-exit'];
     const NEXT_EXHIBIT_CONFIRM_MS = 1500;
     function isNextExhibitBtn(el){ return !!(el && TWO_PRESS_CONFIRM_IDS.includes(el.id)); }
 
@@ -2335,11 +2512,12 @@ function goToRoom2(e) {
         // 스와이프가 아니면 짧은 탭/클릭.
         if(dt < 600){
             if(isGateShowing()){
-                // 진입 화면: "시작" 버튼 자체를 짚었다면 버튼의 원래
-                // onclick(handleGateEntryTap, 2탭 방식)에 맡기고(중복 호출
-                // 방지), 그 외 화면 어디를 두드리면 한 번에 곧장 입장한다
-                // (handleGateScreenTap — 위 v-gate-single-tap 참고).
-                if(target && target.closest && target.closest('.btn.primary')) return;
+                // 진입 화면: "시작" 버튼(전시1) 또는 새로 추가된 배경음악
+                // 버튼처럼, 그 자체가 이름 있는 버튼(.btn)이라면 버튼의
+                // 원래 onclick에 맡기고(중복 호출 방지), 그 외 화면 어디를
+                // 두드리면 한 번에 곧장 입장한다(handleGateScreenTap — 위
+                // v-gate-single-tap 참고).
+                if(target && target.closest && target.closest('.btn')) return;
                 suppressNextClick = true;
                 try{ hapticPulse('turn'); }catch(err){}
                 try{ handleGateScreenTap(); }catch(err){}
@@ -2348,13 +2526,15 @@ function goToRoom2(e) {
             }
             // 이미 하단 자막 패널(#caption-wrap) 안이라면 그 영역 자체의
             // onclick(onCaptionAreaClick)이 곧 처리하므로 여기서는
-            // 손대지 않는다(중복 진행 방지).
+            // 손대지 않는다(중복 진행 방지) — 그쪽도 동일하게 좌우로 나뉜다.
             if(target && target.closest && target.closest('#caption-wrap')) return;
-            // 그 외 화면(조각상 이미지·여백 등 "죽은 영역")을 두드리면
-            // 자막 패널을 두드린 것과 똑같이 다음으로 진행한다.
+            // v-left-right-nav — 참가자 요청: 그 외 화면(조각상 이미지·여백
+            // 등 "죽은 영역")을 두드리면, 화면 왼쪽 절반은 이전으로, 오른쪽
+            // 절반은 다음으로 넘어간다.
             suppressNextClick = true;
             try{ hapticPulse('turn'); }catch(err){}
-            try{ onNextClick(); }catch(err){}
+            const isRightHalf = x > window.innerWidth / 2;
+            try{ if(isRightHalf) onNextClick(); else onBackClick(); }catch(err){}
             setTimeout(function(){ suppressNextClick = false; }, 400);
         }
     }
