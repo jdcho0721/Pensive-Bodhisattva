@@ -2272,25 +2272,6 @@ function buildRecapAnswer(){
    "고뇌를 어떻게 표현했어" 같은 KB 질문과 헷갈리지 않게 한다. */
 const RECAP_TRIGGER = /요약|복습|정리해줘|정리해 줘|지금까지\s*(뭘|무엇을|뭐)|여태\s*(뭘|무엇을)|들은\s*거\s*(정리|요약)|다시\s*(들려줘|알려줘)\s*전체|몇\s*곳/;
 
-// v-relation-guard — 참가자 지적: "불용어 목록에 단어 하나 추가하는 건
-// 편법 아니냐, 다른 흔한 어미도 얼마든지 더 있을 텐데." 타당한 지적이다.
-// STOPWORDS 방식은 "이번에 걸린 오탐 하나"만 막을 뿐, 구조적으로는
-// 여전히 "짧은 흔한 단어가 우연히 무관한 항목과 겹치면 그게 뽑힌다"는
-// 근본 원인을 그대로 두고 있다. 그래서 "두 조각상 자체의 관계/비교"를
-// 묻는 질문 형태는 아예 KB 퍼지 매칭에 넘기지 않고, 여기서 먼저
-// 정규식으로 가려내 확정 답변으로 바로 응답한다 — 이후 STOPWORDS가
-// 어떻게 바뀌든 이 길목에서 먼저 걸러지므로 영향을 받지 않는다.
-// "석굴암이랑 관계있어"·"일본 고류지 반가사유상이랑 관련있어"·
-// "진인사대천명이 조각상과 무슨 관계" 처럼 특정 제3의 대상과의 관계를
-// 묻는 기존 항목까지 가로채지 않도록, "두 조각상/두 작품/두 상/이 둘/
-// 서로"처럼 두 조각상 자체를 가리키는 표현이 관계·비교 단어와 가까이
-// 함께 있을 때만 발동하도록 범위를 좁혔다.
-const TWO_STATUE_RELATION_RE = /(두\s*조각상|두\s*작품|두\s*상|이\s*둘|서로)[^?？!！.]{0,8}(관계|관련|차이|다른\s*점|다른점|공통점|비교)/;
-function _isTwoStatueRelationQuestion(q){
-    return TWO_STATUE_RELATION_RE.test(q);
-}
-const TWO_STATUE_COMPARISON_ANSWER = '두 조각상 모두 깊은 사유에 잠긴 인물을 표현하지만, <생각하는 사람>은 팽팽한 근육으로 힘든 마음을, 반가사유상은 부드러운 곡선과 미소로 평온을 담아낸다는 점에서 대비됩니다.';
-
 function updateProgress(){
     document.querySelectorAll('#progress-pill .dot').forEach(dot=>{
         if(visited.has(dot.dataset.k)) dot.classList.add('on');
@@ -4819,11 +4800,14 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 - 두 조각상은 서로 다른 시대·국가의 작품입니다: 금동미륵보살반가사유상(삼국시대, 6~7세기, 한반도, 금동)과 로댕의 <생각하는 사람>(1880~1904년, 프랑스, 청동). 절대 두 작품의 시대·국가·재질·제작자 정보를 서로 뒤바꾸거나 섞지 마십시오.
 - 모르는 사실은 추측해 지어내지 말고 "정확히 전해지지 않습니다"라고 답하십시오.
 - 참고 자료에 등장하지 않는 새로운 인물명·연도·역사적 사건·작품명은 절대로 지어내지 마십시오. 참고 자료에 없는 내용을 답해야 할 것 같으면, 없는 사실을 만들어내는 대신 "정확히 전해지지 않습니다"라고만 답하십시오.
+- 아래 참고 자료(KB 후보·코퍼스·지식그래프)는 검색 알고리즘이 단어 겹침 등 기계적인 방법으로 골라온 것이라, 실제로는 지금 질문과 무관할 수 있습니다. 답을 쓰기 전에 "이 참고 자료가 정말 지금 관람객의 질문에 대한 답인가?"를 스스로 먼저 판단하십시오. 무관하다고 판단되면 그 자료를 인용하거나 언급하지 말고, 대신 알고 있는 일반적인 사실로 답하거나, 확실하지 않으면 "정확히 전해지지 않습니다"라고 답하십시오. 무관한 참고 자료를 관련 있는 것처럼 억지로 끌어다 붙이지 마십시오.
+- 위 관련성 판단은 "참고 자료가 지금 질문과 같은 대상(같은 조각상·부위·주제)을 다루고 있는가"를 확인하는 것이지, 거시구조 3번에서 허용한 "짧은 사유적 여운"(자료의 사실 범위 안에서 덧붙이는 정서적·철학적 해석 한 문장)까지 막으려는 것이 아닙니다. 참고 자료의 주제가 질문과 맞다면, 그 위에 자연스러운 해석 한 문장을 붙이는 것은 여전히 정상적으로 허용됩니다 — 지나치게 몸을 사려 사실 나열로만 끝내지 마십시오. 다만 그 해석이 참고 자료에 없는 새로운 사실(날짜·인물·사건·수치 등)을 지어내는 방향으로 흘러가서는 안 됩니다.
 
 [답하기 전에 스스로 점검할 것 — 절대 답변에 이 점검 과정 자체를 쓰지 말 것]
+- 참고 자료가 실제로 지금 질문과 관련이 있는가, 아니면 검색 알고리즘이 우연히 걸어온 무관한 내용인가?
 - 지금 참고 자료에 실제로 있는 사실인가, 아니면 그럴듯해서 지어낸 것인가?
 - 몰입감 있는 이야기로 흐르려는 유혹보다, 눈에 보이는 사실의 정확함을 우선했는가?
-이 두 가지를 속으로 확인한 뒤에만 최종 답변을 출력하십시오.`;
+이 세 가지를 속으로 확인한 뒤에만 최종 답변을 출력하십시오.`;
 
 // v-center-synthesis — 참가자 요청: "두 조각상의 가운데 서면, 지금까지
 // 만진 부분에 대한 종합적인 철학적 사유 내용을 2~3문장으로 들려줘." 위
@@ -5077,11 +5061,6 @@ async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
 /* ── 지식베이스 우선 검색 — 지금 만지고 있는 조각상 쪽을 먼저 찾아보고,
    없으면 반대쪽 조각상 지식베이스도 확인한다. ── */
 function pickKBAnswer(query){
-    // v-relation-guard — 참가자 요청(보강): 관계/비교 질문은 KB 퍼지
-    // 매칭에 맡기지 않는다. _processChatAnswer()의 0.5순위 가드가 이미
-    // 먼저 처리하지만, 이 함수가 다른 경로에서 직접 호출되는 경우에도
-    // 안전하도록 여기서도 동일하게 차단한다(오탐 2차 방지).
-    if(_isTwoStatueRelationQuestion(query)) return null;
     const d = currentKey ? DETAILS[currentKey] : null;
     let order = (d && d.body==='로댕') ? ['로댕','반가사유상'] : ['반가사유상','로댕'];
     // v3: 질문에 조각상 이름이 명시돼 있으면(예: "로댕 재질"), 지금 만지고
@@ -5118,10 +5097,22 @@ function pickKBAnswer(query){
     for(const body of order){
         const hit = _searchKBFuzzy(PART_MEANINGS[body], query)
             || (strippedQuery && strippedQuery !== query ? _searchKBFuzzy(PART_MEANINGS[body], strippedQuery) : null);
-        // tier:1(정확 포함 매칭)과 tier:2(어절 경계 매칭, v3 이후 안전)는
-        // 그대로 즉답으로 쓴다. tier:3(레벤슈타인 문자열 유사도)만 확신도가
-        // 낮아 버리고, pickKBCandidates()를 거쳐 LLM 근거로만 쓴다.
-        if(hit && hit.tier!==3) return hit.text;
+        // v-kb-trust-tier1-only — 참가자 지적: "불용어 목록에 단어 하나
+        // 추가하는 식은 편법이고, 다른 흔한 어미로 또 재발할 수 있다."
+        // 맞는 지적이다. tier:2(어절 단위 겹침 점수)는 결국 "질문과
+        // 항목이 단어를 몇 개 공유하는가"라는 표면적 신호일 뿐이라,
+        // STOPWORDS를 아무리 정교하게 다듬어도 예측 못 한 흔한 단어가
+        // 우연히 무관한 항목과 겹치는 사례는 원리상 계속 나올 수 있다.
+        // 그래서 이제 "그대로 즉답으로 써도 되는" 확신도는 tier:1(질문
+        // 문구 자체가 어떤 항목에 말 그대로 포함되는 경우)만 인정한다.
+        // tier:2·tier:3은 여기서 직접 답하지 않고 null을 반환해 아래
+        // _processChatAnswer()가 pickKBCandidates()를 거쳐 LLM 근거로만
+        // 쓰게 한다 — LLM은 질문 문장 전체의 의미를 보고 그 후보가 실제
+        // 관련 있는지 판단할 수 있으므로, 표면적 단어 겹침만으로 오답을
+        // 확정해버리는 이 클래스의 버그 자체가 재발하지 않는다(유사한
+        // 다른 질문에도 똑같이 적용되는 일반적 해법 — 특정 질문 패턴을
+        // 손으로 짚어 예외 처리하지 않는다).
+        if(hit && hit.tier===1) return hit.text;
     }
     return null;
 }
@@ -5131,6 +5122,27 @@ function pickKBAnswer(query){
    두 조각상 KB 양쪽에서 각각 후보를 찾아 코퍼스 검색 결과와 함께
    LLM에게 근거로 제공한다 — KB 원문을 그대로 사용자에게 보여주지 않고,
    LLM이 실제 질문과 맞는지 판단해 답을 만들게 한다. */
+// v-kb-trust-tier1-only(계속) — 위 pickKBAnswer()·1.7순위 라우팅에서 함께
+// 쓴다. pickKBCandidates()는 "그래도 참고는 될 만한" tier:3(느슨한 문자열
+// 유사도)까지 전부 모아 LLM 근거로 주는 함수라, 라우팅 판단에 그대로
+// 쓰면 안 된다 — tier:3은 거의 모든 입력에 대해 "그나마 가장 비슷한"
+// 무언가를 하나쯤 찾아내므로, "질투심이 생겨요" 같은 개인적 감정
+// 표현조차 우연한 tier:3 매칭 때문에 공감형 경로(_answerFreeformTwoVoice)
+// 대신 사실 확인용 도슨트 프롬프트(DETAIL_SYSTEM_PROMPT, "인생 조언·
+// 개인적 위로 금지")로 잘못 보내질 위험이 있다. 그래서 라우팅 판단에는
+// tier:1·tier:2(어느 정도 근거 있는 겹침)까지만 인정한다.
+function _hasReliableKBCandidate(query){
+    const d = currentKey ? DETAILS[currentKey] : null;
+    let bodies;
+    if(query.includes('로댕') || query.includes('생각하는 사람') || (d && d.body==='로댕')) bodies=['로댕'];
+    else if(query.includes('반가사유상') || query.includes('사유상') || query.includes('미륵') || (d && d.body==='반가사유상')) bodies=['반가사유상'];
+    else bodies=['로댕','반가사유상'];
+    return bodies.some(body=>{
+        const hit = _searchKBFuzzy(PART_MEANINGS[body], query);
+        return hit && hit.tier<=2;
+    });
+}
+
 function pickKBCandidates(query){
     const out=[];
     // v-cross-statue-noise — 참가자 지적: "챗봇 응답에 반가사유상 관련
@@ -5924,22 +5936,6 @@ async function _processChatAnswer(q){
         return;
     }
 
-    // 0.5순위 — v-relation-guard: "두 조각상은 무슨 관계야/차이가 뭐야"
-    // 같은 일반적인 관계·비교 질문은 KB 퍼지 매칭(불용어 목록에 좌우되는
-    // 방식)에 맡기지 않고, 여기서 먼저 가로채 확정 답변으로 즉시
-    // 응답한다. 아래 1순위(pickKBAnswer)에도 같은 가드를 넣어뒀지만,
-    // 이 함수를 우회해 pickKBAnswer가 다른 경로로 호출되더라도 항상
-    // 여기서 먼저 걸리도록 이중으로 배치했다.
-    if(_isTwoStatueRelationQuestion(q)){
-        setTimeout(()=>{
-            pushLog('ai', TWO_STATUE_COMPARISON_ANSWER);
-            showChatAnswerInCaption('사유의 상담소 — 답변', TWO_STATUE_COMPARISON_ANSWER);
-            _chatAnswerActive = true;
-            speak(TWO_STATUE_COMPARISON_ANSWER, ()=>{ _chatAnswerActive = false; });
-        }, 250);
-        return;
-    }
-
     // 1순위: 지식베이스 퍼지 매칭 — 즉시 응답
     const kbAnswer = pickKBAnswer(q);
     if(kbAnswer){
@@ -5970,13 +5966,21 @@ async function _processChatAnswer(q){
         return;
     }
 
-    // 1.7순위 — v-freeform-two-voice: 200개 목록에도 없고, 사실 확인형
-    // 질문(_isFactualQuestion — 재질·연도·작가 등)도 아니라면, 뒤이은
-    // 2순위 경로(DETAIL_SYSTEM_PROMPT)로 보내지 않는다. 그 프롬프트는
-    // "인생 조언, 개인적 위로는 하지 마십시오"라고 명시돼 있어 "걱정"
-    // 같은 입력에는 애매한 거부 답변만 돌아왔다. 대신 두 조각상이 각자
-    // 형식으로 답하는 전용 LLM 경로로 보낸다.
-    if(!_isFactualQuestion(q)){
+    // 1.7순위 — v-freeform-two-voice, v-kb-trust-tier1-only(계속): 200개
+    // 목록에도 없을 때, 예전엔 "사실 확인형 질문(_isFactualQuestion —
+    // 재질·연도·작가 등 좁은 패턴)"이 아니면 무조건 근거 없는
+    // 자유생성 경로로 보냈다. 문제는 "두 조각상은 무슨 관계야?" 같은
+    // 질문은 이 좁은 정규식에 안 걸려서, KB에 이미 잘 정리된 답이
+    // 있어도 그 경로에서는 활용되지 못했다(그 경로는 코퍼스·KB 후보를
+    // 아예 참고하지 않는다). 그래서 먼저 pickKBCandidates()로 참고할
+    // 만한 후보가 있는지 확인해, 있으면(좁은 사실형 질문이 아니어도)
+    // 근거를 갖춘 2순위 경로로 보낸다 — 그 경로의 시스템 프롬프트가
+    // "후보가 실제로 이 질문에 맞는지 먼저 판단하라"고 명시하므로,
+    // 후보가 우연히 무관해도 LLM이 스스로 걸러낸다. 이렇게 하면 특정
+    // 질문 문구를 하나하나 손으로 짚어 예외 처리할 필요 없이, 비슷한
+    // 유형의 다른 질문에도 같은 방식으로 일반화되어 대응한다.
+    const hasLocalCandidate = _hasReliableKBCandidate(q);
+    if(!_isFactualQuestion(q) && !hasLocalCandidate){
         setTimeout(()=>{ _answerFreeformTwoVoice(q); }, 250);
         return;
     }
