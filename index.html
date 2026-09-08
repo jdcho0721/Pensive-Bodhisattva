@@ -696,8 +696,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
 
 
+    <!-- v-remove-entry-btn — 참가자 요청: "전시1/전시2 버튼을 모두
+         제거하고, 화면을 한 번 터치하면 입장한다는 안내 문구를 두는
+         것이 가장 혼란을 피하는 방법." 입장 버튼을 없애고, 배경음악
+         토글 버튼만 남긴다. 화면 전체 탭은 아래 handleGateScreenTap()이
+         이미 처리한다(v-gate-single-tap). -->
     <div class="intro-btn-row">
-        <button class="btn primary" onclick="handleGateEntryTap()" aria-label="전시실 1 입장 버튼입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.">전시1</button>
         <!-- v-bgm-toggle — room2.html의 배경음악 버튼과 같은 형식으로 추가.
              #intro-gate 자체를 두드리면 입장 관련 동작이 걸리므로, 이 버튼을
              눌렀을 때 함께 실행되지 않도록 event.stopPropagation()을 먼저
@@ -707,12 +711,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
                 data-tap-name="배경음악"
                 onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
     </div>
-    <!-- v-usage-update — 참가자 요청: "사용법도 업데이트 해주고, 첫
-         페이지에 좌우 탭 사용법을 음성안내로도 해줘." 화면에 보이는
-         이 안내문에도 좌우 탭 사용법을 추가했다(음성 안내는 위 전시1
-         버튼의 aria-label에 같은 문장을 넣어, 버튼을 누르면 함께
-         들리게 했다). -->
-    <p class="gate-hint">버튼을 누르면 안내 음성이 나오고, 한 번 더 누르면 입장합니다. 화면의 다른 곳을 터치하면 바로 입장합니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.</p>
+    <!-- v-usage-update — 참가자 요청: "화면을 한번 터치하면 전시실로
+         입장합니다 하는 자막을 넣자." 입장 버튼이 사라졌으므로 이 문장을
+         맨 앞으로 옮겨 가장 먼저 눈에 띄게 했다. -->
+    <p class="gate-hint">화면을 한 번 터치하면 전시실로 입장합니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.</p>
 </div>
 
 <style>
@@ -789,18 +791,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     white-space:nowrap;
     min-width:0;
     font-weight:700;
-}
-
-/* v-hearing-caption-parity — 접근성 최종 점검: 첫 탭에서 안내 음성만
-   나가고 화면엔 아무 변화가 없었다 — 소리를 들을 수 없는 관람객은
-   버튼이 "확인 대기" 상태로 바뀐 것을 알 방법이 없어, 왜 한 번 더
-   눌러야 하는지 모른 채 헤맬 수 있었다. room2.html의 twotap-armed와
-   같은 방식으로, 첫 탭 뒤 짧은 시간 동안 버튼에 금빛 테두리를 둘러
-   "한 번 더 누르면 입장" 상태를 시각적으로도 보여준다. */
-#intro-gate .btn.primary.gate-armed {
-    outline: 3px solid var(--gold);
-    outline-offset: 3px;
-    box-shadow: 0 0 16px 3px rgba(212,175,55,.6), 0 4px 8px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.25);
 }
 
 </style>
@@ -1100,91 +1090,36 @@ let _autoEnterTimer = null;
 const _arrivalParams = new URLSearchParams(location.search);
 const _arrivedFromNext = _arrivalParams.get('from') === 'next';
 let _arrivalMessageConsumed = !_arrivedFromNext;
-// v-two-press-gate — 참가자 요청: "전시실 1 · 조우 버튼을 누르면 음성
-// 해설을 해주고, 한 번 더 눌러야 입장하게 해달라." (아래 handleGateEntryTap
-// 참고). _tryArrivalMessage()가 도착 안내를 말하는 순간, 그 자체가 이미
-// "첫 번째 탭"의 역할을 하므로, 바로 다음 탭이 곧장 입장으로 이어지도록
-// 여기서 미리 "armed" 상태로 만들어둔다 — 그래야 도착 안내의 약속
-// ("터치하면 바로 시작됩니다")과 실제 동작이 어긋나지 않는다.
-let _gateArmed = false;
-let _gateArmedAt = 0;
-// 도착 안내 음성(몇 초 걸림) 재생 시간과 무관하게, 그 안내 뒤의 다음
-// 탭은 항상 입장으로 이어져야 하므로 이 경우엔 시간 만료를 두지 않는다.
-let _gateArmedNoExpiry = false;
-const GATE_CONFIRM_MS = 1500;
-function _setGateArmedVisual(on){
-    try{
-        const btn = document.querySelector('#intro-gate .btn.primary');
-        if(btn) btn.classList.toggle('gate-armed', !!on);
-    }catch(err){}
-}
-function _tryArrivalMessage(){
-    if(_arrivalMessageConsumed) return false;
-    _arrivalMessageConsumed = true;
-    _gateArmed = true;
-    _gateArmedAt = Date.now();
-    _gateArmedNoExpiry = true;
-    _setGateArmedVisual(true);
-    try{ speak('침묵의 공명 제1전시 조우입니다. 화면의 아무곳이나 터치하면 바로 시작됩니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.'); }catch(err){}
-    return true;
-}
-// 자동재생 제약이 있는 브라우저를 위해, 로드 직후에도 한 번 시도해본다
-// (성공하면 굳이 첫 탭에서 또 소비하지 않도록 이미 위에서 true로 표시됨).
-setTimeout(_tryArrivalMessage, 700);
-
-// 게이트의 버튼(onclick)과 "게이트 아무 곳이나 탭"(제스처 계층) 양쪽
-// 모두 이 함수를 거치도록 통일했다 — 도착 안내가 남아있으면 그것부터
-// 들려주고, 없으면(또는 이미 들었으면) 첫 탭엔 안내만, 짧은 시간 안의
-// 두 번째 탭에 실제로 입장한다.
-// v-two-press-gate — 참가자 요청: "전시실 1 · 조우 버튼을 누르면 음성
-// 해설을 해주고, 한 번 더 눌러야 입장하게 해달라." 기존엔 ?from=next로
-// 넘어온 경우에만 "첫 탭은 안내, 두 번째 탭에 입장" 방식이 적용되고,
-// 그 외(일반적으로 게이트에 처음 들어온 경우)엔 곧장 한 번에 입장했다.
-// 버튼의 aria-label이 원래도 "화면을 두 번 탭하여…"라고 안내하고
-// 있었으므로, 실제 동작도 항상 그렇게 통일한다.
-function handleGateEntryTap(){
-    if(_tryArrivalMessage()) return; // 이번 탭은 도착 안내만 — 입장은 다음 탭에(이미 armed됨)
-    const now = Date.now();
-    if(_gateArmed && (_gateArmedNoExpiry || (now - _gateArmedAt) < GATE_CONFIRM_MS)){
-        // 두 번째로 눌렀다 — 실제로 입장한다.
-        _gateArmed = false;
-        _gateArmedNoExpiry = false;
-        _setGateArmedVisual(false);
-        try{ hapticPulse('stage'); }catch(err){}
-        speak('전시실 1로 입장합니다.', enterRoom);
+// v-remove-entry-btn — 참가자 요청: "전시1/전시2 버튼을 모두 제거하고,
+// 화면을 한 번 터치하면 입장한다는 안내만 두는 것이 가장 혼란을 피하는
+// 방법." 입장 버튼이 있던 시절엔 "첫 탭은 안내, 두 번째 탭은 확인"이라는
+// 2단계 상태(armed·시간 만료 등)가 필요했지만, 버튼이 사라졌으니 그
+// 복잡한 상태 기계도 함께 걷어낸다. 이제 규칙은 하나뿐이다 — 화면 어디를
+// 탭하든 한 번이면 입장한다. room2.html에서 "다음전시"로 넘어온 경우
+// (?from=next)만 예외로, 도착 인사말을 먼저 들려준 뒤(자동재생을
+// 못 했을 수도 있으므로) 그 안내가 끝나면 곧바로 입장까지 이어간다 —
+// 사용자 입장에서는 여전히 "한 번 탭"일 뿐, 안내와 입장 사이에 추가
+// 탭을 요구하지 않는다.
+function handleGateScreenTap(){
+    if(!_arrivalMessageConsumed){
+        _arrivalMessageConsumed = true;
+        try{
+            speak('침묵의 공명 제1전시 조우입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.', enterRoom);
+        }catch(err){ enterRoom(); }
         return;
     }
-    // 첫 번째 탭 — 아직 입장하지 않고 안내만 들려준다.
-    _gateArmed = true;
-    _gateArmedAt = now;
-    _gateArmedNoExpiry = true;
-    _setGateArmedVisual(true);
-    try{ hapticPulse('turn'); }catch(err){}
-    try{ speak(getGateButtonLabel()); }catch(err){}
-}
-function getGateButtonLabel(){
-    const btn = document.querySelector('#intro-gate .btn.primary');
-    if(btn){
-        const label = btn.getAttribute('aria-label');
-        if(label && label.trim()) return label.trim();
-        const text = (btn.textContent || '').trim();
-        if(text) return text;
-    }
-    return '전시실 1 입장 버튼입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.';
-}
-// v-gate-single-tap — 참가자 요청: "화면을 한 번 터치하면 입장하도록
-// 바꿔달라." 전시실 1 · 조우 버튼 자체는 계속 2탭(안내 → 확인) 방식을
-// 쓰지만(handleGateEntryTap), 그 버튼이 아닌 화면의 다른 곳을 탭했을
-// 때는 곧장 한 번에 입장한다. 다만 room2.html에서 "다음전시"로 넘어온
-// 경우(?from=next)의 도착 안내(_tryArrivalMessage)는 자동재생이 막혔을
-// 때를 대비해 실제 사용자 탭 안에서 재생돼야 하므로, 그 안내가 아직
-// 소비되지 않았다면 이번 탭은 안내만 들려주고 입장은 그 다음 탭에서
-// 이어진다(이미 _tryArrivalMessage 안에서 "다음 탭은 곧장 입장"하도록
-// armed 상태가 되므로, 그 다음 탭도 이 함수를 통해 자연스럽게 입장한다).
-function handleGateScreenTap(){
-    if(_tryArrivalMessage()) return; // 도착 안내가 아직 안 나왔다면 이번 탭은 그것부터 — 입장은 다음 탭에
     enterRoom();
 }
+// 자동재생 제약이 있는 브라우저를 위해, 로드 직후에도 한 번 시도해본다.
+// 성공하면(=이미 들었으면) 위 handleGateScreenTap()의 첫 탭이 바로
+// 입장으로 이어진다. 이 자동재생 시도 자체는 입장을 걸지 않는다 —
+// 자동재생이 브라우저에 막혀 조용히 실패하더라도 이후 탭으로 정상
+// 진행되어야 하기 때문이다.
+setTimeout(()=>{
+    if(_arrivalMessageConsumed) return;
+    _arrivalMessageConsumed = true;
+    try{ speak('침묵의 공명 제1전시 조우입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.'); }catch(err){}
+}, 700);
 
 function enterRoom(){
     clearTimeout(_autoEnterTimer);
@@ -2586,26 +2521,25 @@ function goToRoom2(e) {
         if(onboardingSpoken) return;
         if(!isGateShowing()) return;
         // v-two-press-nav — ?from=next로 넘어온 경우, 도착 직후 안내는
-        // 위쪽의 _tryArrivalMessage()/handleGateEntryTap()이 전담한다
-        // (onboardingSpoken을 그쪽에서 이미 true로 표시해두므로 보통
-        // 여기까지 오지 않지만, 순서가 꼬였을 때를 대비해 한 번 더
-        // 명시적으로 걸러둔다). 스크린리더 없는 사용자를 위한 긴 조작법
-        // 설명은 처음 오는 방문객(=바로 이 게이트로 직접 들어온 경우)
-        // 에게만 필요하다.
+        // 위쪽의 handleGateScreenTap()이 전담하므로, 이 함수의 긴
+        // 조작법 설명까지 겹쳐 들려줄 필요가 없다. 아래 _arrivedFromNext
+        // 검사가 그 경우를 걸러낸다. 스크린리더 없는 사용자를 위한 긴
+        // 조작법 설명은 처음 오는 방문객(=바로 이 게이트로 직접 들어온
+        // 경우)에게만 필요하다.
         if(_arrivedFromNext) return;
         onboardingSpoken = true;
         // v-gate-text-first — 참가자 요청: "사용법 안내가 나오기 전에,
         // 먼저 이 화면에 있는 글(제목·소개·관람 순서·문구)을 읽어달라."
         // 화면 텍스트를 먼저 들려준 뒤, 이어서 조작법 안내로 넘어간다.
         const screenText = '침묵의 공명. 로댕의 생각하는 사람과 국보 반가사유상의 만남, 고뇌에서 자비로 이어지는 울림을 체험해보세요. 관람 순서는 전시장 1 조우, 전시장 2 사유와 체화입니다. 몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.';
-        const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 화면 아무 곳이나 한 번 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작합니다. 페이지를 넘기듯 왼쪽으로 쓸어넘기면 다음 이야기로, 반대로 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 두드리면 실행됩니다. 지금 화면을 두 번 두드리면 시작합니다.';
+        const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 화면 아무 곳이나 한 번 두드리면 전시실로 입장합니다. 입장한 뒤에는, 화면 아무 곳이나 한 번 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작합니다. 페이지를 넘기듯 왼쪽으로 쓸어넘기면 다음 이야기로, 반대로 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 두드리면 실행됩니다. 지금 화면을 한 번 두드리면 입장합니다.';
         try{
             speak(screenText, function(){
                 if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
                 speak(msg, function remind(){
                     setTimeout(function again(){
                         if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                        speak('화면 아무 곳이나 두 번 두드리면 시작합니다.', function(){
+                        speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', function(){
                             setTimeout(again, 8000);
                         });
                     }, 6000);
