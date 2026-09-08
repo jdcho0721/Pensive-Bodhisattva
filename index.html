@@ -1150,7 +1150,7 @@ function handleGateEntryTap(){
     // 첫 번째 탭 — 아직 입장하지 않고 안내만 들려준다.
     _gateArmed = true;
     _gateArmedAt = now;
-    _gateArmedNoExpiry = false;
+    _gateArmedNoExpiry = true;
     _setGateArmedVisual(true);
     try{ hapticPulse('turn'); }catch(err){}
     try{ speak(getGateButtonLabel()); }catch(err){}
@@ -1163,7 +1163,7 @@ function getGateButtonLabel(){
         const text = (btn.textContent || '').trim();
         if(text) return text;
     }
-    return '전시실 1 입장 버튼입니다.';
+    return '전시실 1 입장 버튼입니다. 각 자막 창은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.';
 }
 // v-gate-single-tap — 참가자 요청: "화면을 한 번 터치하면 입장하도록
 // 바꿔달라." 전시실 1 · 조우 버튼 자체는 계속 2탭(안내 → 확인) 방식을
