@@ -5800,10 +5800,13 @@ async function _processChatAnswer(q){
     if(_isRelationOrCompareQuestion(q)){
         const a = "두 조각상은 시대·문화권은 다르지만, 모두 ‘깊이 사유하는 자세’를 통해 인간의 내면을 보여준다는 점에서 함께 비교해 볼 수 있어요. 로댕의 「생각하는 사람」은 근대 서구의 인간이 짊어진 무게와 고뇌를, 반가사유상은 미래불(미륵) 신앙과 연결된 고요한 사유와 자비의 분위기를 드러냅니다. 그래서 전시에서는 같은 ‘사유’의 몸짓이 서로 다른 세계관에서 어떻게 달라지는지 한눈에 느끼도록 나란히 배치했어요.";
         pushLog('ai', a);
-        showChatAnswerInCaption(a);
+        showChatAnswerInCaption('사유의 상담소 — 비교', a);
+        _chatAnswerActive = true;
+        speak(a, ()=>{ _chatAnswerActive = false; });
         return;
     }
-const kbAnswer = pickKBAnswer(q);
+
+    const kbAnswer = pickKBAnswer(q);
     if(kbAnswer){
         recordPartChatQA(q, kbAnswer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
         // v-fact-citation — 참가자 지적: "챗봇 답에 출처가 안 나온다."
