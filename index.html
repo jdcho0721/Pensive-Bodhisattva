@@ -50,6 +50,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #mood-overlay.mood-maitreya{opacity:1;background:radial-gradient(ellipse at 74% 50%, rgba(212,175,55,.14), transparent 66%);}
 #mood-overlay.mood-meeting{opacity:1;background:radial-gradient(ellipse at 50% 52%, rgba(255,250,235,.16), transparent 68%);}
 #stage.lit{filter:brightness(1);}
+/* v-side-contrast — 화면을 반으로 나눠, 지금 설명 중이 아닌 쪽만 어둡게
+   덮는다. z-index는 #spotlight-overlay(1)보다 위, #veil(가장자리
+   비네트)보다 아래에 둬서, 밝은 쪽의 스포트라이트 효과와 부딪히지
+   않으면서 어두운 쪽을 확실히 가려준다. */
+.side-dim{position:fixed; top:0; bottom:0; width:50%; z-index:3; pointer-events:none;
+    background:rgba(0,0,0,0); transition:background 1.2s ease;}
+.side-dim.left{left:0;}
+.side-dim.right{right:0;}
+.side-dim.dim{background:rgba(0,0,0,.6);}
 /* v16 — 참가자 지적: "안개가 낀 것처럼 뿌옇다." 원인은 그라데이션이 중심(0%)
    에서도 이미 불투명도 .12(12% 검은 막)로 시작하고 있었다는 점이다 — 진짜
    비네트(가장자리만 어두워지는 효과)라면 중심은 완전히 투명해야 하는데,
@@ -550,7 +559,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    민감한 사용자를 위해, 배경·스팟·자막의 부드러운 페이드 전환도
    운영체제의 "동작 줄이기" 설정을 존중하도록 한다. */
 @media (prefers-reduced-motion: reduce){
-    #stage, #mood-overlay, .spot-wide, .spot, #speaker-tag,
+    #stage, #mood-overlay, .spot-wide, .spot, #speaker-tag, .side-dim,
     #stage-badge .dot::after, .btn, #skiplink{ transition:none !important; }
 }
 
@@ -798,6 +807,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <div id="stage" aria-hidden="true"></div>
 <div id="spotlight-overlay" aria-hidden="true"></div>
 <div id="mood-overlay" aria-hidden="true"></div>
+<!-- v-side-contrast — 참가자 지적: "노란색 원 강조가 명확하게 잘 안
+     보인다(전체적으로 갈색계열이라)." 배경(청동·금동 조각상)과 강조색
+     (금색 원)이 둘 다 따뜻한 갈색·금색 계열이라 대비가 약했다. 밝게
+     "더하는" 효과(spot-wide, mood-overlay)만으로는 부족하므로, 지금
+     설명 중이 아닌 쪽(반대쪽 조각상)을 실제로 어둡게 "빼는" 효과를
+     더해 확실한 명암 대비를 만든다. 로댕(왼쪽)·반가사유상(오른쪽) 중
+     하나만 밝게, 다른 하나는 어둡게 — updateWideSpot()에서 함께
+     제어한다. -->
+<div id="dim-left" class="side-dim" aria-hidden="true"></div>
+<div id="dim-right" class="side-dim" aria-hidden="true"></div>
 <div id="veil" aria-hidden="true"></div>
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
      받은 사운드스케이프 5종을 각자 뚜렷한 역할로 나눠 배치한다.
@@ -827,7 +846,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 <audio id="snd-base" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <audio id="snd-arrival" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <audio id="snd-maitreya" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
-<audio id="snd-rodin" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
+<!-- v-rodin-sound-parity — 참가자 지적: "반가사유상 설명 때만 배경음이
+     나오는 것처럼 느껴진다. 로댕도 같은 배경음이 나오게 해달라."
+     기존엔 로댕 전용 파일(Lotus_at_the_Gate.mp4)이 따로 있었지만
+     실제로는 잘 들리지 않았다 — 반가사유상과 똑같이 검증된
+     Echoes_of_the_Void.mp4를 그대로 쓰도록 통일했다. -->
+<audio id="snd-rodin" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
 <audio id="snd-meeting" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <div class="spot-wide" id="spot" aria-hidden="true"></div>
 <div id="detail-spot" aria-hidden="true"></div>
@@ -1554,6 +1578,14 @@ if(window.visualViewport){
 
 function updateWideSpot(side){
     _lastWideSide = side;
+    // v-side-contrast — 참가자 요청: "로댕 설명할 때는 반가사유상 부분을
+    // 어둡게 처리하면 대비가 더 명확해질 것 같다." 지금 설명 중인 쪽의
+    // 반대쪽만 어둡게 덮는다. side가 'both'이거나 없으면(개요·마주선
+    // 장면 등 어느 한쪽만 짚지 않는 순간) 둘 다 어둡게 하지 않는다.
+    const dimLeft = document.getElementById('dim-left');   // 로댕(왼쪽)을 덮는 담요
+    const dimRight = document.getElementById('dim-right'); // 반가사유상(오른쪽)을 덮는 담요
+    if(dimLeft) dimLeft.classList.toggle('dim', side === 'maitreya');
+    if(dimRight) dimRight.classList.toggle('dim', side === 'rodin');
     if(!side){ spotEl.classList.remove('show'); return; }
     const rect = _getImageRect();
     let px = 0.5, py = 0.4, pr = 0.35;

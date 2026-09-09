@@ -1278,7 +1278,17 @@ function fitHotspotLayer(){
     // 레이어(layer.style.top)가 항상 같은 sy를 공유하므로 둘은 항상
     // 함께, 정확히 같은 자리를 가리킨다.
     const TOP_ANCHOR_PCT = 0.25;
-    const sy = ch * TOP_ANCHOR_PCT;
+    let sy = ch * TOP_ANCHOR_PCT;
+    // v-toes-clipped-fix — 참가자 지적: "(전시2) 발가락 부분이 짤려서
+    // 안 보여서 상호작용이 안 된다." 원인을 찾아보니 바로 위 15% 확대
+    // (IMAGE_SHRINK)와 "맨 위 = 25% 지점" 고정 앵커의 조합이었다 —
+    // 세로 폭이 넉넉하지 않은 화면 비율(정사각형에 가깝거나 가로가
+    // 넓은 경우)에서는, 확대된 이미지의 아래쪽(발 부분)이 #stage
+    // 박스 아래로 밀려나 바로 아래 자막창(#caption-wrap)에 가려져
+    // 버튼조차 눌리지 않았다. 발끝까지 항상 박스 안에 들어오도록,
+    // 공간이 정말 부족할 때만 위로 당겨 보정한다 — 공간이 넉넉한
+    // 기기에서는 원래 규칙(맨 위 = 25% 지점) 그대로 유지된다.
+    if(sy + sh > ch) sy = Math.max(0, ch - sh);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
