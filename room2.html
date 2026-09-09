@@ -717,29 +717,23 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
        방향(column)으로 바꿔 카드 다음 줄에 버튼들이 자연스럽게 쌓이도록
        한다(기존 #yeoil-overlay와 같은 방식). flex-direction 없이 기본값인
        row로 두면 카드와 버튼 줄이 옆으로 나란히 붙어버린다. */
-    display:none; flex-direction:column; justify-content:center; overflow-y:auto;
+    display:none; flex-direction:column; overflow-y:auto;
     padding:calc(60px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
     /* v-cert-top-clip-fix — 참가자 지적: "여일에 들어가면 나오는 화면의
-       윗부분이 잘려서 안 보인다." align-items:center로 세로 가운데
-       정렬된 flex 컨테이너에 overflow:auto만 걸려 있으면, 내용이
-       화면보다 길어질 때 스크롤을 끝까지 올려도 카드 윗부분이 화면
-       위로 넘어간 채로 잘려버리는 잘 알려진 flex 동작이다(위로는
-       스크롤이 아예 안 걸림). flex-start를 먼저 깔아 두고(내용이
-       넘치면 항상 위부터 보이도록 하는 대체값), 이를 지원하는
-       브라우저에서는 safe center로 덮어써서 내용이 화면에 다 들어갈
-       때는 기존처럼 가운데 정렬을, 넘칠 때는 안전하게 위부터 보이게
-       한다(지원하지 않는 브라우저는 이 줄을 무시하고 위 flex-start가
-       그대로 적용된다). */
-    /* v-cert-top-clip-fix-2 — 참가자 지적: "수료증의 윗부분이 짤려서 안
-       보인다." 바로 위 시도(flex-start를 기본값으로 깔고 지원 브라우저
-       에서만 safe center로 덮어쓰는 방식)가 일부 환경에서는 여전히
-       잘리는 문제를 완전히 막지 못했다 — safe 키워드 지원 여부나 브라우저
-       구현에 따라 결과가 갈릴 수 있다. 아예 flex-start 하나로 고정해,
-       내용이 짧을 때는 화면 위쪽에, 길 때는 스크롤해서 위로 올리면
-       카드 맨 위부터 확실히 보이도록 모든 브라우저에서 동일하게
-       동작하게 한다(완벽한 세로 가운데 정렬은 포기하는 대신, 잘려서
-       아예 안 보이는 문제를 확실히 없앤다). */
-    align-items:flex-start;
+       윗부분이 잘려서 안 보인다." / v-cert-top-clip-fix-2 — 참가자 지적:
+       "수료증의 윗부분이 짤려서 안 보인다." 두 차례 모두 align-items를
+       고쳐봤지만 실제로는 계속 잘렸다 — flex-direction:column인 컨테이너
+       에서 세로(메인축) 정렬을 담당하는 속성은 justify-content이고,
+       align-items는 가로(교차축) 정렬만 담당한다. 진짜 원인은 아래
+       justify-content:center였다: 내용이 화면보다 길어지면 가운데
+       정렬을 위해 카드 위쪽이 화면 위로 밀려나는데, 그쪽으로는
+       스크롤이 닿지 않는(위로 스크롤할 "공간" 자체가 없는) 잘 알려진
+       flexbox 동작이라 카드 맨 위가 항상 잘려 보였다. justify-content를
+       flex-start로 바꿔, 내용이 짧을 때는 화면 위쪽에 붙고 길 때는
+       위부터 순서대로 쌓여 스크롤로 전체를 다 볼 수 있게 한다.
+       align-items는 기본값(stretch)으로 두어도 #certificate-card가
+       width:100%를 명시하고 있어 가로 폭에는 변화가 없다. */
+    justify-content:flex-start;
 }
 #certificate-overlay.show{display:flex;}
 #certificate-card{
@@ -770,12 +764,14 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 /* v-cert-copyright — "조준동 copyright" 표기. 다른 하단 메타 정보(cert-date)와
    같은 계열의 옅은 회색·작은 글자로, 시선을 끌지 않으면서도 항상 보이게 한다. */
 #certificate-card .cert-copyright{ margin-top:6px; font-size:.68rem; color:#777; letter-spacing:.02em; }
-/* v-cert-print — 출력(PDF) 버튼이 추가되면서 버튼이 2개에서 3개로 늘었다.
-   nowrap이면 좁은 화면(특히 세로 모바일)에서 세 버튼이 카드 폭을 넘어
-   잘리거나 겹칠 수 있어, 공간이 부족할 때만 자연스럽게 다음 줄로 넘어가도록
-   wrap으로 바꾼다(gap이 이미 있어 줄바꿈돼도 버튼 사이 간격은 유지된다). */
-#certificate-actions{ display:flex; gap:6px; row-gap:10px; justify-content:center; margin-top:26px; flex-wrap:wrap; }
-#certificate-actions .btn{ min-height:32px; font-size:.68rem; padding:5px 10px; white-space:nowrap; }
+/* v-cert-actions-one-line — 참가자 지적: "수료증 아래 3개 버튼이 한 줄에
+   들어가지 않는다." 이전 시도(v-cert-print)는 wrap을 허용해 공간이
+   부족하면 다음 줄로 넘기는 방식이었는데, 실제로는 좁은 화면에서 버튼이
+   줄바꿈되어 보기 안 좋았다. #hint-row(수료증·여일·전시1 버튼)에 이미
+   적용된 것과 같은 방식 — 줄바꿈을 아예 금지하고 버튼 자체를 좀 더
+   좁게 만들어 항상 한 줄에 들어가게 한다. */
+#certificate-actions{ display:flex; gap:6px; justify-content:center; margin-top:26px; flex-wrap:nowrap; }
+#certificate-actions .btn{ min-height:32px; font-size:.66rem; padding:5px 8px; white-space:nowrap; min-width:0; flex:0 1 auto; }
 /* v-cert-print-design — 참가자 요청: "수료증 출력 디자인을 멋지게 해줘."
    기존 인쇄 스타일은 카드 테두리 하나에 검정 글씨뿐인 소박한 모습이었다.
    화면에 쓰던 색상 변수(--gold 등)는 어두운 배경을 전제로 골라진 색이라
@@ -1533,23 +1529,30 @@ function toggleEasyMode(){
     const easyModeMsg = easyMode ? '쉬운 문장으로 전환합니다.' : '원래 문장으로 돌아갑니다.';
     const captionEl2 = document.getElementById('caption');
     if(captionEl2) captionEl2.innerHTML = easyModeMsg;
-    // v86 — 참가자 요청: "속도 버튼과 쉬운 문장 버튼 조작 후에 그 버튼을
-    // 누르기 이전 재생되던 음성해설이 다시 이어지도록 해달라." 안내
-    // 문구로 전역 _lastSpokenText가 덮어써지기 *전에* 지역 변수
-    // (prevText/prevSpeaker)로 미리 스냅샷을 떠 두고, 안내가 끝나면
-    // (speak의 onEnd 콜백) 그 스냅샷으로 다시 speak()를 불러 이어듣게
-    // 한다. 안내 전에 실제로 재생 중이던 내레이션이 없었다면
-    // (wasSpeaking===false) 아무것도 다시 재생하지 않고, 이전처럼
-    // _lastSpokenText만 원래 값으로 되돌려 놓는다.
-    const wasSpeaking = window.speechSynthesis.speaking;
-    const prevText = _lastSpokenText, prevSpeaker = _lastSpokenSpeaker;
-    if(wasSpeaking && prevText){
-        speak(easyModeMsg, function(){ speak(prevText, undefined, prevSpeaker); });
-    } else {
-        speak(easyModeMsg);
-        _lastSpokenText = prevText;
+    // v87 — 참가자 보고: "속도/쉬운 문장 버튼을 누르면 가끔 안내 문구
+    // 자체가 다시 한번 재생된다(엉뚱한 문장이 이어듣기됨)." 원인: 기존
+    // 방식은 매번 그 시점의 전역 _lastSpokenText를 "이어들을 문장"으로
+    // 다시 캡처했는데, 버튼을 빠르게 다시 누르면 직전 안내가 아직 실제로
+    // 소리 나기 전(내부적으로 cancel() 후 목소리 준비를 기다리는 지연
+    // 구간)이라 window.speechSynthesis.speaking이 false로 잘못 읽히고,
+    // 그 순간의 _lastSpokenText는 이미 방금 지나간 안내 문구 자신으로
+    // 덮어써진 상태라 그 안내 문구가 "이어들을 문장"으로 잘못 저장됐다.
+    // 해결: 안내→이어듣기 흐름이 진행 중일 때는 재캡처하지 않고, 그
+    // 흐름의 맨 처음에 한 번만 실제 이어들을 문장을 캡처해 끝까지 그
+    // 값을 그대로 쓴다 — 버튼을 여러 번 연달아 눌러도 마지막 안내가
+    // 끝난 뒤에는 항상 처음에 캡처해둔 진짜 원래 문장으로 돌아간다.
+    if(!_easyModeResumePending){
+        _easyModeResumePending = true;
+        const wasSpeaking = window.speechSynthesis.speaking;
+        _easyModeResumeText = wasSpeaking ? _lastSpokenText : null;
+        _easyModeResumeSpeaker = wasSpeaking ? _lastSpokenSpeaker : null;
     }
+    speak(easyModeMsg, function(){
+        _easyModeResumePending = false;
+        if(_easyModeResumeText) speak(_easyModeResumeText, undefined, _easyModeResumeSpeaker);
+    });
 }
+let _easyModeResumePending = false, _easyModeResumeText = null, _easyModeResumeSpeaker = null;
 function _detailText(d){
     return (easyMode && d.detailSimple) ? d.detailSimple : d.detail;
 }
@@ -1853,26 +1856,22 @@ function cycleSpeed(){
         btn.setAttribute('aria-label', announceText);
     }
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
-    // v86 — 참가자 요청: "속도 버튼과 쉬운 문장 버튼 조작 후에 그 버튼을
-    // 누르기 이전 재생되던 음성해설이 다시 이어지도록 해달라." 안내
-    // 문구로 전역 _lastSpokenText가 덮어써지기 *전에* 지역 변수
-    // (prevText/prevSpeaker)로 미리 스냅샷을 떠 두고, 안내가 끝나면
-    // (speak의 onEnd 콜백) 그 스냅샷으로 다시 speak()를 불러 이어듣게
-    // 한다. 위 v-speed-announce-reliable 버그는 이런 지역 스냅샷 없이
-    // "이미 안내 문구로 덮어써진" 전역 _lastSpokenText를 그대로 다시
-    // 읽으려 했던 것이 원인이었으므로, 미리 떠 둔 지역 변수를 쓰는 이
-    // 방식은 같은 문제를 일으키지 않는다. 안내 전에 실제로 재생 중이던
-    // 내레이션이 없었다면(wasSpeaking===false) 아무것도 다시 재생하지
-    // 않고, 이전처럼 _lastSpokenText만 원래 값으로 되돌려 놓는다.
-    const wasSpeaking = window.speechSynthesis.speaking;
-    const prevText = _lastSpokenText, prevSpeaker = _lastSpokenSpeaker;
-    if(wasSpeaking && prevText){
-        speak(announceText, function(){ speak(prevText, undefined, prevSpeaker); });
-    } else {
-        speak(announceText);
-        _lastSpokenText = prevText;
+    // v87 — toggleEasyMode()와 같은 이유로 같은 방식(1회 캡처, 안내 흐름
+    // 진행 중 재캡처 금지)으로 교체 — 자세한 설명은 toggleEasyMode() 주석
+    // 참고. 버튼을 빠르게 연달아 눌러도 안내 문구 자신이 "이어들을
+    // 문장"으로 잘못 캡처되는 일이 없다.
+    if(!_speedResumePending){
+        _speedResumePending = true;
+        const wasSpeaking = window.speechSynthesis.speaking;
+        _speedResumeText = wasSpeaking ? _lastSpokenText : null;
+        _speedResumeSpeaker = wasSpeaking ? _lastSpokenSpeaker : null;
     }
+    speak(announceText, function(){
+        _speedResumePending = false;
+        if(_speedResumeText) speak(_speedResumeText, undefined, _speedResumeSpeaker);
+    });
 }
+let _speedResumePending = false, _speedResumeText = null, _speedResumeSpeaker = null;
 
 // v-caption-lag-fix — 참가자 요청: "자막이 너무 늦게 나온다." 이 추정치
 // (5자/초)가 실제 브라우저 TTS 낭독 속도보다 낮게 잡혀 있으면, 한 문장을
@@ -2397,8 +2396,8 @@ function buildRecapAnswer(){
     if(maitreyaDone.length) parts.push(`반가사유상은 ${maitreyaDone.join(', ')}`);
     const done = parts.join(', ') + (parts.length ? '을(를) 만지셨습니다' : '');
     const remain = ORDER.length - visited.size;
-   /* const tail = remain > 0 ? ` 아직 ${remain}곳이 남아 있습니다.` : ' 열한 곳을 모두 만져보셨습니다.';
-   /* return `지금까지 총 ${visited.size}곳을 만지셨습니다. ${done}.${tail}`;
+    const tail = remain > 0 ? ` 아직 ${remain}곳이 남아 있습니다.` : ' 열한 곳을 모두 만져보셨습니다.';
+    return `지금까지 총 ${visited.size}곳을 만지셨습니다. ${done}.${tail}`;
 }
 
 /* 방문객이 실제로 쓸 만한 다양한 표현을 폭넓게 인식하도록 트리거를
