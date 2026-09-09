@@ -815,8 +815,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      더해 확실한 명암 대비를 만든다. 로댕(왼쪽)·반가사유상(오른쪽) 중
      하나만 밝게, 다른 하나는 어둡게 — updateWideSpot()에서 함께
      제어한다. -->
-<div id="dim-left" class="side-dim left" aria-hidden="true"></div>
-<div id="dim-right" class="side-dim right" aria-hidden="true"></div>
+<div id="dim-left" class="side-dim" aria-hidden="true"></div>
+<div id="dim-right" class="side-dim" aria-hidden="true"></div>
 <div id="veil" aria-hidden="true"></div>
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
      받은 사운드스케이프 5종을 각자 뚜렷한 역할로 나눠 배치한다.
@@ -961,7 +961,7 @@ const LAYERS = [
 
 const DIALOGUE = [
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'머리',
-  intro:"먼저 로댕의 생각하는 사람이, 자신의 얼굴에 새겨진 사유를 건넵니다.",
+  intro:"먼저 로댕이, 자신의 얼굴에 새겨진 사유를 건넵니다.",
   introSimple:"로댕이 먼저 이야기합니다.",
   lines:[
     "'생각하는 사람'은 무수한 고통을 지나온 자가 마침내 자신의 존재를 응시하는 얼굴처럼 보입니다.",
@@ -973,7 +973,7 @@ const DIALOGUE = [
     "눈썹을 찌푸리고 눈을 내리깔았습니다. 언젠가 죽는다는 두려움이 생각을 더 깊게 만듭니다.",
     "질문이 질문을 낳습니다. 그 질문들이 마음을 무겁게 누릅니다. 이 이마를 만지면, 밧줄처럼 거칠고 단단하게 느껴질 것입니다."
   ],
-  spots:[{x:32, y:30}, {x:32, y:15}, {x:32, y:18}],
+  spots:[{x:32, y:30}, {x:32, y:15}],
   sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
 { speaker:'maitreya', label:'반가사유상', part:'머리',
   intro:"그 말에 반가사유상이, 자신의 얼굴로 화답합니다.",
@@ -997,7 +997,7 @@ const DIALOGUE = [
     "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다. 이 얼굴에 귀를 대면, 먼 종소리처럼 조용한 울림이 들리는 듯합니다."
   ],
   sources:["출처: [22, 26]", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "출처: 전준엽 [37]", "출처: 전준엽 [37]", "출처: 전준엽 [37]"],
-  spots:[{x:75, y:30.0}, {x:75, y:25.5}, {x:75, y:29.0}, {x:73, y:28.0}, {x:75, y:29.0}, {x:75, y:29.5}, {x:75, y:27.0}]},
+  spots:[{x:75, y:30.0}, {x:75, y:25.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
   intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
   introSimple:"로댕이 몸통 이야기를 합니다.",
@@ -1027,7 +1027,7 @@ const DIALOGUE = [
     "황수영 박사는 이 아름다움을 처음 학문적으로 밝혀낸 학자입니다."
   ],
   sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "출처: 강우방 [36]", "출처: 황수영 [26]"],
-  spots:[{x:74, y:43.0}, {x:76, y:45.0}, {x:75, y:44.0}, {x:75, y:44.0}]},
+  spots:[{x:74, y:43.0}, {x:76, y:45.0}]},
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'다리',
   intro:"마지막으로 로댕이, 땅을 딛은 발의 사유를 건넵니다.",
   introSimple:"로댕이 마지막으로 발 이야기를 합니다.",
@@ -1092,26 +1092,8 @@ const btnPause = document.getElementById('btn-pause'); // v-pause-btn — 참가
 // 흔히 쓰는 방식이다. 화면을 보지 않아도 되는 스크린리더 사용자를 위한
 // 좌우 스와이프(뒤로/다음)는 그대로 남아 있고, 이 좌우 탭 구분은 화면을
 // 보는 사용자를 위한 보조 수단이다.
-// v-caption-scroll-vs-tap — 참가자 지적: "자막창을 스크롤할 때 다른
-// 음성해설이 나오는 경우가 있다 / 자막과 다른 음성해설이 섞여서
-// 나온다." 원인: #caption-wrap은 3단계의 긴 문장을 담기 위해
-// overflow:auto(스크롤 가능)로 되어 있는데, 그 위에서 스크롤을 해도
-// onclick(onCaptionAreaClick)이 그대로 걸려, 화면 왼쪽/오른쪽 절반
-// 위치에 따라 뒤로/다음으로 잘못 넘어가 버렸다 — 그러면 지금 읽던
-// 문장의 음성이 취소되고 다른 문장의 음성이 시작되면서, 방금까지
-// 보이던 자막(스크롤해서 보던 부분)과 새로 시작된 음성이 서로 다른
-// 문장이 되어 "섞여서" 나오는 것처럼 들렸다. 포인터가 눌린 시점의
-// 스크롤 위치를 기억해뒀다가, 클릭 시점에 스크롤 위치가 실제로
-// 바뀌었다면(=탭이 아니라 스크롤이었다면) 다음/뒤로 넘어가지 않는다.
-let _captionScrollAtDown = 0;
-document.addEventListener('pointerdown', function(e){
-    const cw = document.getElementById('caption-wrap');
-    if(cw) _captionScrollAtDown = cw.scrollTop;
-}, true);
 function onCaptionAreaClick(e){
     if(e.target.closest('#controls')) return;
-    const cw = document.getElementById('caption-wrap');
-    if(cw && cw.scrollTop !== _captionScrollAtDown) return; // 방금 스크롤한 것이지 탭이 아니다
     const x = (e.clientX != null && e.clientX !== 0) ? e.clientX
         : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : window.innerWidth);
     if(x < window.innerWidth / 2){ onBackClick(); } else { onNextClick(); }
@@ -1449,53 +1431,12 @@ function _ensureVoicesReady(){
 // 제공하는 "Online (Natural)"·Wavenet류 신경망 음성이 있으면 최우선으로
 // 골라 훨씬 자연스러운 낭독을 들려준다. 신경망 음성이 없으면 기존과
 // 동일하게 첫 번째 한국어 음성(또는 브라우저 기본값)을 그대로 쓴다.
-// v-mobile-voice-tune — 참가자 지적: "처음 음성의 크기가 너무 크고
-// 피치가 너무 높아서 집중하기 어렵다. PC에서 나오는 음성과 같은
-// 음성으로 바꿔달라." 모바일(Android/iOS)에서 흔히 잡히는 기본
-// 한국어 음성은 PC 브라우저의 음성보다 대체로 더 크고 더 높은
-// 톤으로 들린다는 보고에 따라, 다음 두 가지를 추가한다.
-// (1) Android에서 흔히 제공되는 "Google 한국의"처럼 이름에 "Google"만
-//     붙은 음성을 neural/wavenet보다 먼저 확인한다(모바일에서 대체로
-//     더 안정적이라는 보고).
-// (2) 모바일에서만 피치 상한을 두고 음량을 낮춰, PC에서 듣던 것과
-//     비슷한 인상에 가깝게 만든다. PC(데스크톱 브라우저)는 지금까지
-//     써오던 값 그대로 두어, "PC 음성은 괜찮다"는 참가자 말과 어긋나지
-//     않게 한다.
-function _isMobileBrowser(){
-    const ua = navigator.userAgent || '';
-    return /Android|iPhone|iPad|iPod/i.test(ua);
-}
 function _pickBestKoreanVoice(){
     const voices = window.speechSynthesis.getVoices() || [];
     const koVoices = voices.filter(v => /^ko/i.test(v.lang));
     if(!koVoices.length) return null;
-    // v-mobile-tts-naturalness — 참가자 제안 반영: 이름으로 알려진
-    // 고품질 음성(Google·신경망·Wavenet 등) 패턴을 넓혔다 — 기기·OS마다
-    // 이름 표기가 달라 기존 패턴("google"·"neural"·"wavenet")만으로는
-    // 못 잡는 경우가 많았다.
-    const named = koVoices.find(v =>
-        /google|neural|online.*natural|natural.*online|wavenet|enhanced|premium|siri|고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name));
-    if(named) return named;
-    // 이름으로 못 찾았다면, 기기 내장(로컬) 음성보다 대체로 훨씬
-    // 자연스러운 네트워크(클라우드) 음성이 있는지 확인한다.
-    const network = koVoices.find(v => v.localService === false);
-    if(network) return network;
-    return koVoices[0];
-}
-// v-speech-text-cleanup — 참가자 제안: "문장 부호 및 띄어쓰기를 다듬으면
-// TTS가 더 자연스러워질 것 같다." 이 전시 자막에는 <생각하는 사람>·
-// <지옥의 문>처럼 작품명을 홑화살괄호로 감싸거나, '생각하는 사람'처럼
-// 강조 홑따옴표를 쓰는 표기가 많다. 화면에는 그대로 두는 게 낫지만
-// (시각적으로 작품명임을 알려준다), 일부 음성 엔진은 이 괄호·따옴표를
-// 그대로 읽으려 하거나 그 앞뒤에서 어색하게 멈칫거릴 수 있다. 화면
-// 자막(captionEl)은 원래 표기 그대로 두고, 실제로 음성 엔진에 넘기는
-// 문장에서만 이 기호들을 제거해 더 매끄럽게 흘러가도록 한다.
-function _sanitizeForSpeech(text){
-    return String(text)
-        .replace(/<([^<>]*)>/g, '$1')   // <생각하는 사람> → 생각하는 사람 (괄호만 제거, 안의 글자는 남김)
-        .replace(/'/g, '')               // 강조용 홑따옴표 제거 (이 자막은 곧은 따옴표 '를 씀)
-        .replace(/\s+/g, ' ')             // 중복 공백 정리
-        .trim();
+    const neural = koVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
+    return neural || koVoices[0];
 }
 function speak(text, onEnd, speaker){
     lastSpokenText = text;
@@ -1507,25 +1448,16 @@ function speak(text, onEnd, speaker){
         if(myGen !== speechGen) return; // 대기하는 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
         setTimeout(()=>{
             if(myGen !== speechGen) return; // 그 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
-            const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(text));
+            const u = new SpeechSynthesisUtterance(text);
             u.lang = 'ko-KR';
             const _bestVoice = _pickBestKoreanVoice();
             if(_bestVoice) u.voice = _bestVoice;
             if(speaker==='rodin'){ u.rate = TTS_RATE; u.pitch = 0.90; }
             else if(speaker==='maitreya'){ u.rate = TTS_RATE; u.pitch = 1.08; }
             else { u.rate = TTS_RATE; u.pitch = 1.0; }
-            // v-mobile-voice-tune — 참가자 지적: "처음 음성의 크기가 너무
-            // 크고 피치가 너무 높아서 집중하기 어렵다. PC와 같은 음성으로
-            // 바꿔달라." 모바일에서만 피치 상한(0.92)을 걸고 음량을
-            // 낮춘다 — PC는 그대로 둔다.
-            if(_isMobileBrowser()){
-                if(u.pitch > 0.92) u.pitch = 0.92;
-                u.volume = masterVolume * 0.7;
-            } else {
-                // v-in-app-volume — 참가자 요청: 화면 안 소리 조절 슬라이더가
-                // 내레이션 음량에도 적용되도록 한다.
-                u.volume = masterVolume;
-            }
+            // v-in-app-volume — 참가자 요청: 화면 안 소리 조절 슬라이더가
+            // 내레이션 음량에도 적용되도록 한다.
+            u.volume = masterVolume;
             // v49 — 참가자 요청: "자막이 빨리 지나간다." 일부 기기·음성엔진은
             // 실제 발화 속도가 사람이 자막을 읽는 속도보다 빨라서, 음성이
             // 끝나는 이벤트(onend)가 예상보다 일찍 와버리면 자막도 그만큼
@@ -1870,11 +1802,7 @@ function playDialogueLine(){
     const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
     captionEl.innerHTML = text;
     sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
-    // v-spots-shorter-than-lines — 일부 턴은 문장(lines) 수보다 강조점
-    // (spots) 수가 적어(예: 7문장에 4개 지점), 뒤쪽 문장에서 t.spots[dLineIdx]가
-    // undefined가 되어 강조점이 갑자기 사라졌다. 배열이 짧으면 마지막
-    // 지점을 그대로 이어 쓴다.
-    const pt = t.spots[Math.min(dLineIdx, t.spots.length - 1)];
+    const pt = t.spots[dLineIdx];
     updateDetailSpot(pt);              
     drawPartPulse(pt, t.speaker);      
     speak(text, ()=>{
@@ -2013,10 +1941,8 @@ function onPauseClick(){
                 playLine();
             } else if(announcing){
                 showNextStageAnnouncement();
-            } else if(dLineIdx < 0){
-                playTurn(turnIdx);
             } else {
-                playDialogueLineAt(turnIdx, dLineIdx);
+                playTurn(turnIdx);
             }
         });
     }
@@ -2062,20 +1988,12 @@ function onReplayClick(){
 
 function onBackClick(){
     clearTimeout(autoTimer);
-    // v-double-cancel-bug — 참가자 지적: "다음/뒤로 가면 재생 중이던
-    // 음성해설이 즉시 중단되지 않는 것 같다. 3단계 자막-음성 불일치가
-    // 이것 때문인지 확인 필요." 실제로 원인이었다. 바로 아래
-    // window.speechSynthesis.cancel()을 직접 부른 뒤(v23), 곧이어 이
-    // 함수가 부르는 playLine()/playDialogueLine() 등이 speak()를
-    // 호출하는데, speak() 자신도 맨 처음에 또 cancel()을 부른다 —
-    // cancel()이 아주 짧은 간격으로 두 번 겹치면 크롬 등 일부
-    // 브라우저에서 음성 엔진이 조용히 먹통이 되는(이후 speak()를
-    // 불러도 소리가 전혀 안 나거나, 이미 재생 중이던 소리가 안 끊기는)
-    // 버그가 있다(다시듣기·멈춤 버튼에서 같은 원인으로 이미 고친 적
-    // 있음). speak()가 이미 스스로 안전하게 cancel()하므로, 여기서
-    // 또 부를 필요가 없다 — 제거한다. speechGen만 미리 올려서, 방금
-    // 전 클릭으로 예약돼 있던(60ms 지연 중인) 발화가 있다면 그건
-    // 무효화한다(이건 cancel()이 아니라 그냥 숫자 비교라 안전하다).
+    // v23 — 참가자 요청: "해설이 진행되는 동안 다음/뒤로가기를 누르면
+    // 지금 읽고 있던 해설은 즉시 중단해야 한다." speak()도 내부에서
+    // cancel()을 부르긴 하지만, 여기서 클릭 시점에 곧바로 한 번 더 멈추고
+    // speechGen도 미리 올려서, 방금 전 클릭으로 예약돼 있던(60ms 지연
+    // 중인) 발화까지 포함해 지금 읽던 모든 소리를 확실히 끊는다.
+    window.speechSynthesis.cancel();
     speechGen++;
 
     if(phase === 'screen'){
@@ -2133,7 +2051,7 @@ function playDialogueLineAt(tIdx, dIdx){
     const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
     captionEl.innerHTML = text;
     sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
-    const pt = t.spots[Math.min(dLineIdx, t.spots.length - 1)];
+    const pt = t.spots[dLineIdx];
     updateDetailSpot(pt);
     drawPartPulse(pt, t.speaker);
     speak(text, ()=>{
@@ -2150,8 +2068,8 @@ function playDialogueLineAt(tIdx, dIdx){
 // 도달했을 때에만 다음 단계·다음 화자로 넘어간다.
 function onNextClick(){
     clearTimeout(autoTimer);
-    // v-double-cancel-bug — 뒤로가기와 같은 이유로 제거한다(위 onBackClick
-    // 주석 참고). speak()가 이미 스스로 cancel()을 안전하게 처리한다.
+    // v23 — 뒤로가기와 동일한 이유: 지금 읽고 있는 해설을 즉시 중단한다.
+    window.speechSynthesis.cancel();
     speechGen++;
 
     if(announcing){
@@ -2335,22 +2253,9 @@ function goToRoom2(e) {
     }
     if(_leavingRoom1) return;
     _leavingRoom1 = true;
-    // v-cross-page-tts-bleed — 참가자 지적: "전시실 2 초기화면으로
-    // 넘어갔는데도 아직 전시실 1 음성해설을 하고 있다." cancel()과
-    // location.replace()가 완전히 같은 시점(동기)에 연달아 불리면,
-    // 일부 모바일 브라우저(특히 Android)에서는 cancel() 명령이 실제
-    // 기기 TTS 엔진까지 전달되기 전에 페이지 이동이 먼저 시작돼버릴
-    // 수 있다 — speechSynthesis.cancel()이 JS에서는 즉시 반환되지만,
-    // 실제 음성 정지는 비동기로 처리되기 때문이다. 그 결과 이전
-    // 페이지(전시실 1)에서 재생 중이던 음성이 몇 초간 새 페이지
-    // 화면 위에 그대로 이어져 들리는 것처럼 느껴진다. cancel() 뒤에
-    // 아주 짧은 지연을 둬서, 정지 명령이 실제로 처리될 시간을 확보한
-    // 뒤에 페이지를 이동한다 — 사람이 체감할 수 있는 지연은 아니다.
     try { window.speechSynthesis.cancel(); } catch(err) {}
-    setTimeout(()=>{
-        // 모바일 환경에서 캐시나 히스토리 충돌을 방지하기 위해 replace 사용 권장
-        location.replace('room2.html?from=next');
-    }, 80);
+    // 모바일 환경에서 캐시나 히스토리 충돌을 방지하기 위해 replace 사용 권장
+    location.replace('room2.html?from=next');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2725,26 +2630,12 @@ function goToRoom2(e) {
             speak(screenText, function(){
                 if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
                 speak(msg, function remind(){
-                    // v-reminder-not-forever — 참가자 지적: "첫 페이지에서
-                    // 다른 내용이 계속 음성해설되고 있다." 원인: 이 알림
-                    // ("화면 아무 곳이나 한 번 두드리면 입장합니다.")이
-                    // 사용자가 게이트 화면에 머무는 한 8초마다 영원히
-                    // 반복되고 있었다 — 처음 안내를 다 이해했어도, 그저
-                    // 화면을 읽거나 잠시 서 있기만 해도 계속 말을 걸어와
-                    // "왜 자꾸 다른 말을 하지"로 느껴졌을 것이다. 몇 번만
-                    // 반복하고 멈추도록 상한을 둔다 — 안내가 필요한
-                    // 사람에게는 여전히 도움이 되면서도, 끝없이 말을
-                    // 거는 느낌은 없앤다.
-                    let remindCount = 0;
-                    const MAX_REMINDS = 2;
-                    (function again(){
-                        setTimeout(()=>{
-                            if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                            if(remindCount >= MAX_REMINDS) return;
-                            remindCount++;
-                            speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', again);
-                        }, 6000);
-                    })();
+                    setTimeout(function again(){
+                        if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
+                        speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', function(){
+                            setTimeout(again, 8000);
+                        });
+                    }, 6000);
                 });
             });
         }catch(err){}
