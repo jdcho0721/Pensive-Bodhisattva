@@ -1799,25 +1799,39 @@ function showNextStageAnnouncement(){
         speak('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다. 오늘 준비된 이야기는 여기까지입니다. 다음 전시 단계로 이동하세요.', ()=>{
             if(isPaused) return;
             clearTimeout(autoTimer);
-            autoTimer = setTimeout(restartFromBeginning, LAYER_PAUSE_MS + 1500); 
+            // v-finish-loops-to-start — 참가자 지적: "3단계 마침 화면에서
+            // 다음을 누르면 오리엔테이션으로 돌아가버린다. 전시2로 갈 수
+            // 있도록 개선이 필요하다." 원인은 두 군데였다: (1) 방금 위에서
+            // "다음 전시 단계로 이동하세요"라고 안내해놓고, 불과 1.85초
+            // 뒤에 아무 반응이 없으면 자동으로 처음부터 되풀이해버렸다 —
+            // 안내를 다 듣고 반응할 시간조차 없었다. (2) 사용자가 실제로
+            // "다음"을 눌러도(아래 onNextClick) 같은 함수(당시 이름
+            // restartFromBeginning)를 불러 똑같이 처음으로 돌아갔다.
+            // 원래는 "다음 관람객을 위한 키오스크 초기화"를 노린
+            // 설계였지만, 방금 안내한 내용과 실제 동작이 정반대라
+            // 사용자에게는 순전히 혼란으로만 남았다. 이제 이 시점 이후
+            // "다음"(버튼이든, 화면 오른쪽 탭이든, 이 자동 타이머든)은
+            // 전부 실제로 전시실 2로 이동한다 — 그리고 자동 타이머는
+            // 정말 자리를 떠났을 때만 뜻이 있으므로 20초로 넉넉히 늘렸다.
+            autoTimer = setTimeout(proceedToRoom2AfterFinish, 20000);
         });
     });
 }
 
-function restartFromBeginning(){
+function proceedToRoom2AfterFinish(){
     announcing = false;
     // 통합 전시("침묵의 공명") 셸 안에서 iframe으로 열린 경우, 관람객이
     // 실제로 몸을 옮길 필요 없이 자동으로 전시실 2로 넘어가야 한다.
-    // 부모 창에 완료 신호만 보내고 여기서 멈춘다. 이 파일을 단독으로
-    // 열었을 때(원래의 키오스크 설계)는 부모 창이 없으므로 기존처럼
-    // 처음부터 반복한다.
+    // 부모 창에 완료 신호만 보내고 여기서 멈춘다(그 셸이 실제 이동을
+    // 책임진다). 이 파일을 단독으로 열었을 때는 이 페이지 스스로
+    // room2.html로 이동한다.
     if(window.parent && window.parent !== window){
         try{
             window.parent.postMessage({ type:'silence-resonance:room1-complete' }, '*');
             return;
-        }catch(e){ /* postMessage 실패 시 기존 동작(반복)으로 폴백 */ }
+        }catch(e){ /* postMessage 실패 시 아래로 계속 — 직접 이동 */ }
     }
-    playLayer(0);
+    speak('전시실 1의 이야기를 모두 마쳤습니다. 전시실 2로 이동합니다.', goToRoom2);
 }
 
 function jumpToStage(targetIdx){
@@ -2027,10 +2041,11 @@ function onNextClick(){
     speechGen++;
 
     if(announcing){
-        // 전체 대화가 끝난 뒤의 안내 화면 — "다음"은 처음부터 다시
-        // 재생을 시작하는 동작이라, 한 걸음 이동 후 멈추는 v25 규칙을
-        // 적용하지 않고 원래대로 자동 재생을 이어간다.
-        restartFromBeginning();
+        // v-finish-loops-to-start — 참가자 지적: "3단계 마침 화면에서
+        // 다음을 누르면 오리엔테이션으로 돌아가버린다." 사용자가 직접
+        // "다음"을 누르는 이 경로도, 위 자동 타이머와 똑같이 이제
+        // 전시실 2로 진행한다(더 이상 처음으로 되돌리지 않는다).
+        proceedToRoom2AfterFinish();
         return;
     }
 
