@@ -297,6 +297,18 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #info-overlay.show{display:flex;}
 #info-overlay.menu #info-card > *{display:none;}
 #info-overlay.menu #info-audio-nav{display:flex;}
+/* v89 — 참가자 요청: "작품소개·작가소개·이용방법 3개 버튼이 나오는
+   화면(메뉴 화면)에도 제목과, 맨 아래 저작권·참고문헌이 보이면
+   좋겠다." 메뉴 모드는 위 규칙으로 #info-card의 모든 직계 자식을 일단
+   감춘 뒤 필요한 것만 다시 보이게 하는 구조라(#info-audio-nav가 그
+   예), 여기에도 같은 방식으로 예외를 추가한다. #refs-list는 자체
+   .show 토글 규칙이 있으므로, 무조건 보이게 하지 않고 그 토글 상태를
+   그대로 존중하도록 두 줄로 나눠 썼다. */
+#info-overlay.menu #info-card > h2{display:block;}
+#info-overlay.menu #info-card > .copyright{display:block;}
+#info-overlay.menu #info-card > #refs-toggle-btn{display:block;}
+#info-overlay.menu #info-card > #refs-list{display:none;}
+#info-overlay.menu #info-card > #refs-list.show{display:block;}
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
@@ -667,7 +679,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 </div>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권" onclick="if(event.target && event.target.id==='info-overlay') closeInfo();">
     <div id="info-card">
-        <h2>작품·작가 및 이용방법 소개</h2>
+        <h2>침묵의 공명</h2>
 
         <div id="info-audio-nav" role="group" aria-label="음성 안내 선택">
             <button type="button" class="info-audio-btn" data-kind="intro" onclick="openInfoDetail('intro')" aria-label="작품 소개 음성 듣기">🔊 작품 소개</button>
@@ -744,6 +756,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
         <p>지금 보고 계신 이 안내창은 화면 아무 곳이나 한 번 가볍게 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.</p>
 
+        </div>
+
+        <!-- v89 — 참가자 요청: "이용방법 맨 아래 있던 저작권·참고문헌을
+             3개 버튼이 나오는 메뉴 화면 아래로 옮겨달라." 원래 이용방법
+             섹션(data-kind="usage") 안에만 있던 것을 info-card 바로
+             아래(3개 info-section 밖)로 옮겼다 — 위 CSS의 메뉴 모드
+             예외 규칙 덕분에 메뉴 화면에서도, 기존처럼 각 상세 화면
+             에서도 항상 맨 아래에 보인다. -->
         <div class="copyright">
             <p><b>저작권 안내</b></p>
             <p>© 2026 조준동 · Humartology Lab. All rights reserved.</p>
@@ -761,7 +781,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p><b>[36]</b> W.B. Kang, Wonyung-gwa-Johwa [원융과 조화], Youlhwadang, Seoul, 1990.</p>
             <p><b>[37]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
         </div>
-        </div>
+
         <button id="info-close" onclick="closeInfo()">닫기</button>
     </div>
 </div>
@@ -2313,8 +2333,18 @@ function openInfoDetail(kind){
     if(card){ card.scrollTop = 0; }
     playInfoAudio(kind);
     try{
+        // v90 — 참가자 지적: "작품소개·작가소개·이용방법을 누르면 자막의
+        // 맨 아래 부분이 나와서 위로 스크롤해야 한다." 원인: 바로 위에서
+        // card.scrollTop = 0으로 맨 위로 되돌려놨는데, 그 다음 줄이
+        // (맨 아래에 있는) 닫기 버튼에 포커스를 주면서 브라우저가 "포커스된
+        // 요소를 보이게" 자동으로 다시 아래로 스크롤해버렸다 — 위
+        // openInfo()의 메뉴 화면에서 이미 한 번 겪고 고쳤던 것과 똑같은
+        // 원인이다(그때는 focus({preventScroll:true})로 해결했다). 여기도
+        // 같은 방식으로 통일한다.
         const closeBtn = document.getElementById('info-close');
-        if(closeBtn && typeof closeBtn.focus === 'function'){ closeBtn.focus(); }
+        if(closeBtn && typeof closeBtn.focus === 'function'){
+            try{ closeBtn.focus({preventScroll:true}); }catch(e2){ closeBtn.focus(); }
+        }
     }catch(e){}
 }
 function backToInfoMenu(){
@@ -2362,10 +2392,10 @@ function toggleRefsList(){
 function _infoDialogKeydown(e){
     if(e.key === 'Escape'){ closeInfo(); return; }
     if(e.key === 'Tab'){
-        // v32 — 참고문헌 버튼이 추가되면서 포커스 가능한 요소가 둘이
-        // 됐다. 두 버튼 사이를 순환하도록 고쳤다.
-        // v80 — 위 3개 음성 버튼(작품 소개/작가 소개/이용 방법)도 늘어난
-        // 포커스 가능 요소이므로 순환 목록에 추가했다.
+        // v89 — 참고문헌 버튼이 메뉴 화면(3개 버튼 화면) 아래에도 항상
+        // 보이도록 옮기면서, 메뉴 모드의 Tab 순환 목록에도 추가했다 —
+        // 그렇지 않으면 화면엔 보이는데 키보드로는 닿지 않는 버튼이
+        // 된다.
         const overlay = document.getElementById('info-overlay');
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
@@ -2378,7 +2408,8 @@ function _infoDialogKeydown(e){
             focusables = [
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="artist"]'),
-                document.querySelector('.info-audio-btn[data-kind="usage"]')
+                document.querySelector('.info-audio-btn[data-kind="usage"]'),
+                document.getElementById('refs-toggle-btn')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);
