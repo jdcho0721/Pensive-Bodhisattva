@@ -2616,11 +2616,18 @@ function goToRoom2(e) {
                     if(armedControl === landedControl){
                         // 두 번째로 눌렀다(빠르게든, 안내를 다 듣고서든) — 실제로 이동한다.
                         setArmedControl(null);
-                        suppressNextClick = false; // 직전 눌렀을 때 걸어둔 억제가 아직
-                                                    // 안 풀렸더라도, 이 click은 확실히
-                                                    // 통과시킨다(경합 상태 방지).
+                        // 두 번째 탭: 브라우저 기본 click(즉시 이동)을 막고,
+                        // 음성 안내가 끝난 뒤에만 실제 이동을 실행한다.
+                        suppressNextClick = true;
+                        setTimeout(function(){ suppressNextClick = false; }, 400);
                         try{ hapticPulse('stage'); }catch(err){}
-                        confirmAndActivate(landedControl);
+                        if(landedControl && landedControl.id === 'btn-next-exhibit'){
+                            const actionText = landedControl.getAttribute && landedControl.getAttribute('data-tap-action');
+                            speak(actionText || '전시실 2로 이동합니다', function(){ goToRoom2(); });
+                        } else {
+                            suppressNextClick = false; // 다른 버튼(예: 나가기)은 기존 동작 유지
+                            confirmAndActivate(landedControl);
+                        }
                         return;
                     }
                     // 첫 번째 탭 — 아직 이동하지 않고 이름만 말해준다.
