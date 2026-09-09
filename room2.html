@@ -3574,9 +3574,40 @@ function _searchKBFuzzy(kbObj, query){
     // 어절"일 때만 인정하고, 3글자 이상인 질의만 기존처럼 부분 문자열
     // 포함으로도 인정한다.
     const _wordBoundaryMatch = (k, q) => q.length>=1 && k.split(/[|\s]+/).includes(q);
-    const _matchOne = (k, q) => q.length<=2 ? _wordBoundaryMatch(k, q) : (q.includes(k)||k.includes(q));
-    let hit=keys.find(k=> _matchOne(k, query) || _matchOne(k, normQuery));
+    // v-kb-short-query-trust — 참가자 지적: "로댕을 물었는데 생각하는
+    // 사람에 대한 답이 나온다", "사유를 물었는데 체화에 대한 답이
+    // 나온다." 실제로 재현해보니, 2글자 이하인 짧은 질의("로댕", "사유"
+    // 그 자체)가 바로 위 word-boundary 매칭(tier:1로 즉답 취급되던)에서
+    // 걸렸다 — "사유"는 완전히 무관한 "체화가 뭐야|...|사유 및
+    // 체화가 뭐야|..." 항목 속에 "사유"라는 단어가 어절 하나로 우연히
+    // 섞여 있다는 이유만으로 그 항목이 뽑혔고, "로댕"도 마찬가지로
+    // 다른 항목 속 우연한 언급 하나로 뽑혔다. 즉 이 짧은 질의 매칭은
+    // "완전 일치라 즉답으로 믿어도 되는" tier:1이 아니라, tier:2(어절
+    // 겹침 점수)와 똑같은 종류의 오탐 위험을 그대로 안고 있었다 — 다만
+    // 다른 코드 경로라 tier:1로 잘못 표시돼 즉답 신뢰를 받고 있었을
+    // 뿐이다. 긴 질의(3글자 이상)의 "질문 전체가 항목에 그대로
+    // 포함되는" 매칭만 실제로 즉답에 걸맞은 정확도를 보였다(테스트로
+    // 확인). 그래서 이제 짧은 질의의 단어-경계 매칭은 tier:2로
+    // 낮춰, pickKBAnswer()가 즉답으로 안 쓰고 LLM이 관련성을 판단하는
+    // 후보로만 쓰게 한다.
+    let hit=keys.find(k=> query.length>2 && (query.includes(k)||k.includes(query)));
+    if(!hit) hit=keys.find(k=> normQuery.length>2 && (normQuery.includes(k)||k.includes(normQuery)));
     if(hit) return {key:hit, text:kbObj[hit], tier:1};
+    // v-kb-short-query-trust(계속) — "로댕"·"사유"처럼 두 조각상/전시
+    // 자체를 가리키는 이름·핵심 주제어는, 그 자체가 너무 흔해서 아무
+    // 항목에나 우연히 섞여 들어가기 쉽다(위 STOPWORDS와 같은 이유).
+    // 반면 "재질"·"이름"·"자세"·"다리" 같은 구체적인 부위·속성
+    // 키워드는 특정 항목 하나를 정확히 가리키므로 그대로 즉답 신뢰를
+    // 유지한다 — 그래서 전체를 다 낮추지 않고, 이 이름/주제어들만
+    // 콕 집어 즉답에서 제외한다.
+    const _shortQueryAmbiguous = new Set(['로댕','반가사유상','사유상','조각상','생각하는','생각하','사람','사유','체화']);
+    if(_shortQueryAmbiguous.has(query) || _shortQueryAmbiguous.has(normQuery)){
+        let shortHit=keys.find(k=> _wordBoundaryMatch(k, query) || _wordBoundaryMatch(k, normQuery));
+        if(shortHit) return {key:shortHit, text:kbObj[shortHit], tier:2};
+    } else {
+        let shortHit=keys.find(k=> _wordBoundaryMatch(k, query) || _wordBoundaryMatch(k, normQuery));
+        if(shortHit) return {key:shortHit, text:kbObj[shortHit], tier:1};
+    }
     // 2순위: 어절 단위 부분 매칭(겹치는 글자 길이 합으로 점수 매김).
     // v2: "로댕", "반가사유상", "생각하는", "사람" 같은 화자 이름이나
     // "뭐야"/"궁금해"/"알려줘" 같은 템플릿성 어미는 거의 모든 항목에
