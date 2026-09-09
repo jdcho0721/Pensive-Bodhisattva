@@ -1092,8 +1092,26 @@ const btnPause = document.getElementById('btn-pause'); // v-pause-btn — 참가
 // 흔히 쓰는 방식이다. 화면을 보지 않아도 되는 스크린리더 사용자를 위한
 // 좌우 스와이프(뒤로/다음)는 그대로 남아 있고, 이 좌우 탭 구분은 화면을
 // 보는 사용자를 위한 보조 수단이다.
+// v-caption-scroll-vs-tap — 참가자 지적: "자막창을 스크롤할 때 다른
+// 음성해설이 나오는 경우가 있다 / 자막과 다른 음성해설이 섞여서
+// 나온다." 원인: #caption-wrap은 3단계의 긴 문장을 담기 위해
+// overflow:auto(스크롤 가능)로 되어 있는데, 그 위에서 스크롤을 해도
+// onclick(onCaptionAreaClick)이 그대로 걸려, 화면 왼쪽/오른쪽 절반
+// 위치에 따라 뒤로/다음으로 잘못 넘어가 버렸다 — 그러면 지금 읽던
+// 문장의 음성이 취소되고 다른 문장의 음성이 시작되면서, 방금까지
+// 보이던 자막(스크롤해서 보던 부분)과 새로 시작된 음성이 서로 다른
+// 문장이 되어 "섞여서" 나오는 것처럼 들렸다. 포인터가 눌린 시점의
+// 스크롤 위치를 기억해뒀다가, 클릭 시점에 스크롤 위치가 실제로
+// 바뀌었다면(=탭이 아니라 스크롤이었다면) 다음/뒤로 넘어가지 않는다.
+let _captionScrollAtDown = 0;
+document.addEventListener('pointerdown', function(e){
+    const cw = document.getElementById('caption-wrap');
+    if(cw) _captionScrollAtDown = cw.scrollTop;
+}, true);
 function onCaptionAreaClick(e){
     if(e.target.closest('#controls')) return;
+    const cw = document.getElementById('caption-wrap');
+    if(cw && cw.scrollTop !== _captionScrollAtDown) return; // 방금 스크롤한 것이지 탭이 아니다
     const x = (e.clientX != null && e.clientX !== 0) ? e.clientX
         : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : window.innerWidth);
     if(x < window.innerWidth / 2){ onBackClick(); } else { onNextClick(); }
@@ -1475,7 +1493,7 @@ function _pickBestKoreanVoice(){
 function _sanitizeForSpeech(text){
     return String(text)
         .replace(/<([^<>]*)>/g, '$1')   // <생각하는 사람> → 생각하는 사람 (괄호만 제거, 안의 글자는 남김)
-        .replace(/['']/g, '')            // 강조용 홑따옴표 제거
+        .replace(/'/g, '')               // 강조용 홑따옴표 제거 (이 자막은 곧은 따옴표 '를 씀)
         .replace(/\s+/g, ' ')             // 중복 공백 정리
         .trim();
 }
@@ -2707,12 +2725,26 @@ function goToRoom2(e) {
             speak(screenText, function(){
                 if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
                 speak(msg, function remind(){
-                    setTimeout(function again(){
-                        if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                        speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', function(){
-                            setTimeout(again, 8000);
-                        });
-                    }, 6000);
+                    // v-reminder-not-forever — 참가자 지적: "첫 페이지에서
+                    // 다른 내용이 계속 음성해설되고 있다." 원인: 이 알림
+                    // ("화면 아무 곳이나 한 번 두드리면 입장합니다.")이
+                    // 사용자가 게이트 화면에 머무는 한 8초마다 영원히
+                    // 반복되고 있었다 — 처음 안내를 다 이해했어도, 그저
+                    // 화면을 읽거나 잠시 서 있기만 해도 계속 말을 걸어와
+                    // "왜 자꾸 다른 말을 하지"로 느껴졌을 것이다. 몇 번만
+                    // 반복하고 멈추도록 상한을 둔다 — 안내가 필요한
+                    // 사람에게는 여전히 도움이 되면서도, 끝없이 말을
+                    // 거는 느낌은 없앤다.
+                    let remindCount = 0;
+                    const MAX_REMINDS = 2;
+                    (function again(){
+                        setTimeout(()=>{
+                            if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
+                            if(remindCount >= MAX_REMINDS) return;
+                            remindCount++;
+                            speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', again);
+                        }, 6000);
+                    })();
                 });
             });
         }catch(err){}
