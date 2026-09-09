@@ -815,8 +815,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      더해 확실한 명암 대비를 만든다. 로댕(왼쪽)·반가사유상(오른쪽) 중
      하나만 밝게, 다른 하나는 어둡게 — updateWideSpot()에서 함께
      제어한다. -->
-<div id="dim-left" class="side-dim" aria-hidden="true"></div>
-<div id="dim-right" class="side-dim" aria-hidden="true"></div>
+<div id="dim-left" class="side-dim left" aria-hidden="true"></div>
+<div id="dim-right" class="side-dim right" aria-hidden="true"></div>
 <div id="veil" aria-hidden="true"></div>
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
      받은 사운드스케이프 5종을 각자 뚜렷한 역할로 나눠 배치한다.
@@ -961,7 +961,7 @@ const LAYERS = [
 
 const DIALOGUE = [
 { speaker:'rodin', label:'로댕 · 생각하는 사람', part:'머리',
-  intro:"먼저 로댕이, 자신의 얼굴에 새겨진 사유를 건넵니다.",
+  intro:"먼저 로댕의 생각하는 사람이, 자신의 얼굴에 새겨진 사유를 건넵니다.",
   introSimple:"로댕이 먼저 이야기합니다.",
   lines:[
     "'생각하는 사람'은 무수한 고통을 지나온 자가 마침내 자신의 존재를 응시하는 얼굴처럼 보입니다.",
