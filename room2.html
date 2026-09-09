@@ -1009,10 +1009,19 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              글자는 "배경음악"만 남긴다.
              v-bgm-toggle-speech — 참가자 요청: "배경음악이 켜질 때는
              '배경음악이 켜집니다.', 꺼질 때는 '배경음악이 꺼집니다.'라고
-             해달라." 상태에 따라 다른 문장을 말해야 하므로, 미리 정해둔
-             한 가지 문구만 읽어주던 data-tap-action(두 번째 탭 안내)은
-             빼고, toggleBgm() 함수 안에서 실제 켜지는지/꺼지는지에 맞는
-             문장을 직접 speak()로 읽는다(중복 안내 방지). -->
+             해달라." 상태에 따라 다른 문장을 말해야 하므로, toggleBgm()
+             함수 안에서 실제 켜지는지/꺼지는지에 맞는 문장을 직접
+             speak()로 읽는다.
+             v-bgm-instant-toggle — 참가자 지적: "탭하면 안내하고 실제로
+             꺼줘. 다시 터치하면 안내하고 켜줘." — 한 번 탭에 한 번
+             토글되길 기대하는데, 이 버튼도 다른 버튼들과 똑같이 전역
+             "두 번 탭" 확인 체계를 타고 있어서 실제로는 첫 탭엔 이름만
+             ("이 버튼은 배경음악입니다"), 두 번째 탭에야 진짜 토글이
+             되고 있었다 — 한 번 끄고 다시 켜려면 탭이 4번 필요했던
+             셈이다. 속도·쉬운 문장 버튼과 똑같은 종류의 "즉시 반응이
+             자연스러운 상태 토글"이므로, 아래 TWOTAP_HANDS_OFF_SELECTOR
+             (파일 맨 아래)에 이 버튼도 추가해 매 탭마다 곧바로
+             toggleBgm()이 실행되도록 했다. -->
         <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
                 aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
                 data-tap-name="배경음악"
@@ -1820,7 +1829,7 @@ function _pickComfortableVoice(){
     // 못 찾으면 그냥 첫 한국어 음성을 쓴다 — 지정을 아예 안 하는 것보다는
     // 낫다.
     const preferred = koVoices.find(v =>
-        /neural|wavenet|enhanced|premium|natural|고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name)
+        /neural|wavenet|enhanced|premium|natural|google|고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name)
     );
     _cachedComfortVoice = preferred || koVoices[0];
     return _cachedComfortVoice;
@@ -1832,7 +1841,13 @@ function _ensureVoiceAssignment() {
     if (voices.length < 2) return null;
     const koVoices = voices.filter(v => /^ko/i.test(v.lang));
     if (koVoices.length < 2) return null; // 한국어 음성이 1개뿐이면 pitch/rate만으로 구별
-    const pool = koVoices;
+    // v-tts-quality — 위 _pickComfortableVoice()가 이미 쓰고 있는 "자연스러운
+    // 음성" 우선 선택을 여기서도 먼저 시도한다 — 프리미엄 음성이 2개 이상
+    // 있으면 그 안에서만 남/여를 구분해 배정하고, 부족하면 기존처럼 전체
+    // 한국어 음성 목록으로 폴백한다(화자 구분 자체가 깨지지 않도록).
+    const premiumVoices = koVoices.filter(v =>
+        /neural|wavenet|enhanced|premium|natural|google|고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name));
+    const pool = premiumVoices.length >= 2 ? premiumVoices : koVoices;
     // 로댕의 '생각하는 사람'은 실제 남성을 모델로 한 조각상이므로 남성 힌트가
     // 있는 목소리를 찾아 배정한다. 반가사유상(미륵보살)은 도상학적으로 성별이
     // 뚜렷하지 않으므로 근거 없는 '여성' 배정은 하지 않는다.
@@ -1866,6 +1881,19 @@ function _applyVoiceProfile(msg, speakerKey) {
     if (assignment && assignment[speakerKey]) {
         msg.voice = assignment[speakerKey];
     }
+    // v-mobile-voice-tune — 참가자 지적(index.html과 동일): "처음 음성의
+    // 크기가 너무 크고 피치가 너무 높아서 집중하기 어렵다. PC와 같은
+    // 음성으로 바꿔달라." 위 _isMobileTTS()·_pickComfortableVoice()는
+    // speakerKey 없이 부르는 낭독(안내 문구 등)에만 적용되고 있었는데,
+    // 실제로 손끝으로 부위를 만졌을 때 나오는 대부분의 해설은
+    // speakerKey('rodin'/'maitreya')가 있어 이 함수(_applyVoiceProfile)를
+    // 거친다 — 정작 가장 자주 들리는 소리에는 모바일 보정이 전혀
+    // 적용되지 않고 있었다. 데스크톱은 그대로 두고, 모바일에서만
+    // 피치 상한(0.92)과 음량 축소(70%)를 추가로 적용한다.
+    if (_isMobileTTS()){
+        if (msg.pitch > 0.92) msg.pitch = 0.92;
+        msg.volume = msg.volume * 0.7;
+    }
 }
 
 function speak(text, onEnd, speakerKey){
@@ -1884,6 +1912,10 @@ function speak(text, onEnd, speakerKey){
             const comfortVoice = _pickComfortableVoice();
             if (comfortVoice) u.voice = comfortVoice;
             u.pitch = 0.92;
+            // v-mobile-voice-tune — 참가자 지적: 음량도 함께 낮춰야
+            // _applyVoiceProfile() 경로(화자 지정 낭독)와 일관된 크기로
+            // 들린다.
+            u.volume = u.volume * 0.7;
         }
         // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
         // 문장 목록과 같은 텍스트라면, 브라우저가 실제로 보고하는 낭독 위치
@@ -6281,7 +6313,7 @@ function _infoDialogKeydown(e){
    실행된다. 다른 버튼을 누르면 무장 상태가 그 버튼으로 옮겨간다.
    ══════════════════════════════════════════════════════ */
 const TWOTAP_ARM_WINDOW_MS = 2500;
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn';
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 
@@ -6315,7 +6347,7 @@ function _runOriginalButtonAction(target){
 document.addEventListener('click', function(e){
     const target = e.target.closest('button');
     if(!target) return;
-    if(target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇 안쪽은 손대지 않음 — 즉시 반응 유지
+    if(target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
     if(target.disabled) return;
 
     if(_armedTwoTapEl === target){
