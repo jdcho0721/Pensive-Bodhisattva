@@ -1451,9 +1451,33 @@ function _pickBestKoreanVoice(){
     const voices = window.speechSynthesis.getVoices() || [];
     const koVoices = voices.filter(v => /^ko/i.test(v.lang));
     if(!koVoices.length) return null;
-    const google = koVoices.find(v => /google/i.test(v.name));
-    const neural = koVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
-    return google || neural || koVoices[0];
+    // v-mobile-tts-naturalness — 참가자 제안 반영: 이름으로 알려진
+    // 고품질 음성(Google·신경망·Wavenet 등) 패턴을 넓혔다 — 기기·OS마다
+    // 이름 표기가 달라 기존 패턴("google"·"neural"·"wavenet")만으로는
+    // 못 잡는 경우가 많았다.
+    const named = koVoices.find(v =>
+        /google|neural|online.*natural|natural.*online|wavenet|enhanced|premium|siri|고은|서현|지민|유나|yuna|sunhi|선히/i.test(v.name));
+    if(named) return named;
+    // 이름으로 못 찾았다면, 기기 내장(로컬) 음성보다 대체로 훨씬
+    // 자연스러운 네트워크(클라우드) 음성이 있는지 확인한다.
+    const network = koVoices.find(v => v.localService === false);
+    if(network) return network;
+    return koVoices[0];
+}
+// v-speech-text-cleanup — 참가자 제안: "문장 부호 및 띄어쓰기를 다듬으면
+// TTS가 더 자연스러워질 것 같다." 이 전시 자막에는 <생각하는 사람>·
+// <지옥의 문>처럼 작품명을 홑화살괄호로 감싸거나, '생각하는 사람'처럼
+// 강조 홑따옴표를 쓰는 표기가 많다. 화면에는 그대로 두는 게 낫지만
+// (시각적으로 작품명임을 알려준다), 일부 음성 엔진은 이 괄호·따옴표를
+// 그대로 읽으려 하거나 그 앞뒤에서 어색하게 멈칫거릴 수 있다. 화면
+// 자막(captionEl)은 원래 표기 그대로 두고, 실제로 음성 엔진에 넘기는
+// 문장에서만 이 기호들을 제거해 더 매끄럽게 흘러가도록 한다.
+function _sanitizeForSpeech(text){
+    return String(text)
+        .replace(/<([^<>]*)>/g, '$1')   // <생각하는 사람> → 생각하는 사람 (괄호만 제거, 안의 글자는 남김)
+        .replace(/['']/g, '')            // 강조용 홑따옴표 제거
+        .replace(/\s+/g, ' ')             // 중복 공백 정리
+        .trim();
 }
 function speak(text, onEnd, speaker){
     lastSpokenText = text;
@@ -1465,7 +1489,7 @@ function speak(text, onEnd, speaker){
         if(myGen !== speechGen) return; // 대기하는 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
         setTimeout(()=>{
             if(myGen !== speechGen) return; // 그 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
-            const u = new SpeechSynthesisUtterance(text);
+            const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(text));
             u.lang = 'ko-KR';
             const _bestVoice = _pickBestKoreanVoice();
             if(_bestVoice) u.voice = _bestVoice;
