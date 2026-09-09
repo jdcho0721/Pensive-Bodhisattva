@@ -1047,7 +1047,7 @@ let easyMode = false;
 
 let autoTimer = null;   
 let speechGen = 0;      
-const LINE_PAUSE_MS  = 1100;  // v49 — 참가자 요청: "자막이 빨리 지나간다." 문장이 끝난 뒤 다음 문장으로 넘어가기 전 여백을 700ms → 1100ms로 늘려 읽을 시간을 더 준다.
+const LINE_PAUSE_MS  = 800;  // v-line-pause-shorten — 참가자 요청: "다음 자막 페이지로 넘어가는 시간이 좀 길게 느껴진다. 조금만 줄여줘." v49에서 700ms → 1100ms로 늘렸던 것을, 그 중간 지점인 800ms로 조금 줄였다(다시 700ms로 완전히 되돌리진 않아, 이전 "너무 빠르다"는 불만도 같이 존중한다).
 const LAYER_PAUSE_MS = 350;   // v-page-pause-shorten-2 — 참가자 요청: "페이지 넘어가는 게 너무 늦다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 800ms → 350ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');
