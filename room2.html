@@ -983,7 +983,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
 
-<div id="intro-gate" onclick="enterRoom()" role="button" tabindex="0" aria-label="침묵의 공명, 전시실 2 · 사유 및 체화 — 화면을 한 번 터치하면 전시실로 입장합니다"
+<div id="intro-gate" onclick="enterRoom()" role="button" tabindex="0" aria-label="침묵의 공명, 전시실 2 · 사유 및 체화, 몸으로 생각하기 — 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요. 화면을 한 번 터치하면 전시실로 입장합니다"
      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterRoom();}">
     <!-- v-intro-clip-fix — 세로 중앙 정렬(margin:auto)을 담당하는 안쪽
          래퍼. 위 #intro-gate CSS 주석 참고. -->
@@ -1704,7 +1704,12 @@ function enterRoom(){
 // 그대로 남아 있어 터치로 시작하는 기존 경로는 전혀 영향받지 않는다.
 function _announceIntroGate(){
     if(_roomEntered) return; // 이미 입장했다면(예: 자동 타이머로 먼저 시작) 다시 읽지 않는다
-    const introGateLine = '침묵의 공명, 전시실 2 · 사유 및 체화입니다. 화면을 한 번 터치하면 전시실로 입장합니다.';
+    // v-gate-missing-paragraph — 참가자 지적: "초기화면 내용 중 음성해설이
+    // 빠진 부분이 있다." 확인해보니 화면에 보이는 부제("몸으로
+    // 생각하기")와 설명 문단("손끝으로 짚은 부위에 머무르며...")이
+    // 이 안내 문장에 통째로 빠져 있었다 — 제목과 "화면을 한 번
+    // 터치하면..." 문구만 읽고 있었다. 화면에 보이는 순서 그대로 채웠다.
+    const introGateLine = '침묵의 공명, 전시실 2 · 사유 및 체화, 몸으로 생각하기입니다. 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요. 화면을 한 번 터치하면 전시실로 입장합니다.';
     try{ speak(introGateLine); }catch(e){ /* 자동재생 제한 등 — 조용히 무시, 터치로 시작하면 정상 동작 */ }
 }
 if(document.readyState === 'loading'){
