@@ -1026,7 +1026,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              그대로 활용한다 — 인쇄 대화상자가 열리면 "PDF로 저장"을 선택해 그대로
              파일로 저장할 수 있다. 인쇄되는 모습은 위 @media print 규칙이
              결정한다(수료증 카드만 하얀 바탕에 검게 남기고 나머지는 감춤). -->
-        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="수료증을 PDF로 출력합니다" data-tap-name="PDF로 출력" data-tap-action="수료증 인쇄 화면을 엽니다">출력(PDF)</button>
+        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="수료증을 PDF로 출력합니다" data-tap-name="PDF로 출력" data-tap-action="수료증 인쇄 화면을 엽니다">출력</button>
         <button class="btn" id="btn-cert-close" data-tap-action="전시실2로 다시 이동합니다." onclick="closeCertificate()">계속 보기</button>
         <button class="btn primary" id="btn-cert-primary">나가기</button>
     </div>
@@ -2397,8 +2397,8 @@ function buildRecapAnswer(){
     if(maitreyaDone.length) parts.push(`반가사유상은 ${maitreyaDone.join(', ')}`);
     const done = parts.join(', ') + (parts.length ? '을(를) 만지셨습니다' : '');
     const remain = ORDER.length - visited.size;
-    const tail = remain > 0 ? ` 아직 ${remain}곳이 남아 있습니다.` : ' 열한 곳을 모두 만져보셨습니다.';
-    return `지금까지 총 ${visited.size}곳을 만지셨습니다. ${done}.${tail}`;
+   /* const tail = remain > 0 ? ` 아직 ${remain}곳이 남아 있습니다.` : ' 열한 곳을 모두 만져보셨습니다.';
+   /* return `지금까지 총 ${visited.size}곳을 만지셨습니다. ${done}.${tail}`;
 }
 
 /* 방문객이 실제로 쓸 만한 다양한 표현을 폭넓게 인식하도록 트리거를
