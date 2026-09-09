@@ -295,6 +295,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     padding:calc(60px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
 }
 #info-overlay.show{display:flex;}
+#info-overlay.menu #info-card > *{display:none;}
+#info-overlay.menu #info-audio-nav{display:flex;}
+#info-overlay.menu #info-card{max-width:520px;}
+#info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
+#info-overlay.detail #info-audio-nav{display:none;}
+#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
+#info-overlay.detail .info-section{display:none;}
+#info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
+#info-overlay.detail[data-info-kind="artist"] .info-section[data-kind="artist"]{display:block;}
+#info-overlay.detail[data-info-kind="usage"] .info-section[data-kind="usage"]{display:block;}
 #info-card{max-width:520px; width:100%; color:#ddd; line-height:1.85; font-size:.92rem; word-break:keep-all;}
 #info-card h2{font-family:'Cinzel Decorative',serif; color:var(--gold); letter-spacing:.1em; font-size:1.15rem; margin:0 0 22px; text-align:center;}
 /* v80 — 참가자 요청: "작품소개 음성해설이 나온 다음 한참 있다 작가소개가
@@ -654,16 +664,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          스치듯 눌러 바로 종료되는 일이 없도록 하기 위함이다. -->
     <button class="btn" id="btn-exit" onclick="exitExhibit()" aria-label="이 버튼은 나가기 버튼입니다." data-tap-action="화면을 종료합니다."><span aria-hidden="true">✕</span></button>
 </div>
-<div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권">
+<div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권" onclick="if(event.target && event.target.id==='info-overlay') closeInfo();">
     <div id="info-card">
         <h2>작품·작가 및 이용방법 소개</h2>
 
         <div id="info-audio-nav" role="group" aria-label="음성 안내 선택">
-            <button type="button" class="info-audio-btn" data-kind="intro" onclick="playInfoAudio('intro')" aria-label="작품 소개 음성 듣기">🔊 작품 소개</button>
-            <button type="button" class="info-audio-btn" data-kind="artist" onclick="playInfoAudio('artist')" aria-label="작가 소개 음성 듣기">🔊 작가 소개</button>
-            <button type="button" class="info-audio-btn" data-kind="usage" onclick="playInfoAudio('usage')" aria-label="이용 방법 음성 듣기">🔊 이용 방법</button>
+            <button type="button" class="info-audio-btn" data-kind="intro" onclick="openInfoDetail('intro')" aria-label="작품 소개 음성 듣기">🔊 작품 소개</button>
+            <button type="button" class="info-audio-btn" data-kind="artist" onclick="openInfoDetail('artist')" aria-label="작가 소개 음성 듣기">🔊 작가 소개</button>
+            <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="이용 방법 음성 듣기">🔊 이용 방법</button>
         </div>
 
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
+
+        <div class="info-section" data-kind="intro">
         <h3>전시소개</h3>
         <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
         <p>모두를 위한 전시, 조각상을 만지다 — 손끝으로 완성하는 두 조각상의 대화, 반가사유상과 생각하는 사람.</p>
@@ -704,6 +717,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <p class="label">오귀스트 로댕 (Auguste Rodin, 1840~1917)</p>
         <p>프랑스의 조각가. &lt;칼레의 시민&gt;, &lt;지옥의 문&gt; 등을 남겼으며, 인체의 사실적 표현과 표면의 거친 질감으로 근대 조각의 새 장을 열었다고 평가받는다.</p>
 
+        </div>
+
+        <div class="info-section" data-kind="artist">
         <h3>"침묵의 공명" 작가 소개</h3>
         <p class="label">조준동 (趙浚東)</p>
         <p>기획·연출 · 성균관대학교 전자전기공학부 명예교수</p>
@@ -714,10 +730,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <h3>전시 철학 (Humartology)</h3>
         <p>Human + Art + Technology의 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
 
+        </div>
+
+        <div class="info-section" data-kind="usage">
         <h3>이용 방법</h3>
         <p>관람 순서 화면(첫 화면)에서 <b>화면 아무 곳이나 한 번 가볍게 두드리면</b> 안내 음성이 나온 뒤 바로 전시실 1로 입장합니다. 이 화면 맨 아래의 <b>배경음악</b> 버튼으로 입장 전 배경음악을 켜고 끌 수 있습니다.</p>
         <p>입장한 뒤에는, 자막이 떠 있는 화면의 <b>왼쪽 영역을 두드리면 이전 이야기</b>로, <b>오른쪽 영역을 두드리면 다음 이야기</b>로 넘어갑니다. 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
-        <p>화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있고, 페이지를 넘기듯 왼쪽으로 쓸어넘기면 다음 이야기로, 반대로 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다.</p>
+        <p>화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있습니다.</p>
         <p>화면 위쪽 가운데의 네 개 점은 오리엔테이션·전체 구도·자세와 위치·대화, 네 단계를 나타내며, 원하는 점을 누르면 그 단계로 바로 건너뛸 수 있습니다.</p>
         <p>화면 아래 <b>다시듣기</b>·<b>멈춤</b> 버튼과 화면 위쪽의 <b>속도</b>·<b>쉬운 문장</b> 버튼, <b>소리 크기</b> 슬라이더는 모두 누르거나 움직이는 즉시 바로 실행됩니다. <b>다시듣기</b>는 현재 페이지를 처음부터 다시 들려주고, <b>멈춤</b>은 재생을 멈추거나 이어서 들려주며, <b>속도</b>는 내레이션 속도를, <b>쉬운 문장</b>은 더 쉬운 문장으로, <b>소리 크기</b>는 내레이션과 배경음악의 크기를 조절합니다.</p>
         <p><b>전시2</b>와 오른쪽 위 <b>나가기(✕)</b> 버튼만은 한 번 누르면 이름을 말해주고, 한 번 더 누르거나 짧게 두 번 두드려야 실제로 실행됩니다 — 전시2는 전시실 2로 이동하고, 나가기는 화면을 종료합니다(모바일 브라우저 정책상 종료가 항상 되지 않으면 화면이 비워집니다).</p>
@@ -740,6 +759,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p><b>[35]</b> Musée Rodin, The Thinker, collection notice, musee-rodin.fr, accessed 2026.</p>
             <p><b>[36]</b> W.B. Kang, Wonyung-gwa-Johwa [원융과 조화], Youlhwadang, Seoul, 1990.</p>
             <p><b>[37]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
+        </div>
         </div>
         <button id="info-close" onclick="closeInfo()">닫기</button>
     </div>
@@ -2202,6 +2222,9 @@ function openInfo(){
     _infoLastFocused = document.activeElement;
     const overlay = document.getElementById('info-overlay');
     overlay.classList.add('show');
+    overlay.classList.add('menu');
+    overlay.classList.remove('detail');
+    overlay.removeAttribute('data-info-kind');
     // v78 — 참가자 지적: "버튼 클릭 시 페이지의 최하단이 표시되어,
     // 정보를 읽기 위해 위쪽으로 스크롤 해야 한다." 원인: 대화상자 안에
     // 포커스 가능한 요소가 #info-close 하나뿐이라(포커스 트랩 목적으로
@@ -2212,8 +2235,10 @@ function openInfo(){
     // 자동 스크롤 자체를 막고, 대화상자 스크롤 위치를 명시적으로
     // 맨 위(0)로 되돌려 항상 제목("작품·작가 소개")부터 보이게 한다 —
     // 포커스 트랩(키보드 접근성)은 그대로 유지된다.
-    const closeBtn = document.getElementById('info-close');
-    try{ closeBtn.focus({preventScroll:true}); }catch(e){ closeBtn.focus(); }
+    const btn = document.querySelector('.info-audio-btn[data-kind="intro"]');
+    const card = document.getElementById('info-card');
+    try{ if(card){ card.scrollTop = 0; } }catch(e){}
+    try{ if(btn){ btn.focus({preventScroll:true}); } }catch(e){ try{ if(btn){ btn.focus(); } }catch(e2){} }
     overlay.scrollTop = 0;
     document.addEventListener('keydown', _infoDialogKeydown);
     // v-info-voice — 참가자 보고: "작품 소개 i를 클릭하면 작품 소개에
@@ -2238,7 +2263,7 @@ function infoStillOpen(){
 const INFO_SPEECH = {
     intro: '작품 소개입니다. 작품명은 침묵의 공명, 조우, 만나기입니다. 이 전시는 두 개의 조각상, 금동미륵보살반가사유상과 로댕의 생각하는 사람을 나란히 놓아 힘든 마음과 따뜻한 마음이라는 두 가지 태도를 비교합니다. 반가사유상은 부드러운 곡선으로 괴로운 마음을 내려놓은 편안함을, 생각하는 사람은 긴장한 근육으로 사람이 살아가며 짊어진 무거운 마음을 표현합니다. 두 조각상 모두 고개를 숙이고 손을 얼굴 가까이 둔 자세로, 이는 사유와 명상을 상징하는 공통된 조형 언어입니다. 금동미륵보살반가사유상은 삼국시대, 6세기에서 7세기 무렵 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 제작자는 삼국시대 장인으로 추정될 뿐, 개별 작가의 이름은 전해지지 않습니다. 생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년경 지옥의 문 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.',
     artist: "'침묵의 공명' 작가 소개입니다. 기획과 연출을 맡은 조준동은 성균관대학교 전자전기공학부 명예교수입니다. 성균관대학교에서 전자공학을 전공하고, 뉴욕 폴리테크닉 대학교에서 컴퓨터과학 석사를, 노스웨스턴 대학교에서 컴퓨터과학 박사 학위를 받았습니다. 성균관대학교 일반대학원 휴먼아이씨티융합학과를 창설했으며, 인간과 컴퓨터의 상호작용, 유엑스 디자인, 멀티모달 인터페이스 개발에 관심을 갖고, 인문학과 예술, 기술을 결합한 휴마트올로지라는 개념을 창안하여 디지털 인터랙티브 아트 작품을 만들고 있습니다.",
-    usage: '이용 방법입니다. 관람 순서 화면에서 화면 아무 곳이나 한 번 가볍게 두드리면 안내 음성이 나온 뒤 바로 전시실 1로 입장합니다. 이 화면 맨 아래의 배경음악 버튼으로 입장 전 배경음악을 켜고 끌 수 있습니다. 입장한 뒤에는, 자막이 떠 있는 화면의 왼쪽 영역을 두드리면 이전 이야기로, 오른쪽 영역을 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있고, 왼쪽으로 쓸어넘기면 다음 이야기로, 오른쪽으로 쓸어넘기면 이전 이야기로 돌아갑니다. 화면 위쪽 가운데의 네 개 점은 오리엔테이션, 전체 구도, 자세와 위치, 대화, 네 단계를 나타내며, 원하는 점을 누르면 그 단계로 바로 건너뛸 수 있습니다. 다시듣기와 멈춤 버튼, 속도와 쉬운 문장 버튼, 소리 크기 슬라이더는 모두 누르거나 움직이는 즉시 바로 실행됩니다. 다시듣기는 현재 페이지를 처음부터 다시 들려주고, 멈춤은 재생을 멈추거나 이어서 들려주며, 속도는 내레이션 속도를, 쉬운 문장은 더 쉬운 문장으로, 소리 크기는 내레이션과 배경음악의 크기를 조절합니다. 전시2와 오른쪽 위 나가기 버튼만은 한 번 누르면 이름을 말해주고, 한 번 더 누르거나 짧게 두 번 두드려야 실제로 실행됩니다. 전시2는 전시실 2로 이동하고, 나가기는 화면을 종료합니다. 지금 보고 계신 이 안내창은 화면을 한 번 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.'
+    usage: '이용 방법입니다. 관람 순서 화면에서 화면 아무 곳이나 한 번 가볍게 두드리면 안내 음성이 나온 뒤 바로 전시실 1로 입장합니다. 이 화면 맨 아래의 배경음악 버튼으로 입장 전 배경음악을 켜고 끌 수 있습니다. 입장한 뒤에는, 자막이 떠 있는 화면의 왼쪽 영역을 두드리면 이전 이야기로, 오른쪽 영역을 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르면 잠시 멈추거나 다시 시작할 수 있습니다. 화면 위쪽 가운데의 네 개 점은 오리엔테이션, 전체 구도, 자세와 위치, 대화, 네 단계를 나타내며, 원하는 점을 누르면 그 단계로 바로 건너뛸 수 있습니다. 다시듣기와 멈춤 버튼, 속도와 쉬운 문장 버튼, 소리 크기 슬라이더는 모두 누르거나 움직이는 즉시 바로 실행됩니다. 다시듣기는 현재 페이지를 처음부터 다시 들려주고, 멈춤은 재생을 멈추거나 이어서 들려주며, 속도는 내레이션 속도를, 쉬운 문장은 더 쉬운 문장으로, 소리 크기는 내레이션과 배경음악의 크기를 조절합니다. 전시2와 오른쪽 위 나가기 버튼만은 한 번 누르면 이름을 말해주고, 한 번 더 누르거나 짧게 두 번 두드려야 실제로 실행됩니다. 전시2는 전시실 2로 이동하고, 나가기는 화면을 종료합니다. 지금 보고 계신 이 안내창은 화면을 한 번 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.'
 };
 function playInfoAudio(kind){
     if(!infoStillOpen()) return;
@@ -2254,9 +2279,38 @@ function playInfoAudio(kind){
         });
     }catch(err){}
 }
+
+function openInfoDetail(kind){
+    if(!infoStillOpen()) return;
+    const overlay = document.getElementById('info-overlay');
+    overlay.classList.remove('menu');
+    overlay.classList.add('detail');
+    overlay.setAttribute('data-info-kind', kind);
+    const card = document.getElementById('info-card');
+    if(card){ card.scrollTop = 0; }
+    playInfoAudio(kind);
+    try{
+        const closeBtn = document.getElementById('info-close');
+        if(closeBtn && typeof closeBtn.focus === 'function'){ closeBtn.focus(); }
+    }catch(e){}
+}
+function backToInfoMenu(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    const overlay = document.getElementById('info-overlay');
+    overlay.classList.remove('detail');
+    overlay.classList.add('menu');
+    overlay.removeAttribute('data-info-kind');
+    try{
+        const btn = document.querySelector('.info-audio-btn[data-kind="intro"]');
+        if(btn && typeof btn.focus === 'function'){ btn.focus(); }
+    }catch(e){}
+}
 function closeInfo(){
     try{ window.speechSynthesis.cancel(); }catch(e){}
     document.getElementById('info-overlay').classList.remove('show');
+    document.getElementById('info-overlay').classList.remove('menu');
+    document.getElementById('info-overlay').classList.remove('detail');
+    document.getElementById('info-overlay').removeAttribute('data-info-kind');
     document.removeEventListener('keydown', _infoDialogKeydown);
     if(_infoLastFocused && typeof _infoLastFocused.focus === 'function'){
         _infoLastFocused.focus();
@@ -2289,13 +2343,21 @@ function _infoDialogKeydown(e){
         // 됐다. 두 버튼 사이를 순환하도록 고쳤다.
         // v80 — 위 3개 음성 버튼(작품 소개/작가 소개/이용 방법)도 늘어난
         // 포커스 가능 요소이므로 순환 목록에 추가했다.
-        const focusables = [
-            document.querySelector('.info-audio-btn[data-kind="intro"]'),
-            document.querySelector('.info-audio-btn[data-kind="artist"]'),
-            document.querySelector('.info-audio-btn[data-kind="usage"]'),
-            document.getElementById('refs-toggle-btn'),
-            document.getElementById('info-close')
-        ].filter(Boolean);
+        const overlay = document.getElementById('info-overlay');
+        let focusables;
+        if(overlay && overlay.classList.contains('detail')){
+            focusables = [
+                document.getElementById('info-back'),
+                document.getElementById('refs-toggle-btn'),
+                document.getElementById('info-close')
+            ].filter(Boolean);
+        } else {
+            focusables = [
+                document.querySelector('.info-audio-btn[data-kind="intro"]'),
+                document.querySelector('.info-audio-btn[data-kind="artist"]'),
+                document.querySelector('.info-audio-btn[data-kind="usage"]')
+            ].filter(Boolean);
+        }
         const idx = focusables.indexOf(document.activeElement);
         e.preventDefault();
         if(e.shiftKey){
@@ -2616,18 +2678,11 @@ function goToRoom2(e) {
                     if(armedControl === landedControl){
                         // 두 번째로 눌렀다(빠르게든, 안내를 다 듣고서든) — 실제로 이동한다.
                         setArmedControl(null);
-                        // 두 번째 탭: 브라우저 기본 click(즉시 이동)을 막고,
-                        // 음성 안내가 끝난 뒤에만 실제 이동을 실행한다.
-                        suppressNextClick = true;
-                        setTimeout(function(){ suppressNextClick = false; }, 400);
+                        suppressNextClick = false; // 직전 눌렀을 때 걸어둔 억제가 아직
+                                                    // 안 풀렸더라도, 이 click은 확실히
+                                                    // 통과시킨다(경합 상태 방지).
                         try{ hapticPulse('stage'); }catch(err){}
-                        if(landedControl && landedControl.id === 'btn-next-exhibit'){
-                            const actionText = landedControl.getAttribute && landedControl.getAttribute('data-tap-action');
-                            speak(actionText || '전시실 2로 이동합니다', function(){ goToRoom2(); });
-                        } else {
-                            suppressNextClick = false; // 다른 버튼(예: 나가기)은 기존 동작 유지
-                            confirmAndActivate(landedControl);
-                        }
+                        confirmAndActivate(landedControl);
                         return;
                     }
                     // 첫 번째 탭 — 아직 이동하지 않고 이름만 말해준다.
