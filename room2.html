@@ -142,9 +142,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    두면서 실제 탭 가능 영역만 넓혔다 — 저시력·손떨림 등으로 부위를
    직접 짚어 찾는 사용자가 더 쉽게 맞출 수 있다. */
 .hotspot::before{content:'';position:absolute;inset:-16px;}
-.hotspot:hover,.hotspot:focus-visible{background:rgba(212,175,55,.14);}
+/* v-organic-glow — 참가자 지적: "커서를 가져가면 나오는 표시 영역이
+   부자연스럽다. 손 모양이라면 손의 테두리를 굵게 표시하거나, 손 부분만
+   밝게 빛나면 좋겠다." 기존에는 타원형 영역 전체를 단색(flat rgba)으로
+   가득 채워, 실제 손·팔꿈치 등의 불규칙한 윤곽과 무관한 딱딱한 도형처럼
+   보였다. 실제 부위 윤곽을 한 땀씩 따서 표시하려면 원본 사진(반가-로댕.png)
+   위에서 좌표를 다시 찍어야 하지만, 그 전에도 "빛이 번지는" 느낌만으로
+   딱딱함은 크게 줄일 수 있다 — 가장자리로 갈수록 옅어지는
+   radial-gradient로 바꿔, 중심(짚은 자리)은 밝고 가장자리는 자연스럽게
+   사라지도록 했다. 정확한 손 윤곽 마스킹은 사진 위 좌표 재작업이
+   필요하므로 다음 단계 작업으로 남겨둔다.*/
+.hotspot:hover,.hotspot:focus-visible{background:radial-gradient(closest-side, rgba(212,175,55,.34), rgba(212,175,55,0) 72%);}
 .hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
-.hotspot.visited{background:rgba(212,175,55,.05);}
+.hotspot.visited{background:radial-gradient(closest-side, rgba(212,175,55,.16), rgba(212,175,55,0) 72%);}
 /* 참가자 제안: 해설이 끝난 핫스팟은 실루엣(점선 테두리·옅은 배경)이 화면에
    계속 남아 있으면 "이미 들은 곳"과 "아직 안 들은 곳"이 똑같아 보이고,
    다 들은 자리도 계속 시선을 끈다는 지적이 있었다. 낭독이 끝나면 이
@@ -153,7 +163,31 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    hover/focus 상태는 별도로 살려둔다(아래 참조). */
 .hotspot.explored{background:transparent;}
 .hotspot.explored:hover, .hotspot.explored:focus-visible{
-    background:rgba(212,175,55,.14);
+    background:radial-gradient(closest-side, rgba(212,175,55,.34), rgba(212,175,55,0) 72%);
+}
+/* v-idle-glow — 참가자 요청: "설명 들을 수 있는 영역이 커서가 닿지
+   않아도 사용자가 식별할 수 있게 표시되면 좋겠다." v14에서는 "상시
+   표시되는 도형이 조각상의 미를 해친다"는 참가자 지적으로 항시 표시를
+   완전히 없앴고, v84는 그 절충안으로 "위치 보기" 버튼을 누른 2.5초
+   동안만 보여주는 방식을 택했다. 이번 지적은 그 반대(상시 표시가 다시
+   필요하다)이므로, 기존 절충을 되돌리는 대신 새 토글(#zone-marker-btn,
+   기본값 꺼짐)로 만들어 두 요구를 모두 만족시킨다 — 평소엔 v84 상태
+   그대로 깨끗하게 유지되고, 이 토글을 켠 사람만 아주 옅은 숨쉬는
+   빛으로 11곳의 자리를 계속 확인할 수 있다. */
+.hotspot.zone-marker{
+    background:radial-gradient(closest-side, rgba(255,255,255,.16), rgba(255,255,255,0) 72%);
+    animation:idleGlowPulse 3.6s ease-in-out infinite;
+}
+.hotspot.zone-marker.explored{
+    background:radial-gradient(closest-side, rgba(255,255,255,.07), rgba(255,255,255,0) 72%);
+    animation:idleGlowPulse 3.6s ease-in-out infinite;
+}
+@keyframes idleGlowPulse{
+    0%,100%{ opacity:.55; }
+    50%{ opacity:1; }
+}
+@media (prefers-reduced-motion: reduce){
+    .hotspot.zone-marker, .hotspot.zone-marker.explored{ animation:none; opacity:.8; }
 }
 /* v4 — Treisman(1980) 특징통합이론(Feature Integration Theory) 적용.
    기존에는 .visited(실선 테두리)·.narrating(굵은 금색 글로우+빠른 맥동)·
@@ -175,13 +209,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    보이므로 조각상 표면 위에서 덜 거슬린다. 색이라는 단일 특징으로 즉시
    구별된다는 FIT의 취지는 그대로 유지된다. */
 .hotspot.narrating{
-    box-shadow:0 0 0 2px #fff, 0 0 20px 8px rgba(212,175,55,.6);
-    background:rgba(212,175,55,.12);
+    box-shadow:0 0 26px 10px rgba(212,175,55,.4);
+    background:radial-gradient(closest-side, rgba(212,175,55,.30), rgba(212,175,55,0) 72%);
     z-index:12;
 }
 .hotspot.suggested{
-    box-shadow:0 0 16px 6px rgba(64,224,208,.45);
-    background:rgba(64,224,208,.08);
+    box-shadow:0 0 20px 8px rgba(64,224,208,.32);
+    background:radial-gradient(closest-side, rgba(64,224,208,.22), rgba(64,224,208,0) 72%);
     z-index:11;
 }
 /* v84 — 참가자 요청: "만질 수 있는 부분이 총 몇 곳이고 위치가 어디인지
@@ -192,8 +226,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    상시 도형이 남지 않으면서도, 원할 때 11곳의 위치를 확인할 수 있다.
    색은 narrating(금색)·suggested(청록)와 겹치지 않도록 은은한 흰빛을 썼다. */
 .hotspot.location-hint{
-    box-shadow:0 0 14px 5px rgba(255,255,255,.55);
-    background:rgba(255,255,255,.10);
+    box-shadow:0 0 18px 6px rgba(255,255,255,.35);
+    background:radial-gradient(closest-side, rgba(255,255,255,.28), rgba(255,255,255,0) 72%);
     z-index:11;
     transition:box-shadow .5s ease, background .5s ease;
 }
@@ -637,6 +671,14 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
+#zone-marker-btn{
+    height:36px; padding:0 10px; border-radius:18px; background:rgba(0,0,0,.72);
+    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
+    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
+}
+#zone-marker-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
+#zone-marker-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #volume-control{
     height:36px; display:flex; align-items:center; gap:6px; padding:0 10px;
     border-radius:18px; background:rgba(0,0,0,.72); border:1px solid var(--gold-dim);
@@ -763,6 +805,23 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 #certificate-card .cert-list{ text-align:left; margin:18px 0; }
 #certificate-card .cert-list h3{ color:var(--gold-light); font-size:.85rem; margin:14px 0 6px; border-bottom:1px solid var(--gold-dim); padding-bottom:4px; }
 #certificate-card .cert-list p{ margin:0 0 4px; color:#ccc; font-size:.85rem; }
+/* v-replay-history — 놓친 부위(cert-replay-row-missed)는 이름 옆에 옅은
+   표시를 두고, 각 줄마다 실제로 그 자리에서 다시 듣거나(방문한 곳) 처음
+   듣기(놓친 곳)를 시작할 수 있는 버튼을 둔다. */
+#certificate-card .cert-replay-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    margin:0 0 6px; padding:6px 0; border-bottom:1px solid rgba(212,175,55,.12);
+}
+#certificate-card .cert-replay-name{ color:#ccc; font-size:.85rem; }
+#certificate-card .cert-replay-row-missed .cert-replay-name{ color:#999; font-style:italic; }
+#certificate-card .cert-replay-btn{
+    flex:0 0 auto; font-family:inherit; font-size:.7rem; padding:6px 10px; border-radius:14px;
+    background:rgba(212,175,55,.12); border:1px solid var(--gold-dim); color:var(--gold);
+    cursor:pointer; white-space:nowrap;
+}
+#certificate-card .cert-replay-btn:hover,
+#certificate-card .cert-replay-btn:focus-visible{ background:var(--gold); color:#1a1408; }
+#certificate-card .cert-replay-btn:focus-visible{ outline:3px solid #fff; outline-offset:2px; }
 /* v-cert-chat-summary — 참가자 요청: "챗봇에 질문한 내용과 답변을
    간략히 적어줘." cert-list(만난 부위 목록)와 같은 시각 언어를 그대로
    따르되, 문답이라 좌측 정렬 목록으로 두고 Q/A를 구분해 보여준다. */
@@ -914,6 +973,11 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-name="정보" data-tap-action="정보와 저작권 안내를 엽니다">ⓘ</button>
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
+<!-- v-idle-glow — 참가자 요청: "설명 들을 수 있는 영역이 커서가 닿지 않아도
+     식별 가능하게." 기본값은 꺼짐(v14의 "상시 표시는 미관을 해친다"는
+     기존 결정을 그대로 존중) — 원하는 사람만 켜서 11곳의 자리를 옅게
+     계속 볼 수 있다. -->
+<button id="zone-marker-btn" onclick="toggleZoneMarkers()" aria-pressed="false" aria-label="부위 표시, 현재 꺼짐">부위 표시</button>
 <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
      기능."
      v91 — 참가자 요청: "배경음악이 커져서 방해가 되는 경우가 있으니,
@@ -1523,6 +1587,31 @@ const visited = new Set();
 let currentKey = null;
 
 // ── 쉬운 문장으로 듣기 — room1-intro-touch.html과 동일한 패턴.
+// v-idle-glow — 참가자 요청: "설명 들을 수 있는 영역이 커서가 닿지 않아도
+// 식별 가능하게 표시되면 좋겠다." 기존 .hotspot.location-hint(2.5초만
+// 반짝이는 "위치 보기")와 달리, 이 토글은 켜져 있는 동안 계속 옅게
+// 표시된다. 두 요구(평소엔 깨끗하게 vs 항상 보이게)가 서로 반대라서
+// 기본값은 꺼짐으로 두고 버튼으로 원하는 사람만 켜도록 했다.
+let zoneMarkersOn = false;
+function applyZoneMarkers(){
+    document.querySelectorAll('.hotspot').forEach(el => el.classList.toggle('zone-marker', zoneMarkersOn));
+}
+function toggleZoneMarkers(){
+    zoneMarkersOn = !zoneMarkersOn;
+    const btn = document.getElementById('zone-marker-btn');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(zoneMarkersOn));
+        btn.setAttribute('aria-label', zoneMarkersOn ? '부위 표시, 현재 켜짐' : '부위 표시, 현재 꺼짐');
+    }
+    applyZoneMarkers();
+    const msg = zoneMarkersOn
+        ? `만질 수 있는 곳 ${ORDER.length}곳의 위치를 화면에 옅게 계속 표시합니다.`
+        : '위치 표시를 껐습니다.';
+    const captionEl = document.getElementById('caption');
+    if(captionEl) captionEl.innerHTML = msg;
+    try{ speak(msg); }catch(e){}
+}
+
 let easyMode = false;
 function toggleEasyMode(){
     easyMode = !easyMode;
@@ -2624,6 +2713,32 @@ ORDER.forEach(key=>{
     el.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); _triggerHotspotOnce(key); } });
 });
 
+// v-miss-feedback — 참가자 지적: "오조작인지, 전시 작가의 의도된 동작인지
+// 판단할 기준이 없다." 11곳(.hotspot) 중 어디에도 맞지 않은 클릭·탭에는
+// 지금까지 아무 반응이 없어, "내가 잘못 짚었나 / 원래 여기엔 없나"를
+// 구분할 길이 없었다. 실제로 부위를 맞혔을 때(금빛 발광 + 또렷한 확인
+// 진동 confirm)와는 뚜렷이 구별되도록, 빗나간 클릭에는 훨씬 옅고 짧은
+// 신호(가벼운 스침 진동 1회 + 잠깐의 중립 안내 문구)만 준다.
+(function(){
+    const stageEl = document.getElementById('stage');
+    if(!stageEl) return;
+    const passthroughIds = new Set(['stage','hotspot-layer','particle-canvas','mood-overlay','visual-halo','halo-rodin-shape','halo-maitreya-shape']);
+    let _missFeedbackTimer = null;
+    stageEl.addEventListener('click', function(e){
+        if(!e.target || !e.target.id || !passthroughIds.has(e.target.id)) return;
+        try{ navigator.vibrate && navigator.vibrate(15); }catch(err){}
+        const captionEl = document.getElementById('caption');
+        if(!captionEl) return;
+        clearTimeout(_missFeedbackTimer);
+        const prevHTML = captionEl.innerHTML;
+        const missMsg = '이 위치에는 설명이 없습니다. 은은하게 빛나는 자리를 찾아 짚어보세요.';
+        captionEl.innerHTML = missMsg;
+        _missFeedbackTimer = setTimeout(()=>{
+            if(captionEl.innerHTML === missMsg) captionEl.innerHTML = prevHTML;
+        }, 1800);
+    });
+})();
+
 // v8 — center-zone은 ORDER(진행률 추적 대상)에 없는 별도 지점이라 위
 // 루프 밖에서 따로 연결한다. 클릭·터치·키보드 모두 같은 500ms
 // 디바운스(_triggerHotspotOnce 재사용)를 거쳐 triggerCenterMoment()로
@@ -3529,24 +3644,53 @@ async function _playCenterSynthesis(moodEl){
    근거로 한 수료증을 보여준다. 지어낸 요약이 아니라 buildRecapAnswer()와
    같은 visited Set을 그대로 사용한다 — 안 만진 곳을 만진 것처럼 꾸미지
    않는다. */
+// v-replay-history — 참가자 요청: "놓친 부분만 다시 들을 수 있는, 사용자가
+// 직접 조작할 수 있는 재생바 같은 게 있으면 좋겠다." 기존 다시듣기
+// 버튼(repeatCurrent)은 "방금 만진 곳" 한 곳만 다시 들려줄 수 있었다.
+// 이 함수는 수료증 화면의 "지금까지 만난 기록" 목록을 실제로 조작
+// 가능한 재생바로 바꾼다 — 이미 들은 곳은 "다시듣기", 아직 못 들은
+// (놓친) 곳은 "듣기" 버튼으로 표시해, 어느 부위를 놓쳤는지 한눈에 보고
+// 그 자리에서 바로 채울 수 있다.
+function replayFromCertificate(key){
+    document.getElementById('certificate-overlay')?.classList.remove('show');
+    touchPart(key);
+}
 function showCertificate(isComplete){
     const shortName = k => DETAILS[k].title.split(' · ')[1];
-    const rodinDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='로댕').map(shortName);
-    const maitreyaDone = ORDER.filter(k=> visited.has(k) && DETAILS[k].body==='반가사유상').map(shortName);
     const remain = ORDER.length - visited.size;
 
     document.getElementById('cert-stat').textContent = `${visited.size} / ${ORDER.length}`;
 
     const listEl = document.getElementById('cert-list');
     listEl.innerHTML = '';
-    const addSection = (label, items) => {
+    const addSection = (label, keys) => {
         const h = document.createElement('h3'); h.textContent = label;
-        const p = document.createElement('p');
-        p.textContent = items.length ? items.join(', ') : '만진 곳이 없습니다.';
-        listEl.appendChild(h); listEl.appendChild(p);
+        listEl.appendChild(h);
+        if(!keys.length){
+            const p = document.createElement('p');
+            p.textContent = '만진 곳이 없습니다.';
+            listEl.appendChild(p);
+            return;
+        }
+        keys.forEach(key => {
+            const isDone = visited.has(key);
+            const row = document.createElement('p');
+            row.className = 'cert-replay-row' + (isDone ? '' : ' cert-replay-row-missed');
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'cert-replay-name';
+            nameSpan.textContent = shortName(key) + (isDone ? '' : ' · 놓친 곳');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'cert-replay-btn';
+            btn.textContent = isDone ? '▶ 다시듣기' : '▶ 듣기';
+            btn.setAttribute('aria-label', shortName(key) + (isDone ? ' 설명 다시 듣기' : ' 설명 듣기, 아직 만지지 않은 곳입니다'));
+            btn.onclick = () => replayFromCertificate(key);
+            row.appendChild(nameSpan); row.appendChild(btn);
+            listEl.appendChild(row);
+        });
     };
-    addSection('로댕 · 생각하는 사람', rodinDone);
-    addSection('반가사유상', maitreyaDone);
+    addSection('로댕 · 생각하는 사람', ORDER.filter(k => DETAILS[k].body === '로댕'));
+    addSection('반가사유상', ORDER.filter(k => DETAILS[k].body === '반가사유상'));
 
     // v-cert-chat-summary — 참가자 요청: "챗봇에 질문한 내용과 답변을
     // 간략히 적어줘." 챗봇 로직 곳곳(지식베이스·회상·AI 스트리밍 등
