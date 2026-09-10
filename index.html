@@ -1010,6 +1010,18 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 <script>
 
+// v-stray-speech-fix — 참가자 지적: "room2(전시실 2)에 갑자기 index
+// (전시실 1)의 해설이 튀어나온다." 기존에는 '전시2' 버튼의 onclick에만
+// window.speechSynthesis.cancel()을 넣어뒀는데, 클릭 직후 곧바로 페이지
+// 이동이 시작되면 그 취소 명령이 완전히 처리되기 전에 문서가 언로드돼
+// 발화가 다음 화면까지 넘어가 버리는 사례가 보고됐다(일부 브라우저의
+// 알려진 동작). 버튼 클릭 이후 경로뿐 아니라, 이 페이지를 벗어나는
+// 모든 경우(뒤로 가기, 다른 버튼, 강제 새로고침 등)를 포괄하도록
+// pagehide 시점에도 한 번 더 확실히 cancel()을 호출한다.
+window.addEventListener('pagehide', function(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+});
+
 
 const LAYERS = [
 { tag:'0 · 오리엔테이션',
