@@ -1426,6 +1426,22 @@ function fitHotspotLayer(){
     // 공간이 정말 부족할 때만 위로 당겨 보정한다 — 공간이 넉넉한
     // 기기에서는 원래 규칙(맨 위 = 25% 지점) 그대로 유지된다.
     if(sy + sh > ch) sy = Math.max(0, ch - sh);
+    // v-face-hotspot-clearance — 참가자 지적: "얼굴 부분 핫스팟이 위쪽
+    // '쉬운 문장' 버튼과 너무 가까워서 탭 인식이 안 된다." 이미지를
+    // '쉬운 문장' 버튼의 폰트 높이만큼 아래로 옮겨 얼굴 핫스팟과 상단
+    // 버튼 사이에 여유를 둔다. 폰트 높이는 하드코딩하지 않고 그 버튼의
+    // 실제 계산된 font-size를 그대로 읽어와서, 나중에 그 버튼의 글자
+    // 크기가 바뀌어도 이 간격이 함께 따라가도록 했다. 이미지와 hotspot
+    // 레이어가 항상 같은 sy를 공유하는 구조(바로 위 주석 참고) 덕분에,
+    // 화면에 보이는 조각상과 실제 탭 히트박스가 어긋나지 않고 함께
+    // 내려간다. 다만 위 발가락 잘림 방지 clamp가 지켜야 할 원칙(발끝이
+    // 항상 박스 안에 있어야 한다)이 이 하향 이동보다 우선이므로, 이동
+    // 후에도 다시 한 번 같은 clamp를 적용해 세로 공간이 정말 부족한
+    // 화면에서는 발이 다시 잘리지 않도록 한다.
+    const easyModeBtn = document.getElementById('easy-mode-btn');
+    const faceShift = easyModeBtn ? (parseFloat(getComputedStyle(easyModeBtn).fontSize) || 0) : 0;
+    sy += faceShift;
+    if(sy + sh > ch) sy = Math.max(0, ch - sh);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -6546,11 +6562,27 @@ function playInfoAudio(kind){
     document.querySelectorAll('.info-audio-btn').forEach(function(b){ b.classList.remove('playing'); b.removeAttribute('aria-pressed'); });
     const btn = document.querySelector('.info-audio-btn[data-kind="' + kind + '"]');
     if(btn){ btn.classList.add('playing'); btn.setAttribute('aria-pressed', 'true'); }
-    try{
-        speak(text, function(){
-            if(btn){ btn.classList.remove('playing'); btn.removeAttribute('aria-pressed'); }
-        });
-    }catch(err){}
+    // v-info-audio-race-fix — 참가자 지적: "작품소개 버튼을 누르면 소리는
+    // 나오는데 다른 내용을 읽는다." 원인: openInfo()가 안내창을 열면서
+    // "작품 소개, 작가 소개, 이용 방법, 세 가지 버튼이 있습니다..."
+    // 메뉴 안내를 speak()로 시작하는데, 그 발화가 실제로 소리 나기도
+    // 전(아직 브라우저 내부에서 준비 중인 짧은 구간)에 바로 "작품 소개"
+    // 버튼을 누르면, 바로 위 cancel() 다음 줄에서 곧바로 새 speak()를
+    // 또 호출하게 된다 — 몇몇 브라우저는 cancel() 직후 너무 빨리 이어서
+    // speak()를 호출하면 방금 취소했어야 할 이전 발화가 마저 흘러나오거나
+    // 두 발화가 뒤섞이는 알려진 문제가 있다(바로 위 v87 주석에서 이미
+    // 확인한 것과 같은 종류의 TTS 타이밍 문제). cancel()과 실제 새
+    // speak() 사이에 아주 짧은 지연을 둬서, 이전 발화가 브라우저
+    // 내부에서 완전히 정리된 뒤에 새 발화가 시작되도록 한다 — 사람이
+    // 느끼기엔 지연이 없는 것과 같지만, 경쟁 상태는 피해간다.
+    setTimeout(()=>{
+        if(!infoStillOpen()) return;
+        try{
+            speak(text, function(){
+                if(btn){ btn.classList.remove('playing'); btn.removeAttribute('aria-pressed'); }
+            });
+        }catch(err){}
+    }, 100);
 }
 
 function openInfoDetail(kind){
@@ -6650,12 +6682,39 @@ function _infoDialogKeydown(e){
 // 경우) 모두 안내창을 닫는다. "닫기"·"참고문헌" 버튼은 이미 위
 // 두-번-탭(v-two-tap-buttons) 체계로 자기 동작을 처리하므로, 그 버튼
 // 위에서는 이 제스처가 끼어들지 않게 제외한다.
+// v-info-back-gesture — 참가자 요청: "4개 버튼(전시소개·작품소개·
+// 작가소개·이용방법) 중 하나에 탭하여 들어간 다음 빠져나올 때는
+// 뒤로가기 제스처로 그 이전 창으로 빠져나오게 해달라." 원래는 이
+// 제스처가 detail 화면이든 menu(버튼 목록) 화면이든 구분 없이 항상
+// closeInfo()를 불러 안내창 전체를 곧장 닫아버렸다 — 상세 화면에서
+// "뒤로"를 기대하고 제스처를 했는데 실제로는 메뉴 화면을 건너뛰고
+// 바로 전시 해설 화면까지 나가버렸다. 아래 _exitInfoOneLevel()이 지금
+// 어느 화면인지 먼저 확인해 한 단계씩만 물러난다: 상세 화면에서는
+// backToInfoMenu()로 메뉴로, 메뉴 화면에서는 기존처럼 closeInfo()로
+// 안내창 전체를 닫고 전시 해설 화면으로 돌아간다 — 닫힐 때 자동으로
+// 방금 듣던 자막을 이어 들려주는 동작은 closeInfo() 안에 이미 있다
+// (위 v81/v92 주석 참고. 참가자 요청 "다시 전시 해설 창으로 빠져나오면
+// 현재 자막 음성재생이 자동으로 나오게 해달라"는 이 기존 로직으로
+// 그대로 충족된다).
+function _exitInfoOneLevel(){
+    const overlay = document.getElementById('info-overlay');
+    if(overlay && overlay.classList.contains('detail')){
+        backToInfoMenu();
+    } else {
+        closeInfo();
+    }
+}
 (function initInfoOverlayExitGestures(){
     const overlay = document.getElementById('info-overlay');
     if(!overlay) return;
     let startX = 0, startY = 0, startTime = 0;
     function isOwnControl(t){
-        return !!(t && t.closest && t.closest('#info-close, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
+        // v-info-back-gesture — #info-back("← 돌아가기")도 여기 제외
+        // 목록에 추가했다. 빼놓으면 터치 기기에서 그 버튼을 한 번 탭할
+        // 때 touchend 제스처(아래)가 그 버튼 고유의 두-번-탭 확인
+        // 절차보다 먼저 끼어들어, 확인 없이 곧장 화면이 넘어가 버리는
+        // 문제가 있었다.
+        return !!(t && t.closest && t.closest('#info-close, #info-back, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
     }
     overlay.addEventListener('touchstart', (e)=>{
         if(!overlay.classList.contains('show')) return;
@@ -6668,9 +6727,9 @@ function _infoDialogKeydown(e){
         const dx = e.changedTouches[0].screenX - startX;
         const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
         const dt = Date.now() - startTime;
-        if(dx > 60 && dyAbs < 60){ closeInfo(); return; } // 오른쪽으로 스와이프 → 닫기
+        if(dx > 60 && dyAbs < 60){ _exitInfoOneLevel(); return; } // 오른쪽으로 스와이프 → 뒤로/닫기
         if(Math.abs(dx) < 12 && dyAbs < 12 && dt < 600 && !isOwnControl(e.target)){
-            closeInfo(); // 짧게 한 번 두드리기 → 닫기
+            _exitInfoOneLevel(); // 짧게 한 번 두드리기 → 뒤로/닫기
         }
     }, { passive:true });
     // PC(마우스) 사용자를 위한 동일 동작. 버튼 클릭은 document의
@@ -6679,7 +6738,7 @@ function _infoDialogKeydown(e){
     overlay.addEventListener('click', (e)=>{
         if(!overlay.classList.contains('show')) return;
         if(isOwnControl(e.target)) return;
-        closeInfo();
+        _exitInfoOneLevel();
     });
 })();
 
