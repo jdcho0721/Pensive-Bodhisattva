@@ -2084,7 +2084,19 @@ function _applyVoiceProfile(msg, speakerKey) {
     const profile = VOICE_PROFILES[speakerKey];
     if (profile) {
         msg.pitch  = profile.pitch;
-        msg.rate   = profile.rate;
+        // v-speaker-rate-multiplier — 참가자 지적: "0.94/0.90/1 값은 재생
+        // 속도 위에 곱해지는 배수로 적용해줘 — 속도 버튼은 여전히 전체
+        // 속도를 조절하고, 그 위에 화자별 상대적 빠르기 차이만 얹히는
+        // 방식으로." 원래는 profile.rate를 msg.rate에 그대로 덮어써서,
+        // 화자(로댕/반가사유상) 지정 낭독에서는 사용자가 속도 버튼으로
+        // 고른 TTS_RATE가 완전히 무시됐다(예: 배속을 2배로 올려도 로댕
+        // 목소리는 항상 0.94로 고정). index.html에 이식한 것과 같은
+        // 방식으로, profile.rate를 절대값이 아니라 TTS_RATE 위에 곱해지는
+        // 배수로 바꿔 — 배속 버튼은 여전히 전체 속도를 조절하고, 그 위에
+        // 화자별 상대적 빠르기 차이(로댕 0.94배·반가사유상 0.90배)만
+        // 얹힌다. msg.rate는 speak()에서 이 함수를 부르기 전에 이미
+        // TTS_RATE로 설정돼 있으므로, 여기서는 그 값을 곱해서 쓴다.
+        msg.rate   = msg.rate * profile.rate;
         // v91 — 참가자 요청으로 "배경음악 크기" 슬라이더가 더 이상
         // 내레이션 음량에 영향을 주지 않는다. 내레이션은 고정 음량
         // (NARRATION_VOLUME)으로 재생한다.
