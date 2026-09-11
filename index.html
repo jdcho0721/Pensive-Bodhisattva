@@ -1616,52 +1616,74 @@ function speak(text, onEnd, speaker){
         if(myGen !== speechGen) return; // 대기하는 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
         setTimeout(()=>{
             if(myGen !== speechGen) return; // 그 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
-            const u = new SpeechSynthesisUtterance(text);
-            u.lang = 'ko-KR';
-            const _bestVoice = _pickBestKoreanVoice();
-            if(_bestVoice) u.voice = _bestVoice;
-            if(speaker==='rodin'){ u.rate = TTS_RATE; u.pitch = 0.90; }
-            else if(speaker==='maitreya'){ u.rate = TTS_RATE; u.pitch = 1.08; }
-            else { u.rate = TTS_RATE; u.pitch = 1.0; }
-            // v91 — 참가자 요청으로 "배경음악 크기" 슬라이더가 더 이상
-            // 내레이션 음량에 영향을 주지 않는다. 내레이션은 고정 음량
-            // (NARRATION_VOLUME)으로 재생한다.
-            u.volume = NARRATION_VOLUME;
-            // v49 — 참가자 요청: "자막이 빨리 지나간다." 일부 기기·음성엔진은
-            // 실제 발화 속도가 사람이 자막을 읽는 속도보다 빨라서, 음성이
-            // 끝나는 이벤트(onend)가 예상보다 일찍 와버리면 자막도 그만큼
-            // 빨리 다음 문장으로 넘어갔다. estMs(글자 수 기반 "읽기에 필요한
-            // 최소 시간" 추정치)를 이제 "이 시간보다 먼저 끝나면 더 기다린다"
-            // 는 하한선으로도 함께 쓴다 — 음성이 실제로 더 오래 걸리면
-            // 원래대로 그 길이를 그대로 따르고, 음성이 더 짧게 끝나면
-            // estMs를 채울 때까지 자막을 화면에 붙잡아 둔다.
-            const startedAt = Date.now();
-            const estMs = Math.max(2200, (text.length * 260) / TTS_RATE);
-            let _ended = false;
-            const finish = ()=>{ if(_ended) return; _ended = true; if(myGen===speechGen && onEnd) onEnd(); };
-            const finishNoEarlierThanEst = ()=>{
-                if(_ended) return;
-                const remaining = estMs - (Date.now() - startedAt);
-                if(remaining > 0){ setTimeout(()=>{ if(myGen===speechGen) finish(); }, remaining); }
-                else finish();
-            };
-            u.onend = finishNoEarlierThanEst;
-            u.onerror = finishNoEarlierThanEst;
-            window.speechSynthesis.speak(u);
-            // v31 — 참가자 지적: "해설이 끝나기 전에 화면이 빠르게 넘어간다."
-            // 원인: 이 워치독 타이머가 글자 수만으로 예상 시간을 계산하고,
-            // 실제 재생 속도(TTS_RATE)는 전혀 반영하지 않고 있었다. 속도를
-            // 느리게(0.7배 등) 맞춰 들으면 실제 음성은 그만큼 더 오래
-            // 걸리는데, 워치독은 항상 1.0배 기준의 시간에 맞춰 먼저
-            // 울려버려 — 음성이 채 끝나기도 전에 다음 문장으로 넘어가는
-            // 원인이 됐다. 지금 재생 속도로 나눠 실제 소요 시간에 맞추고,
-            // 여유 폭도 조금 더 넉넉하게 잡았다. (v49에서 estMs 자체도
-            // 늘리고, 위 finishNoEarlierThanEst가 있으니 이 워치독은 onend가
-            // 아예 안 오는 경우에 대비한 안전망으로만 남는다.)
-            setTimeout(()=>{ if(myGen===speechGen) finish(); }, estMs + 4000);
+            // v-tts-naturalness-2 — 참가자 지적: "청각적 안내의 어투가 TTS
+            // 느낌이 강해 집중도가 떨어진다." 기존에는 여러 문장으로 된
+            // 텍스트를 통째로 하나의 발화로 읽어, 문장 사이에 사람이 두는
+            // 숨쉬는 간격이 전혀 없고 억양도 시종일관 균일했다. 이제 문장
+            // 단위로 쪼개 하나씩 순서대로 개별 발화로 읽는다 — 문장 사이에
+            // 짧은 정적을 두고, 발화마다 속도·피치를 사람 말투처럼 아주
+            // 미세하게 흔든다. 화면 자막은 지금까지처럼 호출한 쪽에서 이미
+            // 정해둔 값을 그대로 두고 여기서는 건드리지 않는다.
+            const sentences = (String(text).match(/[^.!?…]+[.!?…]?/g) || [text]).map(s=>s.trim()).filter(Boolean);
+            _speakSentenceQueue(sentences, 0, speaker, myGen, onEnd);
         }, 60);
         });
     }catch(e){ if(myGen===speechGen && onEnd) setTimeout(onEnd, 1800); }
+}
+
+// v-tts-naturalness-2 — 문장을 하나씩, 사이에 짧은 정적을 두고 개별
+// 발화로 읽는다. 발화마다 속도·피치를 미세하게 흔들어 기계적으로
+// 균일하게 들리는 정도를 줄인다. myGen으로 그 사이 더 최신 요청이
+// 들어오면(예: 다른 부위를 만짐) 즉시 멈춘다 — 기존 워치독/취소 로직과
+// 동일한 원리다.
+function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
+    if(myGen !== speechGen) return;
+    if(idx >= sentences.length){ if(myGen===speechGen && onEnd) onEnd(); return; }
+    const raw = sentences[idx];
+    if(!raw){ _speakSentenceQueue(sentences, idx + 1, speaker, myGen, onEnd); return; }
+
+    const u = new SpeechSynthesisUtterance(raw);
+    u.lang = 'ko-KR';
+    const _bestVoice = _pickBestKoreanVoice();
+    if(_bestVoice) u.voice = _bestVoice;
+    let basePitch;
+    if(speaker==='rodin'){ u.rate = TTS_RATE; basePitch = 0.90; }
+    else if(speaker==='maitreya'){ u.rate = TTS_RATE; basePitch = 1.08; }
+    else { u.rate = TTS_RATE; basePitch = 1.0; }
+    // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 아주 미세하게
+    // (±3~5% 안팎)만 흔들어, 폭을 좁게 둬서 부자연스럽게 튀지 않게 한다.
+    const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
+    const jitterPitch = 1 + (Math.random() - 0.5) * 0.05;
+    u.rate = u.rate * jitterRate;
+    u.pitch = basePitch * jitterPitch;
+    // v91 — 참가자 요청으로 "배경음악 크기" 슬라이더가 더 이상 내레이션
+    // 음량에 영향을 주지 않는다. 내레이션은 고정 음량으로 재생한다.
+    u.volume = NARRATION_VOLUME;
+
+    // v49/v31과 동일한 이유로, 문장 단위로 축소한 estMs를 하한선 겸
+    // 안전망 워치독으로 함께 쓴다 — 음성엔진이 실제보다 일찍 onend를
+    // 보내거나 아예 이벤트를 안 보내는 경우에도 다음 문장으로 넘어간다.
+    const startedAt = Date.now();
+    const estMs = Math.max(1200, (raw.length * 260) / TTS_RATE);
+    let _ended = false;
+    const proceed = ()=>{
+        if(_ended) return;
+        _ended = true;
+        if(myGen !== speechGen) return;
+        const endsFully = /[.!?…]\s*$/.test(raw);
+        const pause = idx < sentences.length - 1 ? (endsFully ? 260 : 120) : 0;
+        setTimeout(()=>{ if(myGen===speechGen) _speakSentenceQueue(sentences, idx + 1, speaker, myGen, onEnd); }, pause);
+    };
+    const proceedNoEarlierThanEst = ()=>{
+        if(_ended) return;
+        const remaining = estMs - (Date.now() - startedAt);
+        if(remaining > 0){ setTimeout(()=>{ if(myGen===speechGen) proceed(); }, remaining); }
+        else proceed();
+    };
+    u.onend = proceedNoEarlierThanEst;
+    u.onerror = proceedNoEarlierThanEst;
+    window.speechSynthesis.speak(u);
+    setTimeout(()=>{ if(myGen===speechGen) proceed(); }, estMs + 4000);
 }
 
 /* ══════════════════════════════════════════════════════

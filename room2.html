@@ -1247,6 +1247,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 재질이 뭐가 달라요?')">두 조각상은 재질이 뭐가 달라요?</button>
         <button type="button" class="chip" onclick="askSuggested('생각하는 사람은 원래 이름이 뭐였어요?')">생각하는 사람은 원래 이름이 뭐였어요?</button>
         <button type="button" class="chip" onclick="askSuggested('진인사대천명이 조각상과 무슨 관계예요?')">진인사대천명이 조각상과 무슨 관계예요?</button>
+        <button type="button" class="chip" onclick="askSuggested('청동조각상 복제품 제조방법은?')">청동조각상 복제품 제조방법은?</button>
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
         <label for="chat-input" class="sr-only">궁금한 점을 입력하세요</label>
@@ -1572,12 +1573,31 @@ function toggleEasyMode(){
     if(!_easyModeResumePending){
         _easyModeResumePending = true;
         const wasSpeaking = window.speechSynthesis.speaking;
-        _easyModeResumeText = wasSpeaking ? _lastSpokenText : null;
-        _easyModeResumeSpeaker = wasSpeaking ? _lastSpokenSpeaker : null;
+        // v-easy-mode-live-update — 참가자 지적: "쉬운 문장을 눌러도
+        // 적용된 게 안 보인다/안 들린다." 기존에는 버튼을 누른 시점의
+        // _lastSpokenText(토글 이전, 즉 옛 easyMode 값으로 만들어진 문장)를
+        // 그대로 다시 재생해, 정작 easyMode가 바뀐 뒤에도 듣던 부위의
+        // 설명은 원래(또는 쉬운) 문장 그대로 이어졌다. 지금 만지고 있던
+        // 부위(currentKey)가 있으면 방금 바뀐 easyMode 값으로 그 부위의
+        // 문장을 새로 만들어(_detailText가 최신 easyMode를 본다) 실제로
+        // 바뀐 문장이 들리게 한다.
+        if(wasSpeaking && currentKey && DETAILS[currentKey]){
+            const d = DETAILS[currentKey];
+            _easyModeResumeText = d.focus + ' ' + _detailText(d) + (d.embody ? ' ' + d.embody : '');
+            _easyModeResumeSpeaker = d.body === '로댕' ? 'rodin' : 'maitreya';
+        } else {
+            _easyModeResumeText = wasSpeaking ? _lastSpokenText : null;
+            _easyModeResumeSpeaker = wasSpeaking ? _lastSpokenSpeaker : null;
+        }
     }
     speak(easyModeMsg, function(){
         _easyModeResumePending = false;
-        if(_easyModeResumeText) speak(_easyModeResumeText, undefined, _easyModeResumeSpeaker);
+        if(_easyModeResumeText){
+            // 자막도 새로 만든 문장에 맞춰 다시 예약해, 화면 글자와 실제
+            // 들리는 문장이 어긋나지 않게 한다.
+            _displaySentencesTimed(_easyModeResumeText, document.getElementById('caption'));
+            speak(_easyModeResumeText, undefined, _easyModeResumeSpeaker);
+        }
     });
 }
 let _easyModeResumePending = false, _easyModeResumeText = null, _easyModeResumeSpeaker = null;
@@ -2060,6 +2080,30 @@ function speak(text, onEnd, speakerKey){
     _lastSpokenSpeaker = speakerKey || null;
     try{
         window.speechSynthesis.cancel();
+
+        // v-tts-naturalness-2 — 참가자 지적: "청각적 안내의 어투가 TTS
+        // 느낌이 강해 집중도가 떨어진다." 기존에는 문장 전체(여러 문장)를
+        // 하나의 발화로 통째로 읽어, 사람이 말할 때 문장 사이에 자연스럽게
+        // 두는 숨쉬는 간격이 전혀 없고, 억양도 그 안에서 시종일관 균일했다.
+        // 이 텍스트에 대해 이미 문장 단위 자막 동기화가 예약되어 있고
+        // (_pendingSentenceSync, _displaySentencesTimed 참고) 문장이 2개
+        // 이상이면, 한 문장씩 개별 발화로 나눠 순서대로 읽는다 — 문장
+        // 사이에 짧은 정적을 두고, 발화마다 속도·피치를 사람 말투처럼
+        // 아주 미세하게 흔든다. 문장이 언제 끝나는지 실제로 알 수 있으므로
+        // 자막도 이제 추정이 아니라 정확히 그 시점에 맞다.
+        if(_pendingSentenceSync && _pendingSentenceSync.text === text && _pendingSentenceSync.sentences.length > 1){
+            const sync = _pendingSentenceSync;
+            sync.boundaryActive = true; // 아래 추정 타이머(_displaySentencesTimed)가 더 이상 끼어들지 않도록
+            let _doneQueue = false;
+            const finishQueue = ()=>{
+                if(_doneQueue) return;
+                _doneQueue = true;
+                if(onEnd) onEnd();
+            };
+            _speakSentenceQueue(sync.sentences, 0, finishQueue, speakerKey, sync);
+            return;
+        }
+
         const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(text));
         u.lang='ko-KR'; u.rate=TTS_RATE;
         // v91 — 위 _applyVoiceProfile()과 동일한 이유로 고정 음량 사용.
@@ -2079,10 +2123,10 @@ function speak(text, onEnd, speakerKey){
             u.volume = u.volume * 0.7;
         }
         // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
-        // 문장 목록과 같은 텍스트라면, 브라우저가 실제로 보고하는 낭독 위치
-        // (boundary 이벤트)로 자막 전환을 대신한다 — 위 _displaySentencesTimed
-        // 상단 주석 참고. 다른 텍스트를 speak()로 읽는 경우(예: 챗봇 답변
-        // 등)는 이 블록이 조용히 스킵되어 기존 동작과 같다.
+        // 문장 목록과 같은 텍스트라면(문장이 1개뿐이라 위 큐 방식을 타지
+        // 않은 경우), 브라우저가 실제로 보고하는 낭독 위치(boundary 이벤트)
+        // 로 자막 전환을 대신한다. 다른 텍스트를 speak()로 읽는 경우(예:
+        // 챗봇 답변 등)는 이 블록이 조용히 스킵되어 기존 동작과 같다.
         if(_pendingSentenceSync && _pendingSentenceSync.text === text){
             const sync = _pendingSentenceSync;
             let currentIdx = 0;
@@ -2111,6 +2155,52 @@ function speak(text, onEnd, speakerKey){
         u.onerror = finish;
         window.speechSynthesis.speak(u);
     }catch(e){ if(onEnd) setTimeout(onEnd,1200); }
+}
+
+// v-tts-naturalness-2 — 문장들을 하나씩 순서대로, 사이에 짧은 정적을 두고
+// 개별 발화로 읽는다. 발화마다 속도·피치를 아주 미세하게(사람 말투처럼)
+// 흔들어 기계적으로 균일하게 들리는 정도를 줄인다.
+function _speakSentenceQueue(sentences, idx, onEnd, speakerKey, sync){
+    if(sync && sync.seq !== _captionSeq){ if(onEnd) onEnd(); return; } // 그 사이 다른 부위로 넘어갔다 — 낡은 큐는 버린다
+    if(idx >= sentences.length){ if(onEnd) onEnd(); return; }
+    if(sync) sync.captionEl.innerHTML = sentences[idx];
+    const raw = _sanitizeForSpeech(sentences[idx]);
+    if(!raw){ _speakSentenceQueue(sentences, idx + 1, onEnd, speakerKey, sync); return; }
+
+    const u = new SpeechSynthesisUtterance(raw);
+    u.lang = 'ko-KR';
+    u.rate = TTS_RATE;
+    u.volume = NARRATION_VOLUME;
+    if(speakerKey){
+        _applyVoiceProfile(u, speakerKey);
+    } else if(_isMobileTTS()){
+        const comfortVoice = _pickComfortableVoice();
+        if(comfortVoice) u.voice = comfortVoice;
+        u.pitch = 0.92;
+        u.volume = u.volume * 0.7;
+    }
+    // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 화자 프로필이
+    // 정한 값 위에 아주 미세한(±3% 안팎) 흔들림만 더한다. 흔들림이 너무
+    // 크면 오히려 부자연스러우므로 일부러 폭을 좁게 뒀다.
+    const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
+    const jitterPitch = 1 + (Math.random() - 0.5) * 0.05;
+    u.rate = u.rate * jitterRate;
+    u.pitch = (u.pitch || 1.0) * jitterPitch;
+
+    let doneOnce = false;
+    const proceed = ()=>{
+        if(doneOnce) return;
+        doneOnce = true;
+        // 문장이 마침표·물음표·느낌표로 온전히 끝났다면 사람이 다음
+        // 문장으로 넘어가기 전 두는 정도의 정적(260ms)을, 그렇지 않으면
+        // (예: 쉼표에서 텍스트가 잘린 경우) 더 짧은 정적(120ms)을 둔다.
+        const endsFully = /[.!?…]\s*$/.test(sentences[idx]);
+        const pause = idx < sentences.length - 1 ? (endsFully ? 260 : 120) : 0;
+        setTimeout(()=> _speakSentenceQueue(sentences, idx + 1, onEnd, speakerKey, sync), pause);
+    };
+    u.onend = proceed;
+    u.onerror = proceed;
+    window.speechSynthesis.speak(u);
 }
 
 function clearSuggested(){
@@ -4061,6 +4151,7 @@ const PART_MEANINGS = {
         '스크린리더가 뭐야|스크린리더 뜻|스크린리더가 무슨 말이야|스크린리더는 어떻게 써|스크린 리더가 뭐야': '스크린리더는 화면의 글자와 요소를 음성으로 읽어주어, 시각장애가 있는 사용자가 화면 내용을 들으며 이용할 수 있게 해주는 보조 프로그램입니다(예: VoiceOver, TalkBack). 이 전시의 음성 해설과 스크린리더 음성이 함께 겹쳐 들릴 수 있어, 스크린리더를 쓰는 동안에는 기기의 스크린리더 음성 안내를 조절해 이용해 주세요.',
         '로댕 생각하는 사람 몇살 때 만들었어|제작 당시 로댕 나이|제작 당시 로댕 나이 뭐야|제작 당시 로댕 나이 알려줘|제작 당시 로댕 나이 궁금해|제작 당시 로댕 나이 설명해줘|제작 당시 로댕 나이가 뭔지 궁금해|제작 당시 로댕 나이에 대해 알려줘|제작 당시 로댕 나이 뜻이 뭐야|제작 당시 로댕 나이 왜 그런거야|제작 당시 로댕 나이 무슨 의미야|제작 당시 로댕 나이 궁금한데': '로댕이 1880년경 지옥의 문을 구상하던 40대 초반 무렵 함께 만들어진 인물상에서 출발했습니다.',
         '생각하는 사람 청동 주조 방식|어떻게 만든 거야 제작기법|청동 주조 방식 뭐야|청동 주조 방식 알려줘|청동 주조 방식 궁금해|청동 주조 방식 설명해줘|청동 주조 방식가 뭔지 궁금해|청동 주조 방식에 대해 알려줘|청동 주조 방식 뜻이 뭐야|청동 주조 방식 왜 그런거야|청동 주조 방식 무슨 의미야|청동 주조 방식 궁금한데': '밀랍으로 원형을 뜬 뒤 그 위에 거푸집을 씌우고 청동을 부어 굳히는 전통적인 청동 주조 방식으로 제작됐습니다.',
+        '청동조각상 복제품 제조방법은|청동상을 제조하는 방법은|청동상 제조 방법|청동상은 어떻게 만들어져|청동상 만드는 과정|청동 조각상 제작 과정|청동상 제조 방법 자세히|청동상 만드는 방법 자세히|복제품 제조방법|복제품 제작 과정|복제 조각상 만드는 법': '이 전시의 복제상은 원본을 그대로 본떠 만든 뒤 밀랍주조법(로스트왁스 기법)으로 청동을 부어 완성합니다. 먼저 원본 표면을 3D 스캔하거나 실리콘으로 본을 떠서 정교한 틀을 만들고, 그 틀 안에 밀랍을 채워 속이 빈 원형을 뜹니다. 이 밀랍 원형에 내열성 거푸집을 씌운 뒤 가마에서 가열해 안의 밀랍을 녹여 빼내고, 그 빈 자리에 1,000도가 넘는 청동 쇳물을 부어 채웁니다. 다 식으면 거푸집을 깨서 꺼낸 뒤 표면을 다듬고 색을 입혀 마무리합니다.',
         '왜 유명한 작품이 됐어|이렇게 유명해진 이유|전세계적으로 알려진 이유|생각하는 사람이 유명한 이유 뭐야|생각하는 사람이 유명한 이유 알려줘|생각하는 사람이 유명한 이유 궁금해|생각하는 사람이 유명한 이유 설명해줘|생각하는 사람이 유명한 이유가 뭔지 궁금해|생각하는 사람이 유명한 이유에 대해 알려줘|생각하는 사람이 유명한 이유 뜻이 뭐야|생각하는 사람이 유명한 이유 왜 그런거야|생각하는 사람이 유명한 이유 무슨 의미야': '힘들어하는 사람의 보편적 이미지를 근육의 긴장 하나로 압축해낸 조형성 덕분에, 오늘날까지 사유의 상징으로 가장 널리 알려진 조각 중 하나가 됐습니다.',
         '생각하는 사람 소장한 미술관 어디어디|어느 미술관들에 있어|세계 유명 미술관에도 있어|생각하는 사람 소장 미술관 목록 뭐야|생각하는 사람 소장 미술관 목록 알려줘|생각하는 사람 소장 미술관 목록 궁금해|생각하는 사람 소장 미술관 목록 설명해줘|생각하는 사람 소장 미술관 목록가 뭔지 궁금해|생각하는 사람 소장 미술관 목록에 대해 알려줘|생각하는 사람 소장 미술관 목록 뜻이 뭐야|생각하는 사람 소장 미술관 목록 왜 그런거야|생각하는 사람 소장 미술관 목록 무슨 의미야': '로댕미술관 외에도 미국 필라델피아 로댕미술관 등 세계 여러 미술관과 대학, 공공장소에 청동 주조본이 나뉘어 소장·전시돼 있습니다.',
         '시선이 왜 아래를 향해|눈은 어디를 보고 있어|시선 방향이 뭐야|시선 방향 알려줘|시선 방향 궁금해|시선 방향 설명해줘|시선 방향에 대해 알려줘|생각하는 사람 눈|생각하는 사람 눈 뭐야|생각하는 사람 눈 궁금해': '시선은 아래, 발밑 쪽을 향해 있습니다. 딴 곳을 보지 않고 스스로의 무거운 생각을 정면으로 마주하려는 태도로 해석됩니다.',
@@ -4114,6 +4205,7 @@ const PART_MEANINGS = {
         '미륵보살이 누구야|미래불이 뭐야|미륵신앙이 뭔데|미륵보살 뜻 설명해줘|미륵보살 뜻 뭐야|미륵보살 뜻 알려줘|미륵보살 뜻 궁금해|미륵보살 뜻가 뭔지 궁금해|미륵보살 뜻에 대해 알려줘|미륵보살 뜻 뜻이 뭐야|미륵보살 뜻 왜 그런거야|미륵보살 뜻 무슨 의미야': '미륵보살은 먼 미래에 세상에 내려와 중생을 구제한다고 믿어지는 보살로, 삼국시대에는 이 미륵을 기다리는 미륵신앙이 크게 유행했습니다.',
         '왜 국보 걸작으로 평가받아|이 작품이 걸작인 이유|동양조각사에서 왜 중요해|걸작으로 평가받는 이유 뭐야|걸작으로 평가받는 이유 알려줘|걸작으로 평가받는 이유 궁금해|걸작으로 평가받는 이유 설명해줘|걸작으로 평가받는 이유가 뭔지 궁금해|걸작으로 평가받는 이유에 대해 알려줘|걸작으로 평가받는 이유 뜻이 뭐야|걸작으로 평가받는 이유 왜 그런거야|걸작으로 평가받는 이유 무슨 의미야': '반가좌라는 까다로운 자세에서 신체 각 부분의 비례와 균형을 유기적으로 맞추고 뛰어난 주조 기술까지 보여줘, 동양 불교조각사의 걸작으로 평가받습니다.',
         '밀랍주조법이 뭐야|제작기법 설명해줘|어떻게 만들었어 기법|주조 방식이 궁금해|밀랍주조법 뭐야|밀랍주조법 알려줘|밀랍주조법 궁금해|밀랍주조법 설명해줘|밀랍주조법가 뭔지 궁금해|밀랍주조법에 대해 알려줘|밀랍주조법 뜻이 뭐야|밀랍주조법 왜 그런거야': '밀랍으로 원형을 만들고 그 겉에 거푸집을 씌운 뒤 열을 가해 밀랍을 녹여내고 그 자리에 청동을 부어 굳히는 밀랍주조법으로 제작됐습니다.',
+        '청동조각상 복제품 제조방법은|청동상을 제조하는 방법은|청동상 제조 방법|청동상은 어떻게 만들어져|반가사유상 만드는 과정|금동상 만드는 방법|금동상 제조 과정|청동상 만드는 방법 자세히|청동상 제조 방법 자세히|복제품 제조방법|복제품 제작 과정|복제 조각상 만드는 법': '이 전시의 복제상도 원본을 그대로 본떠 밀랍주조법으로 만듭니다. 원본을 3D 스캔하거나 실리콘으로 본을 떠 정교한 틀을 만들고, 그 안에 밀랍을 채워 속이 빈 원형을 뜹니다. 이 원형에 거푸집을 씌워 가마에서 가열하면 안의 밀랍이 녹아 빠지고, 그 빈 자리에 청동 쇳물을 부어 형태를 만듭니다. 식은 뒤 거푸집을 깨 표면을 다듬고, 마지막으로 얇게 금을 입히는 도금을 거쳐 \'금동\'으로 완성됩니다.',
         '국보 78호랑 83호 차이가 뭐야|두 반가사유상 차이점|78호 83호 비교|78호 83호 차이 뭐야|78호 83호 차이 알려줘|78호 83호 차이 궁금해|78호 83호 차이 설명해줘|78호 83호 차이가 뭔지 궁금해|78호 83호 차이에 대해 알려줘|78호 83호 차이 뜻이 뭐야|78호 83호 차이 왜 그런거야|78호 83호 차이 무슨 의미야': '78호는 화려한 보관과 세밀한 장식이 특징이고, 83호는 장식을 절제한 대신 부드러운 곡선과 안정된 비례가 돋보여 두 상은 서로 다른 조형적 개성을 지닙니다.',
         '크기가 얼마나 돼|높이 몇 센치|실물 크기 알려줘|크기 뭐야|크기 알려줘|크기 궁금해|크기 설명해줘|크기가 뭔지 궁금해|크기에 대해 알려줘|크기 뜻이 뭐야|크기 왜 그런거야|크기 무슨 의미야': '대표적인 두 점은 각각 높이 약 80cm, 약 93.5cm 정도로, 사람 상반신보다 조금 큰 정도의 크기입니다.',
         '인도에서 시작된거야|기원이 어디야|어디서 처음 만들어졌어|반가사유상 기원|기원 뭐야|기원 알려줘|기원 궁금해|기원 설명해줘|기원가 뭔지 궁금해|기원에 대해 알려줘|기원 뜻이 뭐야|기원 왜 그런거야': '반가사유상의 기원이 되는 도상은 인도에서 3세기 무렵 처음 등장했고, 이후 중국을 거쳐 한반도와 일본으로 전해지며 독자적인 양식으로 발전했습니다.',
