@@ -212,7 +212,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
    버튼과 화면 좌우로 확실히 떨어지게 한다. */
 #top-bar{position:relative;flex:0 0 auto;width:100%;display:flex;justify-content:flex-start;align-items:center;
-    padding:4px 10px;z-index:20;}
+    padding:10px 10px 4px;z-index:20;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
 #progress-pill .dot{width:4px;height:4px;border-radius:50%;background:rgba(212,175,55,.25);}
@@ -360,7 +360,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    커지는 환경에서 안의 아이콘이 원 밖으로 잘려나갔다. 고정 크기 대신
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(190px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;right:16px;bottom:calc(182px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:52px;min-height:52px;padding:0.4em;font-size:1.3rem;line-height:1;cursor:pointer;}
 /* v-visual-halo 감사 중 발견: #chat-toggle에 키보드 포커스 아웃라인이
@@ -971,10 +971,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    더 이상 필요 없다.) */
 #yeoil-actions{ display:flex; gap:10px; justify-content:center; margin-top:36px;
     animation:gateRise 1.3s cubic-bezier(.2,.7,.3,1) both; animation-delay:.45s;}
-#copyright-tag{
-    position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
-    font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
-}
 
 </style>
 </head>
@@ -1177,7 +1173,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
-<div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
+
 
 
 <div id="intro-gate" onclick="enterRoom()" role="button" tabindex="0" aria-label="침묵의 공명, 전시실 2 · 사유 및 체화, 몸으로 생각하기 — 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요. 화면을 한 번 터치하면 전시실로 입장합니다"
@@ -1467,16 +1463,39 @@ function fitHotspotLayer(){
     const cw = stage.clientWidth, ch = stage.clientHeight;
     if(!cw || !ch) return;
     const imgRatio = _bgImgNatural.w / _bgImgNatural.h;
-    const boxRatio = cw / ch;
+
+    // v-face-hotspot-fundamental-fix — 참가자 요청: "이미지가 상단 버튼창과
+    // 너무 가까워서 얼굴 핫스팟을 손가락으로 접촉하기 어렵다 — 근본적으로
+    // 다른 방법을 써서라도 해결해야 한다." 그동안(v-face-hotspot-clearance,
+    // v-image-lower-2) 써온 방식은 "이미지를 박스에 꽉 채워 맞춘 뒤, 그
+    // 결과 위치를 버튼 높이만큼 아래로 미는" 후처리였다 — 문제는 그 바로
+    // 다음에 있는 "발끝이 잘리면 안 된다"는 안전장치(clamp)가, 세로 공간이
+    // 넉넉하지 않은 화면 비율에서는 그 하향 이동을 도로 취소해버릴 수
+    // 있었다는 점이다. 그래서 여러 번 고쳐도 특정 화면 크기에서는 계속
+    // 버튼과 얼굴이 가까운 채로 남았다.
+    // 이번엔 순서 자체를 바꾼다 — "맞춘 뒤에 밀어내는" 대신, 애초에 상단
+    // 버튼줄(#top-controls)의 실제 세로 크기만큼을 제외한 "더 작은 박스"
+    // 안에다 이미지를 맞춘다. 이렇게 하면 그 여백은 계산에 내장돼 있어
+    // 어떤 안전장치로도 되돌려질 수 없다 — 화면 크기·비율이 달라져도
+    // 이미지(따라서 얼굴 핫스팟)가 상단 버튼줄 영역을 침범하는 일 자체가
+    // 원천적으로 생기지 않는다. 버튼줄 높이는 화면 폭에 따라 달라지는
+    // 반응형 값이므로, 고정 픽셀 대신 매번 실제 렌더링된 높이(및 화면
+    // 상 실제 하단 위치)를 읽어 그 아래에 여유(TOP_GAP)를 더한다.
+    const topControls = document.getElementById('top-controls');
+    const TOP_GAP = 14; // 버튼줄 바로 아래 추가 여유
+    const TOP_CLEARANCE = topControls ? (topControls.getBoundingClientRect().bottom + TOP_GAP) : 60;
+    const chFit = Math.max(1, ch - TOP_CLEARANCE);
+
+    const boxRatio = cw / chFit;
     let w, h, x, y;
     if(boxRatio > imgRatio){
-        // 뷰포트가 이미지보다 상대적으로 넓다 → 세로가 꽉 차고 좌우에 여백(레터박스)
-        h = ch; w = h * imgRatio;
+        // 뷰포트가 이미지보다 상대적으로 넓다 → 세로(줄어든 박스)가 꽉 차고 좌우에 여백(레터박스)
+        h = chFit; w = h * imgRatio;
         x = (cw - w) / 2; y = 0;
     } else {
         // 뷰포트가 이미지보다 상대적으로 좁다(스마트폰 세로 화면 등) → 가로가 꽉 차고 위아래에 여백
         w = cw; h = w / imgRatio;
-        x = 0; y = (ch - h) / 2;
+        x = 0; y = (chFit - h) / 2;
     }
 
     // v12 — 참가자 지적: "배경 이미지의 발 부분이 잘 안 보인다." (구버전 배경)
@@ -1493,72 +1512,21 @@ function fitHotspotLayer(){
     // 확대해도 레이아웃이 깨지지 않는다.
     const IMAGE_SHRINK = 1.15;
     // v-toes-fully-visible — 참가자 지적(PC에서 모바일처럼 테스트): "반가
-    // 사유상 발 부분이 안 보이는 경우가 있다." 원인은 바로 위
-    // v-toes-clipped-fix가 다 해결하지 못하고 남겨둔 부분이었다: 뷰포트가
-    // 이미지보다 상대적으로 넓은 경우(PC 브라우저 창 등, boxRatio >
-    // imgRatio 분기)는 세로 여백 없이 h = ch로 이미지가 박스 높이에 꽉
-    // 차게 맞춰진다. 그 상태에서 15% 확대(IMAGE_SHRINK)를 그대로 적용하면
-    // sh = 1.15*ch로, 확대된 이미지 자체가 이미 박스보다 15% 더 커져
-    // 버린다 — 아래로 내려서 자리를 만들어주는 v-toes-clipped-fix의
-    // sy 보정은 sy를 0 밑으로는 내리지 못하므로(음수면 위쪽이 잘림),
-    // 이 15%는 항상 고스란히 아래쪽(발 부분)이 잘리는 몫으로 남았다.
-    // 해결: 확대 배율 자체를, 세로 방향으로는 박스 높이(ch)를 절대
-    // 넘지 않도록 상한을 둔다(Math.min(IMAGE_SHRINK, ch / h)). 가로는
-    // 기존처럼 넘쳐도 자동으로 잘리게 그대로 둔다(양옆 여백은 원래도
-    // 조각상이 없는 배경이라 잘려도 상호작용에 지장이 없다) — 세로만
-    // "발끝까지 항상 박스 안에 다 들어온다"는 원칙을 배율 단계에서부터
-    // 보장한다. boxRatio > imgRatio 분기는 h===ch라 이 상한이 정확히
-    // 1(확대 없음)로 떨어져 전체 높이가 그대로 다 보이고, 세로 여백이
-    // 넉넉한 세로 화면(모바일 등)에서는 ch/h가 1.15보다 크므로 기존과
-    // 동일하게 15% 확대가 그대로 적용된다.
-    const scale = Math.min(IMAGE_SHRINK, ch / h);
+    // 사유상 발 부분이 안 보이는 경우가 있다." 확대 배율 자체를, 세로
+    // 방향으로는 (줄어든) 박스 높이(chFit)를 절대 넘지 않도록 상한을
+    // 둔다(Math.min(IMAGE_SHRINK, chFit / h)).
+    const scale = Math.min(IMAGE_SHRINK, chFit / h);
     const sw = w * scale, sh = h * scale;
     const sx = x + (w - sw) / 2;
-    // 요청 반영: "모바일 이미지도 PC와 같은 비율로 그대로 두고, 화면
-    // 위에서 25% 지점에 이미지의 맨 윗부분이 나오도록." 가로 위치·확대
-    // 비율(sx, sw, sh)은 위에서 이미 PC/모바일 구분 없이 같은 계산식
-    // (contain-fit + 1.15배 확대)을 쓰고 있으므로 그대로 둔다. 세로
-    // 위치만 기존에 있던 기기별 분기(Y_SHIFT_PCT, isMobileY)·안전
-    // clamp(minSy/maxSy)·추가 5% 하향 이동을 전부 걷어내고, "이미지
-    // 맨 위 = 화면(stage) 세로 25% 지점"이라는 규칙 하나로 통일한다.
-    // 이제 PC와 모바일이 완전히 같은 계산식을 타므로 기기별로 결과가
-    // 달라질 여지가 없다. 이미지(background-position)와 hotspot
-    // 레이어(layer.style.top)가 항상 같은 sy를 공유하므로 둘은 항상
-    // 함께, 정확히 같은 자리를 가리킨다.
+    // "이미지 맨 위 = (줄어든 박스) 세로 25% 지점"이라는 규칙은 그대로
+    // 두되, 기준선 자체가 이미 TOP_CLEARANCE만큼 아래에서 시작한다.
     const TOP_ANCHOR_PCT = 0.25;
-    let sy = ch * TOP_ANCHOR_PCT;
-    // v-toes-clipped-fix — 참가자 지적: "(전시2) 발가락 부분이 짤려서
-    // 안 보여서 상호작용이 안 된다." 원인을 찾아보니 바로 위 15% 확대
-    // (IMAGE_SHRINK)와 "맨 위 = 25% 지점" 고정 앵커의 조합이었다 —
-    // 세로 폭이 넉넉하지 않은 화면 비율(정사각형에 가깝거나 가로가
-    // 넓은 경우)에서는, 확대된 이미지의 아래쪽(발 부분)이 #stage
-    // 박스 아래로 밀려나 바로 아래 자막창(#caption-wrap)에 가려져
-    // 버튼조차 눌리지 않았다. 발끝까지 항상 박스 안에 들어오도록,
-    // 공간이 정말 부족할 때만 위로 당겨 보정한다 — 공간이 넉넉한
-    // 기기에서는 원래 규칙(맨 위 = 25% 지점) 그대로 유지된다.
-    if(sy + sh > ch) sy = Math.max(0, ch - sh);
-    // v-face-hotspot-clearance — 참가자 지적: "얼굴 부분 핫스팟이 위쪽
-    // '쉬운 문장' 버튼과 너무 가까워서 탭 인식이 안 된다." 이미지를
-    // '쉬운 문장' 버튼 쪽으로 옮겨 얼굴 핫스팟과 상단 버튼 사이에 여유를
-    // 둔다. 이미지와 hotspot 레이어가 항상 같은 sy를 공유하는 구조(바로
-    // 위 주석 참고) 덕분에, 화면에 보이는 조각상과 실제 탭 히트박스가
-    // 어긋나지 않고 함께 내려간다. 다만 위 발가락 잘림 방지 clamp가
-    // 지켜야 할 원칙(발끝이 항상 박스 안에 있어야 한다)이 이 하향
-    // 이동보다 우선이므로, 이동 후에도 다시 한 번 같은 clamp를 적용해
-    // 세로 공간이 정말 부족한 화면에서는 발이 다시 잘리지 않도록 한다.
-    // v-image-lower-2 — 참가자 요청: "반가-로댕.png는 아래로 더 내려줘.
-    // 쉬운 문장 버튼의 높이의 반 정도 높이로 아래로 내려 줘." 기존엔
-    // 버튼의 글자 크기(font-size)만큼만 내렸는데, 이번 요청은 그보다
-    // 더 많이 — 버튼 "높이"의 절반만큼 — 내려달라는 것이라 기준을
-    // font-size에서 실제 렌더링된 버튼 높이(getBoundingClientRect().
-    // height)의 절반으로 바꿨다. 버튼은 반응형(clamp)이라 화면 폭에
-    // 따라 실제 높이가 달라지므로, 고정 픽셀 대신 매번 그 순간의 실제
-    // 높이를 읽어 항상 정확히 "그 시점 버튼 높이의 절반"만큼 내려가게
-    // 한다.
-    const easyModeBtn = document.getElementById('easy-mode-btn');
-    const faceShift = easyModeBtn ? easyModeBtn.getBoundingClientRect().height / 2 : 0;
-    sy += faceShift;
-    if(sy + sh > ch) sy = Math.max(0, ch - sh);
+    let sy = TOP_CLEARANCE + chFit * TOP_ANCHOR_PCT;
+    // v-toes-clipped-fix — 세로 공간이 정말 부족한 화면에서는 발끝이
+    // 잘리지 않도록 위로 당기되, 그래도 TOP_CLEARANCE(버튼줄 아래 여유)
+    // 밑으로는 절대 올라가지 않는다 — "발끝 보장"과 "버튼줄과 안 겹침"
+    // 두 원칙이 서로를 취소하지 않고 함께 지켜진다.
+    if(sy + sh > ch) sy = Math.max(TOP_CLEARANCE, ch - sh);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';

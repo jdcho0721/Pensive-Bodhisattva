@@ -217,6 +217,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     -webkit-overflow-scrolling:touch;
 }
 #intro-gate > *{max-width:100%;}
+/* v-gate-card-width-fix — 참가자 지적: "PC에서 초기화면의 레이아웃이
+   최적화되어 있지 않다." 원인: 위 #intro-gate > * 규칙은 ID 선택자를
+   포함해 .gate-card{max-width:480px}(클래스 선택자)보다 우선순위가
+   높다 — 그래서 실제로 적용되는 값은 480px가 아니라 이 규칙의 100%였고,
+   결과적으로 .gate-card가 넓은 PC 화면에서 부모(#intro-gate) 너비에
+   가깝게 거의 풀와이드로 늘어나 카드 안 내용(제목·설명·관람순서 등)이
+   좁은 카드 폭을 전제로 짜인 레이아웃과 어긋나 보였다. 같은 ID 선택자
+   기반으로 더 구체적인 규칙을 추가해 480px가 실제로 이기도록 한다. */
+#intro-gate > .gate-card{max-width:480px;}
 @media (max-height: 720px){
     #intro-gate{justify-content:flex-start;}
     #intro-gate h1{font-size:clamp(1.0rem, 4.2vw, 1.7rem);}
@@ -562,8 +571,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #intro-gate .gate-route-item{
     position:relative;
-    margin:0 auto;
-    max-width:320px;
+    margin:0;
+    width:100%;
+    box-sizing:border-box;
     padding-left:20px;
     color:#e9e4d6;
     line-height:1.6;
@@ -578,8 +588,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     background:var(--gold);
     box-shadow:0 0 6px rgba(212,175,55,.7);
 }
-#intro-gate .gate-route-item:first-child{color:var(--gold-light); font-weight:600;}
-#intro-gate .gate-route-item:last-child{margin-bottom:0; opacity:.72;}
+/* v-gate-route-align-fix — 참가자 지적: "관람순서의 아래 2가지 item이
+   왼쪽 정렬이 필요하다. 두가지 모두 같은 폰트 밝기로 해야 한다." 기존엔
+   각 항목 박스에 margin:0 auto(가운데 정렬)를 주고 있어, 카드가 넓어질
+   때 두 줄이 카드 왼쪽 여백과 다른 위치에서 시작해 왼쪽 정렬처럼 보이지
+   않았다 — 폭을 100%로 채우고 margin을 없애 두 항목 모두 카드 안쪽
+   여백에 정확히 같은 시작선(왼쪽)을 갖게 했다. 또한 "첫 항목만 밝게,
+   마지막 항목은 옅게" 처리하던 대비 규칙(font-weight·color·opacity 차등)
+   을 없애 두 항목이 완전히 같은 밝기·굵기로 보이게 통일했다. */
 #intro-gate .gate-route-room{
     margin:0;
     color:rgba(212,175,55,.85);
@@ -3132,6 +3148,72 @@ function goToRoom2(e) {
     setTimeout(speakOnboardingIfNeeded, 700);
     document.addEventListener('pointerdown', speakOnboardingIfNeeded, { once:true });
 })();
+
+/* ══════════════════════════════════════════════════════
+   v-exhibit2-twotap — 참가자 요청: "index 전시1의 전시2 버튼을 room2의
+   전시1 버튼과 같은 형식으로 바꿔달라. 첫 탭엔 전시2 버튼이 하이라이트된
+   후 다시 누르면 이동해야 하는데, 지금은 한 번 탭하면 아래 자막창
+   전체가 하이라이트된다."
+   ── #btn-next-exhibit은 그동안 위 initNoScreenReaderGestures 안의
+      "direct-tap"(한 번 탭에 곧바로 실행) 경로를 탔다. 그런데 이 버튼은
+      #controls 안에 있고, #controls는 다시 onclick이 걸린 #caption-wrap
+      의 자식이라 — 일부 모바일 브라우저는 이렇게 "클릭 가능한 조상"이
+      중첩된 경우, 탭할 때 기본으로 그려주는 회색 하이라이트를 정확히
+      버튼이 아니라 그 바깥 조상(#caption-wrap, 곧 화면 아래 자막창
+      전체)의 영역에 그려버리는 경우가 있다 — 참가자가 본 증상과 일치한다.
+   ── 해결1(동작): room2.html의 전시1 버튼(#exhibit1-btn)이 쓰는 것과
+      완전히 같은 형식 — 첫 탭은 실행을 막고 버튼 자체에 금색 테두리
+      (.control-armed, room2의 .twotap-armed와 같은 스타일)를 입힌 채
+      이름을 안내하고, 정해진 시간 안에 같은 버튼을 한 번 더 누르면
+      그제서야 안내 음성 뒤에 실제로 이동한다 — 를 이 버튼 하나에만
+      새로 붙인다. 기존에 다른 버튼들(다시듣기·멈춤 등)이 쓰는 위
+      armedControl/EXCLUDE_SELECTOR 시스템은 그대로 두고 전혀 손대지
+      않았다(다른 것은 건드리지 말라는 요청 반영) — 이 리스너는
+      #btn-next-exhibit 클릭에만 반응하고 그 즉시 return한다.
+   ── 해결2(시각): #caption-wrap의 기본 탭 하이라이트를 꺼서, 위에서
+      만든 .control-armed 금색 테두리만 의도한 대로 버튼 위에만
+      보이게 한다. 새 <style> 태그 대신 인라인 스타일 속성으로만
+      적용해 다른 CSS 규칙과 부딪힐 일이 없게 했다.
+   ══════════════════════════════════════════════════════ */
+(function(){
+    const captionWrap = document.getElementById('caption-wrap');
+    if(captionWrap) captionWrap.style.webkitTapHighlightColor = 'transparent';
+
+    const btn = document.getElementById('btn-next-exhibit');
+    if(!btn) return;
+    const ARM_MS = 2500;
+    let armed = false, timer = null;
+    function disarm(){
+        armed = false;
+        btn.classList.remove('control-armed');
+        clearTimeout(timer);
+    }
+    document.addEventListener('click', function(e){
+        if(e.target !== btn) return; // 이 버튼이 아니면 관여하지 않는다(다른 버튼은 기존 방식 그대로)
+        if(armed){
+            // 두 번째 탭 — 확인됐다. v88에서 겪었던 문제(안내 음성이
+            // 끝나야만 이동하는 구조에서, 배경 내레이션과 speechGen을
+            // 공유해 speak()의 완료 콜백이 조용히 무시되며 이동 자체가
+            // 실행되지 않던 경쟁 상태)가 재발하지 않도록, 확인 탭에서는
+            // 이 버튼의 원래 동작(window.speechSynthesis.cancel() 후
+            // 곧바로 이동)만 그대로 실행한다 — 첫 탭의 이름 안내만으로도
+            // "이 버튼이 전시2다"는 이미 전달됐으므로 충분하다.
+            e.preventDefault(); e.stopImmediatePropagation();
+            disarm();
+            window.speechSynthesis.cancel();
+            location.href='room2.html';
+            return;
+        }
+        // 첫 번째 탭 — 이동을 막고 버튼을 무장 상태로 표시, 이름만 안내한다.
+        e.preventDefault(); e.stopImmediatePropagation();
+        armed = true;
+        btn.classList.add('control-armed');
+        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+        try{ speak('이 버튼은 ' + (btn.textContent || '전시2').trim() + '입니다.'); }catch(err){}
+        timer = setTimeout(disarm, ARM_MS);
+    }, true); // 캡처 단계 — 버튼의 onclick(버블 단계)보다 먼저 가로챈다
+})();
+
 </script>
 </body>
 </html>
