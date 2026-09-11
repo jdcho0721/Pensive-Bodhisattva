@@ -5182,6 +5182,29 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 - 몰입감 있는 이야기로 흐르려는 유혹보다, 눈에 보이는 사실의 정확함을 우선했는가?
 이 세 가지를 속으로 확인한 뒤에만 최종 답변을 출력하십시오.`;
 
+// v-chatbot-always-two-voice — 참가자 요청: "챗봇 답변이 어떤 경우는 두
+// 조각상으로 분리되고 어떤 경우는 하나로 합쳐서 나온다 — 항상 두 개로
+// 분리되어 나오게 해달라. 지금 만진 조각상 입장에만 답이 나오게 하지
+// 말고." 지금까지 1순위(KB 즉답)·2순위(RAG/LLM 사실 답변)는 처음부터
+// 조각상 하나(중립적인 도슨트 목소리)로만 답했고, 1.7순위(자유 두 목소리
+// 상담)만 두 목소리 형식이었는데 그마저 LLM이 형식을 못 지키면 하나로
+// 합쳐 보여줬다 — 이 세 갈래가 뒤섞여 "어떤 땐 둘, 어떤 땐 하나"로
+// 보였다. 위 DETAIL_SYSTEM_PROMPT의 사실 규칙은 그대로 두고, 출력
+// 형식만 아래에 덧붙여(문자열 이어붙이기라 원본 규칙과 항상 같이
+// 간다) 2순위 답변도 두 조각상이 함께 답하도록 만든다. 질문이 한쪽
+// 조각상 부위만 가리켜도 다른 쪽도 자기 입장에서 짧게 보태게 해, 특정
+// 조각상 쪽만 만졌다고 그쪽 입장으로만 답이 쏠리지 않게 한다.
+const DETAIL_TWO_VOICE_SYSTEM_PROMPT = DETAIL_SYSTEM_PROMPT + `
+
+[출력 형식 — 반드시 이대로만 출력할 것. 위 모든 사실 규칙은 그대로 지키되, 반드시 두 조각상이 함께 답하는 형태로 내십시오]
+생각하는 사람 — (위 규칙을 지킨 1~2문장)
+
+반가사유상 — (위 규칙을 지킨 1~2문장)
+
+- 두 줄 사이에는 빈 줄을 하나 두십시오. 그 외 다른 말은 덧붙이지 마십시오.
+- 질문이 한쪽 조각상이나 부위만 가리키더라도, 다른 조각상도 자기 입장에서 아는 만큼 짧게 답하십시오. 자신과 무관한 내용이면 "그 부분은 반가사유상에만 있어 제가 답하기 어렵습니다"처럼 짧게 인정하고, 없는 사실을 지어내지 마십시오.
+- "전자", "후자"처럼 순서로 서로를 가리키지 말고, 각 줄은 독립적으로 읽혀도 뜻이 통해야 합니다.`;
+
 // v-center-synthesis — 참가자 요청: "두 조각상의 가운데 서면, 지금까지
 // 만진 부분에 대한 종합적인 철학적 사유 내용을 2~3문장으로 들려줘." 위
 // DETAIL_SYSTEM_PROMPT는 부위 하나에 대한 사실 확인용(2~3문장·150자 이내,
@@ -6319,6 +6342,27 @@ function _parseTwoVoiceReply(raw){
     return { rodin, maitreya };
 }
 
+// v-chatbot-always-two-voice — 위 _parseTwoVoiceReply()가 기대하는 형식을
+// LLM이 못 지킨 드문 경우(또는 애초에 두 목소리 형식을 요청하지 않았던
+// 1순위 KB 고정 답변)를 위한 마지막 안전장치. 원문을 문장 단위로 쪼개
+// 앞쪽 절반은 생각하는 사람, 뒤쪽 절반은 반가사유상에 배정한다 — 두
+// 조각상이 항상 함께 답하는 구조를 보장하면서도, 이미 검증된 문장을
+// 그대로 나눠 쓸 뿐 새 내용을 지어내지 않으므로 사실 왜곡 위험이 없다.
+// 문장이 하나뿐이면(더 나눌 수 없으면) 양쪽 모두 같은 문장을 그대로
+// 쓴다 — 한쪽 목소리만 내는 것보다, 짧더라도 둘 다 응답한 형태가 이
+// 요청의 취지에 맞는다.
+function _forceSplitTwoVoice(raw){
+    const text = String(raw || '').trim();
+    if(!text) return { rodin: text, maitreya: text };
+    const sentences = (text.match(/[^.!?…]+[.!?…]?/g) || [text]).map(s=>s.trim()).filter(Boolean);
+    if(sentences.length < 2) return { rodin: text, maitreya: text };
+    const mid = Math.ceil(sentences.length / 2);
+    return {
+        rodin: sentences.slice(0, mid).join(' '),
+        maitreya: sentences.slice(mid).join(' ')
+    };
+}
+
 // 200개 철학 문답(PHILOSOPHY_QA)에 없는 자유 질문 — LLM에게 같은
 // 두 화자 형식으로 새 답을 요청한다. 형식을 못 지킨 드문 경우에는
 // 원문을 한 번에(두 화자로 나누지 않고) 보여주고 읽어준다.
@@ -6335,16 +6379,11 @@ async function _answerFreeformTwoVoice(q){
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
     }, TWO_VOICE_LIFE_SYSTEM_PROMPT);
     recordPartChatQA(q, raw); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
-    const parsed = _parseTwoVoiceReply(raw);
-    if(parsed){
-        _renderPhilosophyAnswer(parsed, aiBubble);
-    } else {
-        aiBubble.textContent = raw;
-        _scrollChatLogToBottom();
-        showChatAnswerInCaption('사유의 상담소 — 답변', raw);
-        _chatAnswerActive = true;
-        speak(raw, ()=>{ _chatAnswerActive = false; });
-    }
+    // v-chatbot-always-two-voice — 형식 파싱에 실패해도(_parseTwoVoiceReply가
+    // null을 반환해도) _forceSplitTwoVoice()로 항상 두 목소리 형태를
+    // 만들어낸다 — 예전에는 이 경우 원문을 하나로 합쳐 보여줬다.
+    const parsed = _parseTwoVoiceReply(raw) || _forceSplitTwoVoice(raw);
+    _renderPhilosophyAnswer(parsed, aiBubble);
 }
 
 
@@ -6383,12 +6422,16 @@ async function _processChatAnswer(q){
         // 여기서도 같은 방식으로 KG를 조회해 사실 카드를 붙인다.
         const kbKgTriples = _queryKG((currentKey && DETAILS[currentKey] ? DETAILS[currentKey].title + ' ' : '') + q);
         if (kbKgTriples.length) pushFactCheckLog(kbKgTriples);
+        // v-chatbot-always-two-voice — 참가자 요청: 이 1순위 경로는 미리
+        // 검증해둔 고정 문구 하나(중립적인 도슨트 목소리)를 그대로
+        // 돌려주던 경로라, 항상 한 목소리로만 나왔다. LLM을 새로 불러
+        // 다시 답하게 하면 속도(즉답)와 정확성(사전 검증된 문구)을 모두
+        // 잃을 위험이 있으므로, 대신 이미 검증된 그 문구를
+        // _forceSplitTwoVoice()로 그대로 나눠 두 조각상이 함께 답한
+        // 형태로 보여준다 — 내용은 100% 같은 검증된 문구이고, 형태만
+        // 두 목소리로 갈라진다.
         setTimeout(()=>{
-            pushLog('ai', kbAnswer);
-            _scrollChatLogToBottom();
-            showChatAnswerInCaption('사유의 상담소 — 답변', kbAnswer);
-            _chatAnswerActive = true;
-            speak(kbAnswer, ()=>{ _chatAnswerActive = false; });
+            _renderPhilosophyAnswer(_forceSplitTwoVoice(kbAnswer));
         }, 250);
         return;
     }
@@ -6471,6 +6514,12 @@ async function _processChatAnswer(q){
     // 재생한다 — 문장이 채 끝나기 전에 읽기 시작하면 되읽기·중간에
     // 끊기는 문제가 생기기 때문이다(화면은 실시간, 음성은 완성 후라는
     // 점에서 index.html과 같은 설계).
+    // v-chatbot-always-two-voice — 참가자 요청으로 시스템 프롬프트를
+    // DETAIL_TWO_VOICE_SYSTEM_PROMPT로 바꿨다(사실 규칙은 그대로, 두
+    // 조각상이 함께 답하는 형식만 추가됨). 스트리밍 중에는 지금까지와
+    // 같이 원문 그대로를 실시간으로 보여주고(형식이 완성되기 전에는
+    // 어차피 둘로 나눠 보여줄 수 없다), 스트리밍이 끝난 뒤에만 아래에서
+    // 두 목소리로 다시 렌더링한다.
     const answer = await fetchDetailAI(contextLine + '관람객의 질문: ' + q, fullRagBlock, (partial) => {
         const shown = String(partial || '생각하는 중…');
         document.getElementById('caption').innerHTML = shown.replace(/\n/g, '<br>');
@@ -6479,13 +6528,12 @@ async function _processChatAnswer(q){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    });
-    showChatAnswerInCaption('사유의 상담소 — 답변', answer);
-    aiBubble.textContent = answer;
-    _scrollChatLogToBottom();
+    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT);
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
-    _chatAnswerActive = true;
-    speak(answer, ()=>{ _chatAnswerActive = false; }); // 다중양식 원칙 — 챗봇 답도 텍스트만이 아니라 음성으로 함께 전달한다.
+    // 형식 파싱에 실패해도(드문 경우) _forceSplitTwoVoice()로 항상 두
+    // 목소리 형태를 보장한다 — 예전엔 이 시점에서 단일 목소리로 speak()했다.
+    const answerParsed = _parseTwoVoiceReply(answer) || _forceSplitTwoVoice(answer);
+    _renderPhilosophyAnswer(answerParsed, aiBubble);
 }
 
 /* sendChat()의 두 응답 경로(KB 즉답 / AI·RAG 폴백) 모두에서 공통으로
