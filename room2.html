@@ -1247,7 +1247,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 재질이 뭐가 달라요?')">두 조각상은 재질이 뭐가 달라요?</button>
         <button type="button" class="chip" onclick="askSuggested('생각하는 사람은 원래 이름이 뭐였어요?')">생각하는 사람은 원래 이름이 뭐였어요?</button>
         <button type="button" class="chip" onclick="askSuggested('진인사대천명이 조각상과 무슨 관계예요?')">진인사대천명이 조각상과 무슨 관계예요?</button>
-        <button type="button" class="chip" onclick="askSuggested('청동조각상 복제품 제조방법은?')">청동조각상 복제품 제조방법은?</button>
+        <button type="button" class="chip" onclick="askSuggested((currentKey && DETAILS[currentKey] ? DETAILS[currentKey].body + ' ' : '') + '청동조각상 복제품 제조방법은?')">청동조각상 복제품 제조방법은?</button>
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
         <label for="chat-input" class="sr-only">궁금한 점을 입력하세요</label>
@@ -2080,30 +2080,6 @@ function speak(text, onEnd, speakerKey){
     _lastSpokenSpeaker = speakerKey || null;
     try{
         window.speechSynthesis.cancel();
-
-        // v-tts-naturalness-2 — 참가자 지적: "청각적 안내의 어투가 TTS
-        // 느낌이 강해 집중도가 떨어진다." 기존에는 문장 전체(여러 문장)를
-        // 하나의 발화로 통째로 읽어, 사람이 말할 때 문장 사이에 자연스럽게
-        // 두는 숨쉬는 간격이 전혀 없고, 억양도 그 안에서 시종일관 균일했다.
-        // 이 텍스트에 대해 이미 문장 단위 자막 동기화가 예약되어 있고
-        // (_pendingSentenceSync, _displaySentencesTimed 참고) 문장이 2개
-        // 이상이면, 한 문장씩 개별 발화로 나눠 순서대로 읽는다 — 문장
-        // 사이에 짧은 정적을 두고, 발화마다 속도·피치를 사람 말투처럼
-        // 아주 미세하게 흔든다. 문장이 언제 끝나는지 실제로 알 수 있으므로
-        // 자막도 이제 추정이 아니라 정확히 그 시점에 맞다.
-        if(_pendingSentenceSync && _pendingSentenceSync.text === text && _pendingSentenceSync.sentences.length > 1){
-            const sync = _pendingSentenceSync;
-            sync.boundaryActive = true; // 아래 추정 타이머(_displaySentencesTimed)가 더 이상 끼어들지 않도록
-            let _doneQueue = false;
-            const finishQueue = ()=>{
-                if(_doneQueue) return;
-                _doneQueue = true;
-                if(onEnd) onEnd();
-            };
-            _speakSentenceQueue(sync.sentences, 0, finishQueue, speakerKey, sync);
-            return;
-        }
-
         const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(text));
         u.lang='ko-KR'; u.rate=TTS_RATE;
         // v91 — 위 _applyVoiceProfile()과 동일한 이유로 고정 음량 사용.
@@ -2123,10 +2099,10 @@ function speak(text, onEnd, speakerKey){
             u.volume = u.volume * 0.7;
         }
         // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
-        // 문장 목록과 같은 텍스트라면(문장이 1개뿐이라 위 큐 방식을 타지
-        // 않은 경우), 브라우저가 실제로 보고하는 낭독 위치(boundary 이벤트)
-        // 로 자막 전환을 대신한다. 다른 텍스트를 speak()로 읽는 경우(예:
-        // 챗봇 답변 등)는 이 블록이 조용히 스킵되어 기존 동작과 같다.
+        // 문장 목록과 같은 텍스트라면, 브라우저가 실제로 보고하는 낭독 위치
+        // (boundary 이벤트)로 자막 전환을 대신한다 — 위 _displaySentencesTimed
+        // 상단 주석 참고. 다른 텍스트를 speak()로 읽는 경우(예: 챗봇 답변
+        // 등)는 이 블록이 조용히 스킵되어 기존 동작과 같다.
         if(_pendingSentenceSync && _pendingSentenceSync.text === text){
             const sync = _pendingSentenceSync;
             let currentIdx = 0;
@@ -2155,52 +2131,6 @@ function speak(text, onEnd, speakerKey){
         u.onerror = finish;
         window.speechSynthesis.speak(u);
     }catch(e){ if(onEnd) setTimeout(onEnd,1200); }
-}
-
-// v-tts-naturalness-2 — 문장들을 하나씩 순서대로, 사이에 짧은 정적을 두고
-// 개별 발화로 읽는다. 발화마다 속도·피치를 아주 미세하게(사람 말투처럼)
-// 흔들어 기계적으로 균일하게 들리는 정도를 줄인다.
-function _speakSentenceQueue(sentences, idx, onEnd, speakerKey, sync){
-    if(sync && sync.seq !== _captionSeq){ if(onEnd) onEnd(); return; } // 그 사이 다른 부위로 넘어갔다 — 낡은 큐는 버린다
-    if(idx >= sentences.length){ if(onEnd) onEnd(); return; }
-    if(sync) sync.captionEl.innerHTML = sentences[idx];
-    const raw = _sanitizeForSpeech(sentences[idx]);
-    if(!raw){ _speakSentenceQueue(sentences, idx + 1, onEnd, speakerKey, sync); return; }
-
-    const u = new SpeechSynthesisUtterance(raw);
-    u.lang = 'ko-KR';
-    u.rate = TTS_RATE;
-    u.volume = NARRATION_VOLUME;
-    if(speakerKey){
-        _applyVoiceProfile(u, speakerKey);
-    } else if(_isMobileTTS()){
-        const comfortVoice = _pickComfortableVoice();
-        if(comfortVoice) u.voice = comfortVoice;
-        u.pitch = 0.92;
-        u.volume = u.volume * 0.7;
-    }
-    // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 화자 프로필이
-    // 정한 값 위에 아주 미세한(±3% 안팎) 흔들림만 더한다. 흔들림이 너무
-    // 크면 오히려 부자연스러우므로 일부러 폭을 좁게 뒀다.
-    const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
-    const jitterPitch = 1 + (Math.random() - 0.5) * 0.05;
-    u.rate = u.rate * jitterRate;
-    u.pitch = (u.pitch || 1.0) * jitterPitch;
-
-    let doneOnce = false;
-    const proceed = ()=>{
-        if(doneOnce) return;
-        doneOnce = true;
-        // 문장이 마침표·물음표·느낌표로 온전히 끝났다면 사람이 다음
-        // 문장으로 넘어가기 전 두는 정도의 정적(260ms)을, 그렇지 않으면
-        // (예: 쉼표에서 텍스트가 잘린 경우) 더 짧은 정적(120ms)을 둔다.
-        const endsFully = /[.!?…]\s*$/.test(sentences[idx]);
-        const pause = idx < sentences.length - 1 ? (endsFully ? 260 : 120) : 0;
-        setTimeout(()=> _speakSentenceQueue(sentences, idx + 1, onEnd, speakerKey, sync), pause);
-    };
-    u.onend = proceed;
-    u.onerror = proceed;
-    window.speechSynthesis.speak(u);
 }
 
 function clearSuggested(){
