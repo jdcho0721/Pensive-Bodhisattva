@@ -1539,18 +1539,24 @@ function fitHotspotLayer(){
     if(sy + sh > ch) sy = Math.max(0, ch - sh);
     // v-face-hotspot-clearance — 참가자 지적: "얼굴 부분 핫스팟이 위쪽
     // '쉬운 문장' 버튼과 너무 가까워서 탭 인식이 안 된다." 이미지를
-    // '쉬운 문장' 버튼의 폰트 높이만큼 아래로 옮겨 얼굴 핫스팟과 상단
-    // 버튼 사이에 여유를 둔다. 폰트 높이는 하드코딩하지 않고 그 버튼의
-    // 실제 계산된 font-size를 그대로 읽어와서, 나중에 그 버튼의 글자
-    // 크기가 바뀌어도 이 간격이 함께 따라가도록 했다. 이미지와 hotspot
-    // 레이어가 항상 같은 sy를 공유하는 구조(바로 위 주석 참고) 덕분에,
-    // 화면에 보이는 조각상과 실제 탭 히트박스가 어긋나지 않고 함께
-    // 내려간다. 다만 위 발가락 잘림 방지 clamp가 지켜야 할 원칙(발끝이
-    // 항상 박스 안에 있어야 한다)이 이 하향 이동보다 우선이므로, 이동
-    // 후에도 다시 한 번 같은 clamp를 적용해 세로 공간이 정말 부족한
-    // 화면에서는 발이 다시 잘리지 않도록 한다.
+    // '쉬운 문장' 버튼 쪽으로 옮겨 얼굴 핫스팟과 상단 버튼 사이에 여유를
+    // 둔다. 이미지와 hotspot 레이어가 항상 같은 sy를 공유하는 구조(바로
+    // 위 주석 참고) 덕분에, 화면에 보이는 조각상과 실제 탭 히트박스가
+    // 어긋나지 않고 함께 내려간다. 다만 위 발가락 잘림 방지 clamp가
+    // 지켜야 할 원칙(발끝이 항상 박스 안에 있어야 한다)이 이 하향
+    // 이동보다 우선이므로, 이동 후에도 다시 한 번 같은 clamp를 적용해
+    // 세로 공간이 정말 부족한 화면에서는 발이 다시 잘리지 않도록 한다.
+    // v-image-lower-2 — 참가자 요청: "반가-로댕.png는 아래로 더 내려줘.
+    // 쉬운 문장 버튼의 높이의 반 정도 높이로 아래로 내려 줘." 기존엔
+    // 버튼의 글자 크기(font-size)만큼만 내렸는데, 이번 요청은 그보다
+    // 더 많이 — 버튼 "높이"의 절반만큼 — 내려달라는 것이라 기준을
+    // font-size에서 실제 렌더링된 버튼 높이(getBoundingClientRect().
+    // height)의 절반으로 바꿨다. 버튼은 반응형(clamp)이라 화면 폭에
+    // 따라 실제 높이가 달라지므로, 고정 픽셀 대신 매번 그 순간의 실제
+    // 높이를 읽어 항상 정확히 "그 시점 버튼 높이의 절반"만큼 내려가게
+    // 한다.
     const easyModeBtn = document.getElementById('easy-mode-btn');
-    const faceShift = easyModeBtn ? (parseFloat(getComputedStyle(easyModeBtn).fontSize) || 0) : 0;
+    const faceShift = easyModeBtn ? easyModeBtn.getBoundingClientRect().height / 2 : 0;
     sy += faceShift;
     if(sy + sh > ch) sy = Math.max(0, ch - sh);
 
