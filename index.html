@@ -1187,6 +1187,16 @@ let phase = 'screen';
 let layerIdx = 0, lineIdx = 0;
 let turnIdx = 0, dLineIdx = -1; // 초기값을 -1로 두어 intro부터 시작되도록 보완
 let announcing = false; 
+// v-replay-announce-step — 참가자 지적: "index의 다시듣기는 오동작이다."
+// 원인: showNextStageAnnouncement()는 announcing=true인 동안 서로 다른
+// 캡션 두 개를 순서대로 보여주는데(먼저 "오늘 ~ 주고받았습니다" 요약,
+// 그다음 "힘든 마음과 ~ 여기까지입니다"로 자막이 바뀐다), 다시듣기가
+// "announcing이면 무조건 showNextStageAnnouncement()부터 다시"로 짜여
+// 있어서 — 두 번째 자막을 보고 있는 중에 눌러도 항상 첫 번째 자막으로
+// 되돌아가 버렸다(지금 보고 있는 자막이 아닌 엉뚱한 자막이 다시 나옴).
+// 지금 이 둘 중 몇 번째 자막이 떠 있는지 이 변수로 구분해, 다시듣기가
+// 정확히 그 자막만 다시 들려줄 수 있게 한다.
+let announceStep = 0; // 0: 첫 번째 자막(오늘 나눈 대화 요약), 1: 두 번째 자막(마침 인사)
 
 let isPaused = false;
 let pausedContext = null;
@@ -1504,7 +1514,7 @@ let TTS_RATE = SPEED_STEPS[_speedIdx];
 // 정상적인 재생 함수(playLine/playTurn/showNextStageAnnouncement)를 다시
 // 불러 그 다음 문장으로의 자동 진행도 함께 복원된다.
 function _snapshotPlaybackState(){
-    return { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
+    return { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing, announceStep };
 }
 function _resumeFromSnapshot(ctx){
     if(isPaused) return; // 일시정지 중이었다면 안내만 하고 자동으로 이어 말하지 않는다.
@@ -1514,13 +1524,19 @@ function _resumeFromSnapshot(ctx){
     turnIdx = ctx.turnIdx;
     dLineIdx = ctx.dLineIdx;
     announcing = ctx.announcing;
+    announceStep = ctx.announceStep;
     if(phase === 'screen'){
         updateBadgeUI();
         eyebrowEl.textContent = '전시실 1 · 소개';
         tagEl.textContent = LAYERS[layerIdx].tag;
         playLine();
     } else if(announcing){
-        showNextStageAnnouncement();
+        // v-replay-announce-step — 다시듣기(onReplayClick)와 같은 이유:
+        // 마침 안내 화면의 두 자막 중 어느 쪽이 떠 있었는지 구분해, 속도
+        // 변경·쉬운 문장 전환 뒤에도 엉뚱한(앞선) 자막으로 되돌아가지
+        // 않고 방금 보던 자막 그대로 이어서 들려준다.
+        if(announceStep === 0) showNextStageAnnouncement();
+        else _showFinishStep1();
     } else {
         playTurn(turnIdx);
     }
@@ -1998,6 +2014,7 @@ function playDialogueLine(){
 
 function showNextStageAnnouncement(){
     announcing = true;
+    announceStep = 0;
     detailSpotEl.classList.remove('show');
     drawPartPulse(null);
     speakerTagEl.classList.remove('show');
@@ -2010,27 +2027,37 @@ function showNextStageAnnouncement(){
     sourceEl.textContent = '';
     speak(recap, ()=>{
         if(isPaused) return;
-        captionEl.innerHTML = '힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다.<br>오늘 준비된 이야기는 여기까지입니다.';
-        nextStageTag.classList.add('show');
-        speak('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다. 오늘 준비된 이야기는 여기까지입니다. 다음 전시 단계로 이동하세요.', ()=>{
-            if(isPaused) return;
-            clearTimeout(autoTimer);
-            // v-finish-loops-to-start — 참가자 지적: "3단계 마침 화면에서
-            // 다음을 누르면 오리엔테이션으로 돌아가버린다. 전시2로 갈 수
-            // 있도록 개선이 필요하다." 원인은 두 군데였다: (1) 방금 위에서
-            // "다음 전시 단계로 이동하세요"라고 안내해놓고, 불과 1.85초
-            // 뒤에 아무 반응이 없으면 자동으로 처음부터 되풀이해버렸다 —
-            // 안내를 다 듣고 반응할 시간조차 없었다. (2) 사용자가 실제로
-            // "다음"을 눌러도(아래 onNextClick) 같은 함수(당시 이름
-            // restartFromBeginning)를 불러 똑같이 처음으로 돌아갔다.
-            // 원래는 "다음 관람객을 위한 키오스크 초기화"를 노린
-            // 설계였지만, 방금 안내한 내용과 실제 동작이 정반대라
-            // 사용자에게는 순전히 혼란으로만 남았다. 이제 이 시점 이후
-            // "다음"(버튼이든, 화면 오른쪽 탭이든, 이 자동 타이머든)은
-            // 전부 실제로 전시실 2로 이동한다 — 그리고 자동 타이머는
-            // 정말 자리를 떠났을 때만 뜻이 있으므로 20초로 넉넉히 늘렸다.
-            autoTimer = setTimeout(proceedToRoom2AfterFinish, 20000);
-        });
+        _showFinishStep1();
+    });
+}
+
+// v-replay-announce-step — showNextStageAnnouncement()의 두 번째 자막(마침
+// 인사)만 별도 함수로 뺐다. 정상 흐름에서는 위 recap 낭독이 끝난 뒤
+// 그대로 이어서 호출되고, 다시듣기(onReplayClick)에서는 이 자막이 떠
+// 있는 동안 눌렸을 때 recap부터 다시 듣지 않고 이 함수만 다시 불러
+// 지금 보고 있는 바로 그 자막만 다시 들려준다.
+function _showFinishStep1(){
+    announceStep = 1;
+    captionEl.innerHTML = '힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다.<br>오늘 준비된 이야기는 여기까지입니다.';
+    nextStageTag.classList.add('show');
+    speak('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다. 오늘 준비된 이야기는 여기까지입니다. 다음 전시 단계로 이동하세요.', ()=>{
+        if(isPaused) return;
+        clearTimeout(autoTimer);
+        // v-finish-loops-to-start — 참가자 지적: "3단계 마침 화면에서
+        // 다음을 누르면 오리엔테이션으로 돌아가버린다. 전시2로 갈 수
+        // 있도록 개선이 필요하다." 원인은 두 군데였다: (1) 방금 위에서
+        // "다음 전시 단계로 이동하세요"라고 안내해놓고, 불과 1.85초
+        // 뒤에 아무 반응이 없으면 자동으로 처음부터 되풀이해버렸다 —
+        // 안내를 다 듣고 반응할 시간조차 없었다. (2) 사용자가 실제로
+        // "다음"을 눌러도(아래 onNextClick) 같은 함수(당시 이름
+        // restartFromBeginning)를 불러 똑같이 처음으로 돌아갔다.
+        // 원래는 "다음 관람객을 위한 키오스크 초기화"를 노린
+        // 설계였지만, 방금 안내한 내용과 실제 동작이 정반대라
+        // 사용자에게는 순전히 혼란으로만 남았다. 이제 이 시점 이후
+        // "다음"(버튼이든, 화면 오른쪽 탭이든, 이 자동 타이머든)은
+        // 전부 실제로 전시실 2로 이동한다 — 그리고 자동 타이머는
+        // 정말 자리를 떠났을 때만 뜻이 있으므로 20초로 넉넉히 늘렸다.
+        autoTimer = setTimeout(proceedToRoom2AfterFinish, 20000);
     });
 }
 
@@ -2159,8 +2186,10 @@ function onPauseClick(){
 //    은 호출될 때마다 dLineIdx를 먼저 한 칸 증가시키는 구조라 그대로
 //    부르면 다음 문장으로 넘어가 버린다 — 미리 한 칸 되돌려 둔 뒤 불러야
 //    지금 보던 바로 그 문장이 다시 나온다.
-// ── 마침 안내 화면(announcing)은 원래부터 그 안내 자체가 자막의
-//    전부이므로 showNextStageAnnouncement()를 그대로 다시 부르면 된다.
+// ── 마침 안내 화면(announcing)은 실제로는 서로 다른 자막 두 개가
+//    순서대로 나온다(showNextStageAnnouncement 위쪽 v-replay-announce-step
+//    주석 참고) — announceStep으로 지금 어느 자막인지 구분해, 그 자막만
+//    정확히 다시 보여주고 다시 들려준다.
 function onReplayClick(){
     clearTimeout(autoTimer);
     speechGen++;
@@ -2169,7 +2198,8 @@ function onReplayClick(){
         if(phase === 'screen'){
             playLine();
         } else if(announcing){
-            showNextStageAnnouncement();
+            if(announceStep === 0) showNextStageAnnouncement();
+            else _showFinishStep1();
         } else if(dLineIdx < 0){
             playTurn(turnIdx);
         } else {
