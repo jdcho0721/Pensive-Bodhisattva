@@ -296,38 +296,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption b{color:var(--gold-light);}
 
-#hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:nowrap;flex:0 0 auto;
-    padding-top:10px; margin-top:8px; border-top:1px solid rgba(212,175,55,.16);}
+#hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:nowrap;flex:0 0 auto;padding-top:10px;}
 .btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
-     font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;
-     transition:background .2s ease, box-shadow .2s ease, border-color .2s ease, transform .1s ease;}
-.btn:active{transform:scale(.96);}
+     font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
 /* v90 — 참가자 요청: "전시실2 각 화면 아래에 있는 4가지 버튼(다시듣기·
    수료증·여일·전시1)의 폰트크기가 크니 좀 작게 해달라." 패딩·높이·
    모양은 그대로 두고 글자 크기만 줄인다. */
 #hint-row .btn{padding:8px 10px;font-size:.7rem;min-width:0;white-space:nowrap;}
-/* v-hint-row-refine — 참가자 요청: "아래 4개 버튼 디자인을 다듬어 달라."
-   크기·위치·탭 동작(twotap 등)은 기존 그대로 두고, 시각적 역할만
-   구분한다. 다시듣기·전시1은 언제든 누를 수 있는 보조 동작이라 옅은
-   톤(quiet)으로, 수료증·여일(그리고 그 자리를 대신하는 마치기)은
-   전시의 흐름상 의미 있는 다음 단계라 또렷한 금색(accent)으로 둔다.
-   아이콘은 장식용 aria-hidden 글자이며, 버튼의 접근성 이름은 이미
-   각 aria-label이 정하므로 스크린리더 안내에는 영향이 없다. */
-#hint-row .btn.quiet{border-color:rgba(212,175,55,.2); color:rgba(226,220,204,.72);}
-#hint-row .btn.quiet:hover,#hint-row .btn.quiet:focus-visible{border-color:rgba(212,175,55,.4); color:var(--gold-light);}
-#hint-row .btn.accent{border-color:rgba(212,175,55,.55); color:var(--gold-light); box-shadow:0 0 10px rgba(212,175,55,.12);}
-#hint-row .btn.accent:hover,#hint-row .btn.accent:focus-visible{border-color:var(--gold); box-shadow:0 0 14px rgba(212,175,55,.28);}
-/* 장식용 아이콘은 ::before로만 그린다(실제 DOM 텍스트 노드가 아니므로
-   el.textContent를 읽어 버튼 이름을 말해주는 두 번 탭 확인 시스템에
-   섞여 들어가지 않는다 — 어차피 이 네 버튼은 위에서 data-tap-name도
-   각각 명시해 이중으로 안전하게 해두었다). */
-#hint-row .btn::before{margin-right:5px; font-size:.9em; opacity:.8;}
-#btn-replay::before{content:'↺';}
-#btn-view-cert::before{content:'◆';}
-#btn-leave::before{content:'○';}
-#exhibit1-btn::before{content:'→';}
 
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
@@ -925,8 +902,17 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    페이지를 떠나는 대신, 마음을 비우는 짧은 여백을 먼저 보여준다.
    "無" 한 글자가 숨쉬듯 은은하게 빛나고, 몇 초 뒤 처음 화면으로
    돌아간다(자동 전환 — 조작을 더 요구하지 않는다). */
+/* v-yeoil-refine — 참가자 요청: "여일 창의 디자인을 세련되게 만들어
+   달라." 평면 검정 배경을 사이트 전반(초기 화면·수료증)과 같은 계열의
+   은은한 금빛 비네트로 바꾸고, "無" 글자 뒤에 선(禪)적인 원형 테두리
+   (인소·ensō)를 은은하게 둘러 "내려놓음"이라는 주제와 어울리게 했다.
+   자동 전환 로직·버튼 동작·role="status"/aria-live 등 기존 기능은
+   그대로 둔다. */
 #yeoil-overlay{
-    position:fixed; inset:0; z-index:90; background:#000;
+    position:fixed; inset:0; z-index:90;
+    background:
+        radial-gradient(ellipse 65% 50% at 50% 42%, rgba(212,175,55,.09), rgba(0,0,0,0) 70%),
+        #050403;
     display:none; align-items:center; justify-content:safe center; flex-direction:column;
     text-align:center; padding:20px; opacity:0; transition:opacity 1.4s ease;
     /* v-yeoil-overflow-fix — 참가자 보고: "화면 윗부분이 잘린다." 세로로
@@ -942,18 +928,37 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     /* v-yeoil-glyph-shrink — 참가자 요청: "無자가 너무 크니 2/3으로
        줄여달라." 이전 값 clamp(3.2rem, 15vw, 6.5rem)의 각 값에 2/3을
        곱했다. */
+    position:relative;
     font-family:'Cinzel Decorative', serif; font-size:clamp(2.1rem, 10vw, 4.3rem); color:var(--gold);
     text-shadow:0 0 40px rgba(212,175,55,.55), 0 0 100px rgba(212,175,55,.25);
-    margin-bottom:26px; line-height:1; letter-spacing:.05em;
+    margin-bottom:34px; line-height:1; letter-spacing:.05em;
     animation: yeoilBreathe 4.5s ease-in-out infinite;
 }
+/* 禪 원형 테두리(ensō) — 완벽한 원이 아니라 살짝 여백을 둔 필치를
+   흉내내도록, 얇은 원 두 겹을 서로 다른 옅기로 겹쳤다. 장식이므로
+   aria-hidden 대상인 #yeoil-glyph 자체의 배경으로만 존재한다. */
+#yeoil-glyph::before,#yeoil-glyph::after{
+    content:''; position:absolute; left:50%; top:50%; border-radius:50%;
+    transform:translate(-50%,-50%); pointer-events:none; z-index:-1;
+}
+#yeoil-glyph::before{
+    width:clamp(118px,34vw,192px); height:clamp(118px,34vw,192px);
+    border:1px solid rgba(212,175,55,.32);
+}
+#yeoil-glyph::after{
+    width:clamp(150px,42vw,236px); height:clamp(150px,42vw,236px);
+    background:radial-gradient(circle, rgba(212,175,55,.10), transparent 72%);
+}
 @keyframes yeoilBreathe{ 0%,100%{ opacity:.72; transform:scale(1); } 50%{ opacity:1; transform:scale(1.045); } }
-#yeoil-text{ color:#ccc; font-size:.95rem; line-height:1.95; max-width:380px; word-break:keep-all; }
+#yeoil-text{ color:#ddd; font-size:.95rem; line-height:1.95; max-width:380px; word-break:keep-all;
+    letter-spacing:.01em; animation:gateRise 1.3s cubic-bezier(.2,.7,.3,1) both; animation-delay:.15s;}
+.yeoil-rule{width:44px;height:1px;margin:24px auto;background:linear-gradient(90deg,transparent,rgba(212,175,55,.6),transparent);}
 /* v-yeoil-meaning-move — 참가자 요청으로 수료증에 있던 "여일(如一)은
    '한결같다'는 뜻으로..." 설명을 여기, 마음 비우기 화면의 마지막
    부분으로 옮겨왔다. 스타일은 옮겨오기 전 #certificate-card .cert-meaning과
    동일하게 맞췄다. */
-#yeoil-meaning{ color:#999; font-size:.74rem; line-height:1.6; max-width:320px; margin:14px auto 0; word-break:keep-all; }
+#yeoil-meaning{ color:rgba(212,175,55,.7); font-style:italic; font-size:.76rem; line-height:1.7; max-width:320px;
+    margin:0 auto; word-break:keep-all; letter-spacing:.02em; animation:gateRise 1.3s cubic-bezier(.2,.7,.3,1) both; animation-delay:.3s;}
 /* v-yeoil-manual-exit — 참가자 요청으로 자동 이동 타이머를 없애고,
    대신 버튼을 눌러야만 이동한다.
    v-yeoil-room-buttons — 참가자 요청: "아래 전시실1과 전시실2 버튼을
@@ -964,7 +969,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    #hint-row .btn과 같은 media query에 이 버튼도 포함시켜, 다른 화면의
    전시1 버튼과 항상 같은 크기를 쓰도록 통일했다. 이 규칙 자체는 그래서
    더 이상 필요 없다.) */
-#yeoil-actions{ display:flex; gap:10px; justify-content:center; margin-top:32px; }
+#yeoil-actions{ display:flex; gap:10px; justify-content:center; margin-top:36px;
+    animation:gateRise 1.3s cubic-bezier(.2,.7,.3,1) both; animation-delay:.45s;}
 #copyright-tag{
     position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;
@@ -1164,6 +1170,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 
     <div id="yeoil-glyph" aria-hidden="true">無</div>
     <div id="yeoil-text">생각을 내려놓습니다.<br>손끝의 감촉도, 들었던 이야기도<br>지금 이 순간 가만히 놓아둡니다.</div>
+    <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
         <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2 표지로 이동합니다" data-tap-action="전시실 2 표지로 이동합니다">전시2</button>
@@ -1399,9 +1406,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <!-- v-replay-btn — 참가자 요청: "다시듣기." 지금까지 만진 부위 중
              가장 최근 것을 처음부터 다시 들려준다(repeatCurrent, 기존에
              이미 만들어져 있었지만 어떤 버튼에도 연결돼 있지 않던 함수). -->
-        <button class="btn quiet" id="btn-replay" onclick="repeatCurrent()" aria-label="다시듣기 버튼입니다. 방금 만진 부위의 설명을 처음부터 다시 들려드립니다." data-tap-name="다시듣기" data-tap-action="방금 만진 부위의 설명을 처음부터 다시 들려드립니다.">다시듣기</button>
-        <button class="btn accent" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 봅니다" data-tap-name="수료증" data-tap-action="지금까지 만진 기록을 보여드립니다">수료증</button>
-        <button class="btn accent" id="btn-leave" onclick="beginYeoilExit()" aria-label="마음을 비우는 화면으로 이동합니다" data-tap-name="여일" data-tap-action="마음을 비우는 화면으로 이동합니다">여일</button>
+        <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="다시듣기 버튼입니다. 방금 만진 부위의 설명을 처음부터 다시 들려드립니다." data-tap-name="다시듣기" data-tap-action="방금 만진 부위의 설명을 처음부터 다시 들려드립니다.">다시듣기</button>
+        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 봅니다" data-tap-action="지금까지 만진 기록을 보여드립니다">수료증</button>
+        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="마음을 비우는 화면으로 이동합니다" data-tap-action="마음을 비우는 화면으로 이동합니다">여일</button>
         <button class="btn primary" id="btn-finish" onclick="showCertificate(true)" style="display:none;" data-tap-action="수료증을 보여드립니다">마치기</button>
         <!-- v-exhibit1-nav — 참가자 요청: "언제든지 index.html로 넘어갈 수
              있게 전시1 버튼을 만들어줘." → 이후 "화면 아래로 이동" 요청
@@ -1411,7 +1418,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              장면을 거치는 정식 "마무리" 경로다. 이 버튼은 그 절차 없이,
              관람 중 언제든 곧바로 전시실 1로 건너뛸 수 있는 직접 이동
              경로다. -->
-        <button class="btn quiet" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 바로 이동" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">전시1</button>
+        <button class="btn" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 바로 이동" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
 </div>
