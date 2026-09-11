@@ -3191,17 +3191,47 @@ function goToRoom2(e) {
     document.addEventListener('click', function(e){
         if(e.target !== btn) return; // 이 버튼이 아니면 관여하지 않는다(다른 버튼은 기존 방식 그대로)
         if(armed){
-            // 두 번째 탭 — 확인됐다. v88에서 겪었던 문제(안내 음성이
-            // 끝나야만 이동하는 구조에서, 배경 내레이션과 speechGen을
-            // 공유해 speak()의 완료 콜백이 조용히 무시되며 이동 자체가
-            // 실행되지 않던 경쟁 상태)가 재발하지 않도록, 확인 탭에서는
-            // 이 버튼의 원래 동작(window.speechSynthesis.cancel() 후
-            // 곧바로 이동)만 그대로 실행한다 — 첫 탭의 이름 안내만으로도
-            // "이 버튼이 전시2다"는 이미 전달됐으므로 충분하다.
+            // 두 번째 탭 — 확인됐다. 참가자 지적: "'전시실 2로 이동합니다'
+            // 안내를 끊으면 안 된다." 지난 수정은 v88 경쟁 상태(안내
+            // 음성이 끝나야만 이동하는 구조에서, 배경 내레이션과 같은
+            // speechGen을 공유하다 보니 speak()의 완료 콜백이 조용히
+            // 무시되며 이동 자체가 실행되지 않던 문제)를 피하려고 안내를
+            // 아예 생략해버렸는데, 이러면 정작 "전시실 2로 이동합니다"를
+            // 들을 수 없어 본말이 전도된다.
+            // 이번엔 안내를 끝까지 들려주면서도 그 경쟁 상태 자체가 생기지
+            // 않게 한다 — 방법은 이 확인 발화가 시작되는 순간 전역
+            // speechGen을 한 단계 더 올려버리는 것이다. speechGen은
+            // speak()가 내부에서 "이 발화가 아직 최신 요청인지"를 검사하는
+            // 데 쓰는 바로 그 카운터이므로, 이렇게 하면 그 시점에 배경에서
+            // 이어지던 내레이션의 다음 문장이 있더라도 "자신은 이미 낡은
+            // 요청"이라고 스스로 판단해 조용히 멈춘다 — 더 이상 끼어들어
+            // 이 발화를 가로챌 경쟁자가 없어지는 것이다. 그 위에서, 이
+            // 발화 자체는 공용 speak() 대기열을 거치지 않고 별도의
+            // SpeechSynthesisUtterance로 직접 재생해 onend(정상 종료)·
+            // onerror(중간에 취소 등)·워치독 타이머(혹시 두 이벤트 모두
+            // 안 오는 브라우저 이상 상황) 세 갈래 중 무엇이 오든 딱 한
+            // 번만 이동하도록 만들어, "안내가 끝나도 이동하지 않는" 일도
+            // "이동은 하는데 안내가 잘리는" 일도 둘 다 생기지 않게 한다.
             e.preventDefault(); e.stopImmediatePropagation();
             disarm();
+            speechGen++; // 배경 내레이션이 더 이상 끼어들 수 없게 무효화
             window.speechSynthesis.cancel();
-            location.href='room2.html';
+            let _navigated = false;
+            const go = function(){
+                if(_navigated) return;
+                _navigated = true;
+                location.href='room2.html';
+            };
+            try{
+                const u = new SpeechSynthesisUtterance('전시실 2로 이동합니다.');
+                u.lang = 'ko-KR';
+                const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
+                if(_v) u.voice = _v;
+                u.onend = go;
+                u.onerror = go;
+                window.speechSynthesis.speak(u);
+                setTimeout(go, 3500); // 워치독 — 이벤트가 오지 않는 경우의 최종 안전장치
+            }catch(err){ go(); }
             return;
         }
         // 첫 번째 탭 — 이동을 막고 버튼을 무장 상태로 표시, 이름만 안내한다.
