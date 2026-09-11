@@ -277,6 +277,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
 #focus-tag{font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(.85rem,2.8vw,1.1rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
+/* v-answer-replay — 참가자 요청: "답변의 자막을 한 번 터치하면 다시 들을
+   수 있게 해줘." 사유의 상담소(챗봇) 답변이 떠 있는 동안에만 자막에
+   포인터 커서를 줘서, 지금은 눌러서 다시 들을 수 있다는 것을 눈으로도
+   알 수 있게 한다(다른 부위 해설 자막에서는 이 버튼이 동작하지 않으므로
+   커서도 평소 그대로 둔다). */
+#caption.replayable{cursor:pointer;}
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
    표시하되, 음성으로는 읽지 않는다. aria-hidden으로 스크린리더에서도
    숨겨서, 시각 정보로만 존재하는 "작은 각주"가 되게 한다. */
@@ -1276,7 +1282,13 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <div id="caption-wrap">
     <div id="caption-scroll">
         <div id="focus-tag" role="status" aria-live="polite">부위를 터치해 보세요</div>
-        <div id="caption" role="status" aria-live="polite">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
+        <!-- v-answer-replay — 참가자 요청: "답변을 다시 들을 수 있는 기능으로
+             답변의 자막을 한 번 터치하면 다시 들을 수 있게 해줘." 사유의
+             상담소(챗봇) 답변이 떠 있는 동안에만 onCaptionTap()이 실제로
+             다시 들려준다(아래 함수 주석 참고) — 부위 해설 자막을 눌렀을
+             때는 아무 일도 하지 않는다(부위 해설은 이미 "다시듣기" 버튼이
+             따로 있다). -->
+        <div id="caption" role="status" aria-live="polite" onclick="onCaptionTap()">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
         <div id="source-tag" aria-hidden="true"></div>
     </div>
     <div id="hint-row">
@@ -2068,10 +2080,25 @@ function _applyVoiceProfile(msg, speakerKey) {
 // 강조 홑따옴표를 쓰는 표기가 있다. 화면 자막은 원래 표기 그대로 두고,
 // 실제로 음성 엔진에 넘기는 문장에서만 이 기호들을 제거해 매끄럽게
 // 흘러가도록 한다.
+// v-caption-lag-samsung — 참가자 지적(갤럭시 기기): "자막이 음성해설보다
+// 늦게 나온다." 원인 중 하나를 여기서 찾았다: _renderPhilosophyAnswer()
+// (아래, 두 조각상이 번갈아 답하는 철학 문답)가 화면 자막에는 "생각하는
+// 사람 — ○○" 처럼 줄표(—)를 넣어 보여주면서, 실제 speak() 호출에는
+// 줄표를 뺀 별도의 문자열("생각하는 사람 ○○")을 따로 만들어 넘기고
+// 있었다. speak()는 caption과 "정확히 같은 문자열"이 들어와야만(아래
+// _pendingSentenceSync.text === text 검사) 실측 boundary 이벤트로 자막을
+// 동기화하는데, 문자열이 서로 달라 이 검사가 항상 실패해 그 답변만은
+// 글자 수 추정 타이머로만 자막이 넘어가고 있었다 — 실제 TTS 속도가
+// 추정치보다 조금만 빨라도 자막이 눈에 띄게 늦게 따라오는 조합이다.
+// 해결: 애초에 이 함수(_sanitizeForSpeech) 하나가 "화면엔 보이되 소리로는
+// 읽지 않을 기호"를 전담하고 있으므로, 줄표도 여기서 함께 제거해(짧은
+// 쉼으로 치환) 호출하는 쪽은 항상 caption과 완전히 같은 문자열을
+// speak()에 넘길 수 있게 했다 — 그래야 boundary 실측 동기화가 늘 걸린다.
 function _sanitizeForSpeech(text){
     return String(text)
         .replace(/<([^<>]*)>/g, '$1')
         .replace(/['']/g, '')
+        .replace(/\s*—\s*/g, ', ')
         .replace(/\s+/g, ' ')
         .trim();
 }
@@ -2290,6 +2317,10 @@ function _processTouch(key){
     updateProgress();
 
     document.getElementById('focus-tag').textContent = '지금 만지신 곳 — ' + d.title;
+    // v-answer-replay — 챗봇 답변 뒤에 곧바로 다른 부위를 만지면, 이 부위
+    // 해설 자막에는 더 이상 "탭하면 다시 듣기"가 적용되지 않으므로
+    // 포인터 커서 표시(위 #caption.replayable)도 함께 지운다.
+    document.getElementById('caption').classList.remove('replayable');
     // v44 — 참가자 요청: "따라하기는 얼굴·어깨 부분만 넣고, 기존 해설의
     // 마지막 부분에 넣어야 한다." 별도 발화로 뒤에 이어 붙이지 않고,
     // 기존 해설 문장 끝에 그대로 합쳐서 한 번에 낭독한다. embody 필드가
@@ -3475,6 +3506,9 @@ function triggerCenterMoment(){
 function _processCenterMoment(){
     hapticPulse('meeting');
     document.getElementById('focus-tag').textContent = '두 조각상 사이, 비어 있는 자리';
+    // v-answer-replay — 위 touchPart()와 동일한 이유로, 이 자리로 넘어오면
+    // 챗봇 답변 탭-재생 커서 표시를 지운다.
+    document.getElementById('caption').classList.remove('replayable');
     const line = '지금 두 조각상 사이, 비어 있는 그 자리에 서 계십니다. 힘든 마음과 따뜻한 마음이 소리 없이 만나는 자리입니다.';
     _stopCaptionSync(); // v-stop-caption-sync — 진행 중이던 부위 해설의 자막 예약을 먼저 중지
     // v-one-sentence-per-screen — 참가자 요청: "해설은 한 페이지에 한
@@ -4530,15 +4564,14 @@ function _renderPhilosophyAnswer(item, existingBubble){
     // 문장으로 자막을 갈아 끼워 speak() 호출 각각의 바로 앞에서 자막을
     // 먼저 채운다(다른 경로와 동일한 순서).
     showChatAnswerInCaption('사유의 상담소 — 답변', `생각하는 사람 — ${item.rodin}`);
-    // v-speech-match-caption — 참가자 요청: "챗봇 응답의 음성해설은
-    // 자막의 내용과 같은 내용으로 나오게 해줘. 예를 들면 '생각하는 사람 —
-    // 집착은' 이라는 자막에 대해서는 '생각하는 사람 집착은'으로
-    // 음성해설이 나오도록 해줘." 자막의 "—"(줄 구분 기호)는 그대로 소리
-    // 내 읽지 않되, 화자 이름 뒤에 곧장 내용을 붙여 자막과 같은 문구가
-    // 되도록 맞춘다.
-    speak(`생각하는 사람 ${item.rodin}`, ()=>{
+    // v-caption-lag-samsung — 위 _sanitizeForSpeech()가 줄표(—)를 소리
+    // 없는 쉼으로 이미 바꿔주므로, 여기서 별도로 줄표를 뺀 문자열을 다시
+    // 만들 필요가 없다 — 오히려 caption과 다른 문자열을 넘기면 boundary
+    // 실측 동기화가 걸리지 않아 자막이 늦게 따라오는 원인이 된다. caption과
+    // 완전히 같은 문자열을 그대로 speak()에 넘긴다.
+    speak(`생각하는 사람 — ${item.rodin}`, ()=>{
         showChatAnswerInCaption('사유의 상담소 — 답변', `반가사유상 — ${item.maitreya}`);
-        speak(`반가사유상 ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
+        speak(`반가사유상 — ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
     }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로 (내부 식별자 'rodin'은 음성 프로필 키일 뿐 화면에 노출되지 않는다)
 }
 
@@ -5760,8 +5793,17 @@ function toggleChatMic(){
         if(!panel.classList.contains('open')) toggleChat();
         document.getElementById('chat-input').value = '';
         _sttRetryCount = 0; // 사용자가 직접 마이크를 다시 눌렀으니 자동 재시도 횟수도 초기화
-        try{ chatRecognition.start(); }
-        catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        // v-mic-input-announce — 참가자 요청: "마이크 버튼을 누르면 '사유의
+        // 상담소 입력창입니다'라고 안내해줘." #chat-mic은 다른 토글
+        // 버튼들과 같은 이유(TWOTAP_HANDS_OFF_SELECTOR)로 눌렀을 때 바로
+        // 실행되어, 화면을 보기 어려운 관람객은 지금 무엇을 눌렀는지 음성
+        // 안내 없이는 알 수 없었다. 이 안내를 먼저 들려주고, 안내가 끝난
+        // 뒤에 실제로 듣기 시작한다 — 안내 음성 자체가 마이크에 함께
+        // 잡혀 인식을 방해하지 않도록 순서를 나눴다.
+        speak('사유의 상담소 입력창입니다. 질문을 말씀해 주세요.', ()=>{
+            try{ chatRecognition.start(); }
+            catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        });
     }
 }
 
@@ -6110,7 +6152,28 @@ function showChatAnswerInCaption(tag, text){
     document.getElementById('focus-tag').textContent = tag;
     document.getElementById('source-tag').textContent = '';
     _stopCaptionSync(); // 진행 중이던 다른 자막 예약(부위 해설 등)을 먼저 무효화
+    // v-answer-replay — 이 자막이 사유의 상담소 답변임을 표시해, 터치하면
+    // 다시 들려주는 onCaptionTap()이 켜지게 한다(위 CSS #caption.replayable
+    // 참고). 아래 onCaptionTap()은 이 클래스가 아니라 focus-tag 문구로
+    // 다시 한번 스스로 확인하므로, 혹시 이 클래스 하나만 남아있어도 엉뚱한
+    // 부위 해설이 다시 들리는 일은 없다.
+    document.getElementById('caption').classList.add('replayable');
     _displaySentencesTimed(String(text), document.getElementById('caption'));
+}
+
+// v-answer-replay — 참가자 요청: "답변의 자막을 한 번 터치하면 다시 들을
+// 수 있게 해줘." 사유의 상담소 답변(위 showChatAnswerInCaption)이 화면에
+// 떠 있는 동안 자막을 탭하면, 방금 들었던 그 답변을 그대로 다시
+// 들려준다. focus-tag가 "사유의 상담소"로 시작할 때만 동작하도록 스스로
+// 확인해, 부위 해설이나 두 조각상 사이 자막을 눌렀을 때는 아무 반응이
+// 없다(그런 자막에는 이미 "다시듣기" 버튼이 따로 있다).
+function onCaptionTap(){
+    const tag = document.getElementById('focus-tag').textContent || '';
+    if(tag.indexOf('사유의 상담소') !== 0) return;
+    const text = _lastSpokenText;
+    if(!text) return;
+    try{ hapticPulse('turn'); }catch(err){}
+    speak(text, null, _lastSpokenSpeaker);
 }
 async function sendChat(e, overrideText){
     e.preventDefault();
