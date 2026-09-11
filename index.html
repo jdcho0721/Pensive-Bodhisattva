@@ -1675,10 +1675,23 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     u.lang = 'ko-KR';
     const _bestVoice = _pickBestKoreanVoice();
     if(_bestVoice) u.voice = _bestVoice;
-    let basePitch;
-    if(speaker==='rodin'){ u.rate = TTS_RATE; basePitch = 0.90; }
-    else if(speaker==='maitreya'){ u.rate = TTS_RATE; basePitch = 1.08; }
-    else { u.rate = TTS_RATE; basePitch = 1.0; }
+    // v-maitreya-comfort — room2.html과 동일한 참가자 요청: "로댕에 대한
+    // 해설의 경우 피치(0.90)와 느린 속도(0.94), 반가사유상의 목소리는
+    // 로댕보다 더 편안하게 들리도록 피치는 로댕(0.90)보다 낮은 0.84로,
+    // 속도는 로댕(0.94)보다 느린 0.90으로. 그 이외는 피치(1)와 속도(1)로."
+    // room2.html의 VOICE_PROFILES는 화자가 있으면 rate를 고정값으로
+    // 완전히 덮어써 사용자가 고른 배속(TTS_RATE, 속도 버튼)을 무시하는
+    // 구조지만, 이 파일은 원래부터 화자와 무관하게 항상 TTS_RATE를
+    // 기준으로 삼는 구조다(else 분기도 "속도 1"과 같은 뜻으로 이미
+    // u.rate=TTS_RATE였다). 그 설계를 그대로 유지하면서, 화자별 속도
+    // 값(0.94/0.90/1)은 TTS_RATE 위에 곱해지는 배수로 적용해 — 배속
+    // 버튼은 여전히 전체 속도를 조절하고, 그 위에 화자별 상대적인
+    // 빠르기 차이만 얹는다.
+    let basePitch, baseRateMult;
+    if(speaker==='rodin'){ basePitch = 0.90; baseRateMult = 0.94; }
+    else if(speaker==='maitreya'){ basePitch = 0.84; baseRateMult = 0.90; }
+    else { basePitch = 1.0; baseRateMult = 1.0; }
+    u.rate = TTS_RATE * baseRateMult;
     // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 아주 미세하게
     // (±3~5% 안팎)만 흔들어, 폭을 좁게 둬서 부자연스럽게 튀지 않게 한다.
     const jitterRate = 1 + (Math.random() - 0.5) * 0.06;

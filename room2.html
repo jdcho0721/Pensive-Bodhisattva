@@ -1993,9 +1993,16 @@ const CHARS_PER_SEC_AT_1X = 7;     // 배속 1.0x 기준 대략적인 낭독 속
 // room2.html은 지금까지 모든 내레이션을 하나의 음색(pitch/rate 조정
 // 없음)으로만 읽어왔다. index.html이 쓰던 것과 똑같은 배정 로직을 그대로
 // 옮겨, room2에서도 로댕 해설을 만나면 같은 남성 음성이 나오게 한다.
+// v-maitreya-comfort — 참가자 지적: "로댕의 목소리가 조금 더 편안하게
+// 들린다. 반가사유상의 목소리는 로댕의 목소리보다 더 편안하게 들리도록
+// 조정해달라." 로댕이 편안하게 들리는 건 baseline(1.0)보다 낮은 피치
+// (0.90)와 느린 속도(0.94) 때문이다 — 낮은 피치·느린 속도가 편안하게
+// 들리는 요인. 반가사유상은 원래 피치가 baseline보다 오히려 높아(1.08)
+// 더 또렷하고 가벼운 인상이었다. 로댕보다 더 편안하게 들리도록, 피치는
+// 로댕(0.90)보다 낮게, 속도는 로댕(0.94)보다 느리게 낮췄다.
 const VOICE_PROFILES = {
     rodin:    { pitch: 0.90, rate: 0.94, volume: 1.0  },
-    maitreya: { pitch: 1.08, rate: 1.00, volume: 0.95 }
+    maitreya: { pitch: 0.84, rate: 0.90, volume: 0.95 }
 };
 let _cachedVoices = null;
 let _voiceAssignment = null; // { rodin: SpeechSynthesisVoice|null, maitreya: SpeechSynthesisVoice|null, rodinConfident: boolean }
