@@ -1850,10 +1850,30 @@ function _getImageRect(){
     const w = window.innerWidth, h = window.innerHeight;
     if(!_bgImgNatural || !w || !h) return { x:0, y:0, w, h }; // 이미지 크기를 아직 모르면 기존 동작(뷰포트 기준)으로 폴백
     const imgRatio = _bgImgNatural.w / _bgImgNatural.h;
-    const boxRatio = w / h;
+
+    // v-toes-cropped-index-fix — 참가자 지적: "전시1 이미지에서 두
+    // 조각상 발 부분이 안 보인다. 이미지를 조금만 위로 올리면 보일 것
+    // 같다." 원인: 아래 확대(IMAGE_SHRINK=1.3배)에 상한이 전혀 없었다
+    // — 화면 비율에 따라 확대된 이미지 높이(sh)가 화면 높이(h)보다
+    // 커질 수 있는데, 그러면 맨 아래 clamp(발끝 우선, sy를 0까지
+    // 끌어올림)를 거쳐도 이미 sy=0인 채로 sh가 h를 넘는 만큼은 그대로
+    // 화면 아래로 잘려나갔다 — "위로 올리는" 여지 자체가 없는 상태였다.
+    // room2.html에서 똑같은 증상을 먼저 겪고 검증한 방식을 그대로
+    // 가져온다 — 확대 "배율" 자체를, 아래에서 예약해둘 여백
+    // (_imageDownShift)을 뺀 실제 사용 가능한 높이(effHeight) 기준으로
+    // 상한을 둔다. 이러면 sh는 절대로 effHeight를 넘지 않고, 그
+    // 여백을 더해도 항상 h 이하로 남는다는 것이 계산상 보장된다 —
+    // 즉 발끝이 잘리는 일 자체가 원천적으로 생기지 않는다. 화면 비율에
+    // 따라 확대가 1.3배에 못 미칠 수 있지만, 발끝이 잘리지 않는 쪽을
+    // 우선한다.
+    const _easyBtnForShift = document.getElementById('btn-easy-mode');
+    const _imageDownShift = (_easyBtnForShift ? _easyBtnForShift.getBoundingClientRect().height : 36) / 2;
+    const effHeight = Math.max(1, h - _imageDownShift);
+
+    const boxRatio = w / effHeight;
     let rw, rh, rx, ry;
     if(boxRatio > imgRatio){
-        rh = h; rw = rh * imgRatio; rx = (w - rw) / 2; ry = 0;
+        rh = effHeight; rw = rh * imgRatio; rx = (w - rw) / 2; ry = 0;
     } else {
         // v72 — 참가자 요청: "4단계 버튼 아래로 조각상 이미지·시각효과를
         // 같이 끌어올려줘." v66에서 세로 가운데 정렬(50%)로 되돌렸던
@@ -1863,7 +1883,7 @@ function _getImageRect(){
         // 화면 맨 위에 딱 붙지는 않는다. #spotlight-overlay·#detail-spot·
         // #effect-svg 등 시각효과는 모두 이 함수가 반환하는 사각형을
         // 기준으로 좌표를 잡으므로, 이미지와 함께 자동으로 따라 올라간다.
-        rw = w; rh = rw / imgRatio; rx = 0; ry = (h - rh) * 0.25;
+        rw = w; rh = rw / imgRatio; rx = 0; ry = (effHeight - rh) * 0.25;
     }
     // v-image-lower — 참가자 요청: "반가-로댕.png는 아래로 더 내려줘.
     // 쉬운 문장 버튼의 높이의 반 정도 높이로 아래로 내려 줘." 쉬운 문장
@@ -1872,18 +1892,14 @@ function _getImageRect(){
     // 읽어 그 절반만큼 ry(이미지 위쪽 기준선)를 아래로 밀어낸다. 이
     // 함수가 반환하는 사각형을 스팟·핫스팟 좌표도 그대로 따라 쓰므로,
     // 시각효과들도 이미지와 함께 자연스럽게 같이 내려간다.
-    const _easyBtnForShift = document.getElementById('btn-easy-mode');
-    const _imageDownShift = (_easyBtnForShift ? _easyBtnForShift.getBoundingClientRect().height : 36) / 2;
     ry += _imageDownShift;
     // room2와 동일하게: 가로는 가운데 정렬 유지, 세로는 윗변 고정 —
     // 줄어든 공간이 전부 아래쪽(발 쪽)에 생기도록 한다.
-    const sw = rw * IMAGE_SHRINK, sh = rh * IMAGE_SHRINK;
+    const scale = Math.min(IMAGE_SHRINK, effHeight / rh);
+    const sw = rw * scale, sh = rh * scale;
     const sx = rx + (rw - sw) / 2;
-    // v-index-zoom-safety — 확대(1.3배)로 이미지 세로 길이가 원래
-    // 사각형(rh)보다 커지므로, 위쪽 기준선(ry)을 그대로 두면 발 부분이
-    // 화면 아래로 밀려 잘릴 수 있다. 발끝이 항상 화면 안에 들어오도록,
-    // 필요한 만큼만 위쪽 기준선을 끌어올린다(0 밑으로는 내리지 않음 —
-    // 그래도 안 되면 위쪽이 살짝 잘리는 쪽을 택한다, 발끝 우선).
+    // 위 effHeight 기준 상한 덕분에 이 clamp가 실제로 발동할 일은
+    // 거의 없지만, 안전장치로 남겨둔다.
     let sy = ry;
     if(sy + sh > h) sy = Math.max(0, h - sh);
     if(stageEl){
