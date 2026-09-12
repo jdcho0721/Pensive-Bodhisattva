@@ -1461,6 +1461,22 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 // 주지 않는다(이후 필요할 때 다시 speak()가 정상적으로 재생을 시작한다).
 try{ window.speechSynthesis.cancel(); }catch(e){}
 
+// v-stray-speech-fix-2 — 참가자 지적: "전시실2에서 갑자기 전시실1
+// 해설이 나온다." 바로 위 블록은 "room2가 열릴 때, 그 전(index.html)에
+// 남아있던 발화를 지운다"는 들어오는(inbound) 방향만 처리하고 있었다
+// — index.html 쪽에는 반대 방향(전시2로 나갈 때, room2로 넘어갈
+// 발화를 확실히 끊는 pagehide 리스너)이 이미 있는데, room2에는 그
+// 짝이 되는 나가는(outbound) 방향 안전장치가 없었다. 그래서 room2를
+// 떠날 때(뒤로 가기로 index.html로 돌아가기, 여일→전시1 등) room2
+// 자신의 발화가 완전히 취소되기 전에 문서가 언로드되면, 그 발화가
+// 다음 화면(index.html)까지 넘어가 마치 "그 화면에서 room1 해설이
+// 나온다"처럼 들릴 수 있다. index.html과 동일하게, 이 페이지를
+// 벗어나는 모든 경우를 포괄하는 pagehide 시점에도 한 번 더 확실히
+// cancel()을 호출한다.
+window.addEventListener('pagehide', function(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+});
+
 /* ══════════════════════════════════════════════════════
    반응형 핫스팟 정렬 — #stage는 background-size:contain으로 배경
    이미지를 비율 유지한 채 중앙 정렬한다. 뷰포트 비율(가로/세로)이
@@ -1494,30 +1510,27 @@ function fitHotspotLayer(){
     if(!cw || !ch) return;
     const imgRatio = _bgImgNatural.w / _bgImgNatural.h;
 
-    // v-pc-mobile-split — 참가자 지적: "이미지가 너무 위로 붙어서 위쪽
-    // 3개 버튼과 겹친다. 버튼과 어느 정도 간격을 둬야 한다. 다만 PC에서
-    // 발끝이 안 보이는 문제는 모바일과 별도로 처리하고, 모바일은 지금
-    // 크기를 그대로 써야 한다."
-    // 원인: 바로 위 v-match-index-zoom에서 "확대 배율을 지키기 위해
-    // 상단 여백을 양보할 수도 있다"는 index.html 방식을 room2에도
-    // 그대로 들여왔는데, 뷰포트가 이미지보다 상대적으로 넓은 경우
-    // (boxRatio > imgRatio — 화면 비율상 PC에서 특히 자주 나타난다)는
-    // 애초에 세로 여유가 전혀 없어서(h=ch로 시작) 상단 여백을 더하면
-    // 곧바로 발끝 우선 규칙에 걸려 여백이 통째로 0으로 취소되고, 그만큼
-    // 이미지가 위로 딱 붙어 버튼과 겹쳤다.
-    // 해결: 마우스 위주 기기(PC)와 터치 위주 기기(모바일)를 구분해서,
-    // 모바일은 지금까지의 index.html 방식을 한 글자도 바꾸지 않고 그대로
-    // 쓰고, PC만 "상단 버튼줄 여백을 미리 빼고 남은 공간(chFit)"에 맞추는
-    // 예전의 안전한 방식으로 되돌린다 — 이 방식은 계산상 항상
-    // TOP_CLEARANCE + sh ≤ ch를 보장하므로, PC에서는 버튼과의 간격도,
-    // 발끝이 다 보이는 것도 함께 지켜진다(발끝 문제가 다른 원인으로
-    // 남아 있다면 그건 이 사각형 계산과는 무관한 별개 원인일 것이다).
-    const isTouchPrimary = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    // v-toes-cropped-final-fix — 참가자 지적: "이미지가 너무 아래로
+    // 내려가 발이 안 보인다." 원인: 바로 이전 수정(v-mobile-is-the-
+    // real-issue)에서 모바일의 확대 배율은 그대로 두고(effHeight=ch
+    // 기준) 위치 하한만 "상단 버튼줄 여백 밑으로는 안 올라간다"로
+    // 바꿨는데 — 배율은 안 줄이고 위치만 아래로 강제하다 보니, 세로로
+    // 여유가 없는 화면 비율에서는 그만큼 고스란히 발끝이 화면 아래로
+    // 밀려 잘렸다. "확대 배율 그대로 유지"와 "버튼과 절대 안 겹침"과
+    // "발끝까지 항상 다 보임", 이 세 조건을 동시에 만족시키는 건
+    // 화면이 좁을 때는 수학적으로 불가능하다 — 무언가는 양보해야 한다.
+    // 이번 지적은 발끝이 안 보이는 쪽이 더 문제라고 판단해, 모바일도
+    // PC와 같은 안전한 기준(chFit = 상단 여백을 미리 뺀 높이)으로
+    // 되돌린다 — 이 기준에서는 버튼 간격과 발끝 가시성이 항상 함께
+    // 보장된다(chFit 계산 자체가 "발끝까지 다 들어가는 최대 크기"를
+    // 뜻하므로). 그 대신 화면 비율에 따라 확대가 1.3배에 못 미칠 수
+    // 있다 — 그래도 부족하다면(발끝은 보이는데 여전히 작게 느껴진다면)
+    // 탐색 게이지·챗봇 버튼처럼 이미지와 무관한 다른 요소를 내려
+    // 시각적 여유를 만드는 쪽으로 다시 조정할 수 있다.
     const topControls = document.getElementById('top-controls');
     const TOP_GAP = 14; // 버튼줄 바로 아래 추가 여유
     const TOP_CLEARANCE = topControls ? (topControls.getBoundingClientRect().bottom + TOP_GAP) : 60;
-    const chFit = Math.max(1, ch - TOP_CLEARANCE);
-    const effHeight = isTouchPrimary ? ch : chFit;
+    const effHeight = Math.max(1, ch - TOP_CLEARANCE); // 모바일·PC 공통
 
     const boxRatio = cw / effHeight;
     let w, h, x, y;
@@ -1530,29 +1543,17 @@ function fitHotspotLayer(){
         w = cw; h = w / imgRatio;
         x = 0; y = (effHeight - h) * 0.25;
     }
-    // 모바일(index.html과 동일)·PC(effHeight에 이미 여백이 반영됨) 모두,
     // 실제 화면에서는 상단 여백만큼 아래에서 시작해야 하므로 더한다.
     y += TOP_CLEARANCE;
 
     const IMAGE_SHRINK = 1.3;
-    // 모바일: 기존처럼 배율 상한은 전체 높이(ch) 기준(여백보다 확대 우선).
-    // PC: 배율 상한을 effHeight(=chFit, 여백을 뺀 높이) 기준으로 둬서,
-    // 확대해도 여백과 발끝 가시성을 절대 침범하지 않게 한다.
+    // 배율 상한을 effHeight(=chFit, 여백을 뺀 높이) 기준으로 둬서,
+    // 확대해도 여백과 발끝 가시성을 절대 침범하지 않는다.
     const scale = Math.min(IMAGE_SHRINK, effHeight / h);
     const sw = w * scale, sh = h * scale;
     const sx = x + (w - sw) / 2;
-    // v-mobile-is-the-real-issue — 참가자 정정: "버튼과 겹치는 건
-    // PC가 아니라 모바일에서 그렇다는 뜻이다. 모바일에서는 그 확장된
-    // 크기(확대 배율)는 그대로 두고, 버튼 아래로 위치만 옮겨야 한다.
-    // PC의 발끝 문제는 별도로 처리한다." 배율(scale, effHeight=ch 기준)은
-    // 손대지 않고 — 즉 모바일에서 보이는 조각상 크기는 지금과 완전히
-    // 같다 — 위치 하한만 바꾼다. 이전에는(모바일만) 발끝 보장을
-    // 최우선으로 두고 여백을 0까지 양보했는데(그래서 버튼과 겹쳤다),
-    // 이제는 모바일·PC 모두 상단 버튼줄 여백을 절대 침범하지 않는 쪽을
-    // 우선한다 — PC는 이미 effHeight(=chFit) 덕분에 이 clamp가 실제로
-    // 발동할 일이 거의 없고, 모바일은 이 clamp가 실제로 여백을
-    // 지켜준다. PC의 발끝 가시성 문제는 참가자 요청대로 이번엔
-    // 별개로 남겨둔다.
+    // 위 effHeight 계산 덕분에 이 clamp가 실제로 발동할 일은 거의
+    // 없지만, 안전장치로 남겨둔다.
     let sy = y;
     if(sy + sh > ch) sy = Math.max(TOP_CLEARANCE, ch - sh);
 
@@ -2326,6 +2327,15 @@ function _sideOfKey(key){
     return (d && d.body === '로댕') ? 'rodin' : 'maitreya';
 }
 
+// v-progress-korean-numeral — 참가자 요청: "'4곳째'가 아니라 '네 곳째'
+// 처럼 순우리말 수사로 읽히게 해달라." 이 전시는 부위가 최대 11곳
+// 뿐이므로, 범용 숫자→한글 변환 라이브러리 대신 1~11 범위만 다루는
+// 작은 표를 직접 둔다 — 더 큰 범위를 다룰 필요가 생기면 그때 확장한다.
+const KOREAN_COUNT_WORDS = ['', '한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열한'];
+function _koreanCountWord(n){
+    return KOREAN_COUNT_WORDS[n] || String(n);
+}
+
 function touchPart(key){
     if(!DETAILS[key]) return;
     _processTouch(key);
@@ -2449,7 +2459,14 @@ function _processTouch(key){
             // 진행률 자체(visited.size)는 이미 이 시점에 정확히 확정돼
             // 있으므로(같은 곳을 다시 만져도 재확인 삼아 그대로 들려줌),
             // 별도의 상태를 추가로 만들 필요가 없다.
-            const progressLine = `열한 곳 중 ${visited.size}곳째입니다.`;
+            // v-progress-korean-numeral — 참가자 요청: "'4곳째'가 아니라
+            // '네 곳째'처럼 순우리말 수사(한 개·두 개·세 개…)로 읽히게
+            // 자막을 고쳐달라." 아라비아 숫자 그대로 두면 TTS 엔진에 따라
+            // "네 곳째"가 아니라 "사 곳째"(한자어 수사)로 읽힐 위험이 있어,
+            // 아예 자막 단계에서부터 한글 수사 단어로 바꿔 넣는다 — 이러면
+            // 화면 자막도, 그걸 그대로 읽는 음성도 항상 같은 표현으로
+            // 일치한다.
+            const progressLine = `열한 곳 중 ${_koreanCountWord(visited.size)} 곳째입니다.`;
             document.getElementById('caption').innerHTML += ' ' + progressLine;
             speak(progressLine);
         }
@@ -2588,14 +2605,14 @@ function buildRecapAnswer(){
         const nextUnvisited = ORDER.find(k => !visited.has(k));
         const dir = nextUnvisited ? _describeRelativeDirection(nextUnvisited) : '';
         const bodyName = nextUnvisited ? DETAILS[nextUnvisited].body : '';
-        tail = ` 아직 ${remain}곳이 남아 있습니다.`;
+        tail = ` 아직 ${_koreanCountWord(remain)}곳이 남아 있습니다.`;
         if(nextUnvisited && dir){
             tail += ` ${bodyName} 쪽 ${dir}에 아직 만지지 않은 곳이 있습니다.`;
         }
     } else {
         tail = ' 열한 곳을 모두 만져보셨습니다.';
     }
-    return `지금까지 총 ${visited.size}곳을 만지셨습니다. ${done}.${tail}`;
+    return `지금까지 총 ${_koreanCountWord(visited.size)}곳을 만지셨습니다. ${done}.${tail}`;
 }
 
 /* 방문객이 실제로 쓸 만한 다양한 표현을 폭넓게 인식하도록 트리거를
@@ -2633,8 +2650,8 @@ function showHotspotLocations(){
     clearTimeout(_locationHintTimer);
     spots.forEach(el => el.classList.add('location-hint'));
     const msg = remain > 0
-        ? `만질 수 있는 곳은 모두 ${ORDER.length}곳이며, 그중 ${remain}곳이 아직 남아 있습니다. 화면에 잠시 위치를 표시합니다.`
-        : `만질 수 있는 곳은 모두 ${ORDER.length}곳이며, 전부 확인하셨습니다. 화면에 잠시 위치를 표시합니다.`;
+        ? `만질 수 있는 곳은 모두 ${_koreanCountWord(ORDER.length)}곳이며, 그중 ${_koreanCountWord(remain)}곳이 아직 남아 있습니다. 화면에 잠시 위치를 표시합니다.`
+        : `만질 수 있는 곳은 모두 ${_koreanCountWord(ORDER.length)}곳이며, 전부 확인하셨습니다. 화면에 잠시 위치를 표시합니다.`;
     try{ speak(msg); }catch(err){}
     _locationHintTimer = setTimeout(()=>{
         spots.forEach(el => el.classList.remove('location-hint'));
@@ -3469,7 +3486,7 @@ function showCertificate(isComplete){
 
     const certLineText = (visited.size >= ORDER.length)
         ? '열한 곳을 모두 만나셨습니다.'
-        : (remain > 0 ? `아직 ${remain}곳이 남아 있습니다.` : '열한 곳을 모두 만나셨습니다.');
+        : (remain > 0 ? `아직 ${_koreanCountWord(remain)}곳이 남아 있습니다.` : '열한 곳을 모두 만나셨습니다.');
     document.getElementById('cert-line').textContent = certLineText;
 
     const now = new Date();
@@ -3529,7 +3546,7 @@ function showCertificate(isComplete){
     // 내용은 빼고." "여일(如一)은 '한결같다'는 뜻으로..." 설명은 이제
     // 여기서 말하지 않고, beginYeoilExit()의 마지막 부분(마음 비우기
     // 화면)에서만 보여주고 들려준다.
-    speak(`지금까지 열한 곳 중 ${visited.size}곳을 손끝으로 만나셨습니다. ${certLineText}`);
+    speak(`지금까지 열한 곳 중 ${_koreanCountWord(visited.size)}곳을 손끝으로 만나셨습니다. ${certLineText}`);
 }
 
 let _certLastFocused = null;
