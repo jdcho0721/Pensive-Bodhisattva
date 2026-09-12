@@ -1393,7 +1393,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('반가사유상의 자세는 어떤 의미인가요?')">반가사유상의 자세는 어떤 의미인가요?</button>
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 뭐가 달라요?')">두 조각상은 뭐가 달라요?</button>
         <button type="button" class="chip" onclick="askSuggested('지금까지 만진 곳 요약해줘')">지금까지 만진 곳 요약해줘</button>
-        <button type="button" class="chip" onclick="askSuggested('원융이 무슨 뜻이에요?')">원융이 무슨 뜻이에요?</button>
+        <button type="button" class="chip" onclick="askSuggested('원융이 무슨 뜻이에요?', false)">원융이 무슨 뜻이에요?</button>
         <button type="button" class="chip" onclick="askSuggested('로댕의 생각하는 사람은 왜 옷을 안 입었어요?')">로댕의 생각하는 사람은 왜 옷을 안 입었어요?</button>
         <button type="button" class="chip" onclick="askSuggested('반가사유상은 왜 미소 짓고 있나요?')">반가사유상은 왜 미소 짓고 있나요?</button>
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 재질이 뭐가 달라요?')">두 조각상은 재질이 뭐가 달라요?</button>
@@ -1555,6 +1555,13 @@ function fitHotspotLayer(){
     // 발끝이 화면 밖으로 나갈 것 같으면 상단 버튼줄 여백까지는 끌어올린다
     // (그 밑으로는 얼굴 핫스팟이 버튼줄과 겹칠 수 있어 넘지 않는다).
     let sy = y;
+    // v-image-below-topbar — 참가자 지적: "이미지가 탐색바와 함께 다시
+    // 올라가 있다." 원인: 위 상한 로직(발끝이 잘릴 때 위로 끌어올림)만
+    // 있고, 반대로 sy가 TOP_CLEARANCE보다 위에 있을 때 아래로 내려주는
+    // 하한선이 없었다 — 그래서 화면 비율에 따라 이미지가 버튼줄 위로
+    // 올라가 겹치는 경우를 막지 못했다. 발끝이 잘리지 않는 한 항상
+    // TOP_CLEARANCE 아래에서 시작하도록 하한을 추가한다.
+    if(sy < TOP_CLEARANCE) sy = TOP_CLEARANCE;
     if(sy + sh > ch) sy = Math.max(TOP_CLEARANCE, ch - sh);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
@@ -5503,27 +5510,30 @@ window.addEventListener('popstate', (e)=>{
 })();
 
 
-function askSuggested(text){
+function askSuggested(text, forceLLM){
     // v-suggested-no-input — 참가자 요청: "고정 질문을 클릭하면 챗봇창의
     // 입력으로 들어가지 않게 해줘." 이전엔 입력창에 문구를 잠깐
     // 보여준 뒤(450ms) 전송했는데, 이제는 입력창에 전혀 닿지 않고
     // sendChat에 텍스트를 직접 넘겨 바로 전송한다.
     // v-chip-force-llm — 참가자 지적: "고정 질문에 대한 LLM 답변이 일반
-    // 질문보다 품질이 떨어진다. 다른 방법을 쓰는 게 아닌지 — 일반
-    // 질문과 같은 방법을 써야 한다. 두 조각상이 같은 대답을 하는 경우가
+    // 질문보다 품질이 떨어진다. 두 조각상이 같은 대답을 하는 경우가
     // 많다." 원인: 고정 질문 칩은 화면 문구와 정확히 똑같은 글자로
     // 전송되는데, 그 문구가 아래 1순위(KB 즉답)·1.5순위(200개 철학
-    // 문답)의 미리 써둔 고정 문구와 텍스트가 겹치기 쉬워, 실제로는 LLM이
-    // 새로 답을 짓는 게 아니라 이미 정해둔 한 개의 문구를 그대로(또는
-    // 억지로 반으로 쪼개) 돌려주는 경우가 많았다 — 억지로 쪼개다 보니
-    // 두 조각상이 비슷하거나 같은 말을 하는 것처럼 보였다.
-    // 세 번째 인자(true)로 "이 질문은 화면 고정 칩에서 왔다"는 표시만
-    // 넘긴다 — sendChat → _processChatAnswer는 이 표시를 보고 딱 그
-    // 두 지름길(1순위·1.5순위)만 건너뛴다. 그 다음 단계(사실형 질문
-    // 여부·근거 후보 판단)는 타이핑으로 물었을 때와 완전히 동일한
-    // 기준으로 그대로 거치므로, "일반 질문과 같은 방법"이 정확히
-    // 보장된다 — 무조건 한 경로로 몰아넣지 않는다.
-    sendChat({ preventDefault(){} }, text, true);
+    // 문답)의 미리 써둔 고정 문구와 겹치기 쉬워, 비교·개인적 질문처럼
+    // 원래 관점 차이가 드러나야 하는 질문에서도 이미 정해둔 문구를
+    // 그대로(또는 억지로 반으로 쪼개) 돌려주는 경우가 많았다.
+    // v-chip-force-llm-not-universal — 다만 이건 "고정 질문은 늘 LLM을
+    // 거쳐야 품질이 낫다"는 뜻이 아니다. "원융이 무슨 뜻이에요?"처럼
+    // 특정 조각상의 개성과 무관한 전시 용어·사실 질문은 오히려
+    // 1순위(KB 즉답)·1.5순위(200개 철학 문답)에 이미 정확하고 검증된
+    // 답이 있으므로, 그 즉답 지름길을 그대로 타는 쪽이 더 낫다(빠르고,
+    // 매번 같은 정확한 설명을 준다). 그래서 forceLLM은 호출부마다
+    // 선택할 수 있는 매개변수로 두고, 기본값(두 번째 인자를 안 넘기면
+    // true)은 비교·개인적 질문처럼 관점 차이가 실제로 필요한 칩에
+    // 맞춰두되, "원융이 무슨 뜻이에요?"처럼 정의형 질문인 칩은 호출부에서
+    // 명시적으로 false를 넘겨 1순위·1.5순위 지름길을 그대로 타게 한다.
+    if(forceLLM === undefined) forceLLM = true;
+    sendChat({ preventDefault(){} }, text, forceLLM);
 }
 
 /* ══════════════════════════════════════════════════════
