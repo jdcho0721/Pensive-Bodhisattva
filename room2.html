@@ -6240,7 +6240,18 @@ async function _answerFreeformTwoVoice(q){
     showChatAnswerInCaption('사유의 상담소 — 생각하는 중…', '생각하는 중…');
     speak('잠시만요, 생각하고 있습니다.');
     const aiBubble = pushLog('ai', '생각하는 중…');
-    const raw = await fetchDetailAI('관람객의 질문: ' + q, '', (partial) => {
+    // v-life-part-context — 참가자 요청: 걱정·인생 같은 개인적 질문은
+    // 두 조각상의 관점 차이가 실제로 답을 갈라놓으므로, 지금 만지고
+    // 있는 부위의 상세 해설(detail/detailSimple)을 LLM에게만 참고자료로
+    // 조용히 건네, 그 부위와 맞닿은 특징적인 답을 만들도록 한다. q 자체와
+    // 화면(캡션·채팅 로그)에 찍히는 텍스트는 그대로 두고, 이 참고자료는
+    // 프롬프트에만 들어간다 — 화면에 문맥을 표시할 일이 생기더라도 부위
+    // 제목(title)만 짧게 보여주고, 이 긴 해설(detail)은 절대 표시하지 않는다.
+    const d = currentKey ? DETAILS[currentKey] : null;
+    const partContext = d
+        ? `[참고자료 — 관람객이 지금 만지고 있는 부위: ${d.title}. 이 부위의 해설: ${_detailText(d)}]\n`
+        : '';
+    const raw = await fetchDetailAI(partContext + '관람객의 질문: ' + q, '', (partial) => {
         const shown = String(partial || '생각하는 중…');
         aiBubble.textContent = shown;
         // v-chat-scroll-to-top — pushLog가 이미 이 말풍선을 화면 위쪽에
