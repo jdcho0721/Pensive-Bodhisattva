@@ -1202,7 +1202,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
-        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2 표지로 이동합니다" data-tap-action="전시실 2 표지로 이동합니다">전시2</button>
+        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2로 이동합니다" data-tap-action="전시실 2로 이동합니다">전시2</button>
         <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
@@ -2001,6 +2001,20 @@ let _roomEntered = false;
 function enterRoom(){
     if(_roomEntered) return; // 화면 터치와 버튼 클릭이 동시에 걸려도 한 번만 실행
     _roomEntered = true;
+    // v-first-entry-silent-fix — 참가자 지적: "전시실 1에서 전시2 버튼을
+    // 클릭하여 이동하면 전시실 2 표지 음성해설이 안 나온다." speak()는
+    // 실제로 음성을 재생하기 전에 음성 목록이 준비될 때까지 기다리는
+    // Promise와 약간의 setTimeout을 거친다. 막 도착한 직후(새로 열린
+    // 페이지이든, 전시실 1에서 넘어온 직후이든)에는 음성 목록이 아직
+    // 로드되지 않은 경우가 많고, 그 대기가 끝날 즈음에는 이 호출이 이미
+    // 이 탭 이벤트 핸들러 안에서 동기적으로 실행되는 상태가 아니게 된다.
+    // 일부 브라우저는 사용자 제스처 안에서 충분히 즉각적으로 호출되지
+    // 않은 음성 합성 요청을 소리 없이 막아버리므로, 바로 이 첫 안내
+    // 문장만 조용히 실패할 수 있다. 여기서 빈 문자열 발화를 탭 이벤트
+    // 안에서 동기적으로 먼저 재생해, 이번 세션 동안 음성 합성 API를
+    // "잠금 해제"한다 — 그 아래 실제 표지 안내는 비동기 지연을 거친
+    // 뒤에도 정상적으로 재생된다.
+    try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
     // v46 — 브라우저 자동재생 정책상 AudioContext는 실제 사용자 제스처

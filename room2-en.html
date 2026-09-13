@@ -1946,6 +1946,21 @@ let _roomEntered = false;
 function enterRoom(){
     if(_roomEntered) return; // 화면 터치와 버튼 클릭이 동시에 걸려도 한 번만 실행
     _roomEntered = true;
+    // v-first-entry-silent-fix — same fix as index-en.html: speak() waits
+    // on the voice list being ready (a Promise) plus a short setTimeout
+    // before actually calling speechSynthesis.speak(). On a cold arrival —
+    // whether a fresh page load, or navigating in from Room 1 — voices
+    // usually aren't loaded yet, and by the time that wait resolves, the
+    // call is no longer happening synchronously within this tap's event
+    // handler. Some browsers only allow speechSynthesis when it's invoked
+    // synchronously (or very close to it) inside a real user gesture, and
+    // silently drop anything called after an async gap — so specifically
+    // this first utterance could be blocked with no error and no sound.
+    // Speaking an empty utterance right here, synchronously inside the tap
+    // handler, unlocks the Speech Synthesis API for the rest of this
+    // session; the real cover narration a few lines below then plays
+    // normally even after its own async delay.
+    try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
     // v46 — 브라우저 자동재생 정책상 AudioContext는 실제 사용자 제스처
