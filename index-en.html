@@ -1718,7 +1718,20 @@ function speak(text, onEnd, speaker){
             // 짧은 정적을 두고, 발화마다 속도·피치를 사람 말투처럼 아주
             // 미세하게 흔든다. 화면 자막은 지금까지처럼 호출한 쪽에서 이미
             // 정해둔 값을 그대로 두고 여기서는 건드리지 않는다.
-            const sentences = (String(text).match(/[^.!?…]+[.!?…]?/g) || [text]).map(s=>s.trim()).filter(Boolean);
+            // v-no-83-split-fix — same fix as room2-en.html: without this,
+            // "No. 83" gets split into "No." and "83" as if two sentences,
+            // and since each sentence here becomes its own spoken utterance
+            // (see _speakSentenceQueue below), the voice would audibly pause
+            // after "No." and speak "83" as a separate, later utterance.
+            // Protect periods that don't end a sentence — common
+            // abbreviations (No., Mr., Dr., St., vs., e.g., etc.) and any
+            // period immediately followed by a number (covers "No. 83",
+            // decimals like "3.14") — before splitting, then restore them.
+            const PROTECT_ABBR = /\b(No|Mr|Mrs|Ms|Dr|Prof|St|vs|approx|e\.g|i\.e|etc|Fig|pp|cf)\.(?=\s)/gi;
+            let _protectedText = String(text).replace(PROTECT_ABBR, m => m.slice(0, -1) + '\u0000');
+            _protectedText = _protectedText.replace(/\.(?=\s*\d)/g, '\u0000');
+            const sentences = (_protectedText.match(/[^.!?…]+[.!?…]?/g) || [_protectedText])
+                .map(s=>s.replace(/\u0000/g, '.').trim()).filter(Boolean);
             _speakSentenceQueue(sentences, 0, speaker, myGen, onEnd);
         }, 60);
         });
