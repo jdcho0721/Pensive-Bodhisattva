@@ -2480,7 +2480,7 @@ function _processTouch(key){
             document.getElementById('caption').innerHTML = '열한 곳을 모두 만져보셨습니다. 아래 수료증 버튼을 누르면 지금까지의 기록을 확인할 수 있습니다.';
             document.getElementById('source-tag').textContent = '';
             hapticPulse('complete');
-            speak('이제 열한 곳을 모두 만져보셨습니다. 아래 수료증 버튼을 누르면 지금까지의 기록을 확인할 수 있습니다.');
+            speak('You\u2019ve now touched all eleven spots. Press the Certificate button below to see your record so far.');
         }
         // v-progress-announce-removed — 참가자 요청: 각 부위 해설 뒤에
         // 자동으로 붙던 "열한 곳 중 ~곳째입니다." 진행률 음성 안내를
@@ -3446,9 +3446,9 @@ function _endCenterMeetingState(moodEl){
 async function _playCenterSynthesis(moodEl){
     document.getElementById('focus-tag').textContent = '두 조각상 사이 — 지금까지의 사유';
     _stopCaptionSync();
-    _displaySentencesTimed('지금까지 만진 곳들을 돌아보고 있습니다…', document.getElementById('caption'));
+    _displaySentencesTimed('Looking back over the spots you\u2019ve touched so far\u2026', document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
-    speak('지금까지 만진 곳들을 돌아보고 있습니다.'); // 처리 중임을 음성으로도 알린다(화면을 보기 어려운 관람객 배려)
+    speak('Looking back over the spots you\u2019ve touched so far.'); // 처리 중임을 음성으로도 알린다(화면을 보기 어려운 관람객 배려)
 
     const touchedBlock = _buildTouchedPartsBlock();
     const synthesis = await fetchDetailAI(
@@ -4379,9 +4379,9 @@ function _renderPhilosophyAnswer(item, existingBubble){
     const hasMaitreya = typeof item.maitreya === 'string' && item.maitreya.trim();
 
     let text;
-    if(hasRodin && hasMaitreya) text = `생각하는 사람 — ${item.rodin}\n\n반가사유상 — ${item.maitreya}`;
-    else if(hasRodin) text = `생각하는 사람 — ${item.rodin}`;
-    else if(hasMaitreya) text = `반가사유상 — ${item.maitreya}`;
+    if(hasRodin && hasMaitreya) text = `The Thinker — ${item.rodin}\n\nPensive Bodhisattva — ${item.maitreya}`;
+    else if(hasRodin) text = `The Thinker — ${item.rodin}`;
+    else if(hasMaitreya) text = `Pensive Bodhisattva — ${item.maitreya}`;
     else text = String(item.single || '').trim();
 
     if(existingBubble) existingBubble.textContent = text;
@@ -4406,16 +4406,16 @@ function _renderPhilosophyAnswer(item, existingBubble){
     // 완전히 같은 문자열을 그대로 speak()에 넘긴다.
     if(hasRodin && hasMaitreya){
         showChatAnswerInCaption('Contemplation Counsel — Answer', `The Thinker — ${item.rodin}`);
-        speak(`생각하는 사람 — ${item.rodin}`, ()=>{
+        speak(`The Thinker — ${item.rodin}`, ()=>{
             showChatAnswerInCaption('Contemplation Counsel — Answer', `Pensive Bodhisattva — ${item.maitreya}`);
-            speak(`반가사유상 — ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
+            speak(`Pensive Bodhisattva — ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
         }, 'rodin'); // v-rodin-voice — 두 화자가 이어 말하는 자리이니 각자의 목소리로 (내부 식별자 'rodin'은 음성 프로필 키일 뿐 화면에 노출되지 않는다)
     } else if(hasRodin){
         showChatAnswerInCaption('Contemplation Counsel — Answer', `The Thinker — ${item.rodin}`);
-        speak(`생각하는 사람 — ${item.rodin}`, ()=>{ _chatAnswerActive = false; }, 'rodin');
+        speak(`The Thinker — ${item.rodin}`, ()=>{ _chatAnswerActive = false; }, 'rodin');
     } else if(hasMaitreya){
         showChatAnswerInCaption('Contemplation Counsel — Answer', `Pensive Bodhisattva — ${item.maitreya}`);
-        speak(`반가사유상 — ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
+        speak(`Pensive Bodhisattva — ${item.maitreya}`, ()=>{ _chatAnswerActive = false; }, 'maitreya');
     } else {
         // 화자 표시 없는 단일 답변 — 특정 조각상 목소리로 색칠하지 않고
         // 중립적인 도슨트 톤(speakerKey 없음)으로 읽는다.
@@ -5386,7 +5386,7 @@ function toggleChat(){
         // 탭을 기다리지 않는다. 대신 닫히는 동작과 "동시에" 안내를
         // 들려준다: 화면은 그 자리에서 곧바로 닫히고, 안내 음성은 그
         // 옆에서 나란히 흘러나온다(닫힘을 막거나 늦추지 않는다).
-        speak('전시 화면으로 돌아갑니다');
+        speak('Returning to the exhibit screen');
         // 먼저 즉시 닫는다 — popstate가 오든 안 오든, 버튼을 누른
         // 시점에 화면은 반드시 닫힌다.
         closeChatPanel();
@@ -6164,14 +6164,22 @@ The Pensive Bodhisattva — (one or two sentences, roughly 30-40 words)
 function _parseTwoVoiceReply(raw){
     const text = String(raw || '').trim();
     if(!text) return null;
-    const both = text.match(/^생각하는\s*사람\s*[—\-:]\s*([\s\S]*?)\n+\s*반가사유상\s*[—\-:]\s*([\s\S]*)$/);
+    // v-parser-en-labels-fix — 참가자 지적: "두 조각상 차이를 물었더니 한
+    // 조각상 답만 나온다." 원인: 시스템 프롬프트(DETAIL_TWO_VOICE_SYSTEM_
+    // PROMPT)는 이제 LLM에게 영어 화자 이름("The Thinker", "The Pensive
+    // Bodhisattva")으로 답하라고 지시하는데, 이 파서는 여전히 한국어
+    // 화자 이름("생각하는 사람", "반가사유상")만 찾고 있었다 — 그래서
+    // LLM이 형식을 정확히 지켜 두 화자로 답해도 이 정규식은 단 한 번도
+    // 매칭되지 않고, 매번 _asUnattributedAnswer로 빠져 화자 구분 없는
+    // 한 덩어리 텍스트로만 표시·재생되고 있었다.
+    const both = text.match(/^The\s+Thinker\s*[—\-:]\s*([\s\S]*?)\n+\s*The\s+Pensive\s+Bodhisattva\s*[—\-:]\s*([\s\S]*)$/i);
     if(both){
         const rodin = both[1].trim(), maitreya = both[2].trim();
         if(rodin && maitreya) return { rodin, maitreya };
     }
-    const rodinOnly = text.match(/^생각하는\s*사람\s*[—\-:]\s*([\s\S]*)$/);
+    const rodinOnly = text.match(/^The\s+Thinker\s*[—\-:]\s*([\s\S]*)$/i);
     if(rodinOnly && rodinOnly[1].trim()) return { rodin: rodinOnly[1].trim() };
-    const maitreyaOnly = text.match(/^반가사유상\s*[—\-:]\s*([\s\S]*)$/);
+    const maitreyaOnly = text.match(/^The\s+Pensive\s+Bodhisattva\s*[—\-:]\s*([\s\S]*)$/i);
     if(maitreyaOnly && maitreyaOnly[1].trim()) return { maitreya: maitreyaOnly[1].trim() };
     return null;
 }
@@ -6195,7 +6203,7 @@ function _asUnattributedAnswer(raw){
 // 원문을 한 번에(두 화자로 나누지 않고) 보여주고 읽어준다.
 async function _answerFreeformTwoVoice(q, philRef){
     showChatAnswerInCaption('Contemplation Counsel — thinking…', 'Thinking…');
-    speak('잠시만요, 생각하고 있습니다.');
+    speak('One moment, thinking.');
     const aiBubble = pushLog('ai', 'Thinking…');
     // v-life-part-context — 참가자 요청: 걱정·인생 같은 개인적 질문은
     // 두 조각상의 관점 차이가 실제로 답을 갈라놓으므로, 지금 만지고
@@ -6354,7 +6362,7 @@ async function _processChatAnswer(q, forceLLM){
     // 검색 → 로컬 LLM → 필요시 원격 RAG), 화면을 보기 어려운 관람객도
     // "지금 처리 중"임을 놓치지 않도록 짧게 음성으로도 알린다.
     showChatAnswerInCaption('Contemplation Counsel — thinking…', 'Thinking…');
-    speak('잠시만요, 생각하고 있습니다.');
+    speak('One moment, thinking.');
     // v-chat-log-stream — 참가자 요청: "LLM 응답은 챗봇창에 나오게 해주고,
     // 오래 기다리지 않게 문장이 스트리밍으로 나오게 해줘." 기존 v47은
     // 답변을 챗봇창(#chat-log)이 아니라 아래 해설창(#caption)에만
@@ -6805,7 +6813,7 @@ document.addEventListener('click', function(e){
     _armedTwoTapEl = target;
     target.classList.add('twotap-armed');
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){ /* 무시 */ }
-    speak(`이 버튼은 ${_twoTapName(target)}입니다.`);
+    speak(`This is the ${_twoTapName(target)} button.`);
     _twoTapTimer = setTimeout(_disarmTwoTap, TWOTAP_ARM_WINDOW_MS);
 }, true); // 캡처 단계 — onclick 속성(버블 단계)이 실행되기 전에 먼저 가로챈다
 
