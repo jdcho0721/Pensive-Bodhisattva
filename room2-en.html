@@ -1182,7 +1182,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
-        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="Moves to the Room 2 cover" data-tap-action="Moves to the Room 2 cover">Room 2</button>
+        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="Moves to Room 2" data-tap-action="Moves to Room 2">Room 2</button>
         <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index-en.html'" aria-label="Moves to Room 1" data-tap-action="Moves to Room 1">Room 1</button>
     </div>
 </div>
@@ -1347,7 +1347,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('What does the Pensive Bodhisattva’s posture mean?')">What does the Pensive Bodhisattva’s posture mean?</button>
         <button type="button" class="chip" onclick="askSuggested('What’s different between the two statues?')">What’s different between the two statues?</button>
         <button type="button" class="chip" onclick="askSuggested('Summarize what I’ve touched so far')">Summarize what I’ve touched so far</button>
-        <button type="button" class="chip" onclick="askSuggested('What does wonyung mean?', false)">What does wonyung mean?</button>
+        <button type="button" class="chip" onclick="askSuggested('What is wonyoung(圓融) means?', false)">What is wonyoung(圓融) means?</button>
         <button type="button" class="chip" onclick="askSuggested('Why isn’t Rodin’s Thinker wearing clothes?')">Why isn’t Rodin’s Thinker wearing clothes?</button>
         <button type="button" class="chip" onclick="askSuggested('Why is the Pensive Bodhisattva smiling?')">Why is the Pensive Bodhisattva smiling?</button>
         <button type="button" class="chip" onclick="askSuggested('What’s different about the two statues’ materials?')">What’s different about the two statues’ materials?</button>
@@ -1977,7 +1977,7 @@ function enterRoom(){
     // 본문 문단까지 포함해 사실상 같은 내용을 통째로 다시 읽고 있었다.
     // 표지에서 이미 들은 안내를 반복하지 않도록, 입장 직후에는 지금
     // 들어온 전시실 이름만 짧게 알려주는 것으로 줄였다.
-    const introLine = 'Beginning Room 2 · Contemplation and Embodiment, thinking with the body. Look for the eleven spots on the two statues within your reach.';
+    const introLine = 'Room2 · Contemplation and Embodiment, thinking with the body. Look for the eleven spots on the two statues within your reach.';
     _displaySentencesTimed(introLine, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
     speak(introLine);
@@ -2082,6 +2082,41 @@ function _pickBestKoreanVoice(){
     const us = enVoices.find(v => /^en-US/i.test(v.lang));
     return neural || us || enVoices[0];
 }
+// v-speaker-voice-distinct — participant request: give Rodin and the
+// Pensive Bodhisattva each a voice matching their character, not just a
+// pitch/rate offset on the same voice. Rodin (tense, existential struggle)
+// prefers a deeper, firmer-sounding voice; the Pensive Bodhisattva (serene,
+// compassionate) prefers a softer, gentler-sounding voice. Voice
+// availability varies enormously by device/browser, so this degrades
+// gracefully: with 2+ English voices, pick two distinct ones using
+// name-based gender/character hints most platforms expose (e.g. "Google
+// UK English Male/Female", "Microsoft David/Zira", "Samantha", "Daniel");
+// with exactly one voice, both speakers share it and the existing
+// pitch/rate difference in speak() still carries the distinction; with
+// zero, this returns null and the browser default voice is used as before.
+const _RODIN_VOICE_HINTS = /\bmale\b|david|daniel|alex|fred|mark|george|thomas|ryan|guy|arthur|oliver/i;
+const _MAITREYA_VOICE_HINTS = /\bfemale\b|samantha|zira|karen|victoria|susan|moira|tessa|fiona|serena|allison|ava/i;
+function _pickVoiceForSpeaker(speakerKey){
+    if(!speakerKey) return _pickBestKoreanVoice();
+    const voices = window.speechSynthesis.getVoices() || [];
+    const enVoices = voices.filter(v => /^en/i.test(v.lang));
+    if(enVoices.length <= 1) return _pickBestKoreanVoice();
+    const isNeural = v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name);
+    const pool = enVoices.some(isNeural) ? enVoices.filter(isNeural).concat(enVoices.filter(v=>!isNeural(v))) : enVoices.slice();
+    let rodinVoice = pool.find(v => _RODIN_VOICE_HINTS.test(v.name));
+    let maitreyaVoice = pool.find(v => _MAITREYA_VOICE_HINTS.test(v.name) && v !== rodinVoice);
+    if(!rodinVoice && !maitreyaVoice){
+        rodinVoice = pool[0];
+        maitreyaVoice = pool.find(v => v !== rodinVoice) || pool[0];
+    } else if(!rodinVoice){
+        rodinVoice = pool.find(v => v !== maitreyaVoice) || pool[0];
+    } else if(!maitreyaVoice){
+        maitreyaVoice = pool.find(v => v !== rodinVoice) || pool[0];
+    }
+    if(speakerKey === 'rodin') return rodinVoice;
+    if(speakerKey === 'maitreya') return maitreyaVoice;
+    return _pickBestKoreanVoice();
+}
 
 // v-speech-text-cleanup — 참가자 요청(index.html과 동일): "문장 부호 및
 // 띄어쓰기를 다듬으면 TTS가 더 자연스러워질 것 같다." 이 전시 자막에도
@@ -2118,7 +2153,7 @@ function speak(text, onEnd, speakerKey){
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(text));
         u.lang = 'en-US';
-        const _bestVoice = _pickBestKoreanVoice();
+        const _bestVoice = _pickVoiceForSpeaker(speakerKey);
         if(_bestVoice) u.voice = _bestVoice;
         // v-voice-match-room1(계속) — index.html과 완전히 같은 화자별
         // 피치·속도 배수. 배속 버튼(TTS_RATE)은 여전히 전체 속도를
@@ -2136,7 +2171,13 @@ function speak(text, onEnd, speakerKey){
         // 아래 동기화가 깨진다) 이 발화 전체에 한 번 흔들림을 적용한다.
         const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
         const jitterPitch = 1 + (Math.random() - 0.5) * 0.05;
-        u.rate = TTS_RATE * baseRateMult * jitterRate;
+        // v-en-rate-slow — same fix as index-en.html: the same numeric
+        // TTS_RATE reads noticeably faster in English than it did in
+        // Korean, so apply a small English-only correction factor on top
+        // of the visible Speed button's steps, without changing what the
+        // button itself displays (still "Speed 1.0x" etc.).
+        const EN_RATE_ADJUST = 0.85;
+        u.rate = TTS_RATE * EN_RATE_ADJUST * baseRateMult * jitterRate;
         u.pitch = basePitch * jitterPitch;
         u.volume = NARRATION_VOLUME;
         // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
@@ -2205,8 +2246,19 @@ function clearSuggested(){
    ══════════════════════════════════════════════════════ */
 function splitToSentences(text){
     if(!text) return [];
-    const parts = text.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [text];
-    return parts.map(s => s.trim()).filter(Boolean);
+    // v-no-83-split-fix — participant report: "No. 83" was being read as if
+    // "No." ended a sentence, so "83" was spoken later as its own line. The
+    // period-based splitter below can't tell an abbreviation's period from a
+    // sentence-ending one, so first protect the periods that shouldn't split:
+    // common abbreviations (No., Mr., Dr., St., vs., e.g., etc.) and any
+    // period immediately followed by a number (covers "No. 83", decimals like
+    // "3.14", etc.) get swapped for a placeholder, then restored after
+    // splitting.
+    const PROTECT_ABBR = /\b(No|Mr|Mrs|Ms|Dr|Prof|St|vs|approx|e\.g|i\.e|etc|Fig|pp|cf)\.(?=\s)/gi;
+    let protectedText = text.replace(PROTECT_ABBR, m => m.slice(0, -1) + '\u0000');
+    protectedText = protectedText.replace(/\.(?=\s*\d)/g, '\u0000');
+    const parts = protectedText.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) || [protectedText];
+    return parts.map(s => s.replace(/\u0000/g, '.').trim()).filter(Boolean);
 }
 
 // 문장 각각이 원문(fullText) 안에서 시작하는 글자 위치. speak()가
@@ -2339,7 +2391,7 @@ function _processTouch(key){
     visited.add(key);
     updateProgress();
 
-    document.getElementById('focus-tag').textContent = '지금 만지신 곳 — ' + d.title;
+    document.getElementById('focus-tag').textContent = 'You are touching — ' + d.title;
     // v-answer-replay — 챗봇 답변 뒤에 곧바로 다른 부위를 만지면, 이 부위
     // 해설 자막에는 더 이상 "탭하면 다시 듣기"가 적용되지 않으므로
     // 포인터 커서 표시(위 #caption.replayable)도 함께 지운다.
@@ -3453,11 +3505,11 @@ function showCertificate(isComplete){
             }
         });
         if(qaPairs.length){
-            const h = document.createElement('h3'); h.textContent = '챗봇과 나눈 대화';
+            const h = document.createElement('h3'); h.textContent = 'Conversation with the Chatbot';
             chatLogEl.appendChild(h);
             qaPairs.forEach(pair => {
                 const qShort = _capToMaxLength(pair.q, 40);
-                const aShort = pair.aParts.length ? _capToMaxLength(pair.aParts.join(' '), 60) : '(답변 없음)';
+                const aShort = pair.aParts.length ? _capToMaxLength(pair.aParts.join(' '), 60) : '(no answer)';
                 const p = document.createElement('p');
                 const qLine = document.createElement('span'); qLine.innerHTML = '<b>Q.</b> ';
                 qLine.appendChild(document.createTextNode(qShort));
@@ -3470,12 +3522,12 @@ function showCertificate(isComplete){
     }
 
     const certLineText = (visited.size >= ORDER.length)
-        ? '열한 곳을 모두 만나셨습니다.'
-        : (remain > 0 ? `아직 ${_koreanCountWord(remain)}곳이 남아 있습니다.` : '열한 곳을 모두 만나셨습니다.');
+        ? 'You\u2019ve met all eleven spots.'
+        : (remain > 0 ? `There ${remain === 1 ? 'is' : 'are'} still ${remain} spot${remain === 1 ? '' : 's'} left.` : 'You\u2019ve met all eleven spots.');
     document.getElementById('cert-line').textContent = certLineText;
 
     const now = new Date();
-    document.getElementById('cert-date').textContent = now.toLocaleString('ko-KR',
+    document.getElementById('cert-date').textContent = now.toLocaleString('en-US',
         { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
 
     // v48 — 완주 여부와 관계없이 도착지는 항상 같다(처음 화면).
@@ -3496,7 +3548,7 @@ function showCertificate(isComplete){
     // v-yeoil-label-unify — 참가자 요청: "'마음을 비우고 여일' 버튼은
     // '여일' 버튼으로 이름을 바꿔달라." 완주 여부와 상관없이 버튼 이름을
     // '여일' 하나로 통일한다 — 실제 동작(beginYeoilExit)은 그대로다.
-    primaryBtn.textContent = '여일';
+    primaryBtn.textContent = 'Serenity';
     primaryBtn.removeAttribute('data-tap-action');
     primaryBtn.onclick = beginYeoilExit;
 
@@ -3531,7 +3583,7 @@ function showCertificate(isComplete){
     // 내용은 빼고." "여일(如一)은 '한결같다'는 뜻으로..." 설명은 이제
     // 여기서 말하지 않고, beginYeoilExit()의 마지막 부분(마음 비우기
     // 화면)에서만 보여주고 들려준다.
-    speak(`지금까지 열한 곳 중 ${_koreanCountWord(visited.size)}곳을 손끝으로 만나셨습니다. ${certLineText}`);
+    speak(`So far you\u2019ve met ${visited.size} of eleven spots by fingertip. ${certLineText}`);
 }
 
 let _certLastFocused = null;
@@ -3625,7 +3677,7 @@ function beginYeoilExit(){
     // 시켰는데, 그 타이머를 전부 없앴다 — 해설은 끊기지 않고 끝까지
     // 나오고, 그 뒤 실제로 언제 떠날지는 전적으로 관람객이 아래
     // "전시실 1로 이동" 버튼을 눌러 스스로 정한다.
-    speak(`이제, 마음을 비우고 돌아갑니다. ${yeoilText} ${meaningText}`);
+    speak(`Now, let\u2019s set the mind down and return. ${yeoilText} ${meaningText}`);
 }
 
 // v-yeoil-room-buttons — 참가자 요청: "전시실2 버튼을 만들어줘", 그리고
@@ -6128,7 +6180,7 @@ function _asUnattributedAnswer(raw){
 async function _answerFreeformTwoVoice(q, philRef){
     showChatAnswerInCaption('Contemplation Counsel — thinking…', 'Thinking…');
     speak('잠시만요, 생각하고 있습니다.');
-    const aiBubble = pushLog('ai', '생각하는 중…');
+    const aiBubble = pushLog('ai', 'Thinking…');
     // v-life-part-context — 참가자 요청: 걱정·인생 같은 개인적 질문은
     // 두 조각상의 관점 차이가 실제로 답을 갈라놓으므로, 지금 만지고
     // 있는 부위의 상세 해설(detail/detailSimple)을 LLM에게만 참고자료로
@@ -6153,7 +6205,7 @@ async function _answerFreeformTwoVoice(q, philRef){
         ? `[Reference material — an existing model answer to the same question (for tone reference only, not to be copied verbatim): The Thinker — ${philRef.rodin} / The Pensive Bodhisattva — ${philRef.maitreya}]\n`
         : '';
     const raw = await fetchDetailAI(philContext + partContext + 'Visitor’s question: ' + q, '', (partial) => {
-        const shown = String(partial || '생각하는 중…');
+        const shown = String(partial || 'Thinking…');
         aiBubble.textContent = shown;
         // v-chat-scroll-to-top — pushLog가 이미 이 말풍선을 화면 위쪽에
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
@@ -6299,7 +6351,7 @@ async function _processChatAnswer(q, forceLLM){
     // 있지 않고 문장이 흐르듯 나타나 체감 대기 시간이 줄어든다. 아래
     // 해설창(#caption) 동기화는 화면을 보기 어려운 관람객을 위해 그대로
     // 유지한다(음성 자막 동기화, v-chat-caption-sync).
-    const aiBubble = pushLog('ai', '생각하는 중…');
+    const aiBubble = pushLog('ai', 'Thinking…');
     const d = currentKey ? DETAILS[currentKey] : null;
     const contextLine = d ? `The visitor is currently touching the ${d.title} part of the two statues. ` : '';
     const grounding = await _searchBestGrounding(q, d ? d.title : null, 3);
@@ -6335,7 +6387,7 @@ async function _processChatAnswer(q, forceLLM){
     // 어차피 둘로 나눠 보여줄 수 없다), 스트리밍이 끝난 뒤에만 아래에서
     // 두 목소리로 다시 렌더링한다.
     const answer = await fetchDetailAI(contextLine + 'Visitor’s question: ' + q, fullRagBlock, (partial) => {
-        const shown = String(partial || '생각하는 중…');
+        const shown = String(partial || 'Thinking…');
         document.getElementById('caption').innerHTML = shown.replace(/\n/g, '<br>');
         aiBubble.textContent = shown;
         // v-chat-scroll-to-top — pushLog가 이미 이 말풍선을 화면 위쪽에

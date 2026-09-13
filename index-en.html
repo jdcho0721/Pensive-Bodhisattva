@@ -1280,7 +1280,7 @@ let easyMode = false;
 
 let autoTimer = null;   
 let speechGen = 0;      
-const LINE_PAUSE_MS  = 800;  // v-line-pause-shorten — 참가자 요청: "다음 자막 페이지로 넘어가는 시간이 좀 길게 느껴진다. 조금만 줄여줘." v49에서 700ms → 1100ms로 늘렸던 것을, 그 중간 지점인 800ms로 조금 줄였다(다시 700ms로 완전히 되돌리진 않아, 이전 "너무 빠르다"는 불만도 같이 존중한다).
+const LINE_PAUSE_MS  = 500;  // v-line-pause-shorten-2 — participant report: "moving from one caption to the next is too slow" even at the earlier 800ms compromise. Cut further to 500ms.
 const LAYER_PAUSE_MS = 350;   // v-page-pause-shorten-2 — 참가자 요청: "페이지 넘어가는 게 너무 늦다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 800ms → 350ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');
@@ -1343,6 +1343,9 @@ let _arrivalMessageConsumed = !_arrivedFromNext;
 function handleGateScreenTap(){
     if(!_arrivalMessageConsumed){
         _arrivalMessageConsumed = true;
+        // v-first-entry-silent-fix — same synchronous unlock as enterRoom(),
+        // for the ?from=next arrival-message path.
+        try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
         try{
             speak('This is Resonance of Silence, Room 1, Encounter. On each caption, tap the left area to go back, or the right area to move forward.', enterRoom);
         }catch(err){ enterRoom(); }
@@ -1362,6 +1365,23 @@ setTimeout(()=>{
 }, 700);
 
 function enterRoom(){
+    // v-first-entry-silent-fix — participant report: "voice narration
+    // doesn't play on first entry to index-en." Root cause: speak() below
+    // waits on _ensureVoicesReady() (a Promise) plus a setTimeout(60) before
+    // actually calling speechSynthesis.speak(). On a cold page load, voices
+    // usually aren't loaded yet, so that wait is real — and by the time it
+    // resolves, this call is no longer happening synchronously within the
+    // tap's event handler. Some browsers only allow speechSynthesis to be
+    // used when it's invoked synchronously (or very close to it) inside a
+    // real user gesture, and silently drop anything called after an async
+    // gap — so specifically the very first utterance (before voices are
+    // cached) could be blocked with no error and no sound. Speaking an
+    // empty utterance right here, synchronously inside the tap handler,
+    // "unlocks" the Speech Synthesis API for the browser's own gesture
+    // check; the real narration a few lines below then plays normally even
+    // after its own async delay, because the API is already unlocked for
+    // the rest of this session.
+    try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
     // v59 — 진입 화면 동안 TalkBack 스와이프 탐색에서 제외해뒀던 상단
@@ -1700,6 +1720,33 @@ function _pickBestKoreanVoice(){
     const us = enVoices.find(v => /^en-US/i.test(v.lang));
     return neural || us || enVoices[0];
 }
+// v-speaker-voice-distinct — same fix as room2-en.html: give Rodin and the
+// Pensive Bodhisattva each a voice matching their character, not just a
+// pitch/rate offset on the same voice, when the device/browser offers more
+// than one English voice to choose from.
+const _RODIN_VOICE_HINTS = /\bmale\b|david|daniel|alex|fred|mark|george|thomas|ryan|guy|arthur|oliver/i;
+const _MAITREYA_VOICE_HINTS = /\bfemale\b|samantha|zira|karen|victoria|susan|moira|tessa|fiona|serena|allison|ava/i;
+function _pickVoiceForSpeaker(speakerKey){
+    if(!speakerKey) return _pickBestKoreanVoice();
+    const voices = window.speechSynthesis.getVoices() || [];
+    const enVoices = voices.filter(v => /^en/i.test(v.lang));
+    if(enVoices.length <= 1) return _pickBestKoreanVoice();
+    const isNeural = v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name);
+    const pool = enVoices.some(isNeural) ? enVoices.filter(isNeural).concat(enVoices.filter(v=>!isNeural(v))) : enVoices.slice();
+    let rodinVoice = pool.find(v => _RODIN_VOICE_HINTS.test(v.name));
+    let maitreyaVoice = pool.find(v => _MAITREYA_VOICE_HINTS.test(v.name) && v !== rodinVoice);
+    if(!rodinVoice && !maitreyaVoice){
+        rodinVoice = pool[0];
+        maitreyaVoice = pool.find(v => v !== rodinVoice) || pool[0];
+    } else if(!rodinVoice){
+        rodinVoice = pool.find(v => v !== maitreyaVoice) || pool[0];
+    } else if(!maitreyaVoice){
+        maitreyaVoice = pool.find(v => v !== rodinVoice) || pool[0];
+    }
+    if(speakerKey === 'rodin') return rodinVoice;
+    if(speakerKey === 'maitreya') return maitreyaVoice;
+    return _pickBestKoreanVoice();
+}
 function speak(text, onEnd, speaker){
     lastSpokenText = text;
     lastSpokenSpeaker = speaker || null;
@@ -1751,7 +1798,7 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
 
     const u = new SpeechSynthesisUtterance(raw);
     u.lang = 'en-US';
-    const _bestVoice = _pickBestKoreanVoice();
+    const _bestVoice = _pickVoiceForSpeaker(speaker);
     if(_bestVoice) u.voice = _bestVoice;
     // v-maitreya-comfort — room2.html과 동일한 참가자 요청: "로댕에 대한
     // 해설의 경우 피치(0.90)와 느린 속도(0.94), 반가사유상의 목소리는
@@ -1769,7 +1816,15 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     if(speaker==='rodin'){ basePitch = 0.90; baseRateMult = 0.94; }
     else if(speaker==='maitreya'){ basePitch = 0.84; baseRateMult = 0.90; }
     else { basePitch = 1.0; baseRateMult = 1.0; }
-    u.rate = TTS_RATE * baseRateMult;
+    // v-en-rate-slow — participant report: "English narration playback
+    // speed is a bit fast." The same numeric TTS_RATE that felt right for
+    // the Korean voice reads noticeably quicker in English (English TTS
+    // voices tend to speak faster per rate unit than the Korean voice this
+    // was tuned against), so apply a small English-only correction factor
+    // on top of the visible Speed button's steps, without changing what
+    // the button itself displays (still "Speed 1.0x" etc.).
+    const EN_RATE_ADJUST = 0.85;
+    u.rate = TTS_RATE * EN_RATE_ADJUST * baseRateMult;
     // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 아주 미세하게
     // (±3~5% 안팎)만 흔들어, 폭을 좁게 둬서 부자연스럽게 튀지 않게 한다.
     const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
