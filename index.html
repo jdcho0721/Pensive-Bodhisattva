@@ -1113,7 +1113,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          무시되어 이동 자체가 실행되지 않는 경우가 있었다. room2.html의
          전시1 버튼(#exhibit1-btn)처럼 확인 절차 없는 단순 클릭으로
          바꿔, 이런 경합 자체가 생기지 않게 한다. -->
-    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2.html'" aria-label="전시실 2로 이동합니다." data-tap-action="전시실 2로 이동합니다.">전시2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="speechGen++;window.speechSynthesis.cancel();location.href='room2.html'" aria-label="전시실 2로 이동합니다." data-tap-action="전시실 2로 이동합니다.">전시2</button>
 </div>
 </div>
 
@@ -1496,7 +1496,10 @@ let bgmVolume = 0.7; // v79 — 참가자 요청: "볼륨을 좀 더 작게 해�
 // 배율을 곱해도 한국어 쪽이 더 조용하게 들린다. 코드로 음성 엔진 자체의
 // 기본 음량까지 바꿀 수는 없으므로, 한국어판의 배율 자체를 최대치로
 // 올려 체감 음량 차이를 보정한다.
-const NARRATION_VOLUME = 1.0;
+// v-ko-volume-revert — 참가자 지적: "모바일에서 볼륨이 너무 크다. 0.7로
+// 돌려줘." 데스크톱 기준으로 올렸던 1.0이 모바일 스피커에서는 과했다.
+// 0.7로 되돌린다(영어판과 동일한 값).
+const NARRATION_VOLUME = 0.7;
 const _audioBaseTarget = {};
 function onVolumeChange(v){
     bgmVolume = Math.max(0, Math.min(1, Number(v) / 100));
@@ -1802,9 +1805,15 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     // 버튼은 여전히 전체 속도를 조절하고, 그 위에 화자별 상대적인
     // 빠르기 차이만 얹는다.
     let basePitch, baseRateMult;
-    if(speaker==='rodin'){ basePitch = 0.90; baseRateMult = 0.94; }
-    else if(speaker==='maitreya'){ basePitch = 0.84; baseRateMult = 0.90; }
-    else { basePitch = 1.0; baseRateMult = 1.0; }
+    // v-pitch-lower-again — 참가자 지적: "모바일에서 한국어 음성의 피치가
+    // 너무 높아서 듣기 어렵다." 지금까지는 로댕(0.90)·반가사유상(0.84)만
+    // 조정했고, 화자 없는 일반 내레이션(오리엔테이션 등 상당 부분을
+    // 차지)은 한 번도 낮춘 적이 없어 1.0(원래 음성 그대로)이었다 — 이
+    // 부분이 계속 높게 들리던 실제 원인일 가능성이 크다. 세 값을 모두
+    // 한 단계 더 낮춘다.
+    if(speaker==='rodin'){ basePitch = 0.82; baseRateMult = 0.94; }
+    else if(speaker==='maitreya'){ basePitch = 0.76; baseRateMult = 0.90; }
+    else { basePitch = 0.88; baseRateMult = 1.0; }
     u.rate = TTS_RATE * baseRateMult;
     // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 아주 미세하게
     // (±3~5% 안팎)만 흔들어, 폭을 좁게 둬서 부자연스럽게 튀지 않게 한다.
@@ -2783,8 +2792,13 @@ function _exitInfoOneLevel(){
 // 이 앱을 모바일 웹뷰(홈 화면에 추가한 형태 등)로 열었을 때는 이렇게
 // 비운 화면이 사실상 "종료"와 같은 효과를 낸다.
 function exitExhibit(){
-    try{ window.speechSynthesis.cancel(); }catch(err){}
+    // v-speechgen-nav-fix — 참가자 지적: "빠져나왔는데도 계속 음성 해설이
+    // 나오고 있다." speechGen++ 순서가 cancel() 뒤에 있으면, 그 짧은
+    // 틈에 이미 예약돼 있던 다음 문장 타이머가 "아직 유효한 요청"으로
+    // 보고 새 발화를 시작해버릴 수 있다. speechGen을 먼저 올려 그 창을
+    // 없앤다.
     speechGen++;
+    try{ window.speechSynthesis.cancel(); }catch(err){}
     clearTimeout(autoTimer);
     try{ window.close(); }catch(err){}
     setTimeout(function(){
@@ -2800,6 +2814,13 @@ function goToRoom2(e) {
     }
     if(_leavingRoom1) return;
     _leavingRoom1 = true;
+    // v-speechgen-nav-fix — 참가자 지적: "전시2로 이동했는데 전시1 해설이
+    // 나오고 있다." speechSynthesis.cancel()만으로는 부족했다 — 문장
+    // 큐(_speakSentenceQueue)가 이미 예약해둔 다음 setTimeout 콜백은
+    // speechGen이 그대로면 cancel() 이후에도 "아직 유효한 요청"으로 보고
+    // 다음 문장을 다시 speak()해버린다. speechGen을 먼저 증가시켜야 그
+    // 콜백이 자기 자신을 무효한 요청으로 인식하고 멈춘다.
+    speechGen++;
     try { window.speechSynthesis.cancel(); } catch(err) {}
     // 모바일 환경에서 캐시나 히스토리 충돌을 방지하기 위해 replace 사용 권장
     location.replace('room2.html?from=next');
