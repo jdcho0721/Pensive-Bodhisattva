@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-<title>전시실 1 · 조우(만나기) — 침묵의 공명</title>
+<title>Room 1 · Encounter — Resonance of Silence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -723,7 +723,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      화면이 떠 있는 동안 이 버튼들을 스와이프 탐색·터치 모두에서
      완전히 제외해, TalkBack 사용자가 첫 스와이프부터 곧장 진입
      안내문과 시작 버튼을 만나도록 했다(enterRoom()에서 해제). -->
-<div id="top-controls" role="group" aria-label="설정" inert aria-hidden="true">
+<div id="top-controls" role="group" aria-label="Settings" inert aria-hidden="true">
     <!-- v60 — 참가자 보고: "속도 버튼 옆에 '개'라는 글자가 보인다."
          원인: 정보 버튼에 쓰던 ⓘ(U+24D8, 동그라미 친 i) 기호가 일부
          모바일 기기의 기본 폰트(Noto Serif KR)에는 포함돼 있지 않아,
@@ -742,9 +742,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          대체 문제도, 이번에 지적된 사선처럼 보이는 문제도 함께
          해결된다. 화면낭독기가 읽는 이름은 여전히 아래 aria-label
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
-    <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
-    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">쉬운 문장</button>
+    <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-action="Opens the artwork and copyright notice"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">Easy sentences</button>
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
          쓸어넘기면 값을 조절할 수 있다(표준 range 컨트롤 동작).
@@ -753,10 +753,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          배경음악 크기만 조절하는 게이지로 바꿔달라." 이제 이 슬라이더는
          배경음악에만 적용되고 내레이션 음량은 고정이다(자세한 내용은
          onVolumeChange()/NARRATION_VOLUME 주석 참고). -->
-    <div id="volume-control" role="group" aria-label="배경음악 크기">
+    <div id="volume-control" role="group" aria-label="Background music volume">
         <span aria-hidden="true">🔊</span>
         <input type="range" id="volume-slider" min="0" max="100" value="70" step="10"
-               aria-label="배경음악 크기 조절, 현재 70퍼센트"
+               aria-label="Adjust background music volume, currently 70 percent"
                oninput="onVolumeChange(this.value)">
     </div>
     <!-- v-exit-btn — 참가자 요청: 오른쪽 상단에 "나가기" X 버튼. "안내 후
@@ -764,175 +764,142 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          이 버튼의 id를 등록해뒀다 — 실수로 한 번 스치듯 눌러 바로
          종료되는 일이 없도록 하기 위함이다. (v88 — 전시2 버튼은 더 이상
          이 목록에 없다. 자세한 이유는 #btn-next-exhibit 주석 참고.) -->
-    <button class="btn" id="btn-exit" onclick="exitExhibit()" aria-label="이 버튼은 나가기 버튼입니다." data-tap-action="화면을 종료합니다."><span aria-hidden="true">✕</span></button>
+    <button class="btn" id="btn-exit" onclick="exitExhibit()" aria-label="This is the exit button." data-tap-action="Closes the screen."><span aria-hidden="true">✕</span></button>
 </div>
-<div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권" onclick="if(event.target && event.target.id==='info-overlay') closeInfo();">
+<div id="info-overlay" role="dialog" aria-modal="true" aria-label="Artwork and artist introduction, and copyright" onclick="if(event.target && event.target.id==='info-overlay') closeInfo();">
     <div id="info-card">
-        <h2>침묵의 공명</h2>
+        <h2>Resonance of Silence</h2>
 
-        <div id="info-audio-nav" role="group" aria-label="음성 안내 선택">
-            <!-- v-exhibit-intro-split — 참가자 요청: "i 버튼에서 작품소개
-                 버튼으로 들어가면 전시 소개가 나오고 다음 작품소개가
-                 나오는데, 그 전시소개는 따로 버튼을 만들어 그곳으로
-                 이동시켜달라." 원래 data-kind="intro" 섹션 하나 안에
-                 "전시소개"(전시 취지·일정·기획팀 등)와 "작품 소개"(작품·
-                 작가 배경)가 이어 붙어 있어, 작품 소개만 들으려 해도 그
-                 앞의 전시소개까지 함께 스크롤해야 했다. 이제 전시소개를
-                 별도 섹션(data-kind="exhibit")과 별도 버튼으로 분리했다.
-                 v-info-reorganize — 참가자 요청: "작품소개 및 사용법을
-                 다시 정리해달라 — 전시소개를 맨 앞으로, 그 다음 작가소개,
-                 그 다음 작품소개(이제 '전시1 작품소개')와 이용방법(이제
-                 '전시1 이용방법')은 전시실1에 대해 설명하도록." 순서를
-                 전시소개→작가소개→작품소개→이용방법으로 바꾸고, 아래
-                 두 버튼 이름에 "전시1"을 붙여 이 페이지(전시실 1)에
-                 대한 설명임을 명확히 한다 — 실제 내용은 원래부터 이미
-                 전시실 1 전용이었으므로(아래 intro·usage 섹션은 손대지
-                 않았다), 버튼 이름과 순서만 바로잡는다. -->
-            <button type="button" class="info-audio-btn" data-kind="exhibit" onclick="openInfoDetail('exhibit')" aria-label="전시 소개 음성 듣기">🔊 전시소개</button>
-            <button type="button" class="info-audio-btn" data-kind="artist" onclick="openInfoDetail('artist')" aria-label="작가 소개 음성 듣기">🔊 작가 소개</button>
-            <button type="button" class="info-audio-btn" data-kind="intro" onclick="openInfoDetail('intro')" aria-label="전시실 1 작품 소개 음성 듣기">🔊 전시1 작품소개</button>
-            <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="전시실 1 이용 방법 음성 듣기">🔊 전시1 이용방법</button>
+        <div id="info-audio-nav" role="group" aria-label="Choose an audio guide">
+            <button type="button" class="info-audio-btn" data-kind="exhibit" onclick="openInfoDetail('exhibit')" aria-label="Listen to the exhibition introduction">🔊 Exhibition</button>
+            <button type="button" class="info-audio-btn" data-kind="artist" onclick="openInfoDetail('artist')" aria-label="Listen to the artist introduction">🔊 Artist</button>
+            <button type="button" class="info-audio-btn" data-kind="intro" onclick="openInfoDetail('intro')" aria-label="Listen to the Room 1 artwork introduction">🔊 Room 1 Artworks</button>
+            <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="Listen to the Room 1 usage guide">🔊 Room 1 How-To</button>
         </div>
 
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
 
         <div class="info-section" data-kind="exhibit">
-        <h3>전시소개</h3>
-        <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
-        <p>모두를 위한 전시, 조각상을 만지다 — 손끝으로 완성하는 두 조각상의 대화, 반가사유상과 생각하는 사람.</p>
-        <p>눈을 넘어서 손끝과 귀로 완성하는 전시입니다. 국보 83호 금동미륵보살반가사유상과 로댕의 &lt;생각하는 사람&gt;을, 실물보다 작은 촉각 복제품과 촉각 및 음성 해설로 만나 보세요.</p>
-        <p class="label">전시 일정 및 장소</p>
-        <p>9.10(목)–9.12(토) 2026 세계국가유산산업전 · 경주화백컨벤션센터<br>9.20(일)–9.21(월) 국회의원회관 2층 로비</p>
+        <h3>Exhibition Introduction</h3>
+        <p class="label">A tactile and voice-interactive exhibition for the blind and hearing-impaired: Resonance of Silence</p>
+        <p>An exhibition for everyone, touching the statues — a dialogue between two statues completed by fingertip: the Pensive Bodhisattva and The Thinker.</p>
+        <p>An exhibition completed by fingertip and ear, beyond the eye. Meet National Treasure No. 83, the Gilt-Bronze Pensive Bodhisattva (Maitreya), and Rodin's The Thinker, through smaller-than-life tactile replicas and tactile and voice narration.</p>
+        <p class="label">Exhibition Dates and Venue</p>
+        <p>Sep 10 (Thu)–Sep 12 (Sat), 2026, World Heritage Industry Expo · Gyeongju HICO Convention Center<br>Sep 20 (Sun)–Sep 21 (Mon), 2nd floor lobby, National Assembly Members' Office Building</p>
 
-        <p class="label">왜 이 전시가 다른가</p>
-        <p>대부분의 박물관 전시는 '본다'는 것을 전제로 설계돼 있습니다. 이 전시는 반대로 시작합니다 — 시각장애인 방문객이 스크린리더 없이도, 동행 없이도 혼자서 끝까지 관람을 완결할 수 있도록, 촉각 복제 조각상·음성 내레이션·터치 기반 AI 챗봇을 중심에 두고 설계했습니다.</p>
-        <p>동양의 반가사유상과 서양의 &lt;생각하는 사람&gt;을 나란히 놓아, '힘든 마음'과 '따뜻한 마음'이라는 두 가지 태도를 비교하는 2개 전시실로 구성됩니다.</p>
-        <p class="label">전시실 1 · 조우</p>
-        <p>로댕의 생각하는 사람과 반가사유상의 복제 청동 조각상(50cm 높이)을 두 손으로 직접 만지며 형태와 자세, 그리고 음성해설을 통해 의미를 먼저 파악합니다. 음성해설은 피라미드 구조를 이용해서, 전체를 먼저 파악한 다음 각 부위에 대한 상세 설명이 제공됩니다.</p>
-        <p class="label">전시실 2 · 사유 및 체화</p>
-        <p>두 조각상(90cm 높이)의 부위(이마, 손, 발 등)를 손끝으로 짚으면 그 자리의 의미를 음성으로 들려주고, 궁금한 점은 AI 챗봇에게 자유롭게 물어볼 수 있습니다. 또한 조각상의 모습을 따라하며, 손끝을 넘어 온몸으로 작품을 체감합니다.</p>
+        <p class="label">Why This Exhibition Is Different</p>
+        <p>Most museum exhibitions are designed on the premise of "seeing." This exhibition begins from the opposite premise — it is designed around tactile replica statues, voice narration, and a touch-based AI chatbot, so that blind visitors can complete the visit on their own, without a screen reader and without a companion.</p>
+        <p>Placing the Eastern Pensive Bodhisattva and the Western Thinker side by side, the exhibition is organized into two rooms comparing two attitudes: a "difficult mind" and a "warm mind."</p>
+        <p class="label">Room 1 · Encounter</p>
+        <p>Touching replica bronze statues of Rodin's The Thinker and the Pensive Bodhisattva (50 cm tall) directly with both hands, visitors first grasp form and posture, then meaning through voice narration. The narration uses a pyramid structure, giving the whole picture first, then detailed explanations of each part.</p>
+        <p class="label">Room 2 · Contemplation and Embodiment</p>
+        <p>Touching a part of either statue (90 cm tall) — forehead, hand, foot, and so on — with a fingertip plays a voice explanation of that spot's meaning, and any further questions can be asked freely to an AI chatbot. Visitors can also mirror the statues' poses, experiencing the work with the whole body, not just the fingertips.</p>
 
-        <p class="label">전시 기획/제작팀</p>
-        <p>전시 총괄 및 디지털 인터랙션 — 조준동 (성균관대 명예교수)<br>청동 복제품 제작 및 전시 준비 — 김호용 (Wipco 대표)<br>장애인 접근성 — 육근해 (장애인문화접근성연구소 대표)</p>
+        <p class="label">Exhibition Planning/Production Team</p>
+        <p>Exhibition direction and digital interaction — Jun-Dong Cho (Professor Emeritus, Sungkyunkwan University)<br>Bronze replica production and exhibition preparation — Ho-Yong Kim (CEO, Wipco)<br>Disability accessibility — Geun-Hae Yuk (Director, Institute for Accessibility Research for the Disabled)</p>
 
-        <p class="label">접근성 특징</p>
-        <p><b>WCAG 2.1 AA 준수</b> — 웹 접근성 국제 표준을 준수해 설계됐습니다.<br>
-        <b>스크린리더 완벽 지원</b> — TalkBack·VoiceOver를 지원해 모든 화면 정보를 음성으로 안내합니다.<br>
-        <b>실물 촉각 복제품</b> — 물리적 촉각 조각상과 모바일 음성 안내가 실시간으로 함께 진행됩니다.<br>
-        <b>AI 음성 대화</b> — 궁금한 점을 자유롭게 묻고 답을 들을 수 있는 AI 챗봇을 탑재했습니다.</p>
+        <p class="label">Accessibility Features</p>
+        <p><b>WCAG 2.1 AA compliant</b> — designed to meet international web accessibility standards.<br>
+        <b>Full screen-reader support</b> — supports TalkBack and VoiceOver, narrating all on-screen information aloud.<br>
+        <b>Physical tactile replicas</b> — physical tactile statues paired with real-time mobile voice guidance.<br>
+        <b>AI voice conversation</b> — an AI chatbot lets visitors freely ask and hear answers to their questions.</p>
 
         </div>
 
         <div class="info-section" data-kind="artist">
-        <h3>"침묵의 공명" 작가 소개</h3>
-        <p class="label">조준동 (趙浚東)</p>
-        <p>기획·연출 · 성균관대학교 전자전기공학부 명예교수</p>
-        <p>학력 — 성균관대학교 전자공학 학사, New York (Poly) University 컴퓨터과학 석사, 노스웨스턴 대학교(Northwestern University) 컴퓨터과학 박사</p>
-        <p>주요 경력 — 성균관대학교 일반대학원 휴먼ICT융합학과 창설</p>
-        <p>주요 관심사 — 인간-컴퓨터 상호작용(HCI), UX 디자인, 멀티모달 인터페이스 개발. 인문학·예술·기술을 결합한 '휴마트올로지(Humartology)'라는 개념을 창안하여, 기술과 예술을 접목한 디지털 인터랙티브 아트 작품을 제작하고 있습니다.</p>
+        <h3>"Resonance of Silence" — Artist Introduction</h3>
+        <p class="label">Jun-Dong Cho (趙浚東)</p>
+        <p>Planning and direction · Professor Emeritus, School of Electronic and Electrical Engineering, Sungkyunkwan University</p>
+        <p>Education — B.S. in Electronic Engineering, Sungkyunkwan University; M.S. in Computer Science, New York Institute of Technology; Ph.D. in Computer Science, Northwestern University</p>
+        <p>Career highlights — Founded the Human-ICT Convergence graduate program at Sungkyunkwan University</p>
+        <p>Main research interests — Human-computer interaction (HCI), UX design, and multimodal interface development. He coined the concept "Humartology," fusing humanities, art, and technology, and creates digital interactive artworks combining technology and art.</p>
 
-        <h3>전시 철학 (Humartology)</h3>
-        <p>Human + Art + Technology의 융합을 뜻하는 휴마톨로지 철학을 바탕으로, 장애와 비장애의 경계를 허물고 모두가 평등하게 천년의 사유에 접속할 수 있는 접근성의 미학을 구현합니다.</p>
+        <h3>Exhibition Philosophy (Humartology)</h3>
+        <p>Grounded in the Humartology philosophy — the fusion of Human, Art, and Technology — this exhibition dissolves the boundary between disabled and non-disabled visitors, realizing an aesthetics of accessibility where everyone can equally access a thousand years of contemplation.</p>
 
         </div>
 
         <div class="info-section" data-kind="intro">
-        <h3>작품 소개</h3>
-        <p class="label">작품명 — 《침묵의 공명 — 조우 (만나기)》</p>
-        <p>이 전시는 두 개의 조각상, 금동미륵보살반가사유상과 로댕의 &lt;생각하는 사람&gt;을 나란히 놓아 '힘든 마음'과 '따뜻한 마음'이라는 두 가지 태도를 비교합니다. 반가사유상은 부드러운 곡선으로 괴로운 마음을 내려놓은 편안함을, &lt;생각하는 사람&gt;은 긴장한 근육으로 사람이 살아가며 짊어진 무거운 마음을 표현합니다. 두 조각상 모두 고개를 숙이고 손을 얼굴 가까이 둔 자세로, 이는 사유와 명상을 상징하는 공통된 조형 언어입니다.</p>
-        <p class="label">금동미륵보살반가사유상 (金銅彌勒菩薩半跏思惟像)</p>
-        <p>삼국시대(6~7세기)에 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 국립중앙박물관이 소장한 대표적인 두 점은 각각 국보 제78호와 제83호로 지정됐었으며, 지금은 지정번호 없이 '국보'로만 표기합니다.</p>
-        <p class="label">금동미륵보살반가사유상 — 제작자 미상</p>
-        <p>삼국시대 장인의 손에서 태어난 것으로 추정될 뿐, 개별 작가의 이름은 전해지지 않습니다.</p>
-        <p class="label">&lt;생각하는 사람&gt; (Le Penseur)</p>
-        <p>프랑스 조각가 오귀스트 로댕이 1880년경 &lt;지옥의 문&gt; 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.</p>
+        <h3>Artwork Introduction</h3>
+        <p class="label">Title — Resonance of Silence: Encounter</p>
+        <p>This exhibition places two statues, the Gilt-Bronze Pensive Bodhisattva (Maitreya) and Rodin's The Thinker, side by side to compare two attitudes: a "difficult mind" and a "warm mind." The Pensive Bodhisattva's soft curves express the comfort of a troubled mind set down; The Thinker's tensed muscle expresses the heavy mind a person carries through life. Both statues share a bowed head and a hand held near the face — a shared formal language symbolizing contemplation and meditation.</p>
+        <p class="label">Gilt-Bronze Pensive Bodhisattva (Maitreya) (金銅彌勒菩薩半跏思惟像)</p>
+        <p>A Buddhist sculpture estimated to have been made during the Three Kingdoms period (6th-7th century), depicting Maitreya, the bodhisattva who will save all beings in the future, absorbed in deep contemplation. It is notable for the half-lotus posture, right foot resting on the left knee, and fingers lightly touching the cheek. The two most representative examples, held by the National Museum of Korea, were once designated National Treasure No. 78 and No. 83, respectively; today they are labeled simply as National Treasures, without numbers.</p>
+        <p class="label">Gilt-Bronze Pensive Bodhisattva (Maitreya) — Artist Unknown</p>
+        <p>Believed to have been made by the hand of a Three Kingdoms-period artisan, but no individual artist's name has been passed down.</p>
+        <p class="label">The Thinker (Le Penseur)</p>
+        <p>First created around 1880 by the French sculptor Auguste Rodin as a figure atop The Gates of Hell, then recast in 1904 as an independent, large-scale bronze. A masterpiece of modern sculpture expressing, through tensed muscle and a hunched posture, the difficult mind a person carries through life.</p>
         <figure>
-            <img src="gate-of-hell.png" alt="로댕의 청동 조각 <지옥의 문>. 상단 중앙에 <생각하는 사람>이 앉아 있고, 문 전체에 지옥에서 고통받는 인간 군상 200여 점이 뒤엉켜 있다.">
-            <figcaption>&lt;지옥의 문&gt; (La Porte de l'Enfer) · 출처: 로댕 미술관, 파리</figcaption>
+            <img src="gate-of-hell.png" alt="Rodin's bronze sculpture The Gates of Hell. The Thinker sits at the top center, and the gate as a whole is covered with some 200 entangled figures of humans suffering in Hell.">
+            <figcaption>The Gates of Hell (La Porte de l'Enfer) · Source: Musée Rodin, Paris</figcaption>
         </figure>
-        <p class="label">오귀스트 로댕 (Auguste Rodin, 1840~1917)</p>
-        <p>프랑스의 조각가. &lt;칼레의 시민&gt;, &lt;지옥의 문&gt; 등을 남겼으며, 인체의 사실적 표현과 표면의 거친 질감으로 근대 조각의 새 장을 열었다고 평가받는다.</p>
+        <p class="label">Auguste Rodin (1840-1917)</p>
+        <p>French sculptor. Left behind works such as The Burghers of Calais and The Gates of Hell, and is credited with opening a new chapter in modern sculpture through the realistic rendering of the human body and rough surface texture.</p>
 
         </div>
 
         <div class="info-section" data-kind="usage">
-        <h3>이용 방법</h3>
-        <p>관람 순서 화면(첫 화면)에서 <b>화면 아무 곳이나 한 번 가볍게 두드리면</b> 안내 음성이 나온 뒤 바로 전시실 1로 입장합니다. 이 화면 맨 아래의 <b>배경음악</b> 버튼으로 입장 전 배경음악을 켜고 끌 수 있습니다.</p>
-        <p>입장한 뒤에는, 자막이 떠 있는 화면의 <b>왼쪽 영역을 두드리면 이전 이야기</b>로, <b>오른쪽 영역을 두드리면 다음 이야기</b>로 넘어갑니다. 손이 닿는 곳의 조각상 복제품(로댕과 반가사유상 모두 실물보다 작은 크기)을 이야기를 들으며 편하게 만져보세요.</p>
-        <p>화면을 길게 누르거나, 화면 아래 "멈춤" 버튼을 누르면 잠시 멈추거나 다시 시작할 수 있습니다.</p>
-        <p>화면 위쪽 가운데의 네 개 점은 오리엔테이션·전체 구도·자세와 위치·대화, 네 단계를 나타내며, 원하는 점을 누르면 그 단계로 바로 건너뛸 수 있습니다.</p>
-        <p>화면 아래 <b>다시듣기</b>·<b>멈춤</b> 버튼과 화면 위쪽의 <b>속도</b>·<b>쉬운 문장</b> 버튼, <b>배경음악 크기</b> 슬라이더는 모두 누르거나 움직이는 즉시 바로 실행됩니다. <b>다시듣기</b>는 지금 보고 계신 자막을 다시 들려주고, <b>멈춤</b>은 재생을 멈추거나 이어서 들려주며, <b>속도</b>는 내레이션 속도를, <b>쉬운 문장</b>은 더 쉬운 문장으로, <b>배경음악 크기</b>는 배경음악의 크기만 조절합니다(내레이션 음량은 별도로 고정되어 있습니다).</p>
-        <p>오른쪽 위 <b>나가기(✕)</b> 버튼만은 한 번 누르면 이름을 말해주고, 한 번 더 누르거나 짧게 두 번 두드려야 실제로 실행됩니다 — 화면을 종료합니다(모바일 브라우저 정책상 종료가 항상 되지 않으면 화면이 비워집니다). <b>전시2</b> 버튼은 누르면 바로 전시실 2로 이동합니다.</p>
-        <p>같은 화면 위에서 전체 구도 소개부터 각 부위의 세부 설명까지 이어서 들려드립니다.</p>
-        <p>지금 보고 계신 이 안내창은 화면 아무 곳이나 한 번 가볍게 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.</p>
+        <h3>How to Use</h3>
+        <p>On the viewing-order screen (the first screen), <b>tap anywhere on the screen once, lightly,</b> and after the guidance voice plays, you'll enter Room 1 right away. Use the <b>Music</b> button at the bottom of this screen to turn background music on or off before entering.</p>
+        <p>Once inside, on the screen showing captions, <b>tap the left area to go back</b> to the previous line, or <b>tap the right area to move forward</b> to the next line. Feel free to comfortably touch the replica statues within your reach (both Rodin and the Pensive Bodhisattva are smaller than life size) while you listen to the narration.</p>
+        <p>Press and hold the screen, or press the <b>Pause</b> button at the bottom of the screen, to pause or resume at any time.</p>
+        <p>The four dots at the top center of the screen represent four stages — Orientation, Global Composition, Posture and Position, and Dialogue — and tapping any dot jumps straight to that stage.</p>
+        <p>The <b>Replay</b> and <b>Pause</b> buttons at the bottom of the screen, and the <b>Speed</b> and <b>Easy sentences</b> buttons and <b>background music volume</b> slider at the top, all take effect immediately on press or movement. <b>Replay</b> plays the caption you're currently viewing again; <b>Pause</b> stops or resumes playback; <b>Speed</b> adjusts the narration speed; <b>Easy sentences</b> switches to simpler sentences; and <b>background music volume</b> adjusts only the background music (narration volume is fixed separately).</p>
+        <p>Only the <b>Exit (✕)</b> button at the top right speaks its name on the first press, and needs a second press or a quick double-tap to actually activate — it closes the screen (if closing isn't always possible under mobile-browser policy, the screen goes blank instead). The <b>Room 2</b> button moves you straight to Room 2 when pressed.</p>
+        <p>On this same screen, the narration continues seamlessly from the overall composition introduction through to the detailed explanation of each part.</p>
+        <p>This info panel you're viewing now closes as soon as you tap anywhere on the screen once, lightly, or swipe from left to right.</p>
 
         </div>
 
-        <!-- v89 — 참가자 요청: "이용방법 맨 아래 있던 저작권·참고문헌을
-             3개 버튼이 나오는 메뉴 화면 아래로 옮겨달라." 원래 이용방법
-             섹션(data-kind="usage") 안에만 있던 것을 info-card 바로
-             아래(3개 info-section 밖)로 옮겼다 — 위 CSS의 메뉴 모드
-             예외 규칙 덕분에 메뉴 화면에서도, 기존처럼 각 상세 화면
-             에서도 항상 맨 아래에 보인다. -->
         <div class="copyright">
-            <p><b>저작권 안내</b></p>
-            <p>침묵의 공명 © 2026 조준동 · Humartology Lab. All rights reserved.</p>
-            <p>금동미륵보살반가사유상 원본 소장: 국립중앙박물관</p>
-            <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
+            <p><b>Copyright Notice</b></p>
+            <p>Resonance of Silence © 2026 Jun-Dong Cho · Humartology Lab. All rights reserved.</p>
+            <p>Gilt-Bronze Pensive Bodhisattva (Maitreya), original held by: National Museum of Korea</p>
+            <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
-        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="참고문헌 목록을 엽니다">참고문헌 보기</button>
-        <div id="refs-list" role="region" aria-label="참고문헌 목록">
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="Opens the reference list">View References</button>
+        <div id="refs-list" role="region" aria-label="Reference list">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
             <p><b>[3]</b> B. Vujanović, Rethinking Rodin's Thinker, Decorative Arts Society Journal 43 (2019) 61–71.</p>
             <p><b>[4]</b> Musée Rodin, The Gates of Hell, collection notice, meudon.musee-rodin.fr, accessed 2026.</p>
             <p><b>[5]</b> Musée Rodin, The Thinker, collection notice, musee-rodin.fr, accessed 2026.</p>
             <p><b>[6]</b> W.B. Kang, Wonyung-gwa-Johwa [원융과 조화], Youlhwadang, Seoul, 1990.</p>
-            <p><b>[7]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
+            <p><b>[7]</b> J.Y. Jeon, "The Most Exquisite Smile Humanity Has Ever Created, an Overwhelming Enlightenment," Munhwajae Sarang [Heritage Love] monthly magazine, no. 170, January 2019, Cultural Heritage Administration.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()">닫기</button>
+        <button id="info-close" onclick="closeInfo()">Close</button>
     </div>
 </div>
 
-<div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
+<div id="copyright-tag">© 2026 Jun-Dong Cho · Humartology Lab · Original Pensive Bodhisattva held by: National Museum of Korea</div><div id="copyright-tag">© 2026 조준동 · Humartology Lab · 반가사유상 실물 소장: 국립중앙박물관</div>
 
 <div id="intro-gate" class="intro-gate">
     <div class="gate-card">
     <p class="gate-eyebrow">Silent Resonance</p>
-    <h1>침묵의 공명</h1>
+    <h1>Resonance of Silence</h1>
     <div class="gate-rule" aria-hidden="true"></div>
-    <p class="intro-desc">로댕의 '생각하는 사람'과 국보 '반가사유상'의 만남.<br>'고뇌'에서 '자비'로 이어지는 울림을 체험해보세요.</p>
+    <p class="intro-desc">A meeting between Rodin's The Thinker and the National Treasure Pensive Bodhisattva.<br>Experience the resonance that carries from "anguish" to "compassion."</p>
 
-    <div class="gate-route" role="group" aria-label="관람 순서">
-        <span class="gate-route-title">관람 순서</span>
-        <span class="gate-route-item">전시실 1 · 조우</span>
-        <span class="gate-route-item">전시실 2 · 사유 및 체화</span>
+    <div class="gate-route" role="group" aria-label="Viewing order">
+        <span class="gate-route-title">Viewing Order</span>
+        <span class="gate-route-item">Room 1 · Encounter</span>
+        <span class="gate-route-item">Room 2 · Contemplation and Embodiment</span>
     </div>
 
-    <p class="gate-epigraph">몸을 통과하지 않은 사유는, 아직 사유가 아닙니다.</p>
+    <p class="gate-epigraph">A thought that has not passed through the body is not yet a thought.</p>
 
-    <!-- v-usage-update — 참가자 요청: "화면을 한번 터치하면 전시실로
-         입장합니다 하는 자막을 넣자." 입장 버튼이 사라졌으므로 이 문장을
-         맨 앞으로 옮겨 가장 먼저 눈에 띄게 했다. -->
-    <p class="gate-hint">화면을 한 번 터치하면 전시실로 입장합니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.</p>
-    <!-- v-bgm-bottom — 참가자 요청: "배경음악 버튼은 맨 아래에 넣어줘."
-         입장 버튼이 있던 시절엔 그 옆줄에 나란히 뒀지만, 이제 이 화면의
-         가장 마지막(맨 아래) 요소로 옮겼다. -->
+    <p class="gate-hint">Tap the screen once to enter the room. On each caption, tap the left area to go back, or the right area to move forward.</p>
     <div class="intro-btn-row">
-        <!-- v-bgm-toggle — room2.html의 배경음악 버튼과 같은 형식으로 추가.
-             #intro-gate 자체를 두드리면 입장 관련 동작이 걸리므로, 이 버튼을
-             눌렀을 때 함께 실행되지 않도록 event.stopPropagation()을 먼저
-             부른다(room2와 동일한 패턴). -->
         <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
-                aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
-                data-tap-name="배경음악"
-                onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
-        <button class="btn" id="btn-lang-en" type="button"
-                aria-label="Switch to English version"
-                data-tap-name="영문 버전"
-                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index-en.html'">EN</button>
+                aria-label="Background music is on. Press to turn it off."
+                data-tap-name="Background music"
+                onclick="event.stopPropagation();toggleBgm()">🔊 Music</button>
+        <button class="btn" id="btn-lang-ko" type="button"
+                aria-label="한국어 버전으로 전환합니다"
+                data-tap-name="Korean version"
+                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index.html'">KO</button>
     </div>
     </div>
 </div>
@@ -1066,10 +1033,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 <div id="eyebrow">전시실 1 · 소개</div>
 <div id="stage-badge" inert aria-hidden="true">
-    <button class="dot" data-i="0" aria-label="0단계 오리엔테이션으로 이동" onclick="jumpToStage(0)"></button>
-    <button class="dot" data-i="1" aria-label="1단계 전체 구도로 이동" onclick="jumpToStage(1)"></button>
-    <button class="dot" data-i="2" aria-label="2단계 자세와 위치로 이동" onclick="jumpToStage(2)"></button>
-    <button class="dot" data-i="3" aria-label="3단계 대화로 이동" onclick="jumpToStage(3)"></button>
+    <button class="dot" data-i="0" aria-label="Go to stage 0, Orientation" onclick="jumpToStage(0)"></button>
+    <button class="dot" data-i="1" aria-label="Go to stage 1, Global Composition" onclick="jumpToStage(1)"></button>
+    <button class="dot" data-i="2" aria-label="Go to stage 2, Posture and Position" onclick="jumpToStage(2)"></button>
+    <button class="dot" data-i="3" aria-label="Go to stage 3, Dialogue" onclick="jumpToStage(3)"></button>
 </div>
 
 <!-- ── 공용 자막/컨트롤 — 0단계부터 3단계까지 계속 이 하나만 쓴다 ── -->
@@ -1077,7 +1044,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <span class="caption-nav-hint left" aria-hidden="true">‹</span>
     <span class="caption-nav-hint right" aria-hidden="true">›</span>
     <div id="speaker-tag"></div>
-    <div id="caption-tag">오리엔테이션</div>
+    <div id="caption-tag">Orientation</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
     <div id="source-tag" aria-hidden="true"></div>
     <!-- v48 — 참가자 요청: TalkBack이 가능하게 해달라. 기존엔 "다음"
@@ -1088,8 +1055,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          "다음"을 추가해 TalkBack 사용자도 스와이프+더블탭만으로 전체
          내레이션을 끝까지 들을 수 있게 했다(자막 영역 탭도 그대로
          남겨둬 비장애 사용자의 빠른 진행은 유지). -->
-    <div id="next-stage-tag" role="status" aria-live="polite">다음 전시 단계로 이동하세요.</div>
-<div id="controls" role="group" aria-label="재생 제어">
+    <div id="next-stage-tag" role="status" aria-live="polite">Move to the next exhibition stage.</div>
+<div id="controls" role="group" aria-label="Playback controls">
     <!-- v-remove-back-next — 참가자 요청: "뒤로가기와 다음 버튼을
          제거해줘." 화면 왼쪽/오른쪽 절반을 탭하는 좌우 인터랙션과
          스크린리더용 좌우 스와이프(onBackClick/onNextClick, 아래 그대로
@@ -1097,11 +1064,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <!-- v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을
          수 있는 기능." 지금 있는 레이어(또는 대화 턴)의 시작으로 되돌아가
          다시 들려준다. -->
-    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="다시듣기 버튼입니다. 누르면 지금 보고 계신 자막을 다시 들려드립니다." data-tap-action="지금 보고 계신 자막을 다시 들려드립니다.">다시듣기</button>
+    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button. Press to hear the caption you’re currently viewing again." data-tap-action="Plays the caption you’re currently viewing again.">Replay</button>
     <!-- v-pause-btn — 참가자 요청: "중간에 잠시 일시정지." 기존에 화면을
          길게 누르면 동작하던 onPauseClick()을 그대로 재사용하되, 눈에
          보이는 버튼으로도 눌러 쓸 수 있게 되살렸다. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="멈춤 버튼입니다. 누르면 일시정지합니다." data-tap-action="지금 재생을 멈추거나 다시 시작합니다.">멈춤</button>
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause." data-tap-action="Pauses or resumes playback.">Pause</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -1113,7 +1080,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          무시되어 이동 자체가 실행되지 않는 경우가 있었다. room2.html의
          전시1 버튼(#exhibit1-btn)처럼 확인 절차 없는 단순 클릭으로
          바꿔, 이런 경합 자체가 생기지 않게 한다. -->
-    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2.html'" aria-label="전시실 2로 이동합니다." data-tap-action="전시실 2로 이동합니다.">전시2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
 </div>
 </div>
 
@@ -1133,163 +1100,163 @@ window.addEventListener('pagehide', function(){
 
 
 const LAYERS = [
-{ tag:'0 · 오리엔테이션',
+{ tag:'0 · Orientation',
     lines:[
-        { text:"우리나라 국보 83호 금동미륵보살반가사유상과, 프랑스 로댕의 생각하는 사람의 청동복제상을 직접 만나고 느껴보세요.", textSimple:"우리나라 국보, 금동미륵보살반가사유상을 만나보세요. 프랑스 로댕이 만든 생각하는 사람도 함께 만나보세요. 두 조각상을 손으로 만지고 느껴보세요.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"반가사유상은 삼국시대, 6세기에서 7세기 무렵 만들어진 불교 조각입니다.", textSimple:"반가사유상은 아주 오래전, 삼국시대에 만든 불교 조각입니다.", wide:'maitreya', source:"출처: H. Kim, 황수영 [1, 2]" },
-        { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
-          textSimple:"미륵보살은 나중에 사람들을 도와줄 부처님입니다. 오른발을 왼쪽 무릎 위에 올리고, 깊이 생각하는 모습입니다.",
-          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"출처: H. Kim, 황수영 [1, 2]" },
-        { text:"생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년 무렵 만든 조각입니다.", textSimple:"생각하는 사람은 프랑스 조각가 로댕이 만들었습니다.", wide:'rodin', source:"출처: Vujanović [3]" },
-        { text:"원래 지옥의 문 상단부 인물로 제작됐다가, 1904년 독립된 대형 청동상으로 다시 만들어졌습니다.", textSimple:"처음에는 큰 문 위에 있는 작은 조각이었습니다. 나중에 혼자 서 있는 큰 청동 조각으로 다시 만들었습니다.", wide:'rodin', source:"출처: Vujanović [3]" },
-        { text:"처음엔 약 70센티미터 크기로, '시인'이라는 이름의 조각이었습니다. 신곡을 쓴 단테가, 지옥의 여러 층을 내려다보며 자신의 시상에 몰두한 모습이었습니다.", textSimple:"처음 이름은 '시인'이었습니다. 단테라는 시인이 깊이 생각하는 모습이었습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [5]" },
-        { text:"그래서 이 조각은 처음부터, 고문당하는 육체를 지닌 저주받은 존재이면서, 동시에 시로써 그 고통을 넘어서기로 결심한 자유로운 정신의 소유자이기도 했습니다.", textSimple:"이 조각은 힘든 몸과, 그 힘듦을 이겨내려는 마음을 함께 보여줍니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [5]" },
-        { text:"로댕이 제작한 지옥의 문에는 지옥에서 고통받는 인간의 형상 200여 점이 서로 뒤엉켜 있으며, 그들의 정념과 야수성, 고뇌를 표현하고 있습니다.", textSimple:"지옥의 문에는 힘들어하는 사람 조각이 200개가 넘게 있습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [4]" },
-        { text:"로댕은 이 문의 가장 위쪽 중앙에, 그 모든 광경을 내려다보며 깊은 생각에 잠긴 인물을 배치했습니다. 그것이 바로 생각하는 사람입니다.", textSimple:"로댕은 문의 맨 위 가운데에 깊이 생각하는 사람을 놓았습니다. 그게 바로 생각하는 사람입니다.", wide:'rodin', source:"출처: 로댕 뮤지엄, 지옥의 문 [4]" },
-        { text:"이 자세는 카르포의 〈우골리노〉에서 보이는 극적인 신체 표현을 떠올리게 합니다. 동시에 미켈란젤로의 〈로렌초 데 메디치 좌상〉처럼 응축된 근육 긴장과 비틀림의 감각도 겹쳐집니다.", textSimple:"이 자세는 옛날의 다른 유명한 조각들과 닮았습니다.", wide:'rodin', source:"출처: 로댕 뮤지엄 [5]" },
-        { text:"반가사유상은 불교의 발상지 인도에서 시작된 불교 도상입니다. 간다라조각이 자연스럽고 부드러운 매력이라면 마투라조각은 근엄하고 각 잡힌 매력이 있습니다. 우리나라 반가사유상은 부드러운 곡선으로, 힘든 마음에서 벗어난 편안함의 아름다움을 표현했습니다.",
-          textSimple:"반가사유상은 인도에서 시작된 불교 조각입니다. 우리나라 반가사유상은 부드러운 곡선으로, 편안한 마음을 보여줍니다.",
-          wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya', source:"출처: H. Kim [1](느슨한 대응 — 간다라·마투라 양식 비교 세부는 미검증)" },
-        { text:"로댕의 생각하는 사람은 근육질의 단단한 면으로, 그 힘든 마음 자체를 표현했습니다.",
-          textSimple:"로댕의 생각하는 사람은 단단한 근육으로 힘든 마음을 보여줍니다.",
-          wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin', source:"저자 해석 — 출처 없음" },
-        { text:"서로 다른 길을 걸었지만, 두 조각상 모두 깊이 사유하는 인간의 몸짓이라는 점에서는 같습니다.", textSimple:"두 조각상은 다르지만, 둘 다 깊이 생각하는 사람의 모습입니다.", wide:'both', source:"저자 해석 — 출처 없음" },
-        { text:"지금 손이 닿는 곳에는, 두 조각상의 복제품이 놓여 있습니다.", textSimple:"지금 손으로 만질 수 있는 곳에 두 조각상이 있습니다.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"왼쪽은 로댕, 오른쪽은 반가사유상 — 여기 전시된 로댕과 반가사유상은 실물보다 작은 크기입니다.", textSimple:"왼쪽은 로댕, 오른쪽은 반가사유상입니다. 여기 있는 조각상은 진짜보다 작습니다.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"이어지는 이야기를 들으며, 두 손으로 편하게 전체 형태를 만져보셔도 좋습니다.", textSimple:"이야기를 들으면서, 두 손으로 편하게 만져보세요.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"이제 두 조각상이 놓인 장면을, 전체에서 세부 순서로 들려드리겠습니다.", textSimple:"이제 두 조각상 이야기를, 큰 것부터 작은 것 순서로 들려드리겠습니다.", wide:'both', source:"연출(전시 저작자)" }
+        { text:"Meet and feel, directly, Korea's National Treasure No. 83, the Gilt-Bronze Pensive Bodhisattva (Maitreya), and a bronze replica of France's Rodin's The Thinker.", textSimple:"Meet Korea's National Treasure, the Gilt-Bronze Pensive Bodhisattva. Also meet The Thinker, made by France's Rodin. Touch and feel both statues with your hands.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"The Pensive Bodhisattva is a Buddhist sculpture made during the Three Kingdoms period, around the 6th to 7th century.", textSimple:"The Pensive Bodhisattva is a Buddhist sculpture made a very long time ago, during the Three Kingdoms period.", wide:'maitreya', source:"Source: H. Kim, S.Y. Hwang [1, 2]" },
+        { text:"It depicts Maitreya, the bodhisattva who will save all beings in the future, resting his right foot on his left knee, absorbed in deep contemplation.",
+          textSimple:"Maitreya is a Buddha who will help people later. He rests his right foot on his left knee, deep in thought.",
+          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"Source: H. Kim, S.Y. Hwang [1, 2]" },
+        { text:"The Thinker is a sculpture the French sculptor Auguste Rodin made around 1880.", textSimple:"The Thinker was made by the French sculptor Rodin.", wide:'rodin', source:"Source: Vujanović [3]" },
+        { text:"It was originally created as a figure atop The Gates of Hell, then recast in 1904 as an independent, large-scale bronze.", textSimple:"At first it was a small figure on top of a large gate. Later it was recast as a large bronze statue standing alone.", wide:'rodin', source:"Source: Vujanović [3]" },
+        { text:"At first, at about 70 centimeters tall, it was a sculpture named 'The Poet.' It showed Dante, author of the Divine Comedy, looking down over the many layers of Hell, absorbed in his own poetic vision.", textSimple:"Its first name was 'The Poet.' It showed the poet Dante deep in thought.", wide:'rodin', source:"Source: Musée Rodin [5]" },
+        { text:"So from the very beginning, this sculpture was both a cursed being with a tortured body, and, at the same time, the possessor of a free spirit resolved to transcend that suffering through poetry.", textSimple:"This sculpture shows a difficult body, and also a mind trying to overcome that difficulty.", wide:'rodin', source:"Source: Musée Rodin [5]" },
+        { text:"Rodin's Gates of Hell holds some 200 entangled figures of humans suffering in Hell, expressing their passion, savagery, and anguish.", textSimple:"The Gates of Hell has more than 200 figures of people suffering.", wide:'rodin', source:"Source: Musée Rodin [4]" },
+        { text:"At the very top center of this gate, Rodin placed a figure looking down over the whole scene, absorbed in deep thought. That is The Thinker.", textSimple:"Rodin placed a deeply thinking figure at the very top center of the gate. That is The Thinker.", wide:'rodin', source:"Source: Musée Rodin, The Gates of Hell [4]" },
+        { text:"This pose recalls the dramatic bodily expression seen in Carpeaux's Ugolino. At the same time, it also echoes the condensed muscular tension and torsion of Michelangelo's Seated Lorenzo de' Medici.", textSimple:"This pose resembles other famous sculptures from long ago.", wide:'rodin', source:"Source: Musée Rodin [5]" },
+        { text:"The Pensive Bodhisattva is a Buddhist iconography originating in India, the birthplace of Buddhism. Where Gandharan sculpture has a natural, gentle appeal, Mathuran sculpture has a solemn, angular appeal. Korea's Pensive Bodhisattva, with its soft curves, expresses the beauty of a comfort released from a difficult mind.",
+          textSimple:"The Pensive Bodhisattva is a Buddhist sculpture that began in India. Korea's Pensive Bodhisattva shows a comfortable mind through soft curves.",
+          wide:'maitreya', detail:{x:76, y:45.0}, speaker:'maitreya', source:"Source: H. Kim [1] (loose correspondence — the Gandhara/Mathura style comparison details are unverified)" },
+        { text:"Rodin's Thinker, with its solid, muscular planes, expresses that difficult mind itself.",
+          textSimple:"Rodin's Thinker shows a difficult mind through solid muscle.",
+          wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin', source:"Author's interpretation — no source" },
+        { text:"Though they walked different paths, both statues are alike in being the gesture of a human being thinking deeply.", textSimple:"The two statues are different, but both show a person thinking deeply.", wide:'both', source:"Author's interpretation — no source" },
+        { text:"Right where your hand can reach now are replicas of the two statues.", textSimple:"Right where your hand can reach are the two statues.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"Rodin on the left, the Pensive Bodhisattva on the right — the Rodin and Bodhisattva displayed here are smaller than life size.", textSimple:"Rodin is on the left, the Pensive Bodhisattva is on the right. The statues here are smaller than the real ones.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"As you listen to the story that follows, feel free to comfortably touch the whole form with both hands.", textSimple:"As you listen to the story, feel free to touch them with both hands.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"Now let me walk you through the scene where the two statues stand, moving from the whole down to the details.", textSimple:"Now let me tell you about the two statues, from the big picture down to the small details.", wide:'both', source:"Direction (exhibition author)" }
     ]},
-{ tag:'1단계 · Global — 전체 구도',
+{ tag:'Stage 1 · Global — Overall Composition',
     lines:[
-        { text:"어둡고 고요한 전시실입니다.", textSimple:"어둡고 조용한 전시실입니다.", wide:null, source:"연출(전시 저작자)" },
-        { text:"금빛 조명 두 줄기가, 두 조각상만을 은은히 비추고 있습니다.", textSimple:"금빛 조명 두 개가 두 조각상을 비춥니다.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"왼쪽엔 어두운 청동빛의 로댕, 오른쪽엔 짙은 금빛의 반가사유상이 앉아 있습니다.", textSimple:"왼쪽에는 로댕이, 오른쪽에는 반가사유상이 앉아 있습니다.", wide:'both', source:"연출(전시 저작자)" },
-   
-        { text:"두 조각상은 같은 공간 안에, 나란히 놓여 있습니다.", textSimple:"두 조각상은 같은 방 안에 나란히 있습니다.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"멀리서 넓게 보면 두 조각상이 한 화면에 들어오고, 가까이 다가가면 각자의 표정이 따로 보이기 시작합니다.", textSimple:"멀리서 보면 두 조각상이 함께 보입니다. 가까이 가면 표정이 각각 보입니다.", wide:'both', source:"연출(전시 저작자)" },
-        { text:"공기는 무겁지 않고, 향 냄새가 옅게 감도는 듯 고요합니다.", textSimple:"공기는 조용하고, 향 냄새가 살짝 납니다.", wide:'both', source:"연출(전시 저작자)" }
+        { text:"A dark, quiet gallery.", textSimple:"A dark, quiet gallery.", wide:null, source:"Direction (exhibition author)" },
+        { text:"Two beams of golden light softly illuminate only the two statues.", textSimple:"Two beams of golden light shine on the two statues.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"On the left sits Rodin, in dark bronze tones; on the right sits the Pensive Bodhisattva, in deep gold.", textSimple:"Rodin sits on the left, the Pensive Bodhisattva sits on the right.", wide:'both', source:"Direction (exhibition author)" },
+
+        { text:"The two statues sit side by side within the same space.", textSimple:"The two statues sit side by side in the same room.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"Seen broadly from a distance, both statues fit into a single view; move closer, and each one's expression begins to come into view on its own.", textSimple:"From far away, you see both statues together. Get closer, and you see each expression separately.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"The air is not heavy, and there is a quiet as if a faint trace of incense lingers.", textSimple:"The air is quiet, with a faint scent of incense.", wide:'both', source:"Direction (exhibition author)" }
     ]},
-{ tag:'2단계 · Focus — 자세와 위치',
+{ tag:'Stage 2 · Focus — Posture and Position',
     lines:[
-        { text:"왼쪽, 로댕의 생각하는 사람을 먼저 가까이서 보겠습니다.", textSimple:"왼쪽, 로댕의 생각하는 사람을 먼저 가까이서 보겠습니다.", wide:'rodin', source:"연출(전시 저작자)" },
-        { text:"몸을 앞으로 깊이 웅크리고, 오른쪽 팔꿈치를 왼쪽 무릎에 괴고 있습니다.",
-          textSimple:"몸을 앞으로 굽히고, 오른쪽 팔꿈치를 왼쪽 무릎에 올렸습니다.",
-          wide:'rodin', detail:{x:32, y:41.0}, speaker:'rodin', source:"관찰+연출; 로댕 뮤지엄 [5]" },
-        { text:"구부린 손등이 턱을 떠받치고, 시선은 아래 대지를 향합니다.",
-          textSimple:"손등으로 턱을 받치고, 아래를 보고 있습니다.",
-          wide:'rodin', detail:{x:32, y:26.0}, speaker:'rodin', source:"관찰+연출; 로댕 뮤지엄 [5]" },
-        { text:"오른쪽, 반가사유상으로 건너가 가까이서 보겠습니다.", textSimple:"오른쪽, 반가사유상으로 건너가 가까이서 보겠습니다.", wide:'maitreya', source:"연출(전시 저작자)" },
-        { text:"오른발을 들어 왼쪽 무릎 위에 가만히 얹은, 반가 자세입니다.",
-          textSimple:"오른발을 왼쪽 무릎 위에 올린 자세입니다.",
-          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"관찰+연출; [1]" },
-        { text:"뺨에 오른손 손가락 두 개가 살짝 닿아 있습니다.",
-          textSimple:"뺨에 오른손 손가락 두 개가 살짝 닿아 있습니다.",
-          wide:'maitreya', detail:{x:72.5, y:25.5}, speaker:'maitreya', source:"관찰+연출; [1]" },
-        { text:"두 조각상이 마주 선 사이, 비어 있는 침묵이 이 전시를 이끄는 무대가 됩니다.",
-          textSimple:"두 조각상 사이에는 조용한 빈자리가 있습니다.",
-          wide:'both', detail:{x:50, y:45.0}, speaker:'both', meeting:true, source:"연출(전시 저작자)" }
+        { text:"Let's look first, up close, at Rodin's Thinker on the left.", textSimple:"Let's look first, up close, at Rodin's Thinker on the left.", wide:'rodin', source:"Direction (exhibition author)" },
+        { text:"His body is hunched deeply forward, right elbow resting on left knee.",
+          textSimple:"His body is bent forward, right elbow resting on his left knee.",
+          wide:'rodin', detail:{x:32, y:41.0}, speaker:'rodin', source:"Observation+direction; Musée Rodin [5]" },
+        { text:"The back of his bent hand props up his chin, his gaze directed down at the ground.",
+          textSimple:"The back of his hand props up his chin, and he's looking down.",
+          wide:'rodin', detail:{x:32, y:26.0}, speaker:'rodin', source:"Observation+direction; Musée Rodin [5]" },
+        { text:"Now let's move to the right, to the Pensive Bodhisattva, and look up close.", textSimple:"Now let's move to the right, to the Pensive Bodhisattva, and look up close.", wide:'maitreya', source:"Direction (exhibition author)" },
+        { text:"This is the half-lotus pose, right foot raised and resting gently on the left knee.",
+          textSimple:"This is the pose with the right foot resting on the left knee.",
+          wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"Observation+direction; [1]" },
+        { text:"Two fingers of the right hand touch lightly against the cheek.",
+          textSimple:"Two fingers of the right hand touch lightly against the cheek.",
+          wide:'maitreya', detail:{x:72.5, y:25.5}, speaker:'maitreya', source:"Observation+direction; [1]" },
+        { text:"In the empty silence between the two facing statues lies the stage that drives this exhibition.",
+          textSimple:"Between the two statues is a quiet, empty space.",
+          wide:'both', detail:{x:50, y:45.0}, speaker:'both', meeting:true, source:"Direction (exhibition author)" }
     ]}
 ];
 
 const DIALOGUE = [
-{ speaker:'rodin', label:'로댕 · 생각하는 사람', part:'머리',
-  intro:"먼저 로댕의 생각하는 사람이, 자신의 얼굴에 새겨진 사유를 건넵니다.",
-  introSimple:"로댕이 먼저 이야기합니다.",
+{ speaker:'rodin', label:'Rodin · The Thinker', part:'Head',
+  intro:"First, Rodin's The Thinker offers the contemplation etched into his own face.",
+  introSimple:"Rodin speaks first.",
   lines:[
-    "'생각하는 사람'은 무수한 고통을 지나온 자가 마침내 자신의 존재를 응시하는 얼굴처럼 보입니다.",
-    "잔뜩 찌푸린 눈썹과 무겁게 내리깐 눈은, 언젠가 스러질 존재라는 사실 앞에서 인간이 피할 수 없이 갖는 두려움이 사유를 더 깊게 만든다는 것을 보여주는 듯합니다.",
-    "하나의 물음이 또 다른 물음을 낳고, 그 물음들이 사슬처럼 이어져 마음을 옥죄는 고독한 인간의 얼굴입니다. 그 잠긴 미간을 손끝으로 더듬는다면, 오래 쥐어짜인 밧줄처럼 거칠고 단단하게 만져질 것입니다."
+    "The Thinker looks like the face of one who has passed through countless sufferings, finally gazing at his own existence.",
+    "The deeply furrowed brow and heavily lowered eyes seem to show that the fear a human being cannot avoid, in the face of the fact of one day ceasing to exist, only deepens contemplation.",
+    "It is the face of a solitary human being in whom one question gives birth to another, the questions linking together like a chain to grip the mind. If you were to trace that knitted brow with a fingertip, it would feel rough and hard, like a rope wrung tight for a long time."
   ],
   linesSimple:[
-    "이 얼굴은 힘든 일을 많이 겪은 사람의 얼굴입니다.",
-    "눈썹을 찌푸리고 눈을 내리깔았습니다. 언젠가 죽는다는 두려움이 생각을 더 깊게 만듭니다.",
-    "질문이 질문을 낳습니다. 그 질문들이 마음을 무겁게 누릅니다. 이 이마를 만지면, 밧줄처럼 거칠고 단단하게 느껴질 것입니다."
+    "This is the face of someone who has been through many hard things.",
+    "His brow is furrowed and his eyes are lowered. The fear of one day dying makes his thoughts deeper.",
+    "One question gives birth to another. Those questions weigh heavily on his mind. If you touch this forehead, it will feel rough and hard, like a rope."
   ],
   spots:[{x:32, y:30}, {x:32, y:15}],
-  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
-{ speaker:'maitreya', label:'반가사유상', part:'머리',
-  intro:"그 말에 반가사유상이, 자신의 얼굴로 화답합니다.",
-  introSimple:"반가사유상이 이어서 이야기합니다.",
+  sources:["Author's interpretation — no source", "Author's interpretation — no source", "Author's interpretation — no source"]},
+{ speaker:'maitreya', label:'Pensive Bodhisattva', part:'Head',
+  intro:"In answer, the Pensive Bodhisattva responds with his own face.",
+  introSimple:"The Pensive Bodhisattva speaks next.",
   lines:[
-    "반가사유상은 어린 나이에 이미 생의 고통을 마주했던 한 왕자가, 그 아픔을 딛고 모든 존재를 따뜻하게 보살피고자 했던 마음을 담고 있습니다.",
-    "뺨에 가만히 닿은 손끝에는, 죽음이 끝이 아니라 자연의 순환 가운데 하나임을 아는 자의 평온한 미소가 서려 있는 듯합니다.",
-    "생각이 잦아드는 그 순간 찾아오는 마음의 자유를, 근심을 모두 내려놓은 이 미소가 말없이 전합니다.",
-    "모든 소리가 멈춘 뒤에야 들리는 진짜 소리가 있다는 듯, 뺨에 닿은 손가락은 세상의 소란을 가만히 막아주고 있습니다.",
-    "화가 전준엽은 이 미소를, 모나리자의 미소를 뛰어넘는 신비로운 미소라고 평했습니다.",
-    "모나리자가 르네상스적 이성과 기하학적 황금비(1:1.618)를 바탕으로 치밀하게 계산된 화면을 보여준다면, 국보 83호 반가사유상은 생각의 깊이와 종교적 초월성을 극대화하기 위해 인체를 유연하고 독창적인 비례로 재창조하였습니다.",
-    "그가 보기에 이 얼굴은 군더더기 없이 흐르는 선으로 다듬어져 있으며, 어디에도 걸리거나 막히지 않는 맑은 생각의 상태를 담고 있습니다. 이 얼굴에 가만히 귀를 가까이 대면, 먼 산사에서 울려오다 잦아드는 종소리처럼 은은한 고요가 들려올 듯합니다."
+    "The Pensive Bodhisattva holds the heart of a prince who, having faced life's suffering at a young age, wished, having passed through that pain, to care warmly for every being.",
+    "In the fingertip resting quietly on the cheek seems to linger the peaceful smile of one who knows death is not an end but one part of nature's cycle.",
+    "In the moment thought subsides, the freedom of mind that arrives is silently conveyed by this smile, every worry set down.",
+    "As if there were a true sound heard only after every other sound has stopped, the finger touching the cheek quietly holds back the world's clamor.",
+    "The painter Jeon Jun-yeop praised this smile as a mysterious smile surpassing even the Mona Lisa's.",
+    "Where the Mona Lisa presents a meticulously calculated composition grounded in Renaissance reason and the geometric golden ratio (1:1.618), National Treasure No. 83, the Pensive Bodhisattva, recreated the human body in a flexible, original proportion to maximize the depth of thought and religious transcendence.",
+    "In his view, this face is finished in lines that flow without excess, holding a state of clear thought unobstructed anywhere. If you brought your ear quietly close to this face, a subtle stillness would seem to reach you, like a temple bell ringing from a distant mountain and slowly fading."
   ],
   linesSimple:[
-    "이 조각상은 어린 왕자의 이야기를 담고 있습니다. 왕자는 힘든 일을 겪었지만, 모든 사람을 따뜻하게 돌보고 싶어 했습니다.",
-    "손끝이 뺨에 살짝 닿아 있습니다. 얼굴에는 평온한 미소가 있습니다.",
-    "걱정을 다 내려놓으면 마음이 자유로워집니다. 이 미소가 그 마음을 보여줍니다.",
-    "손가락이 뺨에 닿아, 시끄러운 세상을 잠시 막아주는 듯합니다.",
-    "화가 전준엽은 이 미소가 모나리자보다 신비롭다고 말했습니다.",
-    "모나리자는 정확한 비율과 계산으로 그려졌습니다. 반면 국보 83호 반가사유상은 깊은 생각과 종교적 마음을 표현하기 위해, 몸의 비율을 자유롭고 창의적으로 만들었습니다.",
-    "막힘없이 맑은 마음을, 부드러운 선으로 표현했다는 뜻입니다. 이 얼굴에 귀를 대면, 먼 종소리처럼 조용한 울림이 들리는 듯합니다."
+    "This statue holds the story of a young prince. The prince went through hard times, but wanted to care warmly for everyone.",
+    "A fingertip touches the cheek lightly. The face holds a peaceful smile.",
+    "Setting down every worry frees the mind. This smile shows that free mind.",
+    "The finger touching the cheek seems to quietly hold back the noisy world.",
+    "The painter Jeon Jun-yeop said this smile is more mysterious than the Mona Lisa's.",
+    "The Mona Lisa was painted with exact proportions and calculation. National Treasure No. 83, the Pensive Bodhisattva, instead used free and creative body proportions to express deep thought and religious feeling.",
+    "This means a clear, unobstructed mind is expressed through soft lines. If you brought your ear to this face, you'd seem to hear a quiet sound, like a distant bell."
   ],
-  sources:["출처: H. Kim, 황수영 [1, 2]", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "출처: 전준엽 [7]", "출처: 전준엽 [7]", "출처: 전준엽 [7]"],
+  sources:["Source: H. Kim, S.Y. Hwang [1, 2]", "Author's interpretation — no source", "Author's interpretation — no source", "Author's interpretation — no source", "Source: Jeon Jun-yeop [7]", "Source: Jeon Jun-yeop [7]", "Source: Jeon Jun-yeop [7]"],
   spots:[{x:75, y:30.0}, {x:75, y:25.5}, {x:75, y:33.5}, {x:73, y:28.0}]},
-{ speaker:'rodin', label:'로댕 · 생각하는 사람', part:'몸통',
-  intro:"이어서 로댕이, 무거운 몸통의 사유를 건넵니다.",
-  introSimple:"로댕이 몸통 이야기를 합니다.",
+{ speaker:'rodin', label:'Rodin · The Thinker', part:'Torso',
+  intro:"Next, Rodin offers the contemplation of his heavy torso.",
+  introSimple:"Rodin talks about his torso.",
   lines:[
-    "팽팽하게 당겨진 근육은, '살아있다는 것' 자체가 감당해야 가야 할 무게라는 사실을 온몸으로 증언합니다.",
-    "'나는 누구이며 왜 여기 있는가' — 답을 알 수 없는 물음이 근육 하나하나를 팽팽하게 조여왔습니다. 그 근육 위에 손을 얹는다면, 팽팽히 당겨진 활시위처럼 뜨겁게 떨리는 긴장이 손바닥까지 전해질 것입니다."
+    "The taut, strained muscle testifies, with the whole body, to the fact that the very act of 'being alive' is a weight one must bear.",
+    "'Who am I, and why am I here' — a question with no knowable answer has drawn every muscle tight. If you laid a hand on that muscle, a hot, trembling tension, like a tightly drawn bowstring, would reach all the way to your palm."
   ],
   linesSimple:[
-    "근육이 팽팽하게 당겨져 있습니다. 살아가는 것도 힘든 일이라는 뜻입니다.",
-    "'나는 누구일까' 하는 질문이 몸을 긴장하게 만들었습니다. 이 근육을 만지면, 팽팽한 활시위처럼 뜨겁고 단단하게 느껴질 것입니다."
+    "The muscles are pulled taut. This means that being alive is also hard work.",
+    "The question 'who am I' has made his body tense. If you touch this muscle, it will feel hot and firm, like a tightly drawn bowstring."
   ],
   spots:[{x:21, y:40.0}, {x:23, y:45.0}],
-  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
-{ speaker:'maitreya', label:'반가사유상', part:'몸통',
-  intro:"반가사유상이, 고요한 상체로 화답합니다.",
-  introSimple:"반가사유상이 몸통 이야기를 합니다.",
+  sources:["Author's interpretation — no source", "Author's interpretation — no source"]},
+{ speaker:'maitreya', label:'Pensive Bodhisattva', part:'Torso',
+  intro:"The Pensive Bodhisattva answers with a serene upper body.",
+  introSimple:"The Pensive Bodhisattva talks about his torso.",
   lines:[
-    "꽃이 지고 다시 피어나듯 부드럽게 흘러내리는 상체의 선은, 태어남과 사라짐이 둘이 아니라 하나로 이어진 것임을 말해줍니다.",
-    "무엇도 붙들지 않으려는 마음이 몸에 깃들면 이토록 편안한 곡선이 된다는 듯, 상체는 세상의 무거운 짐을 모두 내려놓고 있습니다. 그 옷주름을 어루만진다면, 잔잔한 물결이 손끝을 스치듯 서늘하고 부드러운 감촉이 남을 것입니다.",
-    "미술사학자 강우방은 이렇게 둥글고 조화로운 형태를 '원융과 조화'라 이름 붙였습니다. 날카로운 각이 아니라, 서로 다른 부분들이 하나로 둥글게 어우러지는 데서 나오는 아름다움입니다.",
-    "이 아름다움을 학문적으로 처음 밝혀낸 것은 황수영 박사였습니다. 그의 초기 연구는 삼국시대 반가사유상이 왜 이토록 균형 잡힌 조형미를 갖는지를 하나씩 풀어냈습니다."
+    "As if knowing that a flower falls and blooms again, the softly flowing line of the upper body tells us that birth and disappearance are not two things but one continuous flow.",
+    "As if a mind wishing to hold onto nothing takes on, in the body, a curve this comfortable, the upper body has set down every heavy burden of the world. If you were to stroke those drapery folds, a cool, soft sensation would remain, as if a gentle ripple had brushed your fingertip.",
+    "The art historian Kang Woo-bang named this rounded, harmonious form 'wonyung-gwa-johwa' — perfect fusion and harmony. It is a beauty that comes not from sharp angles, but from different parts flowing into one rounded whole.",
+    "It was Dr. Hwang Su-yeong who first established this beauty through scholarship. His early research unraveled, piece by piece, why Three Kingdoms-period Pensive Bodhisattvas achieve such balanced formal beauty."
   ],
   linesSimple:[
-    "몸의 선이 부드럽게 흘러내립니다. 태어남과 사라짐이 이어져 있다는 뜻입니다.",
-    "아무것도 붙잡지 않는 마음이 이런 편안한 곡선을 만듭니다. 몸이 짐을 다 내려놓았습니다. 이 옷주름을 만지면, 잔잔한 물결처럼 서늘하고 부드럽게 느껴질 것입니다.",
-    "학자 강우방은 이런 둥근 모양을 '원융과 조화'라고 불렀습니다. 각지지 않고 둥글게 어우러지는 아름다움입니다.",
-    "황수영 박사는 이 아름다움을 처음 학문적으로 밝혀낸 학자입니다."
+    "The line of the body flows down softly. This means birth and disappearance are connected.",
+    "A mind holding onto nothing makes this comfortable curve. The body has set down every burden. If you touch these drapery folds, they will feel cool and soft, like a gentle ripple.",
+    "The scholar Kang Woo-bang called this rounded shape 'wonyung-gwa-johwa' — perfect fusion and harmony. It is a beauty that comes from rounded harmony, not sharp angles.",
+    "Dr. Hwang Su-yeong was the scholar who first revealed this beauty through research."
   ],
-  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "출처: 강우방 [6]", "출처: 황수영 [2]"],
+  sources:["Author's interpretation — no source", "Author's interpretation — no source", "Source: Kang Woo-bang [6]", "Source: Hwang Su-yeong [2]"],
   spots:[{x:74, y:43.0}, {x:76, y:45.0}]},
-{ speaker:'rodin', label:'로댕 · 생각하는 사람', part:'다리',
-  intro:"마지막으로 로댕이, 땅을 딛은 발의 사유를 건넵니다.",
-  introSimple:"로댕이 마지막으로 발 이야기를 합니다.",
+{ speaker:'rodin', label:'Rodin · The Thinker', part:'Legs',
+  intro:"Finally, Rodin offers the contemplation of the foot planted on the ground.",
+  introSimple:"Rodin talks about his foot, at the end.",
   lines:[
-    "흙에서 태어나 다시 흙으로 돌아간다는 사실을 아는 듯, 무겁게 대지를 딛고 선 발은 삶에 대한 마지막 집착을 드러냅니다.",
-    "더 높은 곳을 꿈꾸면서도 결코 땅을 벗어날 수 없는 인간의 한계가, 대지를 움켜쥔 발가락에 그대로 새겨져 있습니다.",
-    "스스로 만든 기술과 문명으로부터도 좀처럼 자유로워지지 못하는 오늘의 인간의 모습이, 땅을 떠나지 못하는 이 무거운 발에 담겨 있습니다. 그 발끝을 만진다면, 흙냄새가 묻어날 듯 거칠고 단단한 감촉이 손끝에 느껴질 것입니다."
+    "As if knowing that we are born from earth and return to earth again, the foot planted heavily on the ground reveals a final attachment to life.",
+    "The limit of a human being who dreams of higher places yet can never leave the ground is etched directly into these toes gripping the earth.",
+    "Today's human being, who cannot easily free themselves even from the technology and civilization they themselves created, is held in this heavy foot that cannot leave the ground. If you touched that foot, a rough, hard sensation would reach your fingertip, as if the smell of earth still clung to it."
   ],
   linesSimple:[
-    "발이 땅을 무겁게 딛고 있습니다. 흙에서 태어나 흙으로 돌아간다는 뜻입니다.",
-    "더 높이 오르고 싶어도, 우리는 땅을 떠날 수 없습니다. 발가락이 땅을 꽉 움켜쥐고 있습니다.",
-    "우리가 만든 기술에 오히려 매인 오늘의 모습이, 이 무거운 발에 담겨 있습니다. 이 발을 만지면, 흙냄새 나는 거칠고 단단한 감촉이 느껴질 것입니다."
+    "The foot presses heavily on the ground. This means we are born from earth and return to earth.",
+    "Even wanting to rise higher, we can never leave the ground. The toes grip the earth tightly.",
+    "Today's world, still bound to the technology we created, is held in this heavy foot. If you touch this foot, it will feel rough and hard, like the smell of earth."
   ],
   spots:[{x:22, y:67.0}, {x:23, y:67.0}, {x:25, y:67.0}],
-  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]},
-{ speaker:'maitreya', label:'반가사유상', part:'다리',
-  intro:"반가사유상이, 편안히 앉은 다리로 화답합니다.",
-  introSimple:"반가사유상이 마지막으로 다리 이야기를 합니다.",
+  sources:["Author's interpretation — no source", "Author's interpretation — no source", "Author's interpretation — no source"]},
+{ speaker:'maitreya', label:'Pensive Bodhisattva', part:'Legs',
+  intro:"The Pensive Bodhisattva answers with a comfortably seated leg.",
+  introSimple:"The Pensive Bodhisattva talks about his leg, at the end.",
   lines:[
-    "가볍게 다리를 얹은 이 편안한 자세는, 나고 죽음을 거듭하는 삶 속에서도 흔들리지 않는 마음이 다다르는 평정을 가리킵니다.",
-    "'나'라는 좁은 틀을 벗어날 때 만나는 자유로운 마음을, 어디에도 걸림 없는 이 자세가 온몸으로 보여줍니다.",
-    "가만히 멈추어야만 얻어지는 자유가 있다는 것을, 기계도 속도도 닿지 못하는 이 고요한 자세가 아주 오랜 시간이 흐른 지금도 전하고 있습니다. 이 다리를 어루만진다면, 따스한 햇볕 아래 놓인 비단처럼 가볍고 매끄러운 감촉이 손끝에 남을 것입니다."
+    "This comfortable pose, with the leg lightly resting, points to the equanimity an unshaken mind reaches even within a life of repeated birth and death.",
+    "The free mind found only by stepping outside the narrow frame of 'I' is shown, with the whole body, by this pose, unobstructed by anything.",
+    "That there is a freedom attainable only by quietly stopping is conveyed, even now, after so much time has passed, by this still pose that no machine, no speed, can ever reach. If you were to stroke this leg, a light, smooth sensation would remain on your fingertip, like silk laid beneath warm sunlight."
   ],
   linesSimple:[
-    "다리를 가볍게 얹은 편안한 자세입니다. 흔들리지 않는 마음이 다다르는 평온함입니다.",
-    "'나'라는 틀을 벗어나면 마음이 자유로워집니다. 이 편안한 자세가 그 자유를 보여줍니다.",
-    "가만히 멈출 때만 얻는 자유가 있습니다. 이 고요한 자세가 오랜 시간이 지나도 그 자유를 전합니다. 이 다리를 만지면, 따뜻한 비단처럼 가볍고 매끄럽게 느껴질 것입니다."
+    "The leg rests lightly in a comfortable pose. This is the calm reached by an unshaken mind.",
+    "Stepping outside the narrow frame of 'I' frees the mind. This comfortable pose shows that freedom.",
+    "There is a freedom found only by quietly stopping. This still pose still carries that freedom, even after a long time. If you touch this leg, it will feel light and smooth, like warm silk."
   ],
   spots:[{x:73, y:51.0}, {x:73, y:51.0}, {x:73, y:51.0}],
-  sources:["저자 해석 — 출처 없음", "저자 해석 — 출처 없음", "저자 해석 — 출처 없음"]}
+  sources:["Author's interpretation — no source", "Author's interpretation — no source", "Author's interpretation — no source"]}
 ];
 
 let phase = 'screen'; 
@@ -1377,7 +1344,7 @@ function handleGateScreenTap(){
     if(!_arrivalMessageConsumed){
         _arrivalMessageConsumed = true;
         try{
-            speak('침묵의 공명 제1전시 조우입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.', enterRoom);
+            speak('This is Resonance of Silence, Room 1, Encounter. On each caption, tap the left area to go back, or the right area to move forward.', enterRoom);
         }catch(err){ enterRoom(); }
         return;
     }
@@ -1391,7 +1358,7 @@ function handleGateScreenTap(){
 setTimeout(()=>{
     if(_arrivalMessageConsumed) return;
     _arrivalMessageConsumed = true;
-    try{ speak('침묵의 공명 제1전시 조우입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.'); }catch(err){}
+    try{ speak('This is Resonance of Silence, Room 1, Encounter. On each caption, tap the left area to go back, or the right area to move forward.'); }catch(err){}
 }, 700);
 
 function enterRoom(){
@@ -1415,7 +1382,7 @@ function enterRoom(){
     // 부가 문구는 빼고, 전시실 1의 이름이자 주제인 "조우"의 뜻풀이 한
     // 문장만 남겼다. 이어지는 두 조각상 소개(오리엔테이션)는 바로 다음
     // 단계(playLayer(0))에서 별도로 들려준다.
-    const gateText = '전시실 1, 조우입니다. 조우는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다.';
+    const gateText = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face.';
 
 // ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
 try{
@@ -1423,7 +1390,7 @@ try{
   if(cw){ cw.removeAttribute('inert'); cw.removeAttribute('aria-hidden'); }
 }catch(e){}
 speakerTagEl.textContent = '';
-tagEl.textContent = '오리엔테이션';
+tagEl.textContent = 'Orientation';
 sourceEl.textContent = '';
 captionEl.innerHTML = gateText;
 
@@ -1452,10 +1419,10 @@ function toggleBgm(){
     const btn = document.getElementById('btn-bgm-toggle');
     if(btn){
         btn.setAttribute('aria-pressed', String(bgmMuted));
-        btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
-        btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
+        btn.textContent = bgmMuted ? '🔇 Music' : '🔊 Music';
+        btn.setAttribute('aria-label', bgmMuted ? 'Background music is off. Press to turn it on.' : 'Background music is on. Press to turn it off.');
     }
-    speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.');
+    speak(bgmMuted ? 'Background music turns off.' : 'Background music turns on.');
 }
 
 // v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
@@ -1490,7 +1457,7 @@ function onVolumeChange(v){
         el.volume = base * bgmVolume;
     });
     const slider = document.getElementById('volume-slider');
-    if(slider) slider.setAttribute('aria-label', '배경음악 크기 조절, 현재 ' + Math.round(bgmVolume * 100) + '퍼센트');
+    if(slider) slider.setAttribute('aria-label', 'Adjust background music volume, currently ' + Math.round(bgmVolume * 100) + ' percent');
 }
 
 // v82 — 참가자 요청: "전체적으로 배경음악의 크기가 커서, 전시 도슨트의
@@ -1636,7 +1603,7 @@ function _resumeFromSnapshot(ctx){
     announceStep = ctx.announceStep;
     if(phase === 'screen'){
         updateBadgeUI();
-        eyebrowEl.textContent = '전시실 1 · 소개';
+        eyebrowEl.textContent = 'Room 1 · Introduction';
         tagEl.textContent = LAYERS[layerIdx].tag;
         playLine();
     } else if(announcing){
@@ -1654,9 +1621,9 @@ function cycleSpeed(){
     _speedIdx = (_speedIdx + 1) % SPEED_STEPS.length;
     TTS_RATE = SPEED_STEPS[_speedIdx];
     const btn = document.getElementById('btn-speed');
-    const announceText = `속도 ${TTS_RATE}x입니다`;
+    const announceText = `Speed ${TTS_RATE}x`;
     if(btn){
-        btn.textContent = `속도 ${TTS_RATE}x`;
+        btn.textContent = `Speed ${TTS_RATE}x`;
         btn.setAttribute('aria-label', announceText);
     }
     hapticPulse('turn');
@@ -1725,11 +1692,13 @@ function _ensureVoicesReady(){
 // 골라 훨씬 자연스러운 낭독을 들려준다. 신경망 음성이 없으면 기존과
 // 동일하게 첫 번째 한국어 음성(또는 브라우저 기본값)을 그대로 쓴다.
 function _pickBestKoreanVoice(){
+    // v-en-version: English build selects an English voice instead of Korean.
     const voices = window.speechSynthesis.getVoices() || [];
-    const koVoices = voices.filter(v => /^ko/i.test(v.lang));
-    if(!koVoices.length) return null;
-    const neural = koVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
-    return neural || koVoices[0];
+    const enVoices = voices.filter(v => /^en/i.test(v.lang));
+    if(!enVoices.length) return null;
+    const neural = enVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
+    const us = enVoices.find(v => /^en-US/i.test(v.lang));
+    return neural || us || enVoices[0];
 }
 function speak(text, onEnd, speaker){
     lastSpokenText = text;
@@ -1768,7 +1737,7 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     if(!raw){ _speakSentenceQueue(sentences, idx + 1, speaker, myGen, onEnd); return; }
 
     const u = new SpeechSynthesisUtterance(raw);
-    u.lang = 'ko-KR';
+    u.lang = 'en-US';
     const _bestVoice = _pickBestKoreanVoice();
     if(_bestVoice) u.voice = _bestVoice;
     // v-maitreya-comfort — room2.html과 동일한 참가자 요청: "로댕에 대한
@@ -1984,7 +1953,7 @@ function playLayer(i){
     phase = 'screen';
     layerIdx = i; lineIdx = 0;
     updateBadgeUI();
-    eyebrowEl.textContent = '전시실 1 · 소개';
+    eyebrowEl.textContent = 'Room 1 · Introduction';
     tagEl.textContent = LAYERS[i].tag;
     nextStageTag.classList.remove('show');
     detailSpotEl.classList.remove('show');
@@ -2015,7 +1984,7 @@ function playLine(){
     // 단계에 맞는 상태만 남도록 했다 — 3단계 전용 요소(화자 태그 등)가
     // 화면 단계로 새어 들어오는 일이 다시는 없도록.
     tagEl.textContent = layer.tag;
-    eyebrowEl.textContent = '전시실 1 · 소개';
+    eyebrowEl.textContent = 'Room 1 · Introduction';
     speakerTagEl.classList.remove('show');
     nextStageTag.classList.remove('show');
     updateBadgeUI();
@@ -2064,12 +2033,12 @@ function startDetailPhase(){
     clearTimeout(autoTimer);
     hapticPulse('stage'); 
     phase = 'dialogue';
-    eyebrowEl.textContent = '전시실 1 · 대화';
+    eyebrowEl.textContent = 'Room 1 · Dialogue';
     // v27 — 참가자 스크린샷으로 확인된 버그: 이 전환 문장을 말하는 동안
     // 위쪽 태그가 직전 화면("2단계 · FOCUS")에 멈춰 있었다. 원인은 이
     // 함수가 tagEl을 아예 갱신하지 않고 있었기 때문 — playLine()처럼
     // 여기서도 3단계 진입임을 스스로 표시하도록 했다.
-    tagEl.textContent = '3단계 · 대화';
+    tagEl.textContent = 'Stage 3 · Dialogue';
     speakerTagEl.classList.remove('show');
     updateBadgeUI();
     // v36 — 2단계 마지막 줄에서 켜졌을 수 있는 "만남"의 소리를, 3단계로
@@ -2079,7 +2048,7 @@ function startDetailPhase(){
     // v28 — 참가자 지적: "자막이 안 보인다." 이 문장을 speak()에는 넘겼지만
     // 정작 captionEl에는 한 번도 대입하지 않아서, 음성은 나오는데 화면
     // 자막은 비어 있었다(또는 직전 화면 자막이 그대로 남아 있었다).
-    const introText3 = '지금부터 들려드리는 이야기는 두 조각상의 모습에서 읽어낸 해설입니다.';
+    const introText3 = 'From here, the story you’ll hear is an interpretation read from the two statues’ forms.';
     captionEl.innerHTML = introText3;
     speak(introText3, ()=>{
         if(isPaused) return;
@@ -2095,12 +2064,12 @@ function toggleEasyMode(){
     // aria-pressed(스크린리더용)와 .primary 클래스(금빛 강조, 시각용)로
     // 전달한다 — 누를 때마다 speak()로도 상태를 안내하므로 텍스트에
     // "켜짐"/"꺼짐"을 반복해서 넣지 않아도 상태를 알 수 있다.
-    btn.textContent = '쉬운 문장';
+    btn.textContent = 'Easy sentences';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
     // v87 — cycleSpeed()와 동일한 이유로, 이어듣기를 문자열 재생이 아닌
     // 재생 상태 스냅샷 방식으로 교체(자세한 설명은 cycleSpeed() 주석 참고).
-    const announceText = easyMode ? '쉬운 문장으로 전환됩니다.' : '원래 문장으로 돌아옵니다.';
+    const announceText = easyMode ? 'Switching to easy sentences.' : 'Returning to the original sentences.';
     const ctx = _snapshotPlaybackState();
     speak(announceText, function(){ _resumeFromSnapshot(ctx); });
 }
@@ -2110,11 +2079,11 @@ function playTurn(i){
     hapticPulse('turn'); 
     phase = 'dialogue'; announcing = false;
     turnIdx = i; dLineIdx = -1; 
-    eyebrowEl.textContent = '전시실 1 · 대화';
+    eyebrowEl.textContent = 'Room 1 · Dialogue';
     updateBadgeUI();
     const t = DIALOGUE[i];
-    tagEl.textContent = '3단계 · 대화 — ' + t.label + ' · ' + t.part;
-    speakerTagEl.textContent = (t.speaker==='rodin' ? '로댕이 말합니다' : '반가사유상이 말합니다');
+    tagEl.textContent = 'Stage 3 · Dialogue — ' + t.label + ' · ' + t.part;
+    speakerTagEl.textContent = (t.speaker==='rodin' ? 'Rodin is speaking' : 'The Pensive Bodhisattva is speaking');
     speakerTagEl.className = t.speaker;
     speakerTagEl.classList.add('show');
     nextStageTag.classList.remove('show');
@@ -2167,9 +2136,9 @@ function showNextStageAnnouncement(){
     speakerTagEl.classList.remove('show');
     updateWideSpot('both');
     updateStatueSound(null);
-    tagEl.textContent = '3단계 · 대화 — 마침';
+    tagEl.textContent = 'Stage 3 · Dialogue — Closing';
     updateBadgeUI();
-    const recap = '오늘 로댕과 반가사유상은 머리, 몸통, 다리 순서로 세 번 이야기를 주고받았습니다.';
+    const recap = 'Today, Rodin and the Pensive Bodhisattva exchanged words three times, in the order of head, torso, and legs.';
     captionEl.innerHTML = recap;
     sourceEl.textContent = '';
     speak(recap, ()=>{
@@ -2185,9 +2154,9 @@ function showNextStageAnnouncement(){
 // 지금 보고 있는 바로 그 자막만 다시 들려준다.
 function _showFinishStep1(){
     announceStep = 1;
-    captionEl.innerHTML = '힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다.<br>오늘 준비된 이야기는 여기까지입니다.';
+    captionEl.innerHTML = 'A difficult mind and a warm mind — different answers, but both born from a person’s deep contemplation.<br>That’s all the story prepared for today.';
     nextStageTag.classList.add('show');
-    speak('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다. 오늘 준비된 이야기는 여기까지입니다. 다음 전시 단계로 이동하세요.', ()=>{
+    speak('A difficult mind and a warm mind — different answers, but both born from a person’s deep contemplation. That’s all the story prepared for today. Move to the next exhibition stage.', ()=>{
         if(isPaused) return;
         clearTimeout(autoTimer);
         // v-finish-loops-to-start — 참가자 지적: "3단계 마침 화면에서
@@ -2221,7 +2190,7 @@ function proceedToRoom2AfterFinish(){
             return;
         }catch(e){ /* postMessage 실패 시 아래로 계속 — 직접 이동 */ }
     }
-    speak('전시실 1의 이야기를 모두 마쳤습니다. 전시실 2로 이동합니다.', goToRoom2);
+    speak('You’ve reached the end of Room 1. Moving to Room 2.', goToRoom2);
 }
 
 function jumpToStage(targetIdx){
@@ -2230,7 +2199,7 @@ function jumpToStage(targetIdx){
     // 그대로 자동 재생이 이어지게 둔다 — 대신 일시정지 중이었다면 확실히
     // 풀어준다.
     isPaused = false;
-    if(btnPause){ btnPause.textContent = '멈춤'; btnPause.classList.remove('primary'); }
+    if(btnPause){ btnPause.textContent = 'Pause'; btnPause.classList.remove('primary'); }
     clearTimeout(autoTimer);
     window.speechSynthesis.cancel();
     speechGen++;
@@ -2266,17 +2235,17 @@ function onPauseClick(){
         clearTimeout(autoTimer);
         pausedContext = { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
         if(btnPause){
-            btnPause.textContent = '다시 시작';
+            btnPause.textContent = 'Resume';
             btnPause.classList.add('primary');
-            btnPause.setAttribute('aria-label', '다시 시작 버튼입니다. 누르면 이어서 재생합니다.');
+            btnPause.setAttribute('aria-label', 'Resume button. Press to continue playback.');
         }
-        speak('일시정지합니다.');
+        speak('Pausing.');
     } else {
         isPaused = false;
         if(btnPause){
-            btnPause.textContent = '멈춤';
+            btnPause.textContent = 'Pause';
             btnPause.classList.remove('primary');
-            btnPause.setAttribute('aria-label', '멈춤 버튼입니다. 누르면 일시정지합니다.');
+            btnPause.setAttribute('aria-label', 'Pause button. Press to pause.');
         }
         // v-pause-voice — 참가자 요청으로 되살린 멈춤 버튼에 TalkBack 음성
         // 안내를 추가하면서, "다시 재생합니다." 안내가 끝난 뒤에야(콜백)
@@ -2284,7 +2253,7 @@ function onPauseClick(){
         // 겹치거나 서로를 잘라먹지 않도록 하기 위함이다(speak()는 호출될
         // 때마다 내부에서 cancel()을 부르므로, 두 speak()를 동시에 부르면
         // 먼저 것이 거의 즉시 끊긴다).
-        speak('다시 재생합니다.', ()=>{
+        speak('Resuming playback.', ()=>{
             if(!pausedContext){ playLayer(0); return; }
             phase = pausedContext.phase;
             layerIdx = pausedContext.layerIdx;
@@ -2294,7 +2263,7 @@ function onPauseClick(){
             announcing = pausedContext.announcing;
             if(phase === 'screen'){
                 updateBadgeUI();
-                eyebrowEl.textContent = '전시실 1 · 소개';
+                eyebrowEl.textContent = 'Room 1 · Introduction';
                 tagEl.textContent = LAYERS[layerIdx].tag;
                 playLine();
             } else if(announcing){
@@ -2341,7 +2310,7 @@ function onReplayClick(){
     clearTimeout(autoTimer);
     speechGen++;
     try{ hapticPulse('turn'); }catch(err){}
-    speak('지금 보고 계신 자막을 다시 들려드립니다.', ()=>{
+    speak('Playing the caption you’re currently viewing again.', ()=>{
         if(phase === 'screen'){
             playLine();
         } else if(announcing){
@@ -2424,8 +2393,8 @@ function playDialogueLineAt(tIdx, dIdx){
     turnIdx = tIdx; dLineIdx = dIdx;
     updateBadgeUI();
     const t = DIALOGUE[turnIdx];
-    tagEl.textContent = '3단계 · 대화 — ' + t.label + ' · ' + t.part;
-    speakerTagEl.textContent = (t.speaker==='rodin' ? '로댕이 말합니다' : '반가사유상이 말합니다');
+    tagEl.textContent = 'Stage 3 · Dialogue — ' + t.label + ' · ' + t.part;
+    speakerTagEl.textContent = (t.speaker==='rodin' ? 'Rodin is speaking' : 'The Pensive Bodhisattva is speaking');
     speakerTagEl.className = t.speaker;
     speakerTagEl.classList.add('show');
     nextStageTag.classList.remove('show');
@@ -2543,7 +2512,7 @@ function openInfo(){
     // 처리한다.
     // v-exhibit-intro-split — 버튼이 3개에서 4개(전시소개 추가)로 늘어난
     // 만큼 안내 문구도 함께 갱신한다.
-    try{ speak('전시 소개, 작가 소개, 전시1 작품소개, 전시1 이용방법, 네 가지 버튼이 있습니다. 원하는 버튼을 눌러 들어보세요.'); }catch(err){}
+    try{ speak('There are four buttons: Exhibition, Artist, Room 1 Artworks, and Room 1 How-To. Press whichever you’d like to hear.'); }catch(err){}
 }
 function infoStillOpen(){
     const ov = document.getElementById('info-overlay');
@@ -2555,10 +2524,10 @@ function infoStillOpen(){
 // 으로 이어 재생했었다). 같은 버튼을 다시 누르거나 다른 버튼을 누르면
 // 재생 중이던 음성은 멈추고 새로 시작한다.
 const INFO_SPEECH = {
-    exhibit: '전시 소개입니다. 이 전시의 이름은 침묵의 공명이며, 시청각장애인을 위한 촉각·음성 인터랙티브 전시입니다. 손끝으로 완성하는 두 조각상의 대화, 반가사유상과 생각하는 사람을 만나는 전시로, 국보 금동미륵보살반가사유상과 로댕의 생각하는 사람을 실물보다 작은 촉각 복제품과 음성 해설로 함께 경험합니다. 9월 10일부터 12일까지 경주화백컨벤션센터에서 열리는 세계국가유산산업전에서, 그리고 9월 20일부터 21일까지 국회의원회관 2층 로비에서 선보입니다. 대부분의 전시는 본다는 것을 전제로 설계되지만, 이 전시는 반대로 시작합니다. 시각장애인 방문객이 스크린리더 없이도, 동행 없이도 혼자서 끝까지 관람을 완결할 수 있도록, 촉각 복제 조각상과 음성 내레이션, 터치 기반 AI 챗봇을 중심에 두고 설계했습니다. 전시실 1 조우에서는 두 조각상의 복제 청동상을 직접 만지며 형태와 자세를 먼저 파악하고, 전시실 2 사유 및 체화에서는 부위별로 짚으며 의미를 듣고 AI 챗봇에게 궁금한 점을 자유롭게 물어볼 수 있습니다. 전시 총괄과 디지털 인터랙션은 조준동이, 청동 복제품 제작은 김호용이, 장애인 접근성은 육근해가 맡았습니다.',
-    intro: '전시실 1 작품 소개입니다. 작품명은 침묵의 공명, 조우, 만나기입니다. 이 전시는 두 개의 조각상, 금동미륵보살반가사유상과 로댕의 생각하는 사람을 나란히 놓아 힘든 마음과 따뜻한 마음이라는 두 가지 태도를 비교합니다. 반가사유상은 부드러운 곡선으로 괴로운 마음을 내려놓은 편안함을, 생각하는 사람은 긴장한 근육으로 사람이 살아가며 짊어진 무거운 마음을 표현합니다. 두 조각상 모두 고개를 숙이고 손을 얼굴 가까이 둔 자세로, 이는 사유와 명상을 상징하는 공통된 조형 언어입니다. 금동미륵보살반가사유상은 삼국시대, 6세기에서 7세기 무렵 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 제작자는 삼국시대 장인으로 추정될 뿐, 개별 작가의 이름은 전해지지 않습니다. 생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년경 지옥의 문 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.',
-    artist: "'침묵의 공명' 작가 소개입니다. 총괄기획과 디지털 인터랙션 제작을 맡은 조준동은 성균관대학교 전자전기공학부 명예교수입니다. 성균관대학교에서 전자공학을 전공하고, 뉴욕 폴리테크닉 대학교에서 컴퓨터과학 석사를, 노스웨스턴 대학교에서 컴퓨터과학 박사 학위를 받았습니다. 성균관대학교 일반대학원 휴먼아이씨티융합학과를 창설했으며, 인간과 컴퓨터의 상호작용, 멀티모달 인터페이스 개발에 관심을 갖고, 인문학과 예술, 기술을 결합한 휴마트올로지라는 개념을 창안하여 디지털 인터랙티브 아트 작품을 만들고 있습니다.",
-    usage: '전시실 1 이용 방법입니다. 초기 화면에서 화면 아무 곳이나 한 번 가볍게 두드리면 안내 음성이 나온 뒤 바로 전시실 1로 입장합니다. 이 화면 맨 아래의 배경음악 버튼으로 입장 전 배경음악을 켜고 끌 수 있습니다. 입장한 뒤에는, 자막이 떠 있는 화면의 왼쪽 영역을 두드리면 이전 이야기로, 오른쪽 영역을 두드리면 다음 이야기로 넘어갑니다. 화면을 길게 누르거나 화면 아래 멈춤 버튼을 누르면 잠시 멈추거나 다시 시작할 수 있습니다. 화면 위쪽 가운데의 네 개 점은 오리엔테이션, 전체 구도, 자세와 위치, 대화, 네 단계를 나타내며, 원하는 점을 누르면 그 단계로 바로 건너뛸 수 있습니다. 다시듣기와 멈춤 버튼, 속도와 쉬운 문장 버튼, 배경음악 크기 슬라이더는 모두 누르거나 움직이는 즉시 바로 실행됩니다. 다시듣기는 지금 보고 계신 자막을 다시 들려주고, 멈춤은 재생을 멈추거나 이어서 들려주며, 속도는 내레이션 속도를, 쉬운 문장은 더 쉬운 문장으로, 배경음악 크기는 배경음악의 크기만 조절합니다. 오른쪽 위 나가기 버튼만은 한 번 누르면 이름을 말해주고, 한 번 더 누르거나 짧게 두 번 두드려야 실제로 실행됩니다. 나가기는 화면을 종료합니다. 전시2 버튼은 누르면 바로 전시실 2로 이동합니다. 지금 보고 계신 이 안내창은 화면을 한 번 두드리거나, 왼쪽에서 오른쪽으로 쓸어넘기면 바로 닫힙니다.'
+    exhibit: 'This is the exhibition introduction. This exhibition is called Resonance of Silence, a tactile and voice-interactive exhibition for the blind and hearing-impaired. It presents a dialogue between two statues completed by fingertip, the Pensive Bodhisattva and The Thinker, letting you experience the National Treasure Gilt-Bronze Pensive Bodhisattva and Rodin’s The Thinker through smaller-than-life tactile replicas and voice narration. It runs September 10 to 12 at the World Heritage Industry Expo at Gyeongju HICO Convention Center, and September 20 to 21 at the 2nd floor lobby of the National Assembly Members’ Office Building. Most exhibitions are designed on the premise of seeing, but this one begins from the opposite premise: it is built around tactile replica statues, voice narration, and a touch-based AI chatbot, so blind visitors can complete the visit on their own, without a screen reader and without a companion. In Room 1, Encounter, visitors touch replica bronze statues of both figures directly to grasp form and posture first; in Room 2, Contemplation and Embodiment, visitors touch individual parts to hear their meaning and can freely ask an AI chatbot anything they’re curious about. Exhibition direction and digital interaction were led by Jun-Dong Cho, bronze replica production by Ho-Yong Kim, and disability accessibility by Geun-Hae Yuk.',
+    intro: 'This is the Room 1 artwork introduction. The title is Resonance of Silence: Encounter. This exhibition places two statues, the Gilt-Bronze Pensive Bodhisattva and Rodin’s The Thinker, side by side to compare two attitudes, a difficult mind and a warm mind. The Pensive Bodhisattva’s soft curves express the comfort of a troubled mind set down; The Thinker’s tensed muscle expresses the heavy mind a person carries through life. Both statues share a bowed head and a hand held near the face, a shared formal language symbolizing contemplation and meditation. The Gilt-Bronze Pensive Bodhisattva is a Buddhist sculpture estimated to have been made during the Three Kingdoms period, around the sixth to seventh century, depicting Maitreya, the bodhisattva who will save all beings in the future, absorbed in deep contemplation. It is notable for the half-lotus posture, right foot resting on the left knee, and fingers lightly touching the cheek. Its maker is believed to have been a Three Kingdoms-period artisan, but no individual artist’s name has been passed down. The Thinker was first created by the French sculptor Auguste Rodin around 1880 as a figure atop The Gates of Hell, then recast in 1904 as an independent, large-scale bronze. It is a masterpiece of modern sculpture expressing, through tensed muscle and a hunched posture, the difficult mind a person carries through life.',
+    artist: "This is the Resonance of Silence artist introduction. Jun-Dong Cho, who led the overall planning and digital interaction production, is Professor Emeritus in the School of Electronic and Electrical Engineering at Sungkyunkwan University. He majored in electronic engineering at Sungkyunkwan University, earned a master’s in computer science from the New York Institute of Technology, and a Ph.D. in computer science from Northwestern University. He founded the Human-ICT Convergence graduate program at Sungkyunkwan University, and with an interest in human-computer interaction and multimodal interface development, coined the concept Humartology, fusing humanities, art, and technology, to create digital interactive artworks.",
+    usage: 'This is the Room 1 usage guide. On the first screen, tap anywhere on the screen once, lightly, and after the guidance voice plays, you’ll enter Room 1 right away. Use the background music button at the bottom of this screen to turn background music on or off before entering. Once inside, on the screen showing captions, tap the left area to go back to the previous line, or tap the right area to move forward to the next line. Press and hold the screen, or press the Pause button at the bottom of the screen, to pause or resume at any time. The four dots at the top center of the screen represent four stages: Orientation, Global Composition, Posture and Position, and Dialogue, and tapping any dot jumps straight to that stage. The Replay and Pause buttons, the Speed and Easy sentences buttons, and the background music volume slider all take effect immediately on press or movement. Replay plays the caption you’re currently viewing again; Pause stops or resumes playback; Speed adjusts the narration speed; Easy sentences switches to simpler sentences; and background music volume adjusts only the background music. Only the Exit button at the top right speaks its name on the first press, and needs a second press or a quick double-tap to actually activate. Exit closes the screen. The Room 2 button moves you straight to Room 2 when pressed. This info panel you’re viewing now closes as soon as you tap the screen once, or swipe from left to right.'
 };
 function playInfoAudio(kind){
     if(!infoStillOpen()) return;
@@ -2639,7 +2608,7 @@ function toggleRefsList(){
     const show = !list.classList.contains('show');
     list.classList.toggle('show', show);
     btn.setAttribute('aria-expanded', String(show));
-    btn.textContent = show ? '참고문헌 닫기' : '참고문헌 보기';
+    btn.textContent = show ? 'Hide References' : 'View References';
 }
 function _infoDialogKeydown(e){
     if(e.key === 'Escape'){ closeInfo(); return; }
@@ -2784,7 +2753,7 @@ function goToRoom2(e) {
     _leavingRoom1 = true;
     try { window.speechSynthesis.cancel(); } catch(err) {}
     // 모바일 환경에서 캐시나 히스토리 충돌을 방지하기 위해 replace 사용 권장
-    location.replace('room2.html?from=next');
+    location.replace('room2-en.html?from=next');
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -2846,14 +2815,14 @@ function goToRoom2(e) {
     // 읽는 것과 같은 우선순위(aria-label 우선, 없으면 화면에 보이는
     // 글자)를 그대로 따른다.
     function getAccessibleName(el){
-        if(!el) return '이름 없는 버튼';
+        if(!el) return 'unlabeled button';
         const label = el.getAttribute && el.getAttribute('aria-label');
         if(label && label.trim()) return label.trim();
         const text = (el.textContent || '').trim();
         if(text) return text;
         const title = el.getAttribute && el.getAttribute('title');
         if(title && title.trim()) return title.trim();
-        return '이름 없는 버튼';
+        return 'unlabeled button';
     }
 
     // v-pc-fix — 참가자 보고: "PC에서는 길게 누르기가 안 된다." 원인은
@@ -3155,20 +3124,20 @@ function goToRoom2(e) {
         // .gate-hint 문구("화면을 한 번 터치하면...")는 빠져 있었다 —
         // 화면엔 보이는데 음성으로는 안 읽히던 부분이 바로 이거였다.
         // 화면에 실제로 보이는 문장을 그대로 이어붙였다.
-        const screenText = '침묵의 공명. 로댕의 생각하는 사람과 국보 반가사유상의 만남, 고뇌에서 자비로 이어지는 울림을 체험해보세요. 관람 순서는 전시실 1 조우, 전시실 2 사유 및 체화입니다. 몸을 통과하지 않은 사유는, 아직 사유가 아닙니다. 화면을 한 번 터치하면 전시실로 입장합니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.';
+        const screenText = 'Resonance of Silence. A meeting between Rodin’s The Thinker and the National Treasure Pensive Bodhisattva; experience the resonance that carries from anguish to compassion. The viewing order is Room 1, Encounter, then Room 2, Contemplation and Embodiment. A thought that has not passed through the body is not yet a thought. Tap the screen once to enter the room. On each caption, tap the left area to go back, or the right area to move forward.';
         // v-remove-swipe-voice — 참가자 요청: "쓸어넘긴다는 내용은 음성
         // 해설에서 빼줘." 왼쪽/오른쪽 쓸어넘기기 문장을 지웠다. 위
         // screenText에서 이미 "한 번 터치하면 입장"·"왼쪽/오른쪽 영역
         // 클릭" 안내를 그대로 읽어주므로, 여기서 반복되던 같은 내용도
         // 함께 정리했다.
-        const msg = '이 전시는 화면을 보지 않아도 이용할 수 있습니다. 화면을 길게 누르거나 화면 아래 멈춤 버튼을 누르면 잠시 멈추거나 다시 시작합니다. 화면 위아래 가장자리의 작은 버튼들은, 누른 채로 훑으면 이름을 말해주고, 같은 자리를 한 번 더 두드리면 실행됩니다. 지금 화면을 한 번 두드리면 입장합니다.';
+        const msg = 'This exhibition can be used without looking at the screen. Press and hold the screen, or press the Pause button at the bottom, to pause or resume at any time. The small buttons along the top and bottom edges speak their name when you press and slide over them, and activate when you tap the same spot again. Tap the screen once now to enter.';
         try{
             speak(screenText, function(){
                 if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
                 speak(msg, function remind(){
                     setTimeout(function again(){
                         if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                        speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', function(){
+                        speak('Tap anywhere on the screen once to enter.', function(){
                             setTimeout(again, 8000);
                         });
                     }, 6000);
@@ -3254,11 +3223,11 @@ function goToRoom2(e) {
             const go = function(){
                 if(_navigated) return;
                 _navigated = true;
-                location.href='room2.html';
+                location.href='room2-en.html';
             };
             try{
-                const u = new SpeechSynthesisUtterance('전시실 2로 이동합니다.');
-                u.lang = 'ko-KR';
+                const u = new SpeechSynthesisUtterance('Moving to Room 2.');
+                u.lang = 'en-US';
                 const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
                 if(_v) u.voice = _v;
                 u.onend = go;
@@ -3273,7 +3242,7 @@ function goToRoom2(e) {
         armed = true;
         btn.classList.add('control-armed');
         try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
-        try{ speak('이 버튼은 ' + (btn.textContent || '전시2').trim() + '입니다.'); }catch(err){}
+        try{ speak('This is the ' + (btn.textContent || 'Room 2').trim() + ' button.'); }catch(err){}
         timer = setTimeout(disarm, ARM_MS);
     }, true); // 캡처 단계 — 버튼의 onclick(버블 단계)보다 먼저 가로챈다
 })();
