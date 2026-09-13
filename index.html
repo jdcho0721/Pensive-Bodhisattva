@@ -138,6 +138,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     .caption-nav-hint.right{right:6px;}
 }
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
+/* v-playback-status — 참가자 요청(6번): 재생/멈춤 상태를 항상 눈에 보이는 작은 알약 배지로 표시 */
+#playback-status{display:inline-block; font-size:.68rem; letter-spacing:.04em; color:#111; background:var(--gold);
+    padding:3px 12px; border-radius:999px; margin-bottom:8px; opacity:.92;}
+#playback-status.paused{background:rgba(212,175,55,.35); color:var(--gold-light);}
+/* v-auto-advance-hint — 참가자 요청(4·6번): 자동 진행 여부를 항상 알려주는 작은 안내문 */
+#auto-advance-hint{font-size:.66rem; color:rgba(232,228,216,.55); margin-top:6px; letter-spacing:.01em;}
+/* v-tts-highlight — 참가자 요청(8번): 지금 재생 중인 문장에 실시간 하이라이트 */
+.tts-sentence{transition:background-color .25s ease, color .25s ease; border-radius:4px; padding:0 2px;}
+.tts-sentence.tts-active{background-color:rgba(212,175,55,.28); color:#fff;}
 #caption{font-size:clamp(1.1rem, 3.6vw, 1.6rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
 
 /* v30 — 참가자 요청: 내레이션 자막창에 그 문장의 출처를 작은 글씨로
@@ -1078,7 +1087,19 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <span class="caption-nav-hint right" aria-hidden="true">›</span>
     <div id="speaker-tag"></div>
     <div id="caption-tag">오리엔테이션</div>
+    <!-- v-playback-status — 참가자 지적(6번): "지금 설명이 재생 중인지
+         클릭을 기다리는 상태인지 명확하지 않았다." 자막 자체와 별개로,
+         지금 재생 중인지·멈춰 있는지를 항상 눈에 보이는 작은 표시로
+         알려준다. 화면(시각) 정보이므로 aria-hidden — 청각장애·시각장애
+         이용자에게는 기존 음성·자막이 이미 그 역할을 하고 있어 중복
+         안내가 되지 않게 한다. -->
+    <div id="playback-status" aria-hidden="true">🔊 재생 중</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
+    <!-- v-auto-advance-hint — 참가자 지적(4·6번): "기다려야 하는지
+         클릭해야 하는지 확신하기 어려웠다." 실제로는 자동으로 이어지는
+         구조인데 그 사실 자체가 안 보였다 — 항상 보이는 안내문으로
+         명시한다. -->
+    <div id="auto-advance-hint" aria-hidden="true">자동으로 다음 이야기로 이어집니다 · 화면 왼쪽/오른쪽을 탭하면 직접 이동할 수 있어요</div>
     <div id="source-tag" aria-hidden="true"></div>
     <!-- v48 — 참가자 요청: TalkBack이 가능하게 해달라. 기존엔 "다음"
          으로 넘어가는 방법이 자막 영역 전체를 탭하는 onCaptionAreaClick
@@ -1136,8 +1157,9 @@ const LAYERS = [
 { tag:'0 · 오리엔테이션',
     lines:[
         { text:"우리나라 국보 83호 금동미륵보살반가사유상과, 프랑스 로댕의 생각하는 사람의 청동복제상을 직접 만나고 느껴보세요.", textSimple:"우리나라 국보, 금동미륵보살반가사유상을 만나보세요. 프랑스 로댕이 만든 생각하는 사람도 함께 만나보세요. 두 조각상을 손으로 만지고 느껴보세요.", wide:'both', source:"연출(전시 저작자)" },
+        { text:"두 조각상 모두 앉은 자세입니다. 왼쪽 로댕의 생각하는 사람은 다부진 근육질의 몸을 잔뜩 웅크려 앞으로 굽힌 모습이고, 오른쪽 반가사유상은 가늘고 부드러운 몸을 한쪽 다리만 살짝 접어 편안하게 걸친 모습입니다.", textSimple:"두 조각상 모두 앉아 있습니다. 왼쪽 로댕은 몸을 동그랗게 웅크리고 있습니다. 오른쪽 반가사유상은 몸이 가늘고 편안합니다. 다리 하나만 살짝 접고 있습니다.", wide:'both', source:"연출(전시 저작자)" },
         { text:"반가사유상은 삼국시대, 6세기에서 7세기 무렵 만들어진 불교 조각입니다.", textSimple:"반가사유상은 아주 오래전, 삼국시대에 만든 불교 조각입니다.", wide:'maitreya', source:"출처: H. Kim, 황수영 [1, 2]" },
-        { text:"미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
+        { text:"반가사유상은 미래에 중생을 구제할 미륵보살이, 오른발을 왼쪽 무릎에 얹은 채 깊은 사유에 잠긴 모습을 표현했습니다.",
           textSimple:"미륵보살은 나중에 사람들을 도와줄 부처님입니다. 오른발을 왼쪽 무릎 위에 올리고, 깊이 생각하는 모습입니다.",
           wide:'maitreya', detail:{x:74, y:55.0}, speaker:'maitreya', source:"출처: H. Kim, 황수영 [1, 2]" },
         { text:"생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년 무렵 만든 조각입니다.", textSimple:"생각하는 사람은 프랑스 조각가 로댕이 만들었습니다.", wide:'rodin', source:"출처: Vujanović [3]" },
@@ -1436,7 +1458,7 @@ try{
 speakerTagEl.textContent = '';
 tagEl.textContent = '오리엔테이션';
 sourceEl.textContent = '';
-captionEl.innerHTML = gateText;
+setCaptionWithHighlight(gateText);
 
 speak(gateText, ()=> playLayer(0));
     startAmbientSound();
@@ -1752,6 +1774,38 @@ function _pickBestKoreanVoice(){
     const neural = koVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
     return neural || koVoices[0];
 }
+// v-tts-highlight — 참가자 요청(8번): "재생 중인 문장에 실시간 하이라이트가
+// 표시되면 자막을 눈으로 따라가기 더 쉬울 것 같다." TTS가 문장을 나누는
+// 경계와 화면 자막이 문장을 나누는 경계가 반드시 같아야 하이라이트가
+// 어긋나지 않으므로, 분리 로직을 한 곳(_splitIntoSentencesKo)으로 모아
+// speak()와 캡션 표시 양쪽에서 그대로 재사용한다.
+function _splitIntoSentencesKo(text){
+    return (String(text).match(/[^.!?…]+[.!?…]?/g) || [text]).map(s=>s.trim()).filter(Boolean);
+}
+// 자막을 문장 단위 <span>으로 감싸서 표시한다 — 이후 _speakSentenceQueue가
+// 지금 읽고 있는 문장의 span에만 강조 클래스를 입힌다.
+function setCaptionWithHighlight(text){
+    const sentences = _splitIntoSentencesKo(text);
+    captionEl.innerHTML = sentences.map((s, i) => `<span class="tts-sentence" data-sidx="${i}">${s}</span>`).join(' ');
+}
+function _highlightCaptionSentence(idx){
+    const active = captionEl.querySelector('.tts-sentence.tts-active');
+    if(active) active.classList.remove('tts-active');
+    const target = captionEl.querySelector(`.tts-sentence[data-sidx="${idx}"]`);
+    if(target) target.classList.add('tts-active');
+}
+function _clearCaptionHighlight(){
+    const active = captionEl.querySelector('.tts-sentence.tts-active');
+    if(active) active.classList.remove('tts-active');
+}
+// v-playback-status — 참가자 요청(6번): 재생/멈춤 상태를 항상 눈에 보이는
+// 작은 배지로 알려준다.
+function _setPlaybackStatus(playing){
+    const el = document.getElementById('playback-status');
+    if(!el) return;
+    if(playing){ el.textContent = '🔊 재생 중'; el.classList.remove('paused'); }
+    else { el.textContent = '⏸ 멈춤'; el.classList.add('paused'); }
+}
 function speak(text, onEnd, speaker){
     lastSpokenText = text;
     lastSpokenSpeaker = speaker || null;
@@ -1770,7 +1824,7 @@ function speak(text, onEnd, speaker){
             // 짧은 정적을 두고, 발화마다 속도·피치를 사람 말투처럼 아주
             // 미세하게 흔든다. 화면 자막은 지금까지처럼 호출한 쪽에서 이미
             // 정해둔 값을 그대로 두고 여기서는 건드리지 않는다.
-            const sentences = (String(text).match(/[^.!?…]+[.!?…]?/g) || [text]).map(s=>s.trim()).filter(Boolean);
+            const sentences = _splitIntoSentencesKo(text);
             _speakSentenceQueue(sentences, 0, speaker, myGen, onEnd);
         }, 60);
         });
@@ -1784,9 +1838,18 @@ function speak(text, onEnd, speaker){
 // 동일한 원리다.
 function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     if(myGen !== speechGen) return;
-    if(idx >= sentences.length){ if(myGen===speechGen && onEnd) onEnd(); return; }
+    if(idx >= sentences.length){
+        if(myGen===speechGen){
+            _clearCaptionHighlight();
+            _setPlaybackStatus(false);
+            if(onEnd) onEnd();
+        }
+        return;
+    }
     const raw = sentences[idx];
     if(!raw){ _speakSentenceQueue(sentences, idx + 1, speaker, myGen, onEnd); return; }
+    _highlightCaptionSentence(idx);
+    _setPlaybackStatus(true);
 
     const u = new SpeechSynthesisUtterance(raw);
     u.lang = 'ko-KR';
@@ -2060,7 +2123,7 @@ function playLine(){
     // 위 LAYERS 데이터에 textSimple을 추가하고, 여기서도 DIALOGUE와
     // 같은 방식으로 분기한다.
     const lineText = (easyMode && line.textSimple) ? line.textSimple : line.text;
-    captionEl.innerHTML = lineText;
+    setCaptionWithHighlight(lineText);
     sourceEl.textContent = line.source || '';
     updateWideSpot(line.wide || null);
     updateStatueSound(line.wide || null);
@@ -2107,7 +2170,7 @@ function startDetailPhase(){
     // 정작 captionEl에는 한 번도 대입하지 않아서, 음성은 나오는데 화면
     // 자막은 비어 있었다(또는 직전 화면 자막이 그대로 남아 있었다).
     const introText3 = '지금부터 들려드리는 이야기는 두 조각상의 모습에서 읽어낸 해설입니다.';
-    captionEl.innerHTML = introText3;
+    setCaptionWithHighlight(introText3);
     speak(introText3, ()=>{
         if(isPaused) return;
         playTurn(0);
@@ -2149,7 +2212,7 @@ function playTurn(i){
     updateWideSpot(t.speaker); 
     updateStatueSound(t.speaker);
     const introText = (easyMode && t.introSimple) ? t.introSimple : t.intro;
-    captionEl.innerHTML = introText;
+    setCaptionWithHighlight(introText);
     sourceEl.textContent = t.introSource || '';
     speak(introText, ()=>{
         if(isPaused) return;
@@ -2174,7 +2237,7 @@ function playDialogueLine(){
         return;
     }
     const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
-    captionEl.innerHTML = text;
+    setCaptionWithHighlight(text);
     sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
     const pt = t.spots[dLineIdx];
     updateDetailSpot(pt);              
@@ -2197,7 +2260,7 @@ function showNextStageAnnouncement(){
     tagEl.textContent = '3단계 · 대화 — 마침';
     updateBadgeUI();
     const recap = '오늘 로댕과 반가사유상은 머리, 몸통, 다리 순서로 세 번 이야기를 주고받았습니다.';
-    captionEl.innerHTML = recap;
+    setCaptionWithHighlight(recap);
     sourceEl.textContent = '';
     speak(recap, ()=>{
         if(isPaused) return;
@@ -2212,7 +2275,7 @@ function showNextStageAnnouncement(){
 // 지금 보고 있는 바로 그 자막만 다시 들려준다.
 function _showFinishStep1(){
     announceStep = 1;
-    captionEl.innerHTML = '힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다.<br>오늘 준비된 이야기는 여기까지입니다.';
+    setCaptionWithHighlight('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다.<br>오늘 준비된 이야기는 여기까지입니다.');
     nextStageTag.classList.add('show');
     speak('힘든 마음과 따뜻한 마음, 서로 다른 대답이었지만 두 조각상 모두 사람의 깊은 생각에서 태어났습니다. 오늘 준비된 이야기는 여기까지입니다. 다음 전시 단계로 이동하세요.', ()=>{
         if(isPaused) return;
@@ -2298,6 +2361,7 @@ function onPauseClick(){
             btnPause.setAttribute('aria-label', '다시 시작 버튼입니다. 누르면 이어서 재생합니다.');
         }
         speak('일시정지합니다.');
+        _setPlaybackStatus(false);
     } else {
         isPaused = false;
         if(btnPause){
@@ -2459,7 +2523,7 @@ function playDialogueLineAt(tIdx, dIdx){
     updateWideSpot(t.speaker);
     updateStatueSound(t.speaker);
     const text = (easyMode && t.linesSimple) ? t.linesSimple[dLineIdx] : t.lines[dLineIdx];
-    captionEl.innerHTML = text;
+    setCaptionWithHighlight(text);
     sourceEl.textContent = (t.sources && t.sources[dLineIdx]) || '';
     const pt = t.spots[dLineIdx];
     updateDetailSpot(pt);
