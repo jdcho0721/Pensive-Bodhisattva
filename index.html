@@ -138,10 +138,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     .caption-nav-hint.right{right:6px;}
 }
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
-/* v-playback-status — 참가자 요청(6번): 재생/멈춤 상태를 항상 눈에 보이는 작은 알약 배지로 표시 */
-#playback-status{display:inline-block; font-size:.68rem; letter-spacing:.04em; color:#111; background:var(--gold);
-    padding:3px 12px; border-radius:999px; margin-bottom:8px; opacity:.92;}
-#playback-status.paused{background:rgba(212,175,55,.35); color:var(--gold-light);}
+/* v-playback-status — 배지 제거됨(참가자 요청) */
 /* v-auto-advance-hint — 참가자 요청(4·6번): 자동 진행 여부를 항상 알려주는 작은 안내문 */
 #auto-advance-hint{font-size:.66rem; color:rgba(232,228,216,.55); margin-top:6px; letter-spacing:.01em;}
 /* v-tts-highlight — 참가자 요청(8번): 지금 재생 중인 문장에 실시간 하이라이트 */
@@ -171,7 +168,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #next-stage-tag.show{display:block;}
 #controls{display:flex; gap:24px; justify-content:center; margin-top:18px; flex-wrap:wrap;
-    padding:14px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid rgba(212,175,55,.16);}
+    padding:14px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid rgba(212,175,55,.16);
+    pointer-events:none;} /* v-next-zone-edge-fix — 참가자 지적: "다음 넘어가기 제스처 영역이 오른쪽 에지까지 확장이 안 된다." #controls는 버튼이 가운데 몰려 있어도 div 자체는 캡션 영역 전체 너비를 그대로 차지한다 — 그래서 버튼 양옆의 빈 공간(오른쪽 끝 포함)에서 탭해도 onCaptionAreaClick의 closest('#controls') 방어 코드에 걸려 아무 반응 없이 먹혀버리고 있었다. 이 div 자체는 클릭을 통과시키고, 아래에서 실제 버튼에만 다시 pointer-events:auto를 줘서 버튼만 클릭되게 한다. */
+#controls > *{pointer-events:auto;}
 .btn{background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'Noto Serif KR',serif;
      min-height:44px; display:inline-flex; align-items:center; justify-content:center; /* WCAG 2.5.5 */
      font-size:.9rem; letter-spacing:.06em; padding:11px 22px; border-radius:30px; cursor:pointer; transition:all .25s;}
@@ -1087,13 +1086,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <span class="caption-nav-hint right" aria-hidden="true">›</span>
     <div id="speaker-tag"></div>
     <div id="caption-tag">오리엔테이션</div>
-    <!-- v-playback-status — 참가자 지적(6번): "지금 설명이 재생 중인지
-         클릭을 기다리는 상태인지 명확하지 않았다." 자막 자체와 별개로,
-         지금 재생 중인지·멈춰 있는지를 항상 눈에 보이는 작은 표시로
-         알려준다. 화면(시각) 정보이므로 aria-hidden — 청각장애·시각장애
-         이용자에게는 기존 음성·자막이 이미 그 역할을 하고 있어 중복
-         안내가 되지 않게 한다. -->
-    <div id="playback-status" aria-hidden="true">🔊 재생 중</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
     <!-- v-auto-advance-hint — 참가자 지적(4·6번): "기다려야 하는지
          클릭해야 하는지 확신하기 어려웠다." 실제로는 자동으로 이어지는
@@ -1335,7 +1327,7 @@ let easyMode = false;
 
 let autoTimer = null;   
 let speechGen = 0;      
-const LINE_PAUSE_MS  = 500;  // v-line-pause-shorten-2 — 참가자 요청: 영문판(index-en.html)에서 800ms도 느리다는 의견에 따라 500ms로 줄였고, 한국어판도 동일하게 맞춘다.
+const LINE_PAUSE_MS  = 250;  // v-line-pause-shorten-3 — 참가자 요청: "다음 자막창으로 넘어갈 때까지 기다리는 시간이 너무 길다. 지루하지 않게 줄여줘." 500ms에서 250ms로 다시 줄였다.
 const LAYER_PAUSE_MS = 350;   // v-page-pause-shorten-2 — 참가자 요청: "페이지 넘어가는 게 너무 늦다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 800ms → 350ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');

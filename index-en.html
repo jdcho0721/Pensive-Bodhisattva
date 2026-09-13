@@ -878,7 +878,6 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 <div id="intro-gate" class="intro-gate">
     <div class="gate-card">
-    <p class="gate-eyebrow">Silent Resonance</p>
     <h1>Resonance of Silence</h1>
     <div class="gate-rule" aria-hidden="true"></div>
     <p class="intro-desc">A meeting between Rodin's The Thinker and the National Treasure Pensive Bodhisattva.<br>Experience the resonance that carries from "anguish" to "compassion."</p>
@@ -1282,7 +1281,7 @@ let easyMode = false;
 
 let autoTimer = null;   
 let speechGen = 0;      
-const LINE_PAUSE_MS  = 500;  // v-line-pause-shorten-2 — participant report: "moving from one caption to the next is too slow" even at the earlier 800ms compromise. Cut further to 500ms.
+const LINE_PAUSE_MS  = 250;  // v-line-pause-shorten-3 — participant report: "waiting for the automatic transition to the next caption feels too long / boring." Cut further from 500ms to 250ms.
 const LAYER_PAUSE_MS = 350;   // v-page-pause-shorten-2 — 참가자 요청: "페이지 넘어가는 게 너무 늦다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 800ms → 350ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');
