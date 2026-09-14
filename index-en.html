@@ -744,8 +744,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          해결된다. 화면낭독기가 읽는 이름은 여전히 아래 aria-label
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
     <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-action="Opens the artwork and copyright notice"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
-    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false">Easy sentences</button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">⏱️ Speed 1.0x</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences">📖 Easy sentences</button>
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
          쓸어넘기면 값을 조절할 수 있다(표준 range 컨트롤 동작).
@@ -866,7 +866,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
-        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="Opens the reference list">View References</button>
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="View References" data-tap-action="Opens the reference list">📚 View References</button>
         <div id="refs-list" role="region" aria-label="Reference list">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
@@ -877,7 +877,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p><b>[7]</b> J.Y. Jeon, "The Most Exquisite Smile Humanity Has Ever Created, an Overwhelming Enlightenment," Munhwajae Sarang [Heritage Love] monthly magazine, no. 170, January 2019, Cultural Heritage Administration.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()">Close</button>
+        <button id="info-close" onclick="closeInfo()" aria-label="Close">✖️ Close</button>
     </div>
 </div>
 
@@ -906,7 +906,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-lang-ko" type="button"
                 aria-label="한국어 버전으로 전환합니다"
                 data-tap-name="Korean version"
-                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index.html'">KO</button>
+                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index.html'">🌐 KO</button>
     </div>
     </div>
 </div>
@@ -1072,11 +1072,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <!-- v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을
          수 있는 기능." 지금 있는 레이어(또는 대화 턴)의 시작으로 되돌아가
          다시 들려준다. -->
-    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button. Press to hear the caption you’re currently viewing again." data-tap-action="Plays the caption you’re currently viewing again.">Replay</button>
+    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button. Press to hear the caption you’re currently viewing again." data-tap-action="Plays the caption you’re currently viewing again.">🔁 Replay</button>
     <!-- v-pause-btn — 참가자 요청: "중간에 잠시 일시정지." 기존에 화면을
          길게 누르면 동작하던 onPauseClick()을 그대로 재사용하되, 눈에
          보이는 버튼으로도 눌러 쓸 수 있게 되살렸다. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause." data-tap-action="Pauses or resumes playback.">Pause</button>
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause." data-tap-action="Pauses or resumes playback.">⏸️ Pause</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -1088,7 +1088,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          무시되어 이동 자체가 실행되지 않는 경우가 있었다. room2.html의
          전시1 버튼(#exhibit1-btn)처럼 확인 절차 없는 단순 클릭으로
          바꿔, 이런 경합 자체가 생기지 않게 한다. -->
-    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">🏛️ Room 2</button>
 </div>
 </div>
 
@@ -1271,6 +1271,17 @@ const DIALOGUE = [
 let phase = 'screen'; 
 let layerIdx = 0, lineIdx = 0;
 let turnIdx = 0, dLineIdx = -1; // 초기값을 -1로 두어 intro부터 시작되도록 보완
+// v-skip-intro-fix — same bug as room1's Korean version: tapping "next"
+// while the stage-transition announcement ("From here on, what you'll
+// hear...") is still playing skipped the following intro greeting
+// ("First, Rodin's Thinker offers...") entirely and jumped straight to
+// the next detail line. Cause: startDetailPhase() already sets
+// phase='dialogue' before playTurn(0) (the intro greeting) has actually
+// run, so onNextClick() mistakes it for "already mid-dialogue" and
+// advances dLineIdx instead. This flag marks "transition line is
+// playing, playTurn(0) hasn't run yet" so onNextClick() can handle it
+// separately.
+let awaitingDetailIntro = false;
 let announcing = false; 
 // v-replay-announce-step — 참가자 지적: "index의 다시듣기는 오동작이다."
 // 원인: showNextStageAnnouncement()는 announcing=true인 동안 서로 다른
@@ -1494,7 +1505,7 @@ function onVolumeChange(v){
 // 이유로 이미 여러 차례 배경음 크기를 낮춘 이력이 있다 — RESONANCE_MASTER_GAIN
 // 주석 참고). 내레이션 음량(NARRATION_VOLUME)은 그대로 두고, 배경음만 상대적으로
 // 더 조용해지도록 이 기준값만 낮췄다.
-const AMBIENT_VOLUME = 0.10;
+const AMBIENT_VOLUME = 0.14;
 function startAmbientSound(){
     const el = document.getElementById('snd-base');
     if(!el) return;
@@ -1515,7 +1526,7 @@ function startAmbientSound(){
 }
 
 // v82 — 위 AMBIENT_VOLUME과 같은 참가자 요청으로 함께 낮췄다(0.18 → 0.10).
-const STATUE_SOUND_VOLUME = 0.10;
+const STATUE_SOUND_VOLUME = 0.14;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
 
@@ -1652,7 +1663,9 @@ function cycleSpeed(){
     const btn = document.getElementById('btn-speed');
     const announceText = `Speed ${TTS_RATE}x`;
     if(btn){
-        btn.textContent = `Speed ${TTS_RATE}x`;
+        // v-button-icons — keep the ⏱️ icon so it doesn't vanish on click;
+        // aria-label stays icon-free so screen readers announce cleanly.
+        btn.textContent = `⏱️ Speed ${TTS_RATE}x`;
         btn.setAttribute('aria-label', announceText);
     }
     hapticPulse('turn');
@@ -1834,12 +1847,28 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     // the button itself displays (still "Speed 1.0x" etc.).
     const EN_RATE_ADJUST = 0.85;
     u.rate = TTS_RATE * EN_RATE_ADJUST * baseRateMult;
-    // 사람의 말은 문장마다 속도·피치가 완벽히 똑같지 않다 — 아주 미세하게
-    // (±3~5% 안팎)만 흔들어, 폭을 좁게 둬서 부자연스럽게 튀지 않게 한다.
-    const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
-    const jitterPitch = 1 + (Math.random() - 0.5) * 0.05;
-    u.rate = u.rate * jitterRate;
-    u.pitch = basePitch * jitterPitch;
+    // v-more-natural-intonation — participant note: "the voice sounds
+    // monotonous, it'd be nice if it were more natural." The Web Speech
+    // API only lets us set one fixed pitch/rate for an entire utterance
+    // (no real-time SSML-style intonation curve is supported), so a true
+    // mid-sentence pitch contour like a human speaker isn't possible.
+    // Since this file already splits narration into one utterance per
+    // sentence (_speakSentenceQueue), we instead pick that whole-sentence
+    // pitch/rate based on the sentence's own final punctuation — nudging
+    // pitch up for a question, adding a touch of energy for an
+    // exclamation, and slowing down for a trailing ellipsis. We also
+    // widen the small random jitter that already varied rate/pitch
+    // slightly sentence-to-sentence (±3~5% → ±4.5~6%), so consecutive
+    // sentences feel less mechanically identical.
+    const endPunct = (raw.match(/([.!?…]+)\s*$/) || [,''])[1];
+    let intonPitchMult = 1, intonRateMult = 1;
+    if(endPunct.includes('?')){ intonPitchMult = 1.06; intonRateMult = 0.98; }
+    else if(endPunct.includes('!')){ intonPitchMult = 1.04; intonRateMult = 1.05; }
+    else if(endPunct.includes('…')){ intonRateMult = 0.92; }
+    const jitterRate = 1 + (Math.random() - 0.5) * 0.09;
+    const jitterPitch = 1 + (Math.random() - 0.5) * 0.07;
+    u.rate = u.rate * intonRateMult * jitterRate;
+    u.pitch = basePitch * intonPitchMult * jitterPitch;
     // v91 — 참가자 요청으로 "배경음악 크기" 슬라이더가 더 이상 내레이션
     // 음량에 영향을 주지 않는다. 내레이션은 고정 음량으로 재생한다.
     u.volume = NARRATION_VOLUME;
@@ -2127,8 +2156,12 @@ function startDetailPhase(){
     // 자막은 비어 있었다(또는 직전 화면 자막이 그대로 남아 있었다).
     const introText3 = 'From here, the story you’ll hear is an interpretation read from the two statues’ forms.';
     captionEl.innerHTML = introText3;
+    // v-skip-intro-fix — mark that playTurn(0) hasn't run yet, until this
+    // transition line finishes.
+    awaitingDetailIntro = true;
     speak(introText3, ()=>{
         if(isPaused) return;
+        awaitingDetailIntro = false;
         playTurn(0);
     });
 }
@@ -2141,7 +2174,7 @@ function toggleEasyMode(){
     // aria-pressed(스크린리더용)와 .primary 클래스(금빛 강조, 시각용)로
     // 전달한다 — 누를 때마다 speak()로도 상태를 안내하므로 텍스트에
     // "켜짐"/"꺼짐"을 반복해서 넣지 않아도 상태를 알 수 있다.
-    btn.textContent = 'Easy sentences';
+    btn.textContent = '📖 Easy sentences';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
     // v87 — cycleSpeed()와 동일한 이유로, 이어듣기를 문자열 재생이 아닌
@@ -2155,6 +2188,10 @@ function playTurn(i){
     clearTimeout(autoTimer);
     hapticPulse('turn'); 
     phase = 'dialogue'; announcing = false;
+    // v-skip-intro-fix — safety net: whichever path leads here (the normal
+    // callback, or onNextClick()'s special-case below), clear the
+    // "awaiting intro" flag once playTurn() actually starts.
+    awaitingDetailIntro = false;
     turnIdx = i; dLineIdx = -1; 
     eyebrowEl.textContent = 'Room 1 · Dialogue';
     updateBadgeUI();
@@ -2276,7 +2313,7 @@ function jumpToStage(targetIdx){
     // 그대로 자동 재생이 이어지게 둔다 — 대신 일시정지 중이었다면 확실히
     // 풀어준다.
     isPaused = false;
-    if(btnPause){ btnPause.textContent = 'Pause'; btnPause.classList.remove('primary'); }
+    if(btnPause){ btnPause.textContent = '⏸️ Pause'; btnPause.classList.remove('primary'); }
     clearTimeout(autoTimer);
     window.speechSynthesis.cancel();
     speechGen++;
@@ -2312,7 +2349,7 @@ function onPauseClick(){
         clearTimeout(autoTimer);
         pausedContext = { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
         if(btnPause){
-            btnPause.textContent = 'Resume';
+            btnPause.textContent = '▶️ Resume';
             btnPause.classList.add('primary');
             btnPause.setAttribute('aria-label', 'Resume button. Press to continue playback.');
         }
@@ -2320,7 +2357,7 @@ function onPauseClick(){
     } else {
         isPaused = false;
         if(btnPause){
-            btnPause.textContent = 'Pause';
+            btnPause.textContent = '⏸️ Pause';
             btnPause.classList.remove('primary');
             btnPause.setAttribute('aria-label', 'Pause button. Press to pause.');
         }
@@ -2510,6 +2547,16 @@ function onNextClick(){
         return;
     }
 
+    // v-skip-intro-fix — if the stage-transition announcement is still
+    // playing (playTurn(0) hasn't run yet), don't fall into the normal
+    // dialogue-advance branch below (that would skip the intro greeting
+    // entirely) — start the intro turn properly instead.
+    if(awaitingDetailIntro){
+        awaitingDetailIntro = false;
+        playTurn(0);
+        return;
+    }
+
     if(phase === 'screen'){
         const layer = LAYERS[layerIdx];
         if(lineIdx < layer.lines.length - 1){
@@ -2685,7 +2732,12 @@ function toggleRefsList(){
     const show = !list.classList.contains('show');
     list.classList.toggle('show', show);
     btn.setAttribute('aria-expanded', String(show));
-    btn.textContent = show ? 'Hide References' : 'View References';
+    // v-button-icons — keep the 📚 icon; the label itself still changes
+    // with state, so aria-label is kept in sync so screen readers always
+    // announce the current action correctly.
+    const label = show ? 'Hide References' : 'View References';
+    btn.textContent = '📚 ' + label;
+    btn.setAttribute('aria-label', label);
 }
 function _infoDialogKeydown(e){
     if(e.key === 'Escape'){ closeInfo(); return; }
@@ -3319,7 +3371,13 @@ function goToRoom2(e) {
         armed = true;
         btn.classList.add('control-armed');
         try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
-        try{ speak('This is the ' + (btn.textContent || 'Room 2').trim() + ' button.'); }catch(err){}
+        try{
+            // v-button-icons — the button label now has a 🏛️ icon in front,
+            // so reading textContent verbatim could speak the icon too.
+            // Strip non-letter/number characters before announcing.
+            const cleanName = (btn.textContent || 'Room 2').replace(/[^a-zA-Z0-9\s]/g, '').trim() || 'Room 2';
+            speak('This is the ' + cleanName + ' button.');
+        }catch(err){}
         timer = setTimeout(disarm, ARM_MS);
     }, true); // 캡처 단계 — 버튼의 onclick(버블 단계)보다 먼저 가로챈다
 })();

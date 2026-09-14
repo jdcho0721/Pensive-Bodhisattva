@@ -305,6 +305,21 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    구분 규칙은 더 이상 필요 없어 제거했다 — #caption-wrap과 그 자식들은
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
 #focus-tag{font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
+/* v-ai-vs-narration-distinction — participant note: "In the segment where
+   the part-by-part narration and the AI chatbot answers alternate, it was
+   briefly unclear which one I was hearing — please make the two more
+   visually distinct." Until now only the #focus-tag wording differed
+   ("You just touched — …" vs "Contemplation Salon — …"); everything else
+   looked identical, so missing the short label meant no way to tell them
+   apart. A colored left border is now always shown on the caption panel,
+   switching to a different color for AI answers — so even if the wording
+   is missed, the panel's color keeps signalling whether this is scripted
+   narration or an AI answer. The JS below toggles this class and also
+   prepends an icon to #focus-tag (🗿 scripted narration / 🤖 AI-generated
+   answer) at each relevant point — color and icon double up so it still
+   reads at a glance or for colorblind visitors. */
+#caption-wrap{border-left:4px solid var(--gold-dim);transition:border-color .35s ease, background-color .35s ease;}
+#caption-wrap.ai-mode{border-left-color:rgba(122,178,255,.75);background-color:rgba(90,140,255,.05);}
 #caption{font-size:clamp(.85rem,2.8vw,1.1rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
 /* v-tts-highlight-room2 — same real-time sentence highlight feature already
    in index.html, applied here too (participant request). Previously room2
@@ -1021,8 +1036,13 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <!-- ── 작품·작가 소개 / 저작권 ── -->
 <div id="top-controls">
 <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-name="Info" data-tap-action="Opens the info and copyright notice">ⓘ</button>
-<button id="speed-btn" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
-<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences, currently off">Easy sentences</button>
+<!-- v-button-icons — participant request: "it would be nice for buttons to
+     have an intuitive icon along with the text." These two buttons react
+     instantly on every tap (TWOTAP_HANDS_OFF_SELECTOR) so they don't use
+     data-tap-name — the visible label itself is the screen-reader name —
+     prepending an icon to the text doesn't affect the announcement. -->
+<button id="speed-btn" onclick="cycleSpeed()" aria-label="Speed 1.0x">⏱️ Speed 1.0x</button>
+<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences, currently off">📖 Easy sentences</button>
 <div id="volume-control" role="group" aria-label="Background music volume">
     <span aria-hidden="true">🔊</span>
     <input type="range" id="volume-slider" min="0" max="100" value="70" step="10"
@@ -1189,8 +1209,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              그대로 활용한다 — 인쇄 대화상자가 열리면 "PDF로 저장"을 선택해 그대로
              파일로 저장할 수 있다. 인쇄되는 모습은 위 @media print 규칙이
              결정한다(수료증 카드만 하얀 바탕에 검게 남기고 나머지는 감춤). -->
-        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="Print the certificate as a PDF" data-tap-name="Print as PDF" data-tap-action="Opens the certificate print screen">Print</button>
-        <button class="btn" id="btn-cert-close" data-tap-action="Returns to Room 2." onclick="closeCertificate()">Keep Exploring</button>
+        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="Print the certificate as a PDF" data-tap-name="Print as PDF" data-tap-action="Opens the certificate print screen">🖨️ Print</button>
+        <button class="btn" id="btn-cert-close" data-tap-name="Keep Exploring" data-tap-action="Returns to Room 2." onclick="closeCertificate()">👁️ Keep Exploring</button>
         <button class="btn primary" id="btn-cert-primary">나가기</button>
     </div>
 </div>
@@ -1203,8 +1223,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
-        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="Moves to Room 2" data-tap-action="Moves to Room 2">Room 2</button>
-        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index-en.html'" aria-label="Moves to Room 1" data-tap-action="Moves to Room 1">Room 1</button>
+        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="Moves to Room 2" data-tap-name="Room 2" data-tap-action="Moves to Room 2">🏛️ Room 2</button>
+        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index-en.html'" aria-label="Moves to Room 1" data-tap-name="Room 1" data-tap-action="Moves to Room 1">🏛️ Room 1</button>
     </div>
 </div>
 
@@ -1227,7 +1247,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button class="btn" id="btn-lang-ko" type="button"
                 aria-label="한국어 버전으로 전환합니다"
                 data-tap-name="Korean version"
-                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2.html'">KO</button>
+                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2.html'">🌐 KO</button>
     </div>
     </div>
     </div>
@@ -1411,9 +1431,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <!-- v-replay-btn — 참가자 요청: "다시듣기." 지금까지 만진 부위 중
              가장 최근 것을 처음부터 다시 들려준다(repeatCurrent, 기존에
              이미 만들어져 있었지만 어떤 버튼에도 연결돼 있지 않던 함수). -->
-        <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="Replay button. Plays the explanation of the part you just touched again from the start." data-tap-name="Replay" data-tap-action="Plays the explanation of the part you just touched again from the start.">Replay</button>
-        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="View your exploration record as a certificate" data-tap-action="Shows your record of what you’ve touched so far">Certificate</button>
-        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="Moves to a mind-clearing screen" data-tap-action="Moves to a mind-clearing screen">Serenity</button>
+        <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="Replay button. Plays the explanation of the part you just touched again from the start." data-tap-name="Replay" data-tap-action="Plays the explanation of the part you just touched again from the start.">🔁 Replay</button>
+        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="View your exploration record as a certificate" data-tap-name="Certificate" data-tap-action="Shows your record of what you’ve touched so far">📜 Certificate</button>
+        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="Moves to a mind-clearing screen" data-tap-name="Serenity" data-tap-action="Moves to a mind-clearing screen">🙏 Serenity</button>
         <!-- v-remove-finish-btn — 참가자 요청: "11곳 만나고 나면 마치기
              버튼은 제거해달라." 완주 후에는 기존처럼 '수료증' 버튼으로
              언제든 기록을 확인할 수 있으므로, 별도의 '마치기' 버튼 없이도
@@ -1426,7 +1446,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              장면을 거치는 정식 "마무리" 경로다. 이 버튼은 그 절차 없이,
              관람 중 언제든 곧바로 전시실 1로 건너뛸 수 있는 직접 이동
              경로다. -->
-        <button class="btn" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index-en.html'" aria-label="Go straight to Room 1" data-tap-action="Moves to Room 1">Room 1</button>
+        <button class="btn" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index-en.html'" aria-label="Go straight to Room 1" data-tap-name="Room 1" data-tap-action="Moves to Room 1">🏛️ Room 1</button>
     </div>
 </div>
 </div>
@@ -1681,7 +1701,8 @@ function toggleEasyMode(){
     if(btn){
         // 라벨은 상태와 무관하게 "쉬운 문장"으로 고정한다. 상태는
         // aria-pressed(스크린리더용)와 강조색(시각)으로 전달된다.
-        btn.textContent = 'Easy sentences';
+        // v-button-icons — keep the 📖 icon so it doesn't vanish on click.
+        btn.textContent = '📖 Easy sentences';
         btn.setAttribute('aria-pressed', String(easyMode));
         btn.setAttribute('aria-label', easyMode ? 'Easy sentences, currently on' : 'Easy sentences, currently off');
     }
@@ -1777,7 +1798,7 @@ let currentMode = 1;
 // 좀 더 작게 해달라." 0.18 → 0.12로 낮췄다.
 // v-bgm-quieter-2 — 참가자 후속 요청: "배경음악을 좀 더 작게 해줘."
 // 0.12 → 0.07로 한 번 더 낮췄다.
-const STATUE_SOUND_VOLUME = 0.07;
+const STATUE_SOUND_VOLUME = 0.10;
 const _statueFadeTimers = {};   // elementId -> interval id
 let _currentStatueSound = null; // 'rodin' | 'maitreya' | null
 
@@ -1876,7 +1897,7 @@ function updateStatueSound(speaker){
 // 좀 더 작게 해달라." 0.09 → 0.06으로 낮췄다.
 // v-bgm-quieter-2 — 참가자 후속 요청: "배경음악을 좀 더 작게 해줘."
 // 0.06 → 0.035로 한 번 더 낮췄다.
-const AMBIENT_VOLUME = 0.035;
+const AMBIENT_VOLUME = 0.05;
 function startAmbientSound(){
     const el = document.getElementById('snd-base');
     if(!el) return;
@@ -2073,7 +2094,8 @@ function cycleSpeed(){
     const btn = document.getElementById('speed-btn');
     const announceText = `Speed ${TTS_RATE}x`;
     if(btn){
-        btn.textContent = `Speed ${TTS_RATE}x`;
+        // v-button-icons — keep the ⏱️ icon so it doesn't vanish on click.
+        btn.textContent = `⏱️ Speed ${TTS_RATE}x`;
         btn.setAttribute('aria-label', announceText);
     }
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
@@ -2227,8 +2249,16 @@ function speak(text, onEnd, speakerKey){
         // 발화 하나 전체의 boundary 이벤트를 기준으로 삼으므로,
         // index.html처럼 문장 단위로 발화 자체를 쪼개지는 않고(그러면
         // 아래 동기화가 깨진다) 이 발화 전체에 한 번 흔들림을 적용한다.
-        const jitterRate = 1 + (Math.random() - 0.5) * 0.06;
-        const jitterPitch = 1 + (Math.random() - 0.5) * 0.05;
+        // v-more-natural-intonation — participant note: "the voice sounds
+        // monotonous, it'd be nice if it were more natural." Since one
+        // utterance here covers a whole multi-sentence passage, we can't
+        // vary pitch by each sentence's ending punctuation the way
+        // index.html does (that would break caption sync), but widening
+        // the per-utterance random jitter (±3~5% → ±4.5~6%) means the
+        // tone/speed shifts a little each time a visitor moves to a new
+        // part, which softens the repetitiveness.
+        const jitterRate = 1 + (Math.random() - 0.5) * 0.09;
+        const jitterPitch = 1 + (Math.random() - 0.5) * 0.07;
         // v-en-rate-slow — same fix as index-en.html: the same numeric
         // TTS_RATE reads noticeably faster in English than it did in
         // Korean, so apply a small English-only correction factor on top
@@ -2468,7 +2498,11 @@ function _processTouch(key){
     visited.add(key);
     updateProgress();
 
-    document.getElementById('focus-tag').textContent = 'You are touching — ' + d.title;
+    document.getElementById('focus-tag').textContent = '🗿 You are touching — ' + d.title;
+    // v-ai-vs-narration-distinction — back to scripted narration, so if the
+    // previous caption was an AI answer/synthesis, clear that indicator
+    // (blue border) now.
+    document.getElementById('caption-wrap')?.classList.remove('ai-mode');
     // v-answer-replay — 챗봇 답변 뒤에 곧바로 다른 부위를 만지면, 이 부위
     // 해설 자막에는 더 이상 "탭하면 다시 듣기"가 적용되지 않으므로
     // 포인터 커서 표시(위 #caption.replayable)도 함께 지운다.
@@ -3398,6 +3432,7 @@ function _handleDwell(hitKey, cursor){
                 // 처음 한 번만: 진행률 링이 왜 채워지는지 글로도 설명한다.
                 _dwellHintShown = true;
                 document.getElementById('focus-tag').textContent = '손끝을 그 자리에 잠시 두고 계세요';
+                document.getElementById('caption-wrap')?.classList.remove('ai-mode');
                 document.getElementById('caption').innerHTML = '링이 다 채워질 때까지 손끝을 그대로 두시면 자동으로 설명이 시작됩니다.';
                 document.getElementById('source-tag').textContent = '';
             }
@@ -3450,7 +3485,11 @@ function triggerCenterMoment(){
 
 function _processCenterMoment(){
     hapticPulse('meeting');
-    document.getElementById('focus-tag').textContent = '두 조각상 사이, 비어 있는 자리';
+    document.getElementById('focus-tag').textContent = '🗿 두 조각상 사이, 비어 있는 자리';
+    // v-ai-vs-narration-distinction — this arrival line is scripted, not
+    // the AI synthesis below (_playCenterSynthesis) — clear the AI
+    // indicator here (it's turned back on if a synthesis follows).
+    document.getElementById('caption-wrap')?.classList.remove('ai-mode');
     // v-answer-replay — 위 touchPart()와 동일한 이유로, 이 자리로 넘어오면
     // 챗봇 답변 탭-재생 커서 표시를 지운다.
     document.getElementById('caption').classList.remove('replayable');
@@ -3505,7 +3544,12 @@ function _endCenterMeetingState(moodEl){
 // 자막·음성으로 들려준다. 부위 해설과 같은 문장 단위 자막 동기화
 // (_displaySentencesTimed)를 그대로 쓴다.
 async function _playCenterSynthesis(moodEl){
-    document.getElementById('focus-tag').textContent = '두 조각상 사이 — 지금까지의 사유';
+    // v-ai-vs-narration-distinction — this synthesis isn't scripted text;
+    // it's generated fresh by the LLM from whatever parts have been
+    // touched so far, so it gets the same "AI indicator" (blue border +
+    // 🤖 icon) as the chatbot answers.
+    document.getElementById('caption-wrap')?.classList.add('ai-mode');
+    document.getElementById('focus-tag').textContent = '🤖 두 조각상 사이 — 지금까지의 사유';
     _stopCaptionSync();
     _displaySentencesTimed('Looking back over the spots you\u2019ve touched so far\u2026', document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
@@ -3519,7 +3563,8 @@ async function _playCenterSynthesis(moodEl){
         CENTER_SYNTHESIS_SYSTEM_PROMPT
     );
 
-    document.getElementById('focus-tag').textContent = '두 조각상 사이 — 지금까지의 사유';
+    document.getElementById('caption-wrap')?.classList.add('ai-mode');
+    document.getElementById('focus-tag').textContent = '🤖 두 조각상 사이 — 지금까지의 사유';
     _stopCaptionSync();
     _displaySentencesTimed(synthesis, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
@@ -3625,7 +3670,8 @@ function showCertificate(isComplete){
     // v-yeoil-label-unify — 참가자 요청: "'마음을 비우고 여일' 버튼은
     // '여일' 버튼으로 이름을 바꿔달라." 완주 여부와 상관없이 버튼 이름을
     // '여일' 하나로 통일한다 — 실제 동작(beginYeoilExit)은 그대로다.
-    primaryBtn.textContent = 'Serenity';
+    primaryBtn.textContent = '🙏 Serenity';
+    primaryBtn.setAttribute('data-tap-name', 'Serenity');
     primaryBtn.setAttribute('data-tap-action', 'Moves to a mind-clearing screen');
     primaryBtn.onclick = beginYeoilExit;
 
@@ -6097,7 +6143,13 @@ function pushUnverifiedNoticeLog(){
 // 실측 동기화(boundary 이벤트)가 걸린다 — 아래 호출부들은 모두 그렇게
 // 되어 있다.
 function showChatAnswerInCaption(tag, text){
-    document.getElementById('focus-tag').textContent = tag;
+    // v-ai-vs-narration-distinction — participant note: "it was briefly
+    // unclear whether I was hearing scripted narration or an AI chatbot
+    // answer." Turn on the caption panel's blue border and prepend a 🤖
+    // icon so the AI-generated answer keeps standing out visually (the
+    // other call sites clear this class when scripted narration resumes).
+    document.getElementById('caption-wrap')?.classList.add('ai-mode');
+    document.getElementById('focus-tag').textContent = '🤖 ' + tag;
     document.getElementById('source-tag').textContent = '';
     _stopCaptionSync(); // 진행 중이던 다른 자막 예약(부위 해설 등)을 먼저 무효화
     // v-answer-replay — 이 자막이 사유의 상담소 답변임을 표시해, 터치하면
@@ -6117,7 +6169,10 @@ function showChatAnswerInCaption(tag, text){
 // 없다(그런 자막에는 이미 "다시듣기" 버튼이 따로 있다).
 function onCaptionTap(){
     const tag = document.getElementById('focus-tag').textContent || '';
-    if(tag.indexOf('Contemplation Counsel') !== 0) return;
+    // v-ai-vs-narration-distinction — focus-tag now starts with a 🤖 icon,
+    // so it no longer begins with the tag text itself — check for the
+    // substring anywhere instead of strictly at index 0.
+    if(tag.indexOf('Contemplation Counsel') === -1) return;
     const text = _lastSpokenText;
     if(!text) return;
     try{ hapticPulse('turn'); }catch(err){}
