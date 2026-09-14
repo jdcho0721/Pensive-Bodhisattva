@@ -1698,22 +1698,18 @@ const DETAILS = {
 const ORDER = Object.keys(DETAILS);
 const visited = new Set();
 let currentKey = null;
-// v-lens-material-time — participant note: of the five lenses (form,
-// material/technique, time, meaning, comparison), material/technique and
-// time were missing from the fixed narration in both rooms. Since room2
-// lets visitors touch the 11 spots in any order, we add this once per
-// statue on first touch rather than tying it to one specific spot.
-const MATERIAL_TIME_NOTES = {
-    'Rodin': 'The Thinker was made by traditional bronze casting: a wax original was shaped, a mold built around it, and molten bronze poured in to take its place. Right after casting it would have looked closer to bright copper; over more than a hundred years, exposure to air oxidized the surface into the dark bronze color we see now.',
-    'Bodhisattva': 'The Pensive Bodhisattva is gilt-bronze — bronze with a thin layer of gold — made by lost-wax casting, shaping a wax original and pouring in molten bronze. Over more than a thousand years much of that gold leaf has worn away, so a darker bronze tone shows through more than it originally did; when first made, the whole surface is thought to have gleamed with gold.'
-};
-let _materialTimeNoteShown = new Set();
-function _withMaterialTimeNote(d, sentence){
-    if(_materialTimeNoteShown.has(d.body)) return sentence;
-    _materialTimeNoteShown.add(d.body);
-    const note = MATERIAL_TIME_NOTES[d.body];
-    return note ? note + ' ' + sentence : sentence;
-}
+// v-lens-material-time-revert — participant note: "Room 2 suddenly shows
+// extra Room 1 narration content (about the Bodhisattva's color having
+// changed)." Cause: MATERIAL_TIME_NOTES below was prepended to whichever
+// spot the visitor happened to touch first for a given statue — but
+// room2 lets visitors touch the 11 spots in any order, so this note
+// could land on any of them, and since each spot's narration was
+// recently trimmed short, the note (about 150 characters) suddenly
+// doubled that one spot's length with material/time facts unrelated to
+// its own meaning. The material/technique/time lens already has a
+// natural home in index.html's (Room 1) orientation narration, and
+// remains available in room2's chatbot knowledge base (lost-wax casting,
+// etc.) — so this injection is simply removed here.
 
 // ── 쉬운 문장으로 듣기 — room1-intro-touch.html과 동일한 패턴.
 let easyMode = false;
@@ -2535,7 +2531,7 @@ function _processTouch(key){
     // 남아있는 네 곳(로댕 이마·어깨, 반가사유상 미소·옷주름[어깨])에서만
     // 자연스럽게
     // 붙는다.
-    const sentence = _withMaterialTimeNote(d, d.focus + ' ' + _detailText(d) + (d.embody ? ' ' + d.embody : ''));
+    const sentence = d.focus + ' ' + _detailText(d) + (d.embody ? ' ' + d.embody : '');
     // 자막은 지연 없이 바로 보여준다 — 화면을 보는 동반자에게는 정보가
     // 즉시 남고, 시각 정보는 "끼어든다"는 느낌을 주지 않는다. 지연시키는
     // 것은 오직 음성(청각) 채널뿐이다. (v-readability: 전체 문단을 한
