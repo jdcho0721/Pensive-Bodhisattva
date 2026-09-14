@@ -328,8 +328,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    being read gets a gold highlight, matching index.html's behavior exactly
    (same class names .tts-sentence/.tts-active and color, for visual
    consistency across files). */
-.tts-sentence{transition:background-color .25s ease, color .25s ease; border-radius:4px; padding:0 2px;}
-.tts-sentence.tts-active{background-color:rgba(212,175,55,.28); color:#fff;}
+.tts-sentence{display:none; transition:background-color .25s ease, color .25s ease; border-radius:4px; padding:0 2px;}
+/* v-one-sentence-per-screen-2 — participant request: "sentences are too
+   long to read; please split them into sentence-by-sentence screens that
+   flow one after another." Now that narration has been trimmed shorter,
+   showing exactly one sentence at a time (instead of the whole paragraph
+   with just a highlight) is easier to read. Same span structure, just
+   toggling visibility instead of only color. */
+.tts-sentence.tts-active{display:inline; background-color:rgba(212,175,55,.28); color:#fff;}
 /* v-answer-replay — 참가자 요청: "답변의 자막을 한 번 터치하면 다시 들을
    수 있게 해줘." 사유의 상담소(챗봇) 답변이 떠 있는 동안에만 자막에
    포인터 커서를 줘서, 지금은 눌러서 다시 들을 수 있다는 것을 눈으로도
@@ -1107,7 +1113,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <div class="info-section" data-kind="artist">
         <h3>Resonance of Silence — Artist Introduction</h3>
         <p class="label">Jun-Dong Cho (趙浚東)</p>
-        <p>Professor Emeritus, School of Electronic and Electrical Engineering, Sungkyunkwan University</p>
+        <p>Planning and interaction phygital platform production · Professor Emeritus, School of Electronic and Electrical Engineering, Sungkyunkwan University</p>
         <p>Education — B.S. in Electronic Engineering, Sungkyunkwan University; M.S. in Computer Science, New York Institute of Technology; Ph.D. in Computer Science, Northwestern University</p>
         <p>Career highlights — Founded the Human-ICT Convergence graduate program at Sungkyunkwan University</p>
         <p>Main research interests — Human-computer interaction (HCI) and multimodal interface development. He coined the concept "Humartology," fusing humanities, art, and technology, and creates digital interactive artworks combining technology and art.</p>
@@ -1432,7 +1438,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              가장 최근 것을 처음부터 다시 들려준다(repeatCurrent, 기존에
              이미 만들어져 있었지만 어떤 버튼에도 연결돼 있지 않던 함수). -->
         <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="Replay button. Plays the explanation of the part you just touched again from the start." data-tap-name="Replay" data-tap-action="Plays the explanation of the part you just touched again from the start.">Replay</button>
-        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="View your exploration record as a certificate" data-tap-name="Certificate" data-tap-action="Shows your record of what you’ve touched so far">📜 Certificate</button>
+        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="View your exploration record as a certificate" data-tap-name="Certificate" data-tap-action="Shows your record of what you’ve touched so far">Certificate</button>
         <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="Moves to a mind-clearing screen" data-tap-name="Serenity" data-tap-action="Moves to a mind-clearing screen">Serenity</button>
         <!-- v-remove-finish-btn — 참가자 요청: "11곳 만나고 나면 마치기
              버튼은 제거해달라." 완주 후에는 기존처럼 '수료증' 버튼으로
@@ -1599,8 +1605,8 @@ const DETAILS = {
         title:'Rodin · Forehead and Brow', body:'Rodin',
         source:'Source: observation+staging [8,9]; Kierkegaard [10]',
         focus:'The Thinker, the center of the forehead.',
-        detail:'You can feel deep furrows and a tightly drawn brow. These are the marks of painful thought. They reveal a human being facing the heavy responsibilities of life, an inward existential anguish, and the absurdity of the world — thinking alone, unaided. The existentialist philosopher Kierkegaard saw this kind of despair and anxiety not as a sickness to be cured, but as an unavoidable condition for any human being who is finite yet reaches toward the infinite. Only by facing that despair head-on, without turning away, can one arrive at a true understanding of oneself. Right now, the fingertip resting on this brow is feeling, in the body, a weight of thought that the eye alone could never fully read.',
-        detailSimple:'There are deep lines on the forehead. The brow is also pulled tight. These are traces of long, difficult thinking. Everyone carries heavy worries at some point, and sometimes has to face them alone. The fingertip touching this forehead is feeling, in the body, the weight of that difficult thinking.',
+        detail:'Deep furrows and a tightly drawn brow. This is a person facing heavy responsibility, thinking alone. Kierkegaard saw despair like this as an unavoidable human condition — facing it directly leads to true self-understanding. Feel that weight of thought through your fingertip.',
+        detailSimple:'There are deep lines on the forehead. Traces of long, hard thinking. Feel that weight with your fingertip.',
         touchInvite:'Now try the fist beneath it, resting under the chin.',
         embody:'You might try furrowing your own brow slightly, and lowering your eyes.'
     },
@@ -1608,24 +1614,24 @@ const DETAILS = {
         title:'Rodin · Clenched Fist', body:'Rodin',
         source:'Source: observation+staging [8,9]; Spinoza [11]',
         focus:'The Thinker, just beneath the chin.',
-        detail:'A tightly clenched fist props up the chin. Even the tendons on the back of the hand stand out. This is not simple resignation, but a symbol of humanity’s fierce intellectual and physical struggle to keep thinking, keep wrestling, and keep searching for truth. Spinoza held that every being carries within it a fundamental striving to persist in its own existence — conatus. This fist can be read as that striving still colliding, violently but passively, with external causes: an unfinished struggle to grasp and understand the world by one’s own strength, not yet arrived at freedom. To trace this tension with a fingertip is to hold, in the body, the very question he could never let go of.',
-        detailSimple:'A tightly clenched fist is propping up the chin. The tendons on the back of the hand stand out. This is not giving up — it is someone still struggling, all the way to the end, to find an answer. Tracing this tension with your fingertip feels like holding that question together, in the body.',
+        detail:'A clenched fist props up the chin, tendons standing out. Not resignation — a fierce struggle to keep searching for truth. Spinoza called this conatus, a striving not yet arrived at freedom. Trace that tension with your fingertip.',
+        detailSimple:'A clenched fist props up the chin. Someone struggling hard, not giving up. Trace that tension with your fingertip.',
         touchInvite:'Now try the point where the elbow meets the knee.'
     },
     'rodin-elbow': {
         title:'Rodin · Elbow and Knee', body:'Rodin',
         source:'Source: observation+staging [8,9]; Spinoza [11]',
         focus:'The Thinker, where the right elbow presses down on the left knee.',
-        detail:'The elbow presses firmly into the knee. The weight of the entire body is concentrated at that single point. It shows the existential limits of a human being enduring, with the whole body, both the vast pressure of the outside world and an inner weight — and the resolve, condensed, to keep holding on regardless. Spinoza’s conatus — the fundamental striving to persist in one’s own being — is captured here at the very moment it still collides violently with outside pressure, yet never gives ground. The instant a fingertip finds this center of weight, enduring stops being an idea and becomes a sensation.',
-        detailSimple:'The elbow presses hard into the knee. The body’s weight rests on that one spot. This is someone enduring something difficult with their whole body. It is a posture of holding on with everything they have, not yet ready to let go. Touching this weight with a fingertip lets you know, in the body, what it feels like to endure.',
+        detail:'The elbow presses hard into the knee, the body’s whole weight resting there. It shows the resolve to keep holding on despite outside pressure. Spinoza’s conatus — still colliding, yet unyielding. Feel that center of weight with your fingertip.',
+        detailSimple:'The elbow presses hard into the knee. Someone enduring something with their whole body. Feel that weight with your fingertip.',
         touchInvite:'Now try the muscles of the back and shoulder.'
     },
     'rodin-muscle': {
         title:'Rodin · Back and Shoulder Muscle', body:'Rodin',
         source:'Source: observation+staging [8,9]; Spinoza [11]',
         focus:'The Thinker, the broad plane running from back to shoulder.',
-        detail:'You can feel muscle pulled taut like a rope. It is as if the full weight of a living body has gathered there. Beyond mere physical tension, it carries the heaviness of a historical and existential burden humanity bears, and the vitality of a life that embraces that suffering whole and thinks it through in silence. Muscle drawn this tight, condensed into a single knot, is close to the state Spinoza described — conatus still colliding violently with the outside world, still passive. Freedom, he thought, does not mean escaping that collision, but beginning only once we understand and accept its necessity for ourselves. To feel this tautness with the palm of the hand is, in this very moment, to retrace in the body the thought he suffered through in his own.',
-        detailSimple:'The muscles of the back and shoulder are taut as a rope. It is as if the whole body’s weight rests there. This is someone holding a difficult feeling alone, and enduring it. Feeling this tautness with your hand is itself a way of retracing that difficult feeling in the body.',
+        detail:'Muscle pulled taut like a rope, carrying the body’s full weight. A life that embraces suffering and thinks it through in silence. Spinoza saw this tension as the start of freedom, once we accept its necessity. Feel that tautness with your palm.',
+        detailSimple:'The back and shoulder are taut as a rope. Someone holding a hard feeling alone. Feel that tautness with your palm.',
         touchInvite:'Now try the toes gripping the ground.',
         embody:'You might try tensing your own shoulders slightly.'
     },
@@ -1633,24 +1639,24 @@ const DETAILS = {
         title:'Rodin · Toes', body:'Rodin',
         source:'Source: observation+staging [8,9]; the traditional maxim jinsa-daecheonmyeong',
         focus:'The Thinker, the foot at the very bottom.',
-        detail:'The toes grip the ground as if clutching a boulder. This is a foot that cannot leave. It symbolizes the fundamental condition and fate of a human being who, even while wandering through worlds of ideals and abstraction, must in the end live with both feet planted on the concrete, unyielding ground of reality. The first half of the traditional maxim jinsa-daecheonmyeong — do everything a person can do — lives in this foot. It is a posture that clings to the earth until the very last moment, before finally leaving the outcome to heaven, as if the time to let go has not yet come. Tracing the force in these toes with a fingertip is a way to see, directly, what an unreleased mind looks like in the body.',
-        detailSimple:'The toes grip the ground as if clutching a boulder. This is a foot that has not yet left this spot. Even when the mind wanders far away, the two feet must stand on the ground of reality. Tracing the force in these toes shows you what an unreleased mind looks like in the body.',
+        detail:'Toes grip the ground as if clutching a boulder — a foot that cannot leave. The first half of jinsa-daecheonmyeong, doing all one can, lives in this foot. Trace that force with your fingertip.',
+        detailSimple:'Toes grip the ground tightly. A foot that hasn’t left this spot. Trace that force with your fingertip.',
         touchInvite:'Now try the ear of the Pensive Bodhisattva, to the right.'
     },
     'maitreya-ear': {
         title:'Pensive Bodhisattva · Ear', body:'Bodhisattva',
         source:'Source: observation+staging [9]; Buddhist doctrine (traditional)',
         focus:'The Pensive Bodhisattva, the ear at the side of the face.',
-        detail:'The ear hangs long, almost reaching the shoulder. It is an ear that misses nothing, not even the world’s quietest sounds. It shows the virtue of listening — receiving others’ pain and cries wholly, with a compassionate heart — and symbolizes a spiritual wakefulness that keeps listening for the voice of truth even amid the noise of this world. In Buddhism, the roots of suffering are often explained as craving and attachment, and ignorance — the mind’s own failure to recognize that the world is impermanent and full of suffering. This ear can be read as a posture awakened from that ignorance, wanting to hear others’ suffering exactly as it is. Tracing the length of this ear with a fingertip is a way of touching, in the body, a heart that tried to hear even what makes no sound.',
-        detailSimple:'The ear hangs long enough to almost touch the shoulder. It is an ear that misses no sound, however small. It shows someone listening to another person’s pain with a warm heart. Tracing the length of this ear lets you touch, in the body, a heart that tried to listen.',
+        detail:'The ear hangs long, missing not even the quietest sound. A symbol of listening to others’ pain with compassion. Buddhism names ignorance as a mind unaware of suffering; this ear is awakened from it. Trace its length with your fingertip.',
+        detailSimple:'The ear hangs long. It misses no sound, however small. Trace its length with your fingertip.',
         touchInvite:'Now feel the smile at the center of the face.'
     },
     'maitreya-smile': {
         title:'Pensive Bodhisattva · Smile', body:'Bodhisattva',
         source:'Source: fact [1,2]+staging; Ven. Myeongbeop [12]',
         focus:'The Pensive Bodhisattva, the center of the face.',
-        detail:'A faint smile rests on the lips, and the eyes are half closed. It is an expression that has set down its suffering. An elaborate crown sits above — an ornament marking the figure’s status as Maitreya, the bodhisattva of the future. It symbolizes deep meditation on how to be liberated from humanity’s endless afflictions and suffering, holding within it a quiet silence in which every artificial attachment has been set down. Ven. Myeongbeop, a scholar of Buddhist aesthetics, reads this smile not as worldly joy but as “the joy of nirvana” — an unconditioned joy that neither arises nor ceases. Where Rodin’s figure thinks with the tragic force of a hand trying to grasp something, this smile shows a stillness that needs nothing more than looking at things as they are. The instant a fingertip brushes this smile, a calm that words could never quite explain will reach you first, through sensation.',
-        detailSimple:'There is a faint smile on the lips, and the eyes are half closed. It is an expression that has set its hard feelings down. The elaborate crown above shows that this is Maitreya, the bodhisattva of the future. It holds a quiet peace that comes after setting down every worry. The instant your fingertip brushes this smile, a calm that words cannot quite explain reaches you first.',
+        detail:'A faint smile, eyes half closed — suffering set down. The ornate crown marks Maitreya, the future Buddha. Ven. Myeongbeop reads this smile as “the joy of nirvana,” unconditioned and still. Brush it with your fingertip, and calm reaches you first.',
+        detailSimple:'A faint smile, eyes half closed. Every worry set down. Brush it gently with your fingertip.',
         touchInvite:'Below it, try the two fingers touching the cheek.',
         embody:'You might try letting a faint smile rise on your own lips.'
     },
@@ -1658,8 +1664,8 @@ const DETAILS = {
         title:'Pensive Bodhisattva · Two Fingers on the Cheek', body:'Bodhisattva',
         source:'Source: observation+staging [9]; Conze [13]',
         focus:'The Pensive Bodhisattva, just beside the cheek.',
-        detail:'The tips of the index and middle finger rest lightly against the cheek. It is the gesture of a mind sunk deep in thought, quietly gazing at the world’s pain. It signifies warm comfort and reflection blossoming out of deep sorrow. The twentieth-century Buddhist scholar Edward Conze wrote that true wisdom is complete only when spiritual insight and intellectual capacity move together — not simply knowing a great deal, nor simply meditating in silence. This light touch on the cheek can be read as a gesture pointing not to fierce contemplation, but to the moment where such insight and quiet contemplation meet. Feeling the weight of this fingertip together is a moment of confirming that thought happens not only in the head, but through the whole body.',
-        detailSimple:'The index and middle fingers rest lightly against the cheek. It is the gesture of someone quietly watching the world’s pain and thinking deeply. It shows warm comfort rising even out of sorrow. Feeling the weight of this fingertip shows you that thinking happens through the whole body.',
+        detail:'Two fingertips rest lightly on the cheek, quietly gazing at the world’s pain. Conze held that true wisdom joins insight and intellect together. Feel this fingertip’s weight — thought moving through the whole body.',
+        detailSimple:'Two fingers rest lightly on the cheek. Someone thinking quietly, deeply. Feel that fingertip’s weight.',
         touchInvite:'Now try the folds of drapery just below the chest.',
         embody:'You might try touching two fingers lightly to your own cheek.'
     },
@@ -1667,25 +1673,25 @@ const DETAILS = {
         title:'Pensive Bodhisattva · Robe Folds', body:'Bodhisattva',
         source:'Source: observation+staging [9]; Buddhist doctrine (traditional)',
         focus:'The Pensive Bodhisattva, from beneath the half-lotus posture down to the leg.',
-        detail:'The folds of the robe flow down in layered waves, as if a gentle ripple had frozen in place. Within a fixed form it holds the rhythm of life still flowing, expressing how the truth of an ever-changing universe and the energy of liberation quietly spread even through a motionless sculpture. The Buddhist teaching of impermanence — that all things are without permanence — carries within it the instruction to set down attachment to the past. This wave, carved into unyielding bronze, can be understood as a quiet embodiment of the world’s principle: that even what looks stopped never stays the same for a single instant. Tracing this flowing grain with a fingertip lets the body notice, before the mind does, the movement hidden inside what looks still.',
-        detailSimple:'The folds of the robe flow down in layers, like a gentle ripple that has frozen in place. Even though it looks quietly stopped, it holds a living movement within. Tracing this flowing grain lets your body notice, before your mind does, the movement inside something that looks still.',
+        detail:'Robe folds flow in layered waves, like a ripple frozen still. Buddhist impermanence teaches letting go of the past. This wave in bronze shows that nothing ever stays the same. Trace that flowing grain with your fingertip.',
+        detailSimple:'The robe folds flow like a gentle ripple. It looks still, but feels like flowing. Trace that grain with your fingertip.',
         touchInvite:'Now try the half-lotus posture, where the leg rests.',
         embody:'You might try letting your shoulders go completely loose, as if your own clothing were flowing gently down.'
     },
     'maitreya-leg': {
         title:'Pensive Bodhisattva · Half-Lotus Posture', body:'Bodhisattva',
         source:'Source: fact [1,2]+staging',
-        focus:'The Pensive Bodhisattva, the right foot resting gently on the left knee — a middle way, neither fully turned from the world nor fully bound to it. It shows a balance where movement and stillness meet in harmony.',
-        detail:'This is the half-lotus posture, legs folded halfway. It signifies a transcendent freedom that remains within worldly suffering without being stained by it — a harmonious tension held between intense thought and action. It is a place of balance, neither entirely turning its back on the world nor entirely bound to it. Confirming the balance of this posture with a fingertip is a way of turning the idea of the middle way into a bodily sensation.',
-        detailSimple:'This is a seated posture with the legs folded halfway. It shows someone free within the world, without being swept away by it. It is a balanced posture where movement and stillness exist together. Confirming this balance with your fingertip lets you feel the middle way as a bodily sensation.',
+        focus:'The Pensive Bodhisattva, the right foot resting gently on the left knee.',
+        detail:'The half-lotus posture: a freedom that stays in the world without being stained by it. A balance between thought and action, held in quiet tension. Confirm that balance with your fingertip, and feel the middle way in the body.',
+        detailSimple:'Legs folded halfway, seated. Free within the world, not swept away. Feel that balance with your fingertip.',
         touchInvite:'Now try the toes resting on the pedestal.'
     },
     'maitreya-toes': {
         title:'Pensive Bodhisattva · Toes', body:'Bodhisattva',
         source:'Source: observation+staging [9]; the traditional maxim jinsa-daecheonmyeong',
         focus:'The Pensive Bodhisattva, the foot at the very bottom.',
-        detail:'Five toes rest evenly on the pedestal. This is a foot with every trace of tension released. Where Rodin’s toes speak for the tension and attachment of gripping the weight of reality, these toes symbolize a state of complete relaxation, liberation, and peace, every physical and mental tension set down. If Rodin’s toes are the still-unreleased jinsa, these are daecheonmyeong — the outcome already entrusted to heaven, already let go. Both feet stand on the same ground, but the weight of mind resting on it stands at opposite ends. Feeling this release with a fingertip is a way of confirming, directly, what a mental state of letting go feels like in the body.',
-        detailSimple:'Five toes rest evenly on the pedestal. This is a foot with all its tension released. Where Rodin’s foot grips the ground with force, this foot rests comfortably, every tension set down. Feeling this release shows you what letting go feels like in the body.',
+        detail:'Five toes rest evenly, every tension released. Where Rodin’s foot grips reality, this foot lets go completely — daecheonmyeong, entrusting the outcome to heaven. Feel that release with your fingertip.',
+        detailSimple:'Toes rest evenly, completely relaxed. Feel that release with your fingertip.',
         touchInvite:'Feel free to explore whichever of the eleven spots you’d still like to.'
     }
 };
@@ -3473,10 +3479,17 @@ function _handleDwell(hitKey, cursor){
             if(!_dwellHintShown){
                 // 처음 한 번만: 진행률 링이 왜 채워지는지 글로도 설명한다.
                 _dwellHintShown = true;
-                document.getElementById('focus-tag').textContent = '손끝을 그 자리에 잠시 두고 계세요';
+                // v-dwell-hint-en-fix — this was still in Korean (missed in
+                // an earlier translation pass) and, per an accessibility
+                // check ("can gestures be learned by audio alone, without
+                // looking at the screen?"), was never spoken aloud either —
+                // only shown as caption text. Fixed both: translated, and
+                // now also read out loud once per session.
+                document.getElementById('focus-tag').textContent = 'Hold your fingertip there for a moment';
                 document.getElementById('caption-wrap')?.classList.remove('ai-mode');
-                document.getElementById('caption').innerHTML = '링이 다 채워질 때까지 손끝을 그대로 두시면 자동으로 설명이 시작됩니다.';
+                document.getElementById('caption').innerHTML = 'Keep your fingertip there until the ring fills up, and the description will start automatically.';
                 document.getElementById('source-tag').textContent = '';
+                speak('Hold your fingertip there for a moment. Keep it there until the ring fills up, and the description will start automatically.');
             }
         }
         else if(_hoverKey) hapticPulse('exit'); // 핫스팟 밖으로 이탈
