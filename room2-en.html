@@ -1194,7 +1194,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterRoom();}">
     <div class="intro-gate-inner">
     <div class="gate-card">
-    <p class="gate-eyebrow">Silent Resonance</p>
     <h1>Resonance of Silence<br><span style="color:rgba(212,175,55,.7);">Room 2 · Contemplation and Embodiment (Thinking with the Body)</span></h1>
     <div class="gate-rule" aria-hidden="true"></div>
 
@@ -1348,7 +1347,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('What does the Pensive Bodhisattva’s posture mean?')">What does the Pensive Bodhisattva’s posture mean?</button>
         <button type="button" class="chip" onclick="askSuggested('What’s different between the two statues?')">What’s different between the two statues?</button>
         <button type="button" class="chip" onclick="askSuggested('Summarize what I’ve touched so far')">Summarize what I’ve touched so far</button>
-        <button type="button" class="chip" onclick="askSuggested('What is wonyoung(圓融) means?', false)">What is wonyoung(圓融) means?</button>
         <button type="button" class="chip" onclick="askSuggested('Why isn’t Rodin’s Thinker wearing clothes?')">Why isn’t Rodin’s Thinker wearing clothes?</button>
         <button type="button" class="chip" onclick="askSuggested('Why is the Pensive Bodhisattva smiling?')">Why is the Pensive Bodhisattva smiling?</button>
         <button type="button" class="chip" onclick="askSuggested('What’s different about the two statues’ materials?')">What’s different about the two statues’ materials?</button>
@@ -3565,7 +3563,7 @@ function showCertificate(isComplete){
     // '여일' 버튼으로 이름을 바꿔달라." 완주 여부와 상관없이 버튼 이름을
     // '여일' 하나로 통일한다 — 실제 동작(beginYeoilExit)은 그대로다.
     primaryBtn.textContent = 'Serenity';
-    primaryBtn.removeAttribute('data-tap-action');
+    primaryBtn.setAttribute('data-tap-action', 'Moves to a mind-clearing screen');
     primaryBtn.onclick = beginYeoilExit;
 
     document.getElementById('certificate-overlay').classList.add('show');
@@ -4008,6 +4006,7 @@ const PART_MEANINGS = {
         'what is the Lorenzo de’ Medici sculpture|Michelangelo’s Medici tomb figures|San Lorenzo chapel sculpture': 'The condensed muscular tension and torsion seen in Michelangelo’s sculptures for the Medici tombs in the Basilica of San Lorenzo are also seen as echoed in The Thinker’s pose.'
     },
     'Bodhisattva': {
+        'how is the Bodhisattva different from The Thinker|difference between the two statues|compare the two works|what do they have in common|what is the relationship between the two statues': 'Both statues depict a figure lost in deep thought, but they contrast sharply: the Pensive Bodhisattva expresses peace through soft curves and a smile, while The Thinker expresses a difficult mind through taut muscle.',
         'wonyung|perfect fusion and harmony|what does wonyung mean|what is wonyung-gwa-johwa': 'Wonyung is a Buddhist and East Asian philosophical term meaning that every principle gathers and fuses harmoniously into one, with nothing obstructed or blocked. Art historian Kang Woo-bang used this concept to describe rounded, harmonious forms like the Pensive Bodhisattva’s — a beauty arising not from sharp angles, but from different parts flowing into one rounded whole.',
         'head|hat|crown|headwear|what is on the head|headdress shape': 'What sits on the head is not a hat but an elaborate three-faced crown. Above it sits a sun-and-crescent-moon ornament, which is why the statue is sometimes also called the “Three-Mountain Crown Pensive Bodhisattva with Sun and Moon Motif.” This style of pairing sun and moon originated in Persia and reached Korea by way of China, and is read as marking both Maitreya’s status as the future savior of all beings and an eternal truth beyond the worldly.',
         'leg|posture|half-lotus|seated pose|why is he like that': 'This is the half-lotus posture, the right foot resting gently on the left knee. It literally means “sitting half cross-legged,” and represents a figure absorbed in contemplation.',

@@ -1215,7 +1215,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
          래퍼. 위 #intro-gate CSS 주석 참고. -->
     <div class="intro-gate-inner">
     <div class="gate-card">
-    <p class="gate-eyebrow">Silent Resonance</p>
     <h1>침묵의 공명<br><span style="color:rgba(212,175,55,.7);">전시실 2 · 사유 및 체화 (몸으로 생각하기)</span></h1>
     <div class="gate-rule" aria-hidden="true"></div>
 
@@ -1402,7 +1401,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button type="button" class="chip" onclick="askSuggested('반가사유상의 자세는 어떤 의미인가요?')">반가사유상의 자세는 어떤 의미인가요?</button>
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 뭐가 달라요?')">두 조각상은 뭐가 달라요?</button>
         <button type="button" class="chip" onclick="askSuggested('지금까지 만진 곳 요약해줘')">지금까지 만진 곳 요약해줘</button>
-        <button type="button" class="chip" onclick="askSuggested('원융이 무슨 뜻이에요?', false)">원융이 무슨 뜻이에요?</button>
         <button type="button" class="chip" onclick="askSuggested('로댕의 생각하는 사람은 왜 옷을 안 입었어요?')">로댕의 생각하는 사람은 왜 옷을 안 입었어요?</button>
         <button type="button" class="chip" onclick="askSuggested('반가사유상은 왜 미소 짓고 있나요?')">반가사유상은 왜 미소 짓고 있나요?</button>
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 재질이 뭐가 달라요?')">두 조각상은 재질이 뭐가 달라요?</button>
@@ -3567,11 +3565,13 @@ function showCertificate(isComplete){
     // 실행되게 했다 — beginYeoilExit() 자신의 안내("이제, 마음을 비우고
     // 돌아갑니다...")가 곧바로 이어진다.
     const primaryBtn = document.getElementById('btn-cert-primary');
-    // v-yeoil-label-unify — 참가자 요청: "'마음을 비우고 여일' 버튼은
-    // '여일' 버튼으로 이름을 바꿔달라." 완주 여부와 상관없이 버튼 이름을
-    // '여일' 하나로 통일한다 — 실제 동작(beginYeoilExit)은 그대로다.
+    // v-cert-yeoil-match-elsewhere — 참가자 요청: "수료증의 여일 버튼
+    // 로직을 다른 곳(하단 여일 버튼, id=btn-leave)과 같은 로직으로
+    // 맞춰달라." 다른 곳의 여일 버튼은 확인 탭 전에
+    // data-tap-action="마음을 비우는 화면으로 이동합니다"를 그대로
+    // 안내하므로, 여기도 똑같이 맞춘다.
     primaryBtn.textContent = '여일';
-    primaryBtn.removeAttribute('data-tap-action');
+    primaryBtn.setAttribute('data-tap-action', '마음을 비우는 화면으로 이동합니다');
     primaryBtn.onclick = beginYeoilExit;
 
     document.getElementById('certificate-overlay').classList.add('show');
