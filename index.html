@@ -1394,7 +1394,7 @@ function handleGateScreenTap(){
         _arrivalMessageConsumed = true;
         // v-first-entry-silent-fix — index-en.html과 동일한 잠금 해제:
         // ?from=next 도착 인사말 경로에도 같은 안전장치를 둔다.
-        try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
+        try{ const _u0 = new SpeechSynthesisUtterance(''); _u0.lang = 'ko-KR'; window.speechSynthesis.speak(_u0); }catch(e){}
         try{
             speak('침묵의 공명 제1전시 조우입니다. 각 자막은 왼쪽 영역을 클릭하면 이전으로, 오른쪽 영역을 클릭하면 이후로 넘어갑니다.', enterRoom);
         }catch(err){ enterRoom(); }
@@ -1421,7 +1421,7 @@ function enterRoom(){
     // 탭 이벤트 핸들러 밖으로 밀려나면, 일부 브라우저가 이 첫 안내만
     // 조용히 막아버릴 수 있다. 탭 안에서 빈 발화를 동기적으로 먼저 재생해
     // 이번 세션의 음성 합성 API를 미리 잠금 해제해둔다.
-    try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
+    try{ const _u0 = new SpeechSynthesisUtterance(''); _u0.lang = 'ko-KR'; window.speechSynthesis.speak(_u0); }catch(e){}
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
     // v59 — 진입 화면 동안 TalkBack 스와이프 탐색에서 제외해뒀던 상단
