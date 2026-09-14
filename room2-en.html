@@ -5396,7 +5396,20 @@ async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
 
 /* ── 지식베이스 우선 검색 — 지금 만지고 있는 조각상 쪽을 먼저 찾아보고,
    없으면 반대쪽 조각상 지식베이스도 확인한다. ── */
+// v-both-statues-compare-fix — same fix as the Korean version: a question
+// mentioning both statues (e.g. "difference between how the Bodhisattva
+// and Rodin's Thinker were made") must not short-circuit into a
+// single-body KB answer. See room2.html's _mentionsBothStatues() for the
+// original bug writeup.
+function _mentionsBothStatues(query){
+    const q = query.toLowerCase();
+    const mentionsRodin = q.includes('rodin') || q.includes('thinker');
+    const mentionsBodhisattva = q.includes('bodhisattva') || q.includes('maitreya');
+    return mentionsRodin && mentionsBodhisattva;
+}
+
 function pickKBAnswer(query){
+    if(_mentionsBothStatues(query)) return null;
     const d = currentKey ? DETAILS[currentKey] : null;
     let order = (d && d.body==='Rodin') ? ['Rodin','Bodhisattva'] : ['Bodhisattva','Rodin'];
     const q = query.toLowerCase();
@@ -5415,7 +5428,8 @@ function _hasReliableKBCandidate(query){
     const d = currentKey ? DETAILS[currentKey] : null;
     const q = query.toLowerCase();
     let bodies;
-    if(q.includes('rodin') || q.includes('thinker') || (d && d.body==='Rodin')) bodies=['Rodin'];
+    if(_mentionsBothStatues(query)) bodies=['Rodin','Bodhisattva'];
+    else if(q.includes('rodin') || q.includes('thinker') || (d && d.body==='Rodin')) bodies=['Rodin'];
     else if(q.includes('bodhisattva') || q.includes('maitreya') || (d && d.body==='Bodhisattva')) bodies=['Bodhisattva'];
     else bodies=['Rodin','Bodhisattva'];
     return bodies.some(body=>{
@@ -5442,7 +5456,8 @@ function pickKBCandidates(query){
     const d = currentKey ? DETAILS[currentKey] : null;
     let bodies;
     const q = query.toLowerCase();
-    if(q.includes('rodin') || q.includes('thinker') || (d && d.body==='Rodin')) bodies=['Rodin'];
+    if(_mentionsBothStatues(query)) bodies=['Rodin','Bodhisattva'];
+    else if(q.includes('rodin') || q.includes('thinker') || (d && d.body==='Rodin')) bodies=['Rodin'];
     else if(q.includes('bodhisattva') || q.includes('maitreya') || (d && d.body==='Bodhisattva')) bodies=['Bodhisattva'];
     else bodies=['Rodin','Bodhisattva'];
     // v-dedupe-kb-candidates — 참가자 요청: "생각하는 사람과 반가사유상의
