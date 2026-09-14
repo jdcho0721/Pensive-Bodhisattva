@@ -744,8 +744,8 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          해결된다. 화면낭독기가 읽는 이름은 여전히 아래 aria-label
          ("작품 및 작가 소개…")이라 접근성에는 변화가 없다. -->
     <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-action="Opens the artwork and copyright notice"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
-    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">⏱️ Speed 1.0x</button>
-    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences">📖 Easy sentences</button>
+    <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
+    <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences">Easy sentences</button>
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
          쓸어넘기면 값을 조절할 수 있다(표준 range 컨트롤 동작).
@@ -866,7 +866,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
-        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="View References" data-tap-action="Opens the reference list">📚 View References</button>
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="View References" data-tap-action="Opens the reference list">View References</button>
         <div id="refs-list" role="region" aria-label="Reference list">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
@@ -877,7 +877,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
             <p><b>[7]</b> J.Y. Jeon, "The Most Exquisite Smile Humanity Has Ever Created, an Overwhelming Enlightenment," Munhwajae Sarang [Heritage Love] monthly magazine, no. 170, January 2019, Cultural Heritage Administration.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()" aria-label="Close">✖️ Close</button>
+        <button id="info-close" onclick="closeInfo()" aria-label="Close">Close</button>
     </div>
 </div>
 
@@ -906,7 +906,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
         <button class="btn" id="btn-lang-ko" type="button"
                 aria-label="한국어 버전으로 전환합니다"
                 data-tap-name="Korean version"
-                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index.html'">🌐 KO</button>
+                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index.html'">KO</button>
     </div>
     </div>
 </div>
@@ -1072,11 +1072,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <!-- v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을
          수 있는 기능." 지금 있는 레이어(또는 대화 턴)의 시작으로 되돌아가
          다시 들려준다. -->
-    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button. Press to hear the caption you’re currently viewing again." data-tap-action="Plays the caption you’re currently viewing again.">🔁 Replay</button>
+    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button. Press to hear the caption you’re currently viewing again." data-tap-action="Plays the caption you’re currently viewing again.">Replay</button>
     <!-- v-pause-btn — 참가자 요청: "중간에 잠시 일시정지." 기존에 화면을
          길게 누르면 동작하던 onPauseClick()을 그대로 재사용하되, 눈에
          보이는 버튼으로도 눌러 쓸 수 있게 되살렸다. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause." data-tap-action="Pauses or resumes playback.">⏸️ Pause</button>
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause." data-tap-action="Pauses or resumes playback.">Pause</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -1088,7 +1088,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
          무시되어 이동 자체가 실행되지 않는 경우가 있었다. room2.html의
          전시1 버튼(#exhibit1-btn)처럼 확인 절차 없는 단순 클릭으로
          바꿔, 이런 경합 자체가 생기지 않게 한다. -->
-    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">🏛️ Room 2</button>
+    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
 </div>
 </div>
 
@@ -1404,13 +1404,25 @@ function enterRoom(){
     try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
+    // v-first-screen-image-size-fix — participant report: "the image on
+    // the screen starting with '전시실1, 조우입니다' looks smaller than
+    // the image on the next screen." Cause: the 1.3x background zoom
+    // (_getImageRect()) was applied only as a side effect of the
+    // spot-highlight functions (updateWideSpot, etc.), which don't run on
+    // this orientation screen since there's no specific spot to highlight
+    // yet — so the background showed at CSS default (contain, no zoom)
+    // until the next screen's spot-highlight call finally triggered the
+    // zoom, making it look bigger. Calling _getImageRect() once here,
+    // before revealing the stage, applies the same zoom before the very
+    // first screen is shown.
+    _getImageRect();
+    stageEl.classList.add('lit');
     // v59 — 진입 화면 동안 TalkBack 스와이프 탐색에서 제외해뒀던 상단
     // 버튼·단계 점·자막 영역을 여기서 다시 활성화한다.
     ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
         const el = document.getElementById(id);
         if(el){ el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); }
     });
-    stageEl.classList.add('lit');
     // v.gate-voice — 진입 게이트 화면("침묵의 공명 / 전시실 1 · 조우 /
     // '조우'는 우연히, 혹은 마침내 서로 마주하게 된다는 뜻입니다")은
     // 지금까지 화면에 텍스트로만 떠 있고 이 앱 자체의 음성 해설은 없어서,
@@ -1485,7 +1497,7 @@ let bgmVolume = 0.7; // v79 — 참가자 요청: "볼륨을 좀 더 작게 해�
 // 자유롭게 조절할 수 있다.
 // v91 — 내레이션 음량은 더 이상 위 슬라이더의 영향을 받지 않고 이
 // 값으로 고정된다(슬라이더가 도입되기 전 기존 기본값과 같다).
-const NARRATION_VOLUME = 0.7;
+const NARRATION_VOLUME = 0.6;
 const _audioBaseTarget = {};
 function onVolumeChange(v){
     bgmVolume = Math.max(0, Math.min(1, Number(v) / 100));
@@ -1663,9 +1675,9 @@ function cycleSpeed(){
     const btn = document.getElementById('btn-speed');
     const announceText = `Speed ${TTS_RATE}x`;
     if(btn){
-        // v-button-icons — keep the ⏱️ icon so it doesn't vanish on click;
+        // v-button-icons — keep the icon so it doesn't vanish on click;
         // aria-label stays icon-free so screen readers announce cleanly.
-        btn.textContent = `⏱️ Speed ${TTS_RATE}x`;
+        btn.textContent = `Speed ${TTS_RATE}x`;
         btn.setAttribute('aria-label', announceText);
     }
     hapticPulse('turn');
@@ -1835,9 +1847,9 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     // 버튼은 여전히 전체 속도를 조절하고, 그 위에 화자별 상대적인
     // 빠르기 차이만 얹는다.
     let basePitch, baseRateMult;
-    if(speaker==='rodin'){ basePitch = 0.90; baseRateMult = 0.94; }
-    else if(speaker==='maitreya'){ basePitch = 0.84; baseRateMult = 0.90; }
-    else { basePitch = 1.0; baseRateMult = 1.0; }
+    if(speaker==='rodin'){ basePitch = 0.84; baseRateMult = 0.94; }
+    else if(speaker==='maitreya'){ basePitch = 0.78; baseRateMult = 0.90; }
+    else { basePitch = 0.92; baseRateMult = 1.0; }
     // v-en-rate-slow — participant report: "English narration playback
     // speed is a bit fast." The same numeric TTS_RATE that felt right for
     // the Korean voice reads noticeably quicker in English (English TTS
@@ -1884,7 +1896,7 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
         _ended = true;
         if(myGen !== speechGen) return;
         const endsFully = /[.!?…]\s*$/.test(raw);
-        const pause = idx < sentences.length - 1 ? (endsFully ? 260 : 120) : 0;
+        const pause = idx < sentences.length - 1 ? (endsFully ? 320 : 120) : 0;
         setTimeout(()=>{ if(myGen===speechGen) _speakSentenceQueue(sentences, idx + 1, speaker, myGen, onEnd); }, pause);
     };
     const proceedNoEarlierThanEst = ()=>{
@@ -1998,7 +2010,7 @@ function _scheduleRefitSpotlights(){
     _fitSpotScheduled = true;
     requestAnimationFrame(()=>{ _fitSpotScheduled = false; _refitSpotlights(); });
 }
-_loadBgImageNaturalSize(_scheduleRefitSpotlights);
+_loadBgImageNaturalSize(()=>{ _getImageRect(); _scheduleRefitSpotlights(); });
 window.addEventListener('resize', _scheduleRefitSpotlights);
 window.addEventListener('orientationchange', ()=> setTimeout(_refitSpotlights, 250));
 if(window.visualViewport){
@@ -2174,7 +2186,7 @@ function toggleEasyMode(){
     // aria-pressed(스크린리더용)와 .primary 클래스(금빛 강조, 시각용)로
     // 전달한다 — 누를 때마다 speak()로도 상태를 안내하므로 텍스트에
     // "켜짐"/"꺼짐"을 반복해서 넣지 않아도 상태를 알 수 있다.
-    btn.textContent = '📖 Easy sentences';
+    btn.textContent = 'Easy sentences';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
     // v87 — cycleSpeed()와 동일한 이유로, 이어듣기를 문자열 재생이 아닌
@@ -2313,7 +2325,7 @@ function jumpToStage(targetIdx){
     // 그대로 자동 재생이 이어지게 둔다 — 대신 일시정지 중이었다면 확실히
     // 풀어준다.
     isPaused = false;
-    if(btnPause){ btnPause.textContent = '⏸️ Pause'; btnPause.classList.remove('primary'); }
+    if(btnPause){ btnPause.textContent = 'Pause'; btnPause.classList.remove('primary'); }
     clearTimeout(autoTimer);
     window.speechSynthesis.cancel();
     speechGen++;
@@ -2349,7 +2361,7 @@ function onPauseClick(){
         clearTimeout(autoTimer);
         pausedContext = { phase, layerIdx, lineIdx, turnIdx, dLineIdx, announcing };
         if(btnPause){
-            btnPause.textContent = '▶️ Resume';
+            btnPause.textContent = 'Resume';
             btnPause.classList.add('primary');
             btnPause.setAttribute('aria-label', 'Resume button. Press to continue playback.');
         }
@@ -2357,7 +2369,7 @@ function onPauseClick(){
     } else {
         isPaused = false;
         if(btnPause){
-            btnPause.textContent = '⏸️ Pause';
+            btnPause.textContent = 'Pause';
             btnPause.classList.remove('primary');
             btnPause.setAttribute('aria-label', 'Pause button. Press to pause.');
         }
@@ -2732,11 +2744,11 @@ function toggleRefsList(){
     const show = !list.classList.contains('show');
     list.classList.toggle('show', show);
     btn.setAttribute('aria-expanded', String(show));
-    // v-button-icons — keep the 📚 icon; the label itself still changes
+    // v-button-icons — keep the icon; the label itself still changes
     // with state, so aria-label is kept in sync so screen readers always
     // announce the current action correctly.
     const label = show ? 'Hide References' : 'View References';
-    btn.textContent = '📚 ' + label;
+    btn.textContent = '' + label;
     btn.setAttribute('aria-label', label);
 }
 function _infoDialogKeydown(e){
@@ -3372,7 +3384,7 @@ function goToRoom2(e) {
         btn.classList.add('control-armed');
         try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
         try{
-            // v-button-icons — the button label now has a 🏛️ icon in front,
+            // v-button-icons — the button label now has a icon in front,
             // so reading textContent verbatim could speak the icon too.
             // Strip non-letter/number characters before announcing.
             const cleanName = (btn.textContent || 'Room 2').replace(/[^a-zA-Z0-9\s]/g, '').trim() || 'Room 2';

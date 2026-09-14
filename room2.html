@@ -1039,8 +1039,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
      (TWOTAP_HANDS_OFF_SELECTOR) data-tap-name이 필요 없고, 화면에 보이는
      글자 자체가 곧 스크린리더 이름이다 — 아이콘을 글자 앞에 그대로
      붙여도 안내 음성에는 영향이 없다. -->
-<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">⏱️ 속도 1.0x</button>
-<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">📖 쉬운 문장</button>
+<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
+<button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
 <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
      기능."
      v91 — 참가자 요청: "배경음악이 커져서 방해가 되는 경우가 있으니,
@@ -1228,8 +1228,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              그대로 활용한다 — 인쇄 대화상자가 열리면 "PDF로 저장"을 선택해 그대로
              파일로 저장할 수 있다. 인쇄되는 모습은 위 @media print 규칙이
              결정한다(수료증 카드만 하얀 바탕에 검게 남기고 나머지는 감춤). -->
-        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="수료증을 PDF로 출력합니다" data-tap-name="PDF로 출력" data-tap-action="수료증 인쇄 화면을 엽니다">🖨️ 출력</button>
-        <button class="btn" id="btn-cert-close" data-tap-name="계속 보기" data-tap-action="전시실2로 다시 이동합니다." onclick="closeCertificate()">👁️ 계속 보기</button>
+        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="수료증을 PDF로 출력합니다" data-tap-name="PDF로 출력" data-tap-action="수료증 인쇄 화면을 엽니다">출력</button>
+        <button class="btn" id="btn-cert-close" data-tap-name="계속 보기" data-tap-action="전시실2로 다시 이동합니다." onclick="closeCertificate()">계속 보기</button>
         <button class="btn primary" id="btn-cert-primary">나가기</button>
     </div>
 </div>
@@ -1242,8 +1242,8 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions">
-        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2로 이동합니다" data-tap-name="전시2" data-tap-action="전시실 2로 이동합니다">🏛️ 전시2</button>
-        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">🏛️ 전시1</button>
+        <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2로 이동합니다" data-tap-name="전시2" data-tap-action="전시실 2로 이동합니다">전시2</button>
+        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
 
@@ -1301,7 +1301,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button class="btn" id="btn-lang-en" type="button"
                 aria-label="Switch to English version"
                 data-tap-name="영문 버전"
-                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2-en.html'">🌐 EN</button>
+                onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2-en.html'">EN</button>
     </div>
     </div>
     </div>
@@ -1492,9 +1492,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              아이콘이 있으면 좋겠다." data-tap-name/aria-label이 이미 실제
              음성 안내를 맡고 있으므로, 화면에 보이는 글자 앞에 아이콘만
              추가해도 안내 음성에는 영향이 없다. -->
-        <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="다시듣기 버튼입니다. 방금 만진 부위의 설명을 처음부터 다시 들려드립니다." data-tap-name="다시듣기" data-tap-action="방금 만진 부위의 설명을 처음부터 다시 들려드립니다.">🔁 다시듣기</button>
+        <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="다시듣기 버튼입니다. 방금 만진 부위의 설명을 처음부터 다시 들려드립니다." data-tap-name="다시듣기" data-tap-action="방금 만진 부위의 설명을 처음부터 다시 들려드립니다.">다시듣기</button>
         <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 봅니다" data-tap-name="수료증" data-tap-action="지금까지 만진 기록을 보여드립니다">📜 수료증</button>
-        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="마음을 비우는 화면으로 이동합니다" data-tap-name="여일" data-tap-action="마음을 비우는 화면으로 이동합니다">🙏 여일</button>
+        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="마음을 비우는 화면으로 이동합니다" data-tap-name="여일" data-tap-action="마음을 비우는 화면으로 이동합니다">여일</button>
         <!-- v-remove-finish-btn — 참가자 요청: "11곳 만나고 나면 마치기
              버튼은 제거해달라." 완주 후에는 기존처럼 '수료증' 버튼으로
              언제든 기록을 확인할 수 있으므로, 별도의 '마치기' 버튼 없이도
@@ -1507,7 +1507,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              장면을 거치는 정식 "마무리" 경로다. 이 버튼은 그 절차 없이,
              관람 중 언제든 곧바로 전시실 1로 건너뛸 수 있는 직접 이동
              경로다. -->
-        <button class="btn" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 바로 이동" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">🏛️ 전시1</button>
+        <button class="btn" id="exhibit1-btn" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 바로 이동" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
 </div>
@@ -1762,9 +1762,9 @@ function toggleEasyMode(){
     if(btn){
         // 라벨은 상태와 무관하게 "쉬운 문장"으로 고정한다. 상태는
         // aria-pressed(스크린리더용)와 강조색(시각)으로 전달된다.
-        // v-button-icons — 아이콘(📖)이 클릭할 때마다 사라지지 않도록
+        // v-button-icons — 아이콘이 클릭할 때마다 사라지지 않도록
         // textContent를 다시 쓸 때도 함께 붙인다.
-        btn.textContent = '📖 쉬운 문장';
+        btn.textContent = '쉬운 문장';
         btn.setAttribute('aria-pressed', String(easyMode));
         btn.setAttribute('aria-label', easyMode ? '쉬운 문장, 현재 켜짐' : '쉬운 문장, 현재 꺼짐');
     }
@@ -1880,7 +1880,7 @@ let bgmVolume = 0.7; // v79 — index.html(room1)과 동일한 참가자 요청:
 // 슬라이더로 0~100% 사이 원하는 크기로 자유롭게 조절할 수 있다.
 // v91 — 내레이션 음량은 더 이상 위 슬라이더의 영향을 받지 않고 이
 // 값으로 고정된다(슬라이더가 내레이션까지 조절하기 전 기존 기본값과 같다).
-const NARRATION_VOLUME = 0.6; // v-lower-volume-pitch — 참가자 요청: 전시2 음성의 볼륨과 피치를 조금 낮춤 (0.7 → 0.6)
+const NARRATION_VOLUME = 0.5; // v-lower-volume-pitch-2 — 참가자 요청: 전시2 음성의 볼륨과 피치를 한 단계 더 낮춤 (0.6 → 0.5)
 const _audioBaseTarget = {};
 function onVolumeChange(v){
     bgmVolume = Math.max(0, Math.min(1, Number(v) / 100));
@@ -2154,9 +2154,9 @@ function cycleSpeed(){
     const btn = document.getElementById('speed-btn');
     const announceText = `속도 ${TTS_RATE}x입니다`;
     if(btn){
-        // v-button-icons — 아이콘(⏱️)이 클릭할 때마다 사라지지 않도록
+        // v-button-icons — 아이콘이 클릭할 때마다 사라지지 않도록
         // textContent를 다시 쓸 때도 함께 붙인다.
-        btn.textContent = `⏱️ 속도 ${TTS_RATE}x`;
+        btn.textContent = `속도 ${TTS_RATE}x`;
         btn.setAttribute('aria-label', announceText);
     }
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
@@ -2267,9 +2267,9 @@ function speak(text, onEnd, speakerKey){
         // 내레이션은 지금까지 한 번도 낮춘 적이 없어(1.0) 이 부분이 계속
         // 높게 들리던 원인일 가능성이 크다. 세 값 모두 한 단계 더 낮춘다.
         // v-lower-volume-pitch — 참가자 요청: 전시2 음성의 볼륨과 피치를 조금 낮춤
-        if(speakerKey === 'rodin'){ basePitch = 0.76; baseRateMult = 0.94; }
-        else if(speakerKey === 'maitreya'){ basePitch = 0.70; baseRateMult = 0.90; }
-        else { basePitch = 0.82; baseRateMult = 1.0; }
+        if(speakerKey === 'rodin'){ basePitch = 0.70; baseRateMult = 0.94; }
+        else if(speakerKey === 'maitreya'){ basePitch = 0.64; baseRateMult = 0.90; }
+        else { basePitch = 0.76; baseRateMult = 1.0; }
         // v-voice-liveliness-match-room1 — "생동감 있는 억양"도
         // index.html과 동일한 방식(사람의 말은 발화마다 속도·피치가
         // 완벽히 같지 않다는 전제로, ±3~5% 안팎의 미세한 흔들림)으로
@@ -3565,6 +3565,14 @@ async function _playCenterSynthesis(moodEl){
     _stopCaptionSync();
     _displaySentencesTimed('지금까지 만진 곳들을 돌아보고 있습니다…', document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
+    // v-answer-visible-in-chatlog — 참가자 지적: "배경화면(#caption)에
+    // 나오는 챗봇의 답변이 챗봇창(#chat-log)에는 안 보인다 — 챗봇창이
+    // 그 위를 덮어버린다." 이 종합 사유는 지금까지 pushLog()를 한 번도
+    // 부르지 않아, 챗봇창을 열어 두면 이 답변을 볼 방법이 아예 없었다.
+    // 다른 AI 답변 경로(_processChatAnswer 2순위)와 같은 방식으로
+    // "생각하는 중…" 자리표시자를 챗봇창에도 남기고, 답이 완성되면 그
+    // 자리를 그대로 채운다.
+    const aiBubble = pushLog('ai', '지금까지 만진 곳들을 돌아보고 있습니다…');
     speak('지금까지 만진 곳들을 돌아보고 있습니다.'); // 처리 중임을 음성으로도 알린다(화면을 보기 어려운 관람객 배려)
 
     const touchedBlock = _buildTouchedPartsBlock();
@@ -3580,6 +3588,11 @@ async function _playCenterSynthesis(moodEl){
     _stopCaptionSync();
     _displaySentencesTimed(synthesis, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
+    // v-answer-visible-in-chatlog(계속) — 배경 자막과 챗봇창이 항상 같은
+    // 최종 문구를 보여주도록, 위에서 만든 자리표시자 말풍선을 그대로
+    // 이 답으로 채운다(새 말풍선을 또 만들지 않는다).
+    aiBubble.textContent = synthesis;
+    _scrollChatLogToBottom();
 
     speak(synthesis, ()=>{ _endCenterMeetingState(moodEl); });
 }
@@ -3684,7 +3697,7 @@ function showCertificate(isComplete){
     // 맞춰달라." 다른 곳의 여일 버튼은 확인 탭 전에
     // data-tap-action="마음을 비우는 화면으로 이동합니다"를 그대로
     // 안내하므로, 여기도 똑같이 맞춘다.
-    primaryBtn.textContent = '🙏 여일';
+    primaryBtn.textContent = '여일';
     primaryBtn.setAttribute('data-tap-name', '여일');
     primaryBtn.setAttribute('data-tap-action', '마음을 비우는 화면으로 이동합니다');
     primaryBtn.onclick = beginYeoilExit;
