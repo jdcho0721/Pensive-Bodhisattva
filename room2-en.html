@@ -306,6 +306,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    이제 평범하게 클릭 가능한 일반 문서 흐름 요소다. */
 #focus-tag{font-size:.72rem;color:var(--gold);letter-spacing:.1em;margin-bottom:6px;font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(.85rem,2.8vw,1.1rem);line-height:1.65;max-width:600px;margin:0 auto 14px;min-height:2.6em;word-break:keep-all;}
+/* v-tts-highlight-room2 — same real-time sentence highlight feature already
+   in index.html, applied here too (participant request). Previously room2
+   swapped #caption's entire content for just the current sentence each
+   time; now the full text is shown at once and only the sentence currently
+   being read gets a gold highlight, matching index.html's behavior exactly
+   (same class names .tts-sentence/.tts-active and color, for visual
+   consistency across files). */
+.tts-sentence{transition:background-color .25s ease, color .25s ease; border-radius:4px; padding:0 2px;}
+.tts-sentence.tts-active{background-color:rgba(212,175,55,.28); color:#fff;}
 /* v-answer-replay — 참가자 요청: "답변의 자막을 한 번 터치하면 다시 들을
    수 있게 해줘." 사유의 상담소(챗봇) 답변이 떠 있는 동안에만 자막에
    포인터 커서를 줘서, 지금은 눌러서 다시 들을 수 있다는 것을 눈으로도
@@ -1089,9 +1098,20 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         </div>
 
         <div class="info-section" data-kind="intro">
-        <h3>Artwork Introduction</h3>
+        <h3>Room 2 Artwork Introduction — Meaning and Contemplation, Part by Part</h3>
         <p class="label">Title — Resonance of Silence: Contemplation and Embodiment</p>
-        <p>This exhibition places two statues, the Gilt-Bronze Pensive Bodhisattva (Maitreya) and Rodin's The Thinker, side by side to compare two attitudes: a "difficult mind" and a "warm mind." The Pensive Bodhisattva's soft curves express the comfort of a troubled mind set down; The Thinker's tensed muscle expresses the heavy mind a person carries through life. Both statues share a bowed head and a hand held near the face — a shared formal language symbolizing contemplation and meditation.</p>
+        <!-- v-intro-room-split — same participant request as the Korean
+             files: same artwork description, but Room 2 emphasizes
+             part-by-part meaning while Room 1 emphasizes form/posture.
+             Only this lead paragraph was rewritten, summarizing the
+             tone (Spinoza's conatus, "do all you can, then leave the
+             rest to heaven", affliction vs. the joy of cessation)
+             already used in this room's part-by-part narration below.
+             The factual paragraphs below are shared with Room 1 and
+             left untouched. -->
+        <p>Room 2 is not about the overall form, but about tracing, part by part, the meaning and contemplation held in each spot. Touching the same kind of place — brow, hand, posture, foot — on the Gilt-Bronze Pensive Bodhisattva (Maitreya) and on Rodin's The Thinker, you discover how differently each statue has written its mind into that one spot.</p>
+        <p>In The Thinker, an unreleased weight is condensed into the brow, the clenched fist, the elbow, the tensed muscles of the back — moments of what Spinoza called conatus, the basic effort of a being to persist in its own existence, still colliding forcefully with the outside world. In the Pensive Bodhisattva, that same weight has been set down at the ear, the smile, the fingers, the folds of drapery, the seated pose, the toes — moments that have slipped free of affliction and touched an unconditioned "joy of cessation." Like the two halves of the old saying "do all you can, then leave the rest to heaven": Rodin's toes, still gripping the ground, are the "doing all you can" that hasn't yet let go; the Bodhisattva's toes, fully at ease, are the "leaving it to heaven" that already has.</p>
+        <p>Each time you touch a single part in Room 2, this difference between the two minds will reach your fingertips.</p>
         <p class="label">Gilt-Bronze Pensive Bodhisattva (Maitreya)</p>
         <p>A Buddhist sculpture estimated to have been made during the Three Kingdoms period (6th-7th century), depicting Maitreya, the bodhisattva who will save all beings in the future, absorbed in deep contemplation. It is notable for the half-lotus posture, right foot resting on the left knee, and fingers lightly touching the cheek. The two most representative examples, held by the National Museum of Korea, were once designated National Treasure No. 78 and No. 83, respectively; today they are labeled simply as National Treasures, without numbers.</p>
         <p class="label">Gilt-Bronze Pensive Bodhisattva (Maitreya) — Artist Unknown</p>
@@ -2208,7 +2228,7 @@ function speak(text, onEnd, speakerKey){
                 }
                 if(idx !== currentIdx){
                     currentIdx = idx;
-                    sync.captionEl.innerHTML = sync.sentences[idx];
+                    _setActiveCaptionSentence(sync.captionEl, idx);
                 }
             });
         }
@@ -2301,6 +2321,24 @@ let _captionSeq = 0;
 // 이 실측 갱신이 한 번도 안 일어나므로, 아래 타이머가 안전망으로 그대로
 // 남아 기존과 동일하게 동작한다.
 let _pendingSentenceSync = null;
+// v-tts-highlight-room2 — same real-time sentence highlight as index.html.
+// The full text is wrapped once into <span data-sidx="i"> elements and
+// rendered all at once; as playback advances, _setActiveCaptionSentence()
+// only moves the highlight class instead of replacing #caption's content
+// with a single sentence each time — so the whole passage stays visible
+// and only the sentence currently being read is highlighted in gold.
+function _renderCaptionSentences(captionEl, sentences){
+    captionEl.innerHTML = sentences
+        .map((s, i) => `<span class="tts-sentence" data-sidx="${i}">${s}</span>`)
+        .join(' ');
+}
+function _setActiveCaptionSentence(captionEl, idx){
+    if(!captionEl) return;
+    const prev = captionEl.querySelector('.tts-sentence.tts-active');
+    if(prev) prev.classList.remove('tts-active');
+    const next = captionEl.querySelector(`.tts-sentence[data-sidx="${idx}"]`);
+    if(next) next.classList.add('tts-active');
+}
 function _displaySentencesTimed(fullText, captionEl){
     const mySeq = ++_captionSeq;
     if(!captionEl) return;
@@ -2310,7 +2348,8 @@ function _displaySentencesTimed(fullText, captionEl){
         _pendingSentenceSync = null;
         return;
     }
-    captionEl.innerHTML = sentences[0];
+    _renderCaptionSentences(captionEl, sentences);
+    _setActiveCaptionSentence(captionEl, 0);
     _pendingSentenceSync = {
         text: fullText, sentences, captionEl, seq: mySeq,
         offsets: _sentenceOffsets(fullText, sentences),
@@ -2326,7 +2365,7 @@ function _displaySentencesTimed(fullText, captionEl){
             // boundary 실측 갱신이 이미 이 문장(또는 그 이후)까지 진행시켰다면
             // 추정 타이머는 아무 것도 하지 않는다 — 실측이 항상 우선한다.
             if(_pendingSentenceSync && _pendingSentenceSync.seq === mySeq && _pendingSentenceSync.boundaryActive) return;
-            captionEl.innerHTML = sentence;
+            _setActiveCaptionSentence(captionEl, i);
         }, delay);
         elapsed += Math.max(900, (sentence.length / charsPerSec) * 1000);
     }
@@ -6507,7 +6546,7 @@ function infoStillOpen(){
 // 재생 중이던 음성은 멈추고 새로 시작한다.
 const INFO_SPEECH = {
     exhibit: 'This is the exhibition introduction. This exhibition is called Resonance of Silence, a tactile and voice-interactive exhibition for the blind and hearing-impaired. It presents a dialogue between two statues completed by fingertip, the Pensive Bodhisattva and The Thinker, letting you experience the National Treasure Gilt-Bronze Pensive Bodhisattva and Rodin’s The Thinker through smaller-than-life tactile replicas and voice narration. It runs September 10 to 12 at the World Heritage Industry Expo at Gyeongju HICO Convention Center, and September 20 to 21 at the 2nd floor lobby of the National Assembly Members’ Office Building. Most exhibitions are designed on the premise of seeing, but this one begins from the opposite premise: it is built around tactile replica statues, voice narration, and a touch-based AI chatbot, so blind visitors can complete the visit on their own, without a screen reader and without a companion. In Room 1, Encounter, visitors touch replica bronze statues of both figures directly to grasp form and posture first; in Room 2, Contemplation and Embodiment, visitors touch individual parts to hear their meaning and can freely ask an AI chatbot anything they’re curious about. Exhibition direction and digital interaction were led by Jun-Dong Cho, bronze replica production by Ho-Yong Kim, and disability accessibility by Geun-Hae Yuk.',
-    intro: 'This is the Room 2 artwork introduction. The title is Resonance of Silence: Contemplation and Embodiment. This exhibition places two statues, the Gilt-Bronze Pensive Bodhisattva and Rodin’s The Thinker, side by side to compare two attitudes, a difficult mind and a warm mind. The Pensive Bodhisattva’s soft curves express the comfort of a troubled mind set down; The Thinker’s tensed muscle expresses the heavy mind a person carries through life. Both statues share a bowed head and a hand held near the face, a shared formal language symbolizing contemplation and meditation. The Gilt-Bronze Pensive Bodhisattva is a Buddhist sculpture estimated to have been made during the Three Kingdoms period, around the sixth to seventh century, depicting Maitreya, the bodhisattva who will save all beings in the future, absorbed in deep contemplation. It is notable for the half-lotus posture, right foot resting on the left knee, and fingers lightly touching the cheek. Its maker is believed to have been a Three Kingdoms-period artisan, but the name has not been passed down. The Thinker was first created by the French sculptor Auguste Rodin around 1880 as a figure atop The Gates of Hell, then recast in 1904 as an independent, large-scale bronze. It is a masterpiece of modern sculpture expressing, through tensed muscle and a hunched posture, the difficult mind a person carries through life.',
+    intro: 'This is the Room 2 artwork introduction. The title is Resonance of Silence: Contemplation and Embodiment. Room 2 is not about the overall form, but about tracing, part by part, the meaning and contemplation held in each spot. In The Thinker, an unreleased weight is condensed into the brow, the clenched fist, the elbow, and the tensed muscles of the back, moments of what Spinoza called conatus, the basic effort of a being to persist in its own existence, still colliding forcefully with the outside world. In the Pensive Bodhisattva, that same weight has been set down at the ear, the smile, the fingers, the folds of drapery, the seated pose, and the toes, moments that have slipped free of affliction and touched an unconditioned joy of cessation. Each time you touch a single part in Room 2, this difference between the two minds will reach your fingertips. The Gilt-Bronze Pensive Bodhisattva is a Buddhist sculpture estimated to have been made during the Three Kingdoms period, around the sixth to seventh century, depicting Maitreya, the bodhisattva who will save all beings in the future, absorbed in deep contemplation. It is notable for the half-lotus posture, right foot resting on the left knee, and fingers lightly touching the cheek. Its maker is believed to have been a Three Kingdoms-period artisan, but the name has not been passed down. The Thinker was first created by the French sculptor Auguste Rodin around 1880 as a figure atop The Gates of Hell, then recast in 1904 as an independent, large-scale bronze. It is a masterpiece of modern sculpture expressing, through tensed muscle and a hunched posture, the difficult mind a person carries through life.',
     artist: "This is the Resonance of Silence artist introduction. Jun-Dong Cho is Professor Emeritus in the School of Electronic and Electrical Engineering at Sungkyunkwan University. He majored in electronic engineering at Sungkyunkwan University, earned a master’s in computer science from the New York Institute of Technology, and a Ph.D. in computer science from Northwestern University. He founded the Human-ICT Convergence graduate program at Sungkyunkwan University, and with an interest in human-computer interaction and multimodal interface development, coined the concept Humartology, fusing humanities, art, and technology, to create digital interactive artworks.",
     usage: "This is the Room 2 usage guide. Tap the first screen once, lightly, to begin right away. It also starts automatically after one minute if you don’t tap. Use the background music button on this screen to turn background music on or off before starting. Touching a part you’re curious about on the statues on screen plays a short explanation of that part immediately in voice and captions. Press the Replay button at the bottom of the screen to hear the explanation of the part you just touched again from the start. Most other buttons speak their name on the first press, and pressing the same button again within a few seconds actually activates it. Only the Speed and Easy sentences buttons, and the background music volume slider, take effect immediately. The background music volume only adjusts the music; the narration volume is fixed separately. Pressing the button at the lower right opens the Contemplation Counsel chatbot, where you can freely ask whatever you’re curious about. Once you send a question, it stays pinned to the top of the window, so you don’t have to scroll back to find it while reading the answer. Personal questions like worry or life are answered side by side in each statue’s own voice, drawing on the story of whatever part you’re currently touching. This is not historical fact but a creative interpretation. Asking to summarize what you’ve touched so far gives you your record, plus a rough direction toward any part you haven’t touched yet. Swiping the empty space at the bottom of the screen, or touching the same part again, replays the explanation you just heard. Pressing the Certificate button at the bottom of the screen lets you check your record at any time. Pressing the Print button on the certificate screen twice saves it as a PDF file. Pressing the Serenity button moves you to a mind-clearing screen, where you must press either the Room 1 or Room 2 button yourself to actually move. Pressing the Room 1 button at the bottom skips this and goes straight to Room 1. This info panel you’re viewing now closes as soon as you tap the screen once."
 };
