@@ -2284,14 +2284,16 @@ function speak(text, onEnd, speakerKey){
         // 피치·속도 배수. 배속 버튼(TTS_RATE)은 여전히 전체 속도를
         // 조절하고, 그 위에 화자별 상대적 빠르기 차이만 얹힌다.
         let basePitch, baseRateMult;
-        // v-pitch-lower-again — index.html과 동일한 참가자 지적: "모바일에서
-        // 한국어 음성의 피치가 너무 높아서 듣기 어렵다." 화자 없는 일반
-        // 내레이션은 지금까지 한 번도 낮춘 적이 없어(1.0) 이 부분이 계속
-        // 높게 들리던 원인일 가능성이 크다. 세 값 모두 한 단계 더 낮춘다.
-        // v-lower-volume-pitch — 참가자 요청: 전시2 음성의 볼륨과 피치를 조금 낮춤
-        if(speakerKey === 'rodin'){ basePitch = 0.70; baseRateMult = 0.94; }
-        else if(speakerKey === 'maitreya'){ basePitch = 0.64; baseRateMult = 0.90; }
-        else { basePitch = 0.76; baseRateMult = 1.0; }
+        // v-pitch-reference-match — index.html과 동일한 참가자 지적: "'전시실
+        // 2로 이동합니다' 음성이 좋다. 그 음성으로 바꿔달라." 그 발화는
+        // u.pitch를 건드리지 않아 브라우저 기본값(1.0)을 그대로 쓰는데,
+        // 그동안 이 함수는 "피치가 높다"는 지적을 따라 로댕(0.70)·
+        // 반가사유상(0.64)·기본(0.76)까지 계속 낮춰왔다. 참가자가 좋다고
+        // 느낀 건 더 낮춘 피치가 아니라 손대지 않은 원래 피치였다는
+        // 뜻이므로, index.html과 함께 세 값 모두 원복한다.
+        if(speakerKey === 'rodin'){ basePitch = 1.0; baseRateMult = 0.94; }
+        else if(speakerKey === 'maitreya'){ basePitch = 1.0; baseRateMult = 0.90; }
+        else { basePitch = 1.0; baseRateMult = 1.0; }
         // v-voice-liveliness-match-room1 — "생동감 있는 억양"도
         // index.html과 동일한 방식(사람의 말은 발화마다 속도·피치가
         // 완벽히 같지 않다는 전제로, ±3~5% 안팎의 미세한 흔들림)으로
