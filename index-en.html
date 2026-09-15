@@ -129,8 +129,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .caption-nav-hint{
     position:absolute; top:50%; transform:translateY(-50%);
     font-family:'Cinzel Decorative',serif; font-size:1.7rem; line-height:1;
-    color:var(--gold-dim); opacity:.6; pointer-events:none; user-select:none;
+    color:var(--gold-dim); opacity:.6; user-select:none;
+    background:none; border:none; padding:12px; margin:0; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
 }
+.caption-nav-hint:focus-visible{outline:2px solid var(--gold); outline-offset:2px; opacity:1;}
+.caption-nav-hint:hover{opacity:1;}
 .caption-nav-hint.left{left:10px;}
 .caption-nav-hint.right{right:10px;}
 @media(max-width:480px){
@@ -140,6 +144,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 }
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(1.1rem, 3.6vw, 1.6rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
+/* v-auto-advance-hint — ported from index.html (Korean): this feature was
+   never brought over to the English file at all, which is part of why
+   English-speaking blind visitors had no way (visual or spoken) to learn
+   that the exhibit advances automatically and how to move manually. */
+#auto-advance-hint{font-size:.66rem; color:rgba(232,228,216,.55); margin-top:6px; letter-spacing:.01em;}
 /* v-en-sentence-highlight — ported from index.html (Korean): highlights
    the sentence currently being spoken so the caption and narration stay
    visibly in sync. This file previously had no such feature at all. */
@@ -169,7 +178,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #next-stage-tag.show{display:block;}
 #controls{display:flex; gap:24px; justify-content:center; margin-top:18px; flex-wrap:wrap;
     padding:14px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid rgba(212,175,55,.16);}
-.btn{background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'Noto Serif KR',serif;
+/* v-low-vision-contrast — same fix as index.html/room2.html: a dark,
+   near-opaque backdrop guarantees button contrast against the
+   photographic (bronze/gold-toned) background regardless of position. */
+.btn{background:rgba(8,6,3,.55); border:1px solid rgba(212,175,55,.6); color:var(--gold); font-family:'Noto Serif KR',serif;
      min-height:44px; display:inline-flex; align-items:center; justify-content:center; /* WCAG 2.5.5 */
      font-size:.9rem; letter-spacing:.06em; padding:11px 22px; border-radius:30px; cursor:pointer; transition:all .25s;}
 .btn:hover,.btn:focus-visible{background:rgba(212,175,55,.14);}
@@ -1053,12 +1065,20 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 </div>
 
 <!-- ── 공용 자막/컨트롤 — 0단계부터 3단계까지 계속 이 하나만 쓴다 ── -->
-<div id="caption-wrap" onclick="onCaptionAreaClick(event)" inert aria-hidden="true">
-    <span class="caption-nav-hint left" aria-hidden="true">‹</span>
-    <span class="caption-nav-hint right" aria-hidden="true">›</span>
+<!-- v-nonvisual-orientation — same landmark fix as room2.html: this is
+     where the actual narration lives, but it had no landmark, so a
+     screen reader's "jump by region" couldn't reach it directly. -->
+<div id="caption-wrap" role="main" aria-label="Room 1 core area — narration and navigation" onclick="onCaptionAreaClick(event)" inert aria-hidden="true">
+    <button type="button" class="caption-nav-hint left" aria-label="Move to the previous story" onclick="event.stopPropagation(); onBackClick();">‹</button>
+    <button type="button" class="caption-nav-hint right" aria-label="Move to the next story" onclick="event.stopPropagation(); onNextClick();">›</button>
     <div id="speaker-tag"></div>
     <div id="caption-tag">Orientation</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
+    <!-- v-auto-advance-hint — ported from index.html (Korean); see CSS
+         comment above. Not aria-hidden, so a screen-reader user who
+         swipes onto it (while it's visible, i.e. on the first caption)
+         can hear it. -->
+    <div id="auto-advance-hint">The story continues automatically · tap the left/right side of the screen to move manually</div>
     <div id="source-tag" aria-hidden="true"></div>
     <!-- v48 — 참가자 요청: TalkBack이 가능하게 해달라. 기존엔 "다음"
          으로 넘어가는 방법이 자막 영역 전체를 탭하는 onCaptionAreaClick
@@ -1463,7 +1483,13 @@ tagEl.textContent = 'Orientation';
 sourceEl.textContent = '';
 captionEl.innerHTML = gateText;
 
-speak(gateText, ()=> playLayer(0));
+speak(gateText, ()=>{
+    // v-screen-structure-orientation — participant (totally blind) note:
+    // "the first screen needs an overview of the whole interface
+    // structure." gateText only covered the theme ("Encounter"), never
+    // the screen's spatial layout — new information, not a repeat.
+    speak('At the top of the screen are the info, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that is the current story, along with the replay, pause, and room 2 buttons.', ()=> playLayer(0));
+});
     startAmbientSound();
     fadeArrivalIn();
 }
@@ -1559,7 +1585,12 @@ const STATUE_SOUND_VOLUME = 0.14;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
 
-const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15] };
+const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15],
+    // v-room-transition-haptic — participant note: "please also provide
+    // vibration when moving between exhibition rooms, so the visitor can
+    // intuitively tell a real transition happened." Dedicated rhythm for
+    // the moment of actually leaving a room.
+    exit:[25,40,25,40,70] };
 function hapticPulse(type){
     try{ if(navigator.vibrate) navigator.vibrate(HAPTIC_PATTERNS[type] || 15); }catch(e){}
 }
@@ -1843,9 +1874,19 @@ function _splitIntoSentencesEn(text){
 // v-en-sentence-highlight — ported from index.html (Korean). Wraps the
 // caption text into per-sentence <span>s so _highlightCaptionSentence()
 // can mark whichever one is currently being spoken.
+let _autoAdvanceHintShown = false;
 function setCaptionWithHighlight(text){
     const sentences = _splitIntoSentencesEn(text);
     captionEl.innerHTML = sentences.map((s, i) => `<span class="tts-sentence" data-sidx="${i}">${s}</span>`).join(' ');
+    // v-auto-advance-hint-once — ported from index.html (Korean): the
+    // "story continues automatically..." hint shows only on the first
+    // screen, then hides from later ones.
+    if(!_autoAdvanceHintShown){
+        _autoAdvanceHintShown = true;
+    } else {
+        const hintEl = document.getElementById('auto-advance-hint');
+        if(hintEl) hintEl.style.display = 'none';
+    }
 }
 function _highlightCaptionSentence(idx){
     const active = captionEl.querySelector('.tts-sentence.tts-active');
@@ -2987,7 +3028,7 @@ function goToRoom2(e) {
     // 이름·역할을 가진 개별 버튼들이 모여 있는 영역 — 이 안에서는
     // "전체 화면 탭=다음" 같은 단순 동작 대신, 아래에서 구현하는
     // "터치 탐색 + 재확인 탭" 방식을 쓴다.
-    const EXCLUDE_SELECTOR = '#top-controls, #info-overlay, #stage-badge, #controls, #skiplink';
+    const EXCLUDE_SELECTOR = '#top-controls, #info-overlay, #stage-badge, #controls, #skiplink, .caption-nav-hint';
     // 그 영역 안에서 실제로 이름을 말해주고 활성화할 대상(버튼·링크·점).
     const CONTROL_SELECTOR = 'button, [role="button"], a, .dot';
 
@@ -3404,6 +3445,10 @@ function goToRoom2(e) {
             // "이동은 하는데 안내가 잘리는" 일도 둘 다 생기지 않게 한다.
             e.preventDefault(); e.stopImmediatePropagation();
             disarm();
+            // v-room-transition-haptic — voice confirmation ("Moving to
+            // Room 2") already existed here, but no vibration accompanied
+            // it.
+            try{ hapticPulse('exit'); }catch(err){}
             speechGen++; // 배경 내레이션이 더 이상 끼어들 수 없게 무효화
             window.speechSynthesis.cancel();
             let _navigated = false;

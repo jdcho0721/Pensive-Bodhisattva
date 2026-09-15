@@ -356,7 +356,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption b{color:var(--gold-light);}
 
 #hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:nowrap;flex:0 0 auto;padding-top:10px;}
-.btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
+/* v-low-vision-contrast — participant (low vision) note: "insufficient
+   contrast made it hard to find buttons and key areas." Cause: .btn had
+   a fully transparent background with only a 30%-opacity gold border —
+   the background behind it is a photo of the two statues, which are
+   themselves bronze/gold-toned, so wherever a button sat over a similarly
+   toned part of the photo, both border and text blended in. A dark,
+   near-opaque backdrop on the button itself guarantees contrast no
+   matter what's behind it. */
+.btn{background:rgba(8,6,3,.55);border:1px solid rgba(212,175,55,.6);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
      font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
@@ -1040,7 +1048,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <body>
 
 <!-- ── 작품·작가 소개 / 저작권 ── -->
-<div id="top-controls">
+<div id="top-controls" role="group" aria-label="Top settings buttons — info, speed, easy sentences, background music, language">
 <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-name="Info" data-tap-action="Opens the info and copyright notice">ⓘ</button>
 <!-- v-button-icons — participant request: "it would be nice for buttons to
      have an intuitive icon along with the text." These two buttons react
@@ -1209,7 +1217,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
          보이고 버튼들은 그 아래 별도 줄에 놓이게 한다. #certificate-overlay를
          flex-direction:column으로 바꿔둔 덕분에 이 형제 요소가 카드 다음
          줄에 자연스럽게 쌓인다. -->
-    <div id="certificate-actions">
+    <div id="certificate-actions" role="group" aria-label="Certificate screen buttons">
         <!-- v-cert-print — 참가자 요청: "수료증 하단에 출력 버튼을 넣어서 PDF로
              출력하게 해줘." 별도 PDF 생성 라이브러리 없이 브라우저 인쇄 기능을
              그대로 활용한다 — 인쇄 대화상자가 열리면 "PDF로 저장"을 선택해 그대로
@@ -1228,7 +1236,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div id="yeoil-text">Set your thoughts down.<br>The touch of your fingertips, the stories you heard —<br>let them rest quietly, right now, in this moment.</div>
     <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
-    <div id="yeoil-actions">
+    <div id="yeoil-actions" role="group" aria-label="Closing screen buttons">
         <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="Moves to Room 2" data-tap-name="Room 2" data-tap-action="Moves to Room 2">Room 2</button>
         <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index-en.html'" aria-label="Moves to Room 1" data-tap-name="Room 1" data-tap-action="Moves to Room 1">Room 1</button>
     </div>
@@ -1289,7 +1297,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <audio id="snd-meeting" src="Sacred_Morning.mp4" preload="auto" loop></audio>
 
 <div id="room-layout">
-<div id="stage">
+<!-- v-nonvisual-orientation — participant (totally blind) note: "there's
+     not enough guidance on where I am on the current screen... making it
+     hard to follow the exhibit flow using audio alone." A screen reader
+     can jump between landmarks (main/region/etc.) to skip straight to a
+     section, but this screen had none, so every visit meant sweeping
+     through from the top in order. Adding role="main" to #stage (the
+     core touch-interaction area) plus group labels on top-controls and
+     hint-row lets a screen reader's landmark-jump feature reach the
+     right area directly. -->
+<div id="stage" role="main" aria-label="Room 2 core area — tactile exploration of the statues and the Contemplation Counsel">
 <div id="mood-overlay" aria-hidden="true"></div>
 <div id="visual-halo" aria-hidden="true">
     <div id="halo-rodin-shape"></div>
@@ -1433,7 +1450,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <div id="caption" role="status" aria-live="polite" onclick="onCaptionTap()">Touch a distinctive part of a statue with your fingertip, and its story will be told to you.</div>
         <div id="source-tag" aria-hidden="true"></div>
     </div>
-    <div id="hint-row">
+    <div id="hint-row" role="group" aria-label="Playback and navigation buttons — replay, certificate, serenity, room 1">
         <!-- v-replay-btn — 참가자 요청: "다시듣기." 지금까지 만진 부위 중
              가장 최근 것을 처음부터 다시 들려준다(repeatCurrent, 기존에
              이미 만들어져 있었지만 어떤 버튼에도 연결돼 있지 않던 함수). -->
@@ -2050,7 +2067,13 @@ function enterRoom(){
     const introLine = 'Room2 · Contemplation and Embodiment, thinking with the body. Look for the eleven spots on the two statues within your reach.';
     _displaySentencesTimed(introLine, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
-    speak(introLine);
+    // v-screen-structure-orientation — participant (totally blind) note:
+    // "the first screen needs an overview of the whole interface
+    // structure." This is spatial/structural information, distinct from
+    // the content-only introLine above, so it doesn't repeat anything.
+    speak(introLine, () => {
+        speak('At the top of the screen are the speed, easy sentences, and background music buttons. In the middle are the two statues. Below that is the description of whatever part you just touched, along with the replay, certificate, serenity, and room 1 buttons. The chat button in the middle-right opens a conversation with the Contemplation Counsel.');
+    });
     checkRAGStatus(); // 원격 RAG 검색 서버 연결 여부 콘솔 확인(실패해도 무시, UI 비차단)
     // v11 — 중앙 공간 표시는 이제 페이지가 뜰 때 한 번만 조용히 옅게
     // 나타나는 CSS 애니메이션(centerFadeIn)만 있고, 반복 펄스는 없앴다.
@@ -2728,15 +2751,25 @@ function buildOtherPartsAnswer(q){
     else if(ql.includes('rodin') || ql.includes('thinker')) body = 'Rodin';
     else body = _lastChatBody || (currentKey && DETAILS[currentKey] ? DETAILS[currentKey].body : null);
 
+    // v-nonvisual-hotspot-direction — participant (totally blind) note:
+    // "the spoken content was understandable, but there weren't enough
+    // spoken cues about where to touch, making it hard to find the
+    // area." This answer used to list bare part names — knowing the
+    // name didn't say where it was, so the visitor still had to feel
+    // around the whole statue. Reuse _describeRelativeDirection() (already
+    // used in buildRecapAnswer()) here too, pairing each name with a
+    // rough direction.
+    const withDir = k => `${shortName(k)} (${_describeRelativeDirection(k)})`;
+
     if(body){
-        const names = ORDER.filter(k => DETAILS[k].body === body && k !== exclude).map(shortName);
+        const names = ORDER.filter(k => DETAILS[k].body === body && k !== exclude).map(withDir);
         const bodyLabel = body === 'Rodin' ? 'The Thinker' : 'the Pensive Bodhisattva';
         if(!names.length) return `There aren't any other parts of ${bodyLabel} beyond what we've already covered. Would you like to explore the other statue?`;
-        return `Other parts of ${bodyLabel} you can explore by touch are: ${names.join(', ')}. Feel free to touch whichever one you're curious about.`;
+        return `Other parts of ${bodyLabel} you can explore by touch are: ${names.join(', ')}. The word in parentheses is roughly where it is on ${bodyLabel}'s body — feel free to touch whichever one you're curious about.`;
     }
-    const rodinNames = ORDER.filter(k => DETAILS[k].body === 'Rodin' && k !== exclude).map(shortName);
-    const maitreyaNames = ORDER.filter(k => DETAILS[k].body === 'Bodhisattva' && k !== exclude).map(shortName);
-    return `In this exhibit, the parts you can explore by touch are: for The Thinker, ${rodinNames.join(', ')}; and for the Pensive Bodhisattva, ${maitreyaNames.join(', ')}. Feel free to touch whichever one you're curious about.`;
+    const rodinNames = ORDER.filter(k => DETAILS[k].body === 'Rodin' && k !== exclude).map(withDir);
+    const maitreyaNames = ORDER.filter(k => DETAILS[k].body === 'Bodhisattva' && k !== exclude).map(withDir);
+    return `In this exhibit, the parts you can explore by touch are: for The Thinker, ${rodinNames.join(', ')}; and for the Pensive Bodhisattva, ${maitreyaNames.join(', ')}. The word in parentheses is roughly where it is on each statue's body — feel free to touch whichever one you're curious about.`;
 }
 
 const OTHER_PARTS_TRIGGER = /\bother\s+(parts?|spots?|areas?)\b|\bwhat\s+else\b|\banywhere\s+else\b|\bmore\s+(parts?|spots?)\s+to\s+(touch|feel)\b|\bfull\s+list\b|\bhow\s+many\s+(parts?|spots?)\b/i;
@@ -3048,6 +3081,17 @@ let _chatAnswerActive = false;
    진행됨"이라는 하나의 의미로만 쓰이도록 정리했다(room1의 turn, room3의
    step 참고). */
 const HAPTIC_PATTERNS = { enter:[8,20,8], exit:[10,30,10], confirm:[45], repeat:[15,25,15,25,15],
+    // v-chatmode-feedback — participant (totally blind) note: "it's hard
+    // to tell whether the chatbot is active or whether I'm listening to
+    // the exhibit narration... the difficulty is more about the
+    // interface for entering chat mode and distinguishing audio
+    // information than about the chatbot's answer content itself."
+    // Cause: closing the chat panel already announces "returning to the
+    // exhibit screen," but opening it gave no voice or vibration at all
+    // — an asymmetry where entering was silent and only leaving was
+    // announced. Add a dedicated rhythm, distinct from every other
+    // pattern, as the chat-entry signal.
+    chatOpen:[30,40,30,40,60],
     // v8 — 두 조각상 사이 빈 공간(center-zone)에서만 쓰는 전용 패턴.
     // 짧은 두 번의 두드림이 점점 가까워지다 하나의 긴 울림으로
     // 합쳐지는 리듬 — "서로 다른 두 존재가 한 자리에서 만난다"는
@@ -5554,6 +5598,11 @@ function toggleChat(){
     const panel = document.getElementById('chat-panel');
     const willOpen = !panel.classList.contains('open');
     if(willOpen){
+        // v-chatmode-feedback — symmetric with the else-branch's
+        // speak('Returning to the exhibit screen.') below: announce chat
+        // entry with a dedicated vibration and voice line too.
+        hapticPulse('chatOpen');
+        speak('Starting a conversation with the Contemplation Counsel. Feel free to ask a question.');
         // v-chat-fullscreen — 실제 페이지 이동처럼, 챗봇 화면도 브라우저/
         // 기기의 뒤로가기로 닫을 수 있도록 히스토리에 상태를 남긴다.
         history.pushState({ chatOpen:true }, '', '#chat');
@@ -7014,6 +7063,13 @@ document.addEventListener('click', function(e){
         e.preventDefault();
         e.stopImmediatePropagation();
         _disarmTwoTap();
+        // v-button-confirm-haptic — participant note: "need brief
+        // vibration or a sound effect confirming whether an action
+        // succeeded when pressing a button." The first tap (name
+        // announcement) already vibrated; this second, confirming tap
+        // — where the action actually fires, including room-to-room
+        // moves — had none.
+        try{ hapticPulse('confirm'); }catch(err){}
         const actionText = target.dataset && target.dataset.tapAction;
         if(actionText){
             speak(actionText, ()=>{ _runOriginalButtonAction(target); });

@@ -357,10 +357,18 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #caption b{color:var(--gold-light);}
 
 #hint-row{display:flex;gap:6px;justify-content:center;flex-wrap:nowrap;flex:0 0 auto;padding-top:10px;}
-.btn{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:'Noto Serif KR',serif;
+.btn{background:rgba(8,6,3,.55);border:1px solid rgba(212,175,55,.6);color:var(--gold);font-family:'Noto Serif KR',serif;
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
      font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
+/* v-low-vision-contrast — 참가자(저시력) 지적: "고대비가 충분하지 않아
+   버튼 및 주요 영역을 찾는 데 어려움이 있다." 원인: .btn이 지금까지
+   완전히 투명한 배경(background:transparent)에 테두리도 30% 옅은
+   금색(--gold-dim)뿐이었다 — 뒤에 깔린 배경이 두 조각상을 찍은
+   사진인데, 조각상 자체가 청동/금동 톤이라 버튼과 색상·명도가
+   비슷한 부분 위에 놓이면 테두리와 글자 모두 사진에 묻혀 버렸다.
+   사진의 어느 부분 위에 있든 항상 일정한 대비를 보장하도록, 어둡고
+   불투명에 가까운 배경을 버튼 자체에 깔고 테두리도 더 진하게 했다.
 /* v90 — 참가자 요청: "전시실2 각 화면 아래에 있는 4가지 버튼(다시듣기·
    수료증·여일·전시1)의 폰트크기가 크니 좀 작게 해달라." 패딩·높이·
    모양은 그대로 두고 글자 크기만 줄인다. */
@@ -1041,7 +1049,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <body>
 
 <!-- ── 작품·작가 소개 / 저작권 ── -->
-<div id="top-controls">
+<div id="top-controls" role="group" aria-label="상단 설정 버튼 — 정보, 속도, 쉬운 문장, 배경음악, 언어">
 <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-name="정보" data-tap-action="정보와 저작권 안내를 엽니다">ⓘ</button>
 <!-- v-button-icons — 참가자 요청: "버튼에 텍스트와 함께 직관적인 아이콘이
      있으면 좋겠다." 이 두 버튼은 매 탭마다 즉시 반응하는 상태 토글이라
@@ -1231,7 +1239,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
          보이고 버튼들은 그 아래 별도 줄에 놓이게 한다. #certificate-overlay를
          flex-direction:column으로 바꿔둔 덕분에 이 형제 요소가 카드 다음
          줄에 자연스럽게 쌓인다. -->
-    <div id="certificate-actions">
+    <div id="certificate-actions" role="group" aria-label="수료증 화면 버튼">
         <!-- v-cert-print — 참가자 요청: "수료증 하단에 출력 버튼을 넣어서 PDF로
              출력하게 해줘." 별도 PDF 생성 라이브러리 없이 브라우저 인쇄 기능을
              그대로 활용한다 — 인쇄 대화상자가 열리면 "PDF로 저장"을 선택해 그대로
@@ -1250,7 +1258,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     <div id="yeoil-text">생각을 내려놓습니다.<br>손끝의 감촉도, 들었던 이야기도<br>지금 이 순간 가만히 놓아둡니다.</div>
     <div class="yeoil-rule" aria-hidden="true"></div>
     <div id="yeoil-meaning"></div>
-    <div id="yeoil-actions">
+    <div id="yeoil-actions" role="group" aria-label="마무리 화면 버튼">
         <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2로 이동합니다" data-tap-name="전시2" data-tap-action="전시실 2로 이동합니다">전시2</button>
         <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
@@ -1346,7 +1354,15 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 <audio id="snd-meeting" src="Sacred_Morning.mp4" preload="auto" loop></audio>
 
 <div id="room-layout">
-<div id="stage">
+<!-- v-nonvisual-orientation — 참가자(전맹 시각장애인) 지적: "현재 화면에서
+     어느 위치에 있는지... 안내가 부족하여 음성만으로 전시 흐름을 따라가기
+     어렵다." 스크린리더는 랜드마크(main/region 등)로 페이지의 각 구역을
+     한 번에 건너뛰어 탐색할 수 있는데, 이 화면엔 그런 랜드마크가 전혀
+     없어 매번 처음부터 순서대로 훑어야만 했다. #stage(핵심 촉각 상호작용
+     영역)에 role="main"을 붙이고, 위 top-controls·hint-row에도 그룹
+     레이블을 붙여, 스크린리더의 "랜드마크로 건너뛰기" 기능으로 원하는
+     구역에 곧장 이동할 수 있게 한다. -->
+<div id="stage" role="main" aria-label="전시실 2 핵심 영역 — 조각상 촉각 탐색과 사유의 상담소">
 <div id="mood-overlay" aria-hidden="true"></div>
 <div id="visual-halo" aria-hidden="true">
     <div id="halo-rodin-shape"></div>
@@ -1493,7 +1509,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <div id="caption" role="status" aria-live="polite" onclick="onCaptionTap()">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
         <div id="source-tag" aria-hidden="true"></div>
     </div>
-    <div id="hint-row">
+    <div id="hint-row" role="group" aria-label="재생 및 이동 버튼 — 다시듣기, 수료증, 여일, 전시1">
         <!-- v-replay-btn — 참가자 요청: "다시듣기." 지금까지 만진 부위 중
              가장 최근 것을 처음부터 다시 들려준다(repeatCurrent, 기존에
              이미 만들어져 있었지만 어떤 버튼에도 연결돼 있지 않던 함수). -->
@@ -2115,7 +2131,18 @@ function enterRoom(){
     const introLine = '전시실 2 · 사유 및 체화, 몸으로 생각하기를 시작합니다. 손을 뻗으면 닿는 두 조각상의 열한 개 부위를 찾아보세요.';
     _displaySentencesTimed(introLine, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
-    speak(introLine);
+    // v-screen-structure-orientation — 참가자(전맹) 지적: "첫 화면에서
+    // 전체 인터페이스 구조 안내가 필요하다. 예) '윗줄은 속도, 소리 기능
+    // 버튼으로 구성되고 중간은 그림이 있고 그 아래 설명, 그리고 맨
+    // 아래줄은 뒤로가기·2전시실 넘어가기 버튼으로 구성되어 있습니다.'"
+    // 지금까지 introLine은 v85에 따라 "무엇을 하는 공간인지"(내용)만
+    // 짧게 알려줬을 뿐, "화면이 어떻게 구획돼 있는지"(구조)는 한 번도
+    // 말한 적이 없었다 — 이건 내용 반복이 아니라 새로운 종류의 정보라
+    // v85의 취지(반복 안내 줄이기)와 부딪히지 않는다. introLine이 끝난
+    // 직후 한 번만 이어서 들려준다.
+    speak(introLine, () => {
+        speak('화면 위쪽에는 속도, 쉬운 문장, 배경음악 버튼이 있습니다. 가운데에는 두 조각상 그림이 있습니다. 그 아래에는 지금 만진 부위의 설명과, 다시듣기, 수료증, 여일, 전시1 이동 버튼이 있습니다. 오른쪽 가운데의 챗봇 버튼을 누르면 사유의 상담소와 대화할 수 있습니다.');
+    });
     checkRAGStatus(); // 원격 RAG 검색 서버 연결 여부 콘솔 확인(실패해도 무시, UI 비차단)
     // v11 — 중앙 공간 표시는 이제 페이지가 뜰 때 한 번만 조용히 옅게
     // 나타나는 CSS 애니메이션(centerFadeIn)만 있고, 반복 펄스는 없앴다.
@@ -2747,15 +2774,25 @@ function buildOtherPartsAnswer(q){
     else if(q.includes('로댕') || q.includes('생각하는 사람')) body = '로댕';
     else body = _lastChatBody || (currentKey && DETAILS[currentKey] ? DETAILS[currentKey].body : null);
 
+    // v-nonvisual-hotspot-direction — 참가자(전맹) 지적: "음성으로 설명되는
+    // 작품 내용은 이해할 수 있었으나, 어떤 위치를 터치해야 하는지에 대한
+    // 음성 단서가 충분하지 않아 영역을 찾는 데 어려움이 있다." 지금까지
+    // 이 답변은 부위 이름만 나열했다 — 이름을 알아도 "그게 어디 있는지"
+    // 몰라 결국 손으로 전체를 더듬어야 했다. 이미 buildRecapAnswer()에서
+    // 쓰던 _describeRelativeDirection()(핫스팟의 실제 화면 좌표를 읽어
+    // "왼쪽 위쪽" 같은 대략적 방향으로 바꿔주는 함수)을 여기서도 각
+    // 부위마다 적용해, 이름과 방향을 함께 들려준다.
+    const withDir = k => `${shortName(k)}(${_describeRelativeDirection(k)})`;
+
     if(body){
-        const names = ORDER.filter(k => DETAILS[k].body === body && k !== exclude).map(shortName);
+        const names = ORDER.filter(k => DETAILS[k].body === body && k !== exclude).map(withDir);
         const bodyLabel = body === '로댕' ? '생각하는 사람' : '반가사유상';
         if(!names.length) return `${bodyLabel}은 지금까지 말씀드린 부위 외에 더 소개해드릴 곳이 없습니다. 반대편 조각상도 손끝으로 만나보시겠어요?`;
-        return `${bodyLabel}에서 손끝으로 만나볼 수 있는 다른 부위는 ${names.join(', ')}입니다. 궁금한 곳을 자유롭게 짚어보세요.`;
+        return `${bodyLabel}에서 손끝으로 만나볼 수 있는 다른 부위는 ${names.join(', ')}입니다. 괄호 안은 ${bodyLabel} 몸에서의 대략적인 위치입니다 — 궁금한 곳을 자유롭게 짚어보세요.`;
     }
-    const rodinNames = ORDER.filter(k => DETAILS[k].body === '로댕' && k !== exclude).map(shortName);
-    const maitreyaNames = ORDER.filter(k => DETAILS[k].body === '반가사유상' && k !== exclude).map(shortName);
-    return `이 전시에서 손끝으로 만나볼 수 있는 부위는, 생각하는 사람 쪽은 ${rodinNames.join(', ')}이고, 반가사유상 쪽은 ${maitreyaNames.join(', ')}입니다. 궁금한 곳을 자유롭게 짚어보세요.`;
+    const rodinNames = ORDER.filter(k => DETAILS[k].body === '로댕' && k !== exclude).map(withDir);
+    const maitreyaNames = ORDER.filter(k => DETAILS[k].body === '반가사유상' && k !== exclude).map(withDir);
+    return `이 전시에서 손끝으로 만나볼 수 있는 부위는, 생각하는 사람 쪽은 ${rodinNames.join(', ')}이고, 반가사유상 쪽은 ${maitreyaNames.join(', ')}입니다. 괄호 안은 각 조각상 몸에서의 대략적인 위치입니다 — 궁금한 곳을 자유롭게 짚어보세요.`;
 }
 
 /* 방문객이 실제로 쓸 만한 다양한 표현을 폭넓게 인식하도록 트리거를
@@ -3074,6 +3111,15 @@ let _chatAnswerActive = false;
    진행됨"이라는 하나의 의미로만 쓰이도록 정리했다(room1의 turn, room3의
    step 참고). */
 const HAPTIC_PATTERNS = { enter:[8,20,8], exit:[10,30,10], confirm:[45], repeat:[15,25,15,25,15],
+    // v-chatmode-feedback — 참가자(전맹) 지적: "챗봇 기능이 활성화되어
+    // 있는지, 작품 해설을 듣고 있는 것인지 구분하기 어렵다... 챗봇 답변
+    // 내용보다 챗봇으로 진입하고 음성 정보를 구분하는 인터페이스 측면의
+    // 어려움이 크다." 원인: 챗봇창을 닫을 때는 "전시 화면으로
+    // 돌아갑니다"라고 안내하면서, 정작 챗봇을 여는 순간에는 음성도
+    // 진동도 전혀 없었다 — 들어갈 때는 조용히 들어가고 나갈 때만
+    // 안내하는 비대칭이 있었다. 다른 어떤 패턴과도 겹치지 않는 전용
+    // 리듬을 챗봇 진입 신호로 추가한다.
+    chatOpen:[30,40,30,40,60],
     // v8 — 두 조각상 사이 빈 공간(center-zone)에서만 쓰는 전용 패턴.
     // 짧은 두 번의 두드림이 점점 가까워지다 하나의 긴 울림으로
     // 합쳐지는 리듬 — "서로 다른 두 존재가 한 자리에서 만난다"는
@@ -5715,6 +5761,12 @@ function toggleChat(){
     const panel = document.getElementById('chat-panel');
     const willOpen = !panel.classList.contains('open');
     if(willOpen){
+        // v-chatmode-feedback — 챗봇 진입 시에도 나갈 때(아래 else 분기의
+        // speak('전시 화면으로 돌아갑니다'))와 대칭으로, 전용 진동과
+        // 음성으로 "지금부터 챗봇 대화 모드"임을 명확히 알린다 — 시각
+        // 정보 없이는 챗봇창이 열렸다는 사실 자체를 알 방법이 없었다.
+        hapticPulse('chatOpen');
+        speak('사유의 상담소 챗봇 대화를 시작합니다. 궁금한 점을 물어보세요.');
         // v-chat-fullscreen — 실제 페이지 이동처럼, 챗봇 화면도 브라우저/
         // 기기의 뒤로가기로 닫을 수 있도록 히스토리에 상태를 남긴다.
         history.pushState({ chatOpen:true }, '', '#chat');
@@ -7170,6 +7222,13 @@ document.addEventListener('click', function(e){
         e.preventDefault();
         e.stopImmediatePropagation();
         _disarmTwoTap();
+        // v-button-confirm-haptic — 참가자 지적: "버튼을 눌렀을 때 짧은
+        // 진동이나 효과음으로 조작 성공 여부를 알려주는 피드백이
+        // 필요하다." 지금까지 첫 탭(이름 안내)에는 짧은 진동이 있었지만,
+        // 실제로 동작이 확정 실행되는 이 두 번째 탭에는 아무 진동도
+        // 없었다 — 전시1/전시2 같은 전시실 이동을 포함해 모든 확정
+        // 버튼에 공통으로 적용된다.
+        try{ hapticPulse('confirm'); }catch(err){}
         const actionText = target.dataset && target.dataset.tapAction;
         if(actionText){
             speak(actionText, ()=>{ _runOriginalButtonAction(target); });

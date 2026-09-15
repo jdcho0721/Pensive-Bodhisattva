@@ -125,11 +125,26 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    임을 알 수 있게 한다. aria-hidden + pointer-events:none이라 스크린
    리더나 클릭 판정에는 전혀 영향을 주지 않는다(좌우 탭 자체는 원래
    #caption-wrap의 onclick이 그대로 처리한다).*/
+/* v-nav-buttons-accessible — 참가자 지적: "두 번 터치 등 요구되는
+   제스처의 방법을 안내받더라도 실제 버튼이나 터치 영역을 찾는 과정에서
+   반복적인 탐색이 필요하다." 원인: 이전/다음 이동은 지금까지 화면
+   왼쪽·오른쪽 "절반"을 탭하는 방식뿐이었다(이 span은 그 존재를 알리는
+   장식용 화살표였고, 정작 클릭은 부모 #caption-wrap이 처리했다). 이런
+   "화면의 절반"은 스크린리더의 스와이프 탐색으로 한 번에 닿을 수 있는
+   개별 요소가 아니라서, 매번 손가락으로 화면을 더듬어 경계를 다시
+   찾아야 했다 — 이게 "반복적인 탐색"의 실체다. 화살표를 실제 <button>
+   으로 바꿔, 스와이프로 바로 넘어갈 수 있는 하나의 고정된 대상이
+   되게 한다. 시각적으로는 기존과 동일하게 보이도록 버튼 기본 스타일만
+   초기화했다. */
 .caption-nav-hint{
     position:absolute; top:50%; transform:translateY(-50%);
     font-family:'Cinzel Decorative',serif; font-size:1.7rem; line-height:1;
-    color:var(--gold-dim); opacity:.6; pointer-events:none; user-select:none;
+    color:var(--gold-dim); opacity:.6; user-select:none;
+    background:none; border:none; padding:12px; margin:0; cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
 }
+.caption-nav-hint:focus-visible{outline:2px solid var(--gold); outline-offset:2px; opacity:1;}
+.caption-nav-hint:hover{opacity:1;}
 .caption-nav-hint.left{left:10px;}
 .caption-nav-hint.right{right:10px;}
 @media(max-width:480px){
@@ -171,7 +186,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     padding:14px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid rgba(212,175,55,.16);
     pointer-events:none;} /* v-next-zone-edge-fix — 참가자 지적: "다음 넘어가기 제스처 영역이 오른쪽 에지까지 확장이 안 된다." #controls는 버튼이 가운데 몰려 있어도 div 자체는 캡션 영역 전체 너비를 그대로 차지한다 — 그래서 버튼 양옆의 빈 공간(오른쪽 끝 포함)에서 탭해도 onCaptionAreaClick의 closest('#controls') 방어 코드에 걸려 아무 반응 없이 먹혀버리고 있었다. 이 div 자체는 클릭을 통과시키고, 아래에서 실제 버튼에만 다시 pointer-events:auto를 줘서 버튼만 클릭되게 한다. */
 #controls > *{pointer-events:auto;}
-.btn{background:transparent; border:1px solid var(--gold-dim); color:var(--gold); font-family:'Noto Serif KR',serif;
+/* v-low-vision-contrast — participant (low vision) note: "insufficient
+   contrast made it hard to find buttons and key areas." Same cause and
+   fix as room2.html: a fully transparent .btn background over a
+   photographic (bronze/gold-toned) backdrop let borders and text blend
+   in depending on position. A dark, near-opaque backdrop on the button
+   guarantees contrast regardless of what's behind it. */
+.btn{background:rgba(8,6,3,.55); border:1px solid rgba(212,175,55,.6); color:var(--gold); font-family:'Noto Serif KR',serif;
      min-height:44px; display:inline-flex; align-items:center; justify-content:center; /* WCAG 2.5.5 */
      font-size:.9rem; letter-spacing:.06em; padding:11px 22px; border-radius:30px; cursor:pointer; transition:all .25s;}
 .btn:hover,.btn:focus-visible{background:rgba(212,175,55,.14);}
@@ -1092,17 +1113,30 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 </div>
 
 <!-- ── 공용 자막/컨트롤 — 0단계부터 3단계까지 계속 이 하나만 쓴다 ── -->
-<div id="caption-wrap" onclick="onCaptionAreaClick(event)" inert aria-hidden="true">
-    <span class="caption-nav-hint left" aria-hidden="true">‹</span>
-    <span class="caption-nav-hint right" aria-hidden="true">›</span>
+<!-- v-nonvisual-orientation — index.html에도 room2.html과 동일한 랜드마크
+     보강을 적용한다. top-controls/controls는 이미 role="group"이 있었지만,
+     실제 내레이션이 나오는 이 핵심 영역에는 랜드마크가 없어 스크린리더의
+     "구역 건너뛰기"로 곧장 올 수 없었다. -->
+<div id="caption-wrap" role="main" aria-label="전시실 1 핵심 영역 — 내레이션과 이동" onclick="onCaptionAreaClick(event)" inert aria-hidden="true">
+    <button type="button" class="caption-nav-hint left" aria-label="이전 이야기로 이동" onclick="event.stopPropagation(); onBackClick();">‹</button>
+    <button type="button" class="caption-nav-hint right" aria-label="다음 이야기로 이동" onclick="event.stopPropagation(); onNextClick();">›</button>
     <div id="speaker-tag"></div>
     <div id="caption-tag">오리엔테이션</div>
     <div id="caption" role="status" aria-live="polite">&nbsp;</div>
     <!-- v-auto-advance-hint — 참가자 지적(4·6번): "기다려야 하는지
          클릭해야 하는지 확신하기 어려웠다." 실제로는 자동으로 이어지는
          구조인데 그 사실 자체가 안 보였다 — 항상 보이는 안내문으로
-         명시한다. -->
-    <div id="auto-advance-hint" aria-hidden="true">자동으로 다음 이야기로 이어집니다 · 화면 왼쪽/오른쪽을 탭하면 직접 이동할 수 있어요</div>
+         명시한다.
+         v-nonvisual-flow-guidance — 후속 참가자 지적: "현재 화면에서
+         어느 위치에 있는지, 다음 단계로 어떻게 이동하는지에 대한 안내가
+         부족하여 음성만으로 전시 흐름을 따라가기 어렵다." 원인 중 하나:
+         이 안내문이 aria-hidden="true"라 스크린리더 사용자는 화면을
+         스와이프해 이 위로 지나가도 절대 들을 수 없었다 — 시각 사용자만
+         읽을 수 있는 안내였던 셈이다. aria-hidden을 없애 최소한 스와이프로
+         닿았을 때는 들을 수 있게 한다(완전한 해결은 아니다 — 이 문구
+         자체를 speak()로 능동적으로 읽어주는 것이 더 확실하지만, 지금
+         재생 중인 내레이션과 겹쳐 끊길 위험이 있어 이번엔 보류한다). -->
+    <div id="auto-advance-hint">자동으로 다음 이야기로 이어집니다 · 화면 왼쪽/오른쪽을 탭하면 직접 이동할 수 있어요</div>
     <div id="source-tag" aria-hidden="true"></div>
     <!-- v48 — 참가자 요청: TalkBack이 가능하게 해달라. 기존엔 "다음"
          으로 넘어가는 방법이 자막 영역 전체를 탭하는 onCaptionAreaClick
@@ -1498,7 +1532,16 @@ tagEl.textContent = '오리엔테이션';
 sourceEl.textContent = '';
 captionEl.innerHTML = gateText;
 
-speak(gateText, ()=> playLayer(0));
+speak(gateText, ()=>{
+    // v-screen-structure-orientation — 참가자(전맹) 지적: "첫 화면에서
+    // 전체 인터페이스 구조 안내가 필요하다. 예) '윗줄은 속도, 소리
+    // 기능 버튼으로 구성되고 중간은 그림이 있고 그 아래 설명, 그리고
+    // 맨 아래줄은 뒤로가기·2전시실 넘어가기 버튼으로 구성되어
+    // 있습니다.'" gateText는 "조우"라는 주제(내용)만 알려줬을 뿐,
+    // 화면이 어떻게 구획돼 있는지(구조)는 한 번도 말한 적이 없었다 —
+    // 반복 안내가 아니라 새로운 정보이므로 한 번만 짧게 이어 들려준다.
+    speak('화면 위쪽에는 정보, 속도, 쉬운 문장, 배경음악 버튼이 있습니다. 가운데에는 두 조각상 그림이 있습니다. 그 아래에는 지금 나오는 이야기와, 다시듣기, 멈춤, 전시2 이동 버튼이 있습니다.', ()=> playLayer(0));
+});
     startAmbientSound();
     fadeArrivalIn();
 }
@@ -1604,7 +1647,11 @@ const STATUE_SOUND_VOLUME = 0.14;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
 
-const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15] };
+const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15],
+    // v-room-transition-haptic — 참가자 지적: "전시실 이동 시 진동을
+    // 함께 제공해 실제 이동 여부를 직관적으로 알 수 있게 해달라."
+    // 전시실을 실제로 나가는 순간 전용 리듬.
+    exit:[25,40,25,40,70] };
 function hapticPulse(type){
     try{ if(navigator.vibrate) navigator.vibrate(HAPTIC_PATTERNS[type] || 15); }catch(e){}
 }
@@ -3035,7 +3082,14 @@ function goToRoom2(e) {
     // 이름·역할을 가진 개별 버튼들이 모여 있는 영역 — 이 안에서는
     // "전체 화면 탭=다음" 같은 단순 동작 대신, 아래에서 구현하는
     // "터치 탐색 + 재확인 탭" 방식을 쓴다.
-    const EXCLUDE_SELECTOR = '#top-controls, #info-overlay, #stage-badge, #controls, #skiplink';
+    // v-nav-buttons-accessible — 위 새 이전/다음 버튼(.caption-nav-hint)만
+    // 여기 포함시킨다 — 포함되지 않으면 "탐색 후 재확인" 2단계 시스템에
+    // 걸려버려, 기존의 즉시-실행 방식(자막 영역 탭)과 다르게 동작하게
+    // 된다. #caption-wrap 전체를 넣지 않도록 주의한다 — 그러면 이
+    // 영역에서 막 시작되는 모든 터치가 곧장 제외 처리되어, 정작 이
+    // 영역이 핵심 무대인 "길게 눌러 멈춤" 제스처(아래 handlePointerDown)
+    // 까지 함께 꺼져버린다.
+    const EXCLUDE_SELECTOR = '#top-controls, #info-overlay, #stage-badge, #controls, #skiplink, .caption-nav-hint';
     // 그 영역 안에서 실제로 이름을 말해주고 활성화할 대상(버튼·링크·점).
     const CONTROL_SELECTOR = 'button, [role="button"], a, .dot';
 
@@ -3452,6 +3506,11 @@ function goToRoom2(e) {
             // "이동은 하는데 안내가 잘리는" 일도 둘 다 생기지 않게 한다.
             e.preventDefault(); e.stopImmediatePropagation();
             disarm();
+            // v-room-transition-haptic — 참가자 지적: "전시실이 변경될 때
+            // 음성 안내와 함께 진동을 제공하여 실제 이동 여부를 직관적으로
+            // 알 수 있도록 해달라." 지금까지 "전시실 2로 이동합니다"라는
+            // 음성 확인은 있었지만 진동은 전혀 없었다.
+            try{ hapticPulse('exit'); }catch(err){}
             speechGen++; // 배경 내레이션이 더 이상 끼어들 수 없게 무효화
             window.speechSynthesis.cancel();
             let _navigated = false;
