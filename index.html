@@ -376,6 +376,35 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     white-space: nowrap;
 }
 #btn-easy-mode[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
+#btn-low-vision[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
+/* v-low-vision-mode — 참가자(저시력) 지적: "화면을 확대하면 작품 전체와
+   조작 영역을 한눈에 확인하기 어렵다 / 확대와 음성 안내를 동시에
+   활용하는 과정이 불편하다." 원인: 지금까지 유일한 확대 수단이 브라우저
+   기본 핀치줌이었는데, 이건 화면 전체를 그대로 확대해 고정 위치
+   요소(상단·하단 컨트롤)까지 화면 밖으로 밀려나게 만든다 — 확대할수록
+   오히려 컨트롤을 다시 찾아 헤매야 하는 역설이 생긴다. 대신 이 화면
+   자체의 고정 레이아웃(#caption-wrap이 position:fixed로 전체 뷰포트를
+   차지하고, body가 overflow:hidden이라 페이지 자체는 스크롤되지 않는
+   구조)은 그대로 둔 채, 그 안에서 자막·버튼 글자 크기만 CSS로 키운다
+   — 핀치줌 없이 켜고 끌 수 있는 "큰 글씨 모드"다. 요소들이 화면 안
+   고정된 자리에 그대로 있으면서 커지기만 하므로, 확대해도 구조를
+   다시 찾을 필요가 없다. */
+body.low-vision-mode #caption{font-size:clamp(1.7rem, 6vw, 2.5rem) !important; line-height:1.65 !important;}
+body.low-vision-mode #caption-tag, body.low-vision-mode #focus-tag{font-size:1.35em !important;}
+body.low-vision-mode #top-controls .btn, body.low-vision-mode #info-btn, body.low-vision-mode #btn-exit, body.low-vision-mode #volume-control{
+    height:clamp(48px, 13vw, 62px) !important;
+    min-height:clamp(48px, 13vw, 62px) !important;
+    font-size:clamp(1rem, 3.8vw, 1.2rem) !important;
+    padding:0 clamp(14px, 3.6vw, 22px) !important;
+}
+body.low-vision-mode #info-btn, body.low-vision-mode #btn-exit{ width:clamp(48px, 13vw, 62px) !important; }
+body.low-vision-mode #controls .btn{
+    height:clamp(48px, 13vw, 62px) !important;
+    min-height:clamp(48px, 13vw, 62px) !important;
+    font-size:clamp(1rem, 3.6vw, 1.2rem) !important;
+    padding:0 clamp(16px, 4.2vw, 28px) !important;
+}
+body.low-vision-mode .caption-nav-hint{font-size:2.4rem !important; opacity:1 !important;}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -774,6 +803,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장">쉬운 문장</button>
+    <button class="btn" id="btn-low-vision" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="큰 글씨 모드, 현재 꺼짐">큰 글씨</button>
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
          쓸어넘기면 값을 조절할 수 있다(표준 range 컨트롤 동작).
@@ -2317,6 +2347,24 @@ function toggleEasyMode(){
     // v87 — cycleSpeed()와 동일한 이유로, 이어듣기를 문자열 재생이 아닌
     // 재생 상태 스냅샷 방식으로 교체(자세한 설명은 cycleSpeed() 주석 참고).
     const announceText = easyMode ? '쉬운 문장으로 전환됩니다.' : '원래 문장으로 돌아옵니다.';
+    const ctx = _snapshotPlaybackState();
+    speak(announceText, function(){ _resumeFromSnapshot(ctx); });
+}
+
+// v-low-vision-mode — 참가자(저시력) 지적 대응: 브라우저 핀치줌 대신,
+// 화면 자체의 고정 레이아웃은 그대로 둔 채 글자·버튼 크기만 키우는
+// 전용 모드. 버튼 위치가 화면 안에서 바뀌지 않으므로, 확대해도 컨트롤을
+// 다시 찾아 헤맬 필요가 없다.
+let lowVisionMode = false;
+function toggleLowVisionMode(){
+    lowVisionMode = !lowVisionMode;
+    document.body.classList.toggle('low-vision-mode', lowVisionMode);
+    const btn = document.getElementById('btn-low-vision');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(lowVisionMode));
+        btn.setAttribute('aria-label', lowVisionMode ? '큰 글씨 모드, 현재 켜짐' : '큰 글씨 모드, 현재 꺼짐');
+    }
+    const announceText = lowVisionMode ? '큰 글씨 모드를 켰습니다.' : '큰 글씨 모드를 껐습니다.';
     const ctx = _snapshotPlaybackState();
     speak(announceText, function(){ _resumeFromSnapshot(ctx); });
 }
