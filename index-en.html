@@ -365,6 +365,37 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     white-space: nowrap;
 }
 #btn-easy-mode[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
+#btn-low-vision[aria-pressed="true"]{background:var(--gold); color:#000; border-color:var(--gold);}
+/* v-low-vision-mode — participant (low vision) note: "zooming makes it
+   hard to see the whole artwork and control area at once / using zoom
+   and voice guidance together is uncomfortable." Native pinch-zoom
+   scales the whole screen, pushing fixed-position controls off-screen —
+   the more you zoom, the more you have to hunt for controls again.
+   Instead, keep this screen's fixed layout (#caption-wrap is
+   position:fixed covering the full viewport; body is overflow:hidden so
+   the page itself never scrolls) and only enlarge caption/button text
+   via CSS — a toggleable "large text" mode that needs no pinching.
+   Elements stay in the same on-screen spot while just getting bigger. */
+/* v-low-vision-tone-down — participant note: "isn't the text a bit too
+   big?" Reduced from ~1.5-1.6x the original size down to ~1.25-1.3x, to
+   stay noticeably larger without causing so much extra line-wrapping
+   that it defeats the point of keeping the fixed layout. */
+body.low-vision-mode #caption{font-size:clamp(1.4rem, 4.6vw, 2.05rem) !important; line-height:1.65 !important;}
+body.low-vision-mode #caption-tag, body.low-vision-mode #focus-tag{font-size:1.2em !important;}
+body.low-vision-mode #top-controls .btn, body.low-vision-mode #info-btn, body.low-vision-mode #btn-exit, body.low-vision-mode #volume-control{
+    height:clamp(40px, 11vw, 54px) !important;
+    min-height:clamp(40px, 11vw, 54px) !important;
+    font-size:clamp(.8rem, 3.2vw, 1.05rem) !important;
+    padding:0 clamp(11px, 3vw, 17px) !important;
+}
+body.low-vision-mode #info-btn, body.low-vision-mode #btn-exit{ width:clamp(40px, 11vw, 54px) !important; }
+body.low-vision-mode #controls .btn{
+    height:clamp(40px, 11vw, 54px) !important;
+    min-height:clamp(40px, 11vw, 54px) !important;
+    font-size:clamp(.8rem, 3vw, 1.05rem) !important;
+    padding:0 clamp(13px, 3.4vw, 22px) !important;
+}
+body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !important;}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -763,6 +794,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-action="Opens the artwork and copyright notice"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences">Easy sentences</button>
+    <button class="btn" id="btn-low-vision" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="Large text mode, currently off">Large Text</button>
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
          쓸어넘기면 값을 조절할 수 있다(표준 range 컨트롤 동작).
@@ -921,7 +953,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
                 data-tap-name="Background music"
                 onclick="event.stopPropagation();toggleBgm()">🔊 Music</button>
         <button class="btn" id="btn-lang-ko" type="button"
-                aria-label="한국어 버전으로 전환합니다"
+                aria-label="Switches to the Korean version"
                 data-tap-name="Korean version"
                 onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='index.html'">KO</button>
     </div>
@@ -1471,7 +1503,7 @@ function enterRoom(){
     // 부가 문구는 빼고, 전시실 1의 이름이자 주제인 "조우"의 뜻풀이 한
     // 문장만 남겼다. 이어지는 두 조각상 소개(오리엔테이션)는 바로 다음
     // 단계(playLayer(0))에서 별도로 들려준다.
-    const gateText = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face.';
+    const gateText = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face. This exhibit provides its own complete spoken guidance for the whole screen. If your phone\u2019s screen reader is also on, the two voices may overlap and be hard to follow, so we recommend turning your screen reader off while using this exhibit.';
 
 // ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
 try{
@@ -1904,8 +1936,20 @@ function _clearCaptionHighlight(){
 // 균일하게 들리는 정도를 줄인다. myGen으로 그 사이 더 최신 요청이
 // 들어오면(예: 다른 부위를 만짐) 즉시 멈춘다 — 기존 워치독/취소 로직과
 // 동일한 원리다.
+// v-sentence-rewind — remembers the sentence list/position currently
+// playing so onBackClick() can rewind by one sentence instead of jumping
+// a whole stage back (see participant request in the Korean file).
+let _curSentences = null, _curSentenceIdx = 0, _curSpeaker = null, _curOnEnd = null;
+function _rewindOneSentence(){
+    if(!_curSentences || _curSentenceIdx <= 0) return false;
+    const targetIdx = _curSentenceIdx - 1;
+    try{ hapticPulse('turn'); }catch(e){}
+    _speakSentenceQueue(_curSentences, targetIdx, _curSpeaker, speechGen, _curOnEnd);
+    return true;
+}
 function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     if(myGen !== speechGen) return;
+    _curSentences = sentences; _curSentenceIdx = idx; _curSpeaker = speaker; _curOnEnd = onEnd;
     if(idx >= sentences.length){
         if(myGen===speechGen){
             _clearCaptionHighlight();
@@ -2283,6 +2327,23 @@ function toggleEasyMode(){
     speak(announceText, function(){ _resumeFromSnapshot(ctx); });
 }
 
+// v-low-vision-mode — dedicated large-text mode instead of relying on
+// pinch-zoom (see CSS comment above). Layout stays fixed; only text/
+// button sizes grow.
+let lowVisionMode = false;
+function toggleLowVisionMode(){
+    lowVisionMode = !lowVisionMode;
+    document.body.classList.toggle('low-vision-mode', lowVisionMode);
+    const btn = document.getElementById('btn-low-vision');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(lowVisionMode));
+        btn.setAttribute('aria-label', lowVisionMode ? 'Large text mode, currently on' : 'Large text mode, currently off');
+    }
+    const announceText = lowVisionMode ? 'Large text mode turned on.' : 'Large text mode turned off.';
+    const ctx = _snapshotPlaybackState();
+    speak(announceText, function(){ _resumeFromSnapshot(ctx); });
+}
+
 function playTurn(i){
     clearTimeout(autoTimer);
     hapticPulse('turn'); 
@@ -2560,6 +2621,13 @@ function onBackClick(){
     // 중인) 발화까지 포함해 지금 읽던 모든 소리를 확실히 끊는다.
     window.speechSynthesis.cancel();
     speechGen++;
+
+    // v-sentence-rewind — participant request: "there's a replay feature
+    // but no way to rewind to a specific part, so I have to listen from
+    // the beginning again." If the current caption has multiple
+    // sentences and we're past the first one, step back just one
+    // sentence instead of jumping a whole stage back.
+    if(_rewindOneSentence()) return;
 
     if(phase === 'screen'){
         if(lineIdx > 0){

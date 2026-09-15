@@ -524,6 +524,15 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 #chat-log::-webkit-scrollbar-thumb:hover{ background:var(--gold); }
 #chat-log .me{color:#ccc;align-self:flex-end;text-align:right;}
 #chat-log .ai{color:var(--gold-light); white-space:pre-line;}
+/* v-chat-ai-icon — 참가자 지적: "'🤖 사유의 상담소 — 답변' 표시가 안
+   보인다. 챗봇창이 전체화면으로 바탕화면을 덮어버려서, 그 표시가
+   있는 배경 자막(#focus-tag)은 챗봇을 쓰는 동안 볼 수가 없다." 그
+   표시를 챗봇창 안에도 직접 넣는다. textContent를 직접 다시 쓰는
+   곳(_renderPhilosophyAnswer의 existingBubble.textContent = text 등)이
+   여러 곳이라, 텍스트 자체에 아이콘을 섞으면 나중에 다시 쓸 때
+   사라지기 쉽다 — 대신 CSS ::before로 항상 붙어 있게 한다(텍스트
+   내용이 몇 번을 바뀌어도 아이콘은 그대로 유지된다). */
+#chat-log .ai::before{content:"🤖 ";}
 #chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;max-height:96px;overflow-y:auto;padding-right:2px;}
 /* v47 — 패널 폭을 줄이면서 예상 질문 칩들이 줄바꿈으로 더 많은 세로
    공간을 차지하게 됐다. 무한정 늘어나 챗봇 입력창을 밀어내지 않도록
@@ -750,6 +759,30 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
+#low-vision-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
+/* v-low-vision-mode — 참가자(저시력) 지적: "확대 상태에서는 작품 전체와
+   조작 영역을 한눈에 확인하기 어렵다 / 확대와 음성 안내를 동시에
+   활용하는 과정이 불편하다." index.html과 동일한 이유·해법 — 브라우저
+   핀치줌 대신, 화면 자체는 고정된 채 글자·버튼만 커지는 전용 모드를
+   제공한다.
+   v-low-vision-tone-down — 참가자 지적: "글자 크기가 너무 큰 것은
+   아닌지?" 원래 약 1.5~1.7배로 키웠던 것을 index.html과 함께 약
+   1.25~1.3배로 낮췄다. */
+body.low-vision-mode #caption{font-size:clamp(1.1rem, 4vw, 1.45rem) !important;}
+body.low-vision-mode #focus-tag{font-size:1.2em !important;}
+body.low-vision-mode #top-controls button{
+    height:clamp(38px, 10vw, 48px) !important;
+    font-size:clamp(.8rem, 2.9vw, .92rem) !important;
+    padding-left:clamp(10px, 2.6vw, 15px) !important; padding-right:clamp(10px, 2.6vw, 15px) !important;
+}
+body.low-vision-mode #info-btn, body.low-vision-mode #chat-toggle{
+    width:clamp(38px, 10vw, 48px) !important;
+}
+body.low-vision-mode #hint-row .btn{
+    height:clamp(38px, 10vw, 48px) !important; min-height:clamp(38px, 10vw, 48px) !important;
+    font-size:clamp(.76rem, 2.7vw, .88rem) !important;
+    padding:0 clamp(10px, 2.8vw, 15px) !important;
+}
 #volume-control{
     height:36px; display:flex; align-items:center; gap:6px; padding:0 10px;
     border-radius:18px; background:rgba(0,0,0,.72); border:1px solid var(--gold-dim);
@@ -1054,6 +1087,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
      붙여도 안내 음성에는 영향이 없다. -->
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1.0x입니다">속도 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
+<button id="low-vision-btn" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="큰 글씨 모드, 현재 꺼짐">큰 글씨</button>
 <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
      기능."
      v91 — 참가자 요청: "배경음악이 커져서 방해가 되는 경우가 있으니,
@@ -1262,7 +1296,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 
 
 
-<div id="intro-gate" onclick="enterRoom()" role="button" tabindex="0" aria-label="침묵의 공명, 전시실 2 · 사유 및 체화, 몸으로 생각하기 — 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요. 화면을 한 번 터치하면 전시실로 입장합니다"
+<div id="intro-gate" onclick="enterRoom()" role="button" tabindex="0" aria-label="침묵의 공명, 전시실 2 · 사유 및 체화, 몸으로 생각하기 — 손끝으로 짚은 부위에 머무르며 마음으로 사유하고, 때로는 그 모습을 따라해 보세요. 궁금한 것은 언제든 챗봇에게 물어보세요. 이 전시는 화면 전체를 읽어주는 자체 음성 안내를 제공합니다. 스마트폰 스크린리더를 함께 켜두면 두 음성이 겹쳐 들릴 수 있으니, 스크린리더는 꺼두고 이용하시는 것을 권장합니다. 화면을 한 번 터치하면 전시실로 입장합니다"
      onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();enterRoom();}">
     <!-- v-intro-clip-fix — 세로 중앙 정렬(margin:auto)을 담당하는 안쪽
          래퍼. 위 #intro-gate CSS 주석 참고. -->
@@ -1312,7 +1346,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              입장되므로, 이 버튼도 event.stopPropagation()으로 그 클릭을
              먼저 막은 뒤 영문판 파일로 이동한다. -->
         <button class="btn" id="btn-lang-en" type="button"
-                aria-label="Switch to English version"
+                aria-label="영어 버전으로 전환합니다"
                 data-tap-name="영문 버전"
                 data-tap-action="영문 버전 화면으로 이동합니다"
                 onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2-en.html'">EN</button>
@@ -1503,7 +1537,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
              다시 들려준다(아래 함수 주석 참고) — 부위 해설 자막을 눌렀을
              때는 아무 일도 하지 않는다(부위 해설은 이미 "다시듣기" 버튼이
              따로 있다). -->
-        <div id="caption" role="status" aria-live="polite" onclick="onCaptionTap()">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
+        <div id="caption" role="status" aria-live="polite" onclick="onCaptionTap(event)">조각상의 특징적인 부분을 손끝으로 만지면, 그 부분의 이야기를 들려드립니다.</div>
         <div id="source-tag" aria-hidden="true"></div>
     </div>
     <div id="hint-row" role="group" aria-label="재생 및 이동 버튼 — 다시듣기, 수료증, 여일, 전시1">
@@ -2059,6 +2093,20 @@ function toggleBgm(){
     // 직접 방향에 맞는 문장을 읽는다.
     speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.');
 }
+// v-low-vision-mode — 참가자(저시력) 지적 대응: index.html과 동일한 이유로,
+// 브라우저 핀치줌 대신 화면 고정 레이아웃은 그대로 둔 채 글자·버튼만
+// 키우는 전용 모드.
+let lowVisionMode = false;
+function toggleLowVisionMode(){
+    lowVisionMode = !lowVisionMode;
+    document.body.classList.toggle('low-vision-mode', lowVisionMode);
+    const btn = document.getElementById('low-vision-btn');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(lowVisionMode));
+        btn.setAttribute('aria-label', lowVisionMode ? '큰 글씨 모드, 현재 켜짐' : '큰 글씨 모드, 현재 꺼짐');
+    }
+    speak(lowVisionMode ? '큰 글씨 모드를 켰습니다.' : '큰 글씨 모드를 껐습니다.');
+}
 // snd-arrival: 입장 직후 한 번만 차올랐다가, 첫 부위를 만지는 순간(또는
 // 가운데 빈 자리에 들어서는 순간) 조용히 사라지는 "도착"의 소리.
 let _arrivalStarted = false;
@@ -2295,81 +2343,99 @@ function _sanitizeForSpeech(text){
         .replace(/\s+/g, ' ')
         .trim();
 }
+// v-sentence-rewind-refactor — 지금 재생 중인 문장 목록·위치를 기억해둔다.
+// onCaptionTap()이 "문장 단위 되감기/앞으로" 트리거에 쓴다.
+let _curSentences = null, _curSentenceIdx = 0, _curSpeaker = null, _curOnEnd = null, _curCaptionEl = null;
+function _rewindOneSentence(){
+    if(!_curSentences || _curSentences.length <= 1 || _curSentenceIdx <= 0) return false;
+    const mySeq = ++_captionSeq;
+    window.speechSynthesis.cancel();
+    try{ hapticPulse('turn'); }catch(e){}
+    _speakSentenceQueueRoom2(_curSentences, _curSentenceIdx - 1, _curSpeaker, mySeq, _curCaptionEl, _curOnEnd);
+    return true;
+}
+function _advanceOneSentence(){
+    if(!_curSentences || _curSentences.length <= 1 || _curSentenceIdx >= _curSentences.length - 1) return false;
+    const mySeq = ++_captionSeq;
+    window.speechSynthesis.cancel();
+    try{ hapticPulse('turn'); }catch(e){}
+    _speakSentenceQueueRoom2(_curSentences, _curSentenceIdx + 1, _curSpeaker, mySeq, _curCaptionEl, _curOnEnd);
+    return true;
+}
+function _speakSentenceQueueRoom2(sentences, idx, speakerKey, mySeq, captionEl, onEnd){
+    if(mySeq !== _captionSeq) return;
+    _curSentences = sentences; _curSentenceIdx = idx; _curSpeaker = speakerKey;
+    _curOnEnd = onEnd; _curCaptionEl = captionEl;
+    if(idx >= sentences.length){
+        if(mySeq === _captionSeq && onEnd) onEnd();
+        return;
+    }
+    const raw = sentences[idx];
+    if(!raw){ _speakSentenceQueueRoom2(sentences, idx + 1, speakerKey, mySeq, captionEl, onEnd); return; }
+    if(captionEl) _setActiveCaptionSentence(captionEl, idx);
+    try{
+        const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(raw));
+        u.lang = 'ko-KR';
+        const _bestVoice = _pickBestKoreanVoice();
+        if(_bestVoice) u.voice = _bestVoice;
+        let basePitch, baseRateMult;
+        if(speakerKey === 'rodin'){ basePitch = 1.0; baseRateMult = 0.94; }
+        else if(speakerKey === 'maitreya'){ basePitch = 1.0; baseRateMult = 0.90; }
+        else { basePitch = 1.0; baseRateMult = 1.0; }
+        // v-more-natural-intonation(계속) — 이제 문장을 실제로 쪼개 개별
+        // 발화로 재생하므로, index.html처럼 문장 끝 문장부호에 따른
+        // 억양 변화도 자연스럽게 적용할 수 있다(예전엔 "쪼개면 캡션
+        // 동기화가 깨진다"는 이유로 발화 전체 단위의 흔들림만 줬었다).
+        const endsWithQuestion = /[?？]\s*$/.test(raw);
+        const endsWithExclaim = /[!！]\s*$/.test(raw);
+        const endsWithEllipsis = /[…]\s*$|\.\.\.\s*$/.test(raw);
+        let intonPitchMult = 1, intonRateMult = 1;
+        if(endsWithQuestion){ intonPitchMult = 1.06; intonRateMult = 0.98; }
+        else if(endsWithExclaim){ intonPitchMult = 1.04; intonRateMult = 1.05; }
+        else if(endsWithEllipsis){ intonRateMult = 0.92; }
+        const jitterRate = 1 + (Math.random() - 0.5) * 0.09;
+        const jitterPitch = 1 + (Math.random() - 0.5) * 0.07;
+        u.rate = TTS_RATE * baseRateMult * intonRateMult * jitterRate;
+        u.pitch = basePitch * intonPitchMult * jitterPitch;
+        u.volume = NARRATION_VOLUME;
+        let _done = false;
+        const proceed = ()=>{
+            if(_done) return;
+            _done = true;
+            if(mySeq !== _captionSeq) return;
+            // 문장 사이 짧은 정적 — index.html과 같은 값.
+            const endsFully = /[.!?…]\s*$/.test(raw);
+            const pause = idx < sentences.length - 1 ? (endsFully ? 150 : 80) : 0;
+            setTimeout(()=>{
+                if(mySeq === _captionSeq) _speakSentenceQueueRoom2(sentences, idx + 1, speakerKey, mySeq, captionEl, onEnd);
+            }, pause);
+        };
+        u.onend = proceed;
+        u.onerror = proceed;
+        window.speechSynthesis.speak(u);
+    }catch(e){
+        if(mySeq === _captionSeq) setTimeout(()=>_speakSentenceQueueRoom2(sentences, idx + 1, speakerKey, mySeq, captionEl, onEnd), 1200);
+    }
+}
 function speak(text, onEnd, speakerKey){
     _lastSpokenText = text;
     _lastSpokenSpeaker = speakerKey || null;
     try{
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(_sanitizeForSpeech(text));
-        u.lang = 'ko-KR';
-        const _bestVoice = _pickBestKoreanVoice();
-        if(_bestVoice) u.voice = _bestVoice;
-        // v-voice-match-room1(계속) — index.html과 완전히 같은 화자별
-        // 피치·속도 배수. 배속 버튼(TTS_RATE)은 여전히 전체 속도를
-        // 조절하고, 그 위에 화자별 상대적 빠르기 차이만 얹힌다.
-        let basePitch, baseRateMult;
-        // v-pitch-reference-match — index.html과 동일한 참가자 지적: "'전시실
-        // 2로 이동합니다' 음성이 좋다. 그 음성으로 바꿔달라." 그 발화는
-        // u.pitch를 건드리지 않아 브라우저 기본값(1.0)을 그대로 쓰는데,
-        // 그동안 이 함수는 "피치가 높다"는 지적을 따라 로댕(0.70)·
-        // 반가사유상(0.64)·기본(0.76)까지 계속 낮춰왔다. 참가자가 좋다고
-        // 느낀 건 더 낮춘 피치가 아니라 손대지 않은 원래 피치였다는
-        // 뜻이므로, index.html과 함께 세 값 모두 원복한다.
-        if(speakerKey === 'rodin'){ basePitch = 1.0; baseRateMult = 0.94; }
-        else if(speakerKey === 'maitreya'){ basePitch = 1.0; baseRateMult = 0.90; }
-        else { basePitch = 1.0; baseRateMult = 1.0; }
-        // v-voice-liveliness-match-room1 — "생동감 있는 억양"도
-        // index.html과 동일한 방식(사람의 말은 발화마다 속도·피치가
-        // 완벽히 같지 않다는 전제로, ±3~5% 안팎의 미세한 흔들림)으로
-        // 통일한다. room2는 caption 동기화(_pendingSentenceSync)가 이
-        // 발화 하나 전체의 boundary 이벤트를 기준으로 삼으므로,
-        // index.html처럼 문장 단위로 발화 자체를 쪼개지는 않고(그러면
-        // 아래 동기화가 깨진다) 이 발화 전체에 한 번 흔들림을 적용한다.
-        // v-more-natural-intonation — 참가자 지적: "목소리가 단조롭다, 좀
-        // 더 자연스러웠으면 좋겠다." room2는 발화 하나가 곧 부위 설명
-        // 전체(여러 문장)이므로 index.html처럼 문장 끝 문장부호에 따라
-        // 그때그때 피치를 바꿔줄 수는 없지만(그러면 캡션 동기화가
-        // 깨진다), 발화(부위 설명)마다 주는 무작위 흔들림의 폭을 넓혀서
-        // (±3~5%→±4.5~6%) 손끝이 다른 부위로 옮겨갈 때마다 목소리
-        // 톤·속도가 조금씩 달라지게 해 반복 재생에서 오는 단조로움을
-        // 줄인다.
-        const jitterRate = 1 + (Math.random() - 0.5) * 0.09;
-        const jitterPitch = 1 + (Math.random() - 0.5) * 0.07;
-        u.rate = TTS_RATE * baseRateMult * jitterRate;
-        u.pitch = basePitch * jitterPitch;
-        u.volume = NARRATION_VOLUME;
-        // v-caption-sync — 직전에 _displaySentencesTimed(text, ...)가 예약해둔
-        // 문장 목록과 같은 텍스트라면, 브라우저가 실제로 보고하는 낭독 위치
-        // (boundary 이벤트)로 자막 전환을 대신한다 — 위 _displaySentencesTimed
-        // 상단 주석 참고. 다른 텍스트를 speak()로 읽는 경우(예: 챗봇 답변
-        // 등)는 이 블록이 조용히 스킵되어 기존 동작과 같다.
+        let sentences, captionEl = null;
+        // v-caption-sync(계속) — 직전에 _displaySentencesTimed(text, ...)가
+        // 예약해둔 문장 목록·자막 요소가 같은 텍스트라면 그대로 재사용해,
+        // 문장 하나하나가 실제로 재생되는 순간 그 자막에 강조가 옮겨
+        // 붙도록 한다. 다른 텍스트를 speak()로 읽는 경우(짧은 안내 문구
+        // 등)는 자막 동기화 없이 문장별 발화만 순서대로 재생된다.
         if(_pendingSentenceSync && _pendingSentenceSync.text === text){
-            const sync = _pendingSentenceSync;
-            let currentIdx = 0;
-            u.addEventListener('boundary', (e)=>{
-                if(sync.seq !== _captionSeq) return; // 그 사이 다른 부위로 넘어갔다 — 낡은 동기화는 버린다
-                sync.boundaryActive = true; // 이제부터 위 추정 타이머는 물러서고 이 실측 갱신이 기준이 된다
-                let idx = 0;
-                for(let i = sync.offsets.length - 1; i >= 0; i--){
-                    if(e.charIndex >= sync.offsets[i]){ idx = i; break; }
-                }
-                if(idx !== currentIdx){
-                    currentIdx = idx;
-                    _setActiveCaptionSentence(sync.captionEl, idx);
-                }
-            });
+            sentences = _pendingSentenceSync.sentences;
+            captionEl = _pendingSentenceSync.captionEl;
+        } else {
+            sentences = splitToSentences(text);
         }
-        // 발화가 중간에 취소/중단돼도 onEnd가 호출되도록 onerror도 함께 처리한다
-        // (예: 다른 부위를 만져 speak()가 다시 호출되며 이전 발화가 취소되는 경우).
-        let _done = false;
-        const finish = ()=>{
-            if(_done) return;
-            _done = true;
-            if(onEnd) onEnd();
-        };
-        u.onend = finish;
-        u.onerror = finish;
-        window.speechSynthesis.speak(u);
+        const mySeq = ++_captionSeq;
+        _speakSentenceQueueRoom2(sentences, 0, speakerKey, mySeq, captionEl, onEnd);
     }catch(e){ if(onEnd) setTimeout(onEnd,1200); }
 }
 
@@ -2424,18 +2490,19 @@ function _sentenceOffsets(fullText, sentences){
 }
 
 let _captionSeq = 0;
-// v-caption-sync — 참가자 요청: "자막이 음성해설보다 늦게 나오지 않도록
-// 해줘." 아래 _displaySentencesTimed 하나만으로는 글자수 기반 추정
-// 타이머라서, 실제 TTS 속도가 추정치(CHARS_PER_SEC_AT_1X)보다 빠른
-// 음성 엔진에서는 자막이 늦게 따라오는 문제가 있었다. 그래서 이 함수는
-// "추정 타이머 예약"과 동시에, 방금 예약한 문장 목록·글자 위치를
-// _pendingSentenceSync에 남겨둔다. 바로 이어서 호출되는 speak()가 같은
-// 텍스트를 발화할 때 이 정보를 발견하면, 브라우저가 실제로 보고하는
-// 낭독 진행 위치(boundary 이벤트)를 기준으로 자막을 전환하도록
-// 대신한다 — 실측이라 추정과 달리 절대 음성보다 늦게 나오지 않는다.
-// boundary 이벤트를 지원하지 않는 음성 엔진(일부 모바일 브라우저)에서는
-// 이 실측 갱신이 한 번도 안 일어나므로, 아래 타이머가 안전망으로 그대로
-// 남아 기존과 동일하게 동작한다.
+// v-sentence-rewind-refactor — 참가자 요청: "다시듣기는 있지만 원하는
+// 부분으로 되돌아가는 되감기가 없다." index.html에는 이미 문장별로
+// 각각 개별 발화(SpeechSynthesisUtterance)를 만들어 순서대로 재생하는
+// 구조가 있어 "한 문장만 다시" 되감기가 자연스러웠다. room2는 지금까지
+// 한 부위 설명 전체를 하나의 발화로 통째로 읽고, boundary 이벤트(또는
+// 글자수 추정)로 "지금 몇 번째 문장인지"만 자막에 반영했다 — Web
+// Speech API는 재생 중인 발화의 특정 지점으로 "되감기"하는 기능 자체가
+// 없으므로, 이 구조로는 문장 단위 되감기가 원천적으로 불가능했다.
+// 아래부터 index.html과 같은 방식 — 문장 하나하나를 별도 발화로 순서대로
+// 재생 — 으로 바꾼다. 부수 효과로 문장 경계 자막 동기화가 추정이 아닌
+// 실제 재생 순서 그 자체가 되어 더 정확해지고, 예전에 "문장 단위로
+// 쪼개면 캡션 동기화가 깨진다"는 이유로 미뤄뒀던 문장별 억양 변화도
+// 이제 자연스럽게 적용할 수 있게 됐다.
 let _pendingSentenceSync = null;
 // v-tts-highlight-room2 — index.html과 동일한 실시간 문장 하이라이트.
 // 문장 전체를 <span data-sidx="i">로 감싸 한 번에 렌더링해두고, 이후
@@ -2455,8 +2522,12 @@ function _setActiveCaptionSentence(captionEl, idx){
     const next = captionEl.querySelector(`.tts-sentence[data-sidx="${idx}"]`);
     if(next) next.classList.add('tts-active');
 }
+// v-sentence-rewind-refactor — 이제 자막 전환은 아래 _speakSentenceQueueRoom2가
+// 문장을 실제로 말하기 "직전"에 정확히 실행하므로, 예전의 글자수 기반
+// 추정 타이머(setTimeout 여러 개 예약)는 더 이상 필요 없다 — 렌더링과
+// "다음에 쓸 문장 목록"만 남겨둔다.
 function _displaySentencesTimed(fullText, captionEl){
-    const mySeq = ++_captionSeq;
+    ++_captionSeq;
     if(!captionEl) return;
     const sentences = splitToSentences(fullText);
     if(sentences.length <= 1){
@@ -2466,25 +2537,7 @@ function _displaySentencesTimed(fullText, captionEl){
     }
     _renderCaptionSentences(captionEl, sentences);
     _setActiveCaptionSentence(captionEl, 0);
-    _pendingSentenceSync = {
-        text: fullText, sentences, captionEl, seq: mySeq,
-        offsets: _sentenceOffsets(fullText, sentences),
-        boundaryActive: false, // speak()가 boundary 이벤트를 한 번이라도 받으면 true로 바뀐다
-    };
-    const charsPerSec = Math.max(1, CHARS_PER_SEC_AT_1X * TTS_RATE);
-    let elapsed = Math.max(900, (sentences[0].length / charsPerSec) * 1000);
-    for(let i = 1; i < sentences.length; i++){
-        const sentence = sentences[i];
-        const delay = elapsed;
-        setTimeout(function(){
-            if(mySeq !== _captionSeq) return; // 그 사이 다른 부위로 넘어갔다 — 낡은 갱신은 버린다
-            // boundary 실측 갱신이 이미 이 문장(또는 그 이후)까지 진행시켰다면
-            // 추정 타이머는 아무 것도 하지 않는다 — 실측이 항상 우선한다.
-            if(_pendingSentenceSync && _pendingSentenceSync.seq === mySeq && _pendingSentenceSync.boundaryActive) return;
-            _setActiveCaptionSentence(captionEl, i);
-        }, delay);
-        elapsed += Math.max(900, (sentence.length / charsPerSec) * 1000);
-    }
+    _pendingSentenceSync = { text: fullText, sentences, captionEl };
 }
 
 // v-stop-caption-sync — 참가자 요청: "한 부위의 해설을 듣는 동안 두
@@ -6453,16 +6506,30 @@ function showChatAnswerInCaption(tag, text){
 // 들려준다. focus-tag가 "사유의 상담소"로 시작할 때만 동작하도록 스스로
 // 확인해, 부위 해설이나 두 조각상 사이 자막을 눌렀을 때는 아무 반응이
 // 없다(그런 자막에는 이미 "다시듣기" 버튼이 따로 있다).
-function onCaptionTap(){
+function onCaptionTap(e){
     const tag = document.getElementById('focus-tag').textContent || '';
     // v-ai-vs-narration-distinction — focus-tag 앞에 🤖 아이콘이 붙게 되어
     // 더 이상 '사유의 상담소'로 문자열이 시작하지 않으므로, indexOf(0)
     // 대신 포함 여부로 확인한다.
-    if(tag.indexOf('사유의 상담소') === -1) return;
-    const text = _lastSpokenText;
-    if(!text) return;
-    try{ hapticPulse('turn'); }catch(err){}
-    speak(text, null, _lastSpokenSpeaker);
+    if(tag.indexOf('사유의 상담소') !== -1){
+        const text = _lastSpokenText;
+        if(!text) return;
+        try{ hapticPulse('turn'); }catch(err){}
+        speak(text, null, _lastSpokenSpeaker);
+        return;
+    }
+    // v-sentence-rewind — 참가자 요청: "다시듣기는 있지만 원하는 부분으로
+    // 되돌아가는 되감기가 없어 처음부터 다시 들어야 하는 불편이 있다."
+    // 일반 부위 해설이 여러 문장으로 나뉘어 있을 때, 자막의 왼쪽을 탭하면
+    // 한 문장 뒤로, 오른쪽을 탭하면 한 문장 앞으로 이동한다 —
+    // index.html의 왼쪽=이전/오른쪽=다음 탭 관례와 같다.
+    if(_curSentences && _curSentences.length > 1 && e){
+        const rect = document.getElementById('caption').getBoundingClientRect();
+        const x = (e.clientX != null && e.clientX !== 0) ? e.clientX
+            : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : rect.left + rect.width / 2);
+        const isLeftHalf = x < rect.left + rect.width / 2;
+        if(isLeftHalf) _rewindOneSentence(); else _advanceOneSentence();
+    }
 }
 async function sendChat(e, overrideText, forceLLM){
     e.preventDefault();
@@ -7175,7 +7242,7 @@ function _exitInfoOneLevel(){
    실행된다. 다른 버튼을 누르면 무장 상태가 그 버튼으로 옮겨간다.
    ══════════════════════════════════════════════════════ */
 const TWOTAP_ARM_WINDOW_MS = 2500;
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn';
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 
