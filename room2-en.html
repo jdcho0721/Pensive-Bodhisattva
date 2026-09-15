@@ -1076,7 +1076,7 @@ body.low-vision-mode #hint-row .btn{
      prepending an icon to the text doesn't affect the announcement. -->
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences, currently off">Easy sentences</button>
-<button id="low-vision-btn" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="Large text mode, currently off">Large Text</button>
+<button class="btn" id="btn-low-vision" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="Large text mode, currently off">Large Text</button>
 <div id="volume-control" role="group" aria-label="Background music volume">
     <span aria-hidden="true">🔊</span>
     <input type="range" id="volume-slider" min="0" max="100" value="70" step="10"
