@@ -1503,7 +1503,7 @@ function enterRoom(){
     // 부가 문구는 빼고, 전시실 1의 이름이자 주제인 "조우"의 뜻풀이 한
     // 문장만 남겼다. 이어지는 두 조각상 소개(오리엔테이션)는 바로 다음
     // 단계(playLayer(0))에서 별도로 들려준다.
-    const gateText = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face. This exhibit provides its own complete spoken guidance for the whole screen. If your phone\u2019s screen reader is also on, the two voices may overlap and be hard to follow, so we recommend turning your screen reader off while using this exhibit.';
+    const gateText = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face.';
 
 // ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
 try{
@@ -3429,7 +3429,7 @@ function goToRoom2(e) {
         // .gate-hint 문구("화면을 한 번 터치하면...")는 빠져 있었다 —
         // 화면엔 보이는데 음성으로는 안 읽히던 부분이 바로 이거였다.
         // 화면에 실제로 보이는 문장을 그대로 이어붙였다.
-        const screenText = 'Resonance of Silence. A meeting between Rodin’s The Thinker and the National Treasure Pensive Bodhisattva; experience the resonance that carries from anguish to compassion. The viewing order is Room 1, Encounter, then Room 2, Contemplation and Embodiment. A thought that has not passed through the body is not yet a thought. Tap the screen once to enter the room. On each caption, tap the left area to go back, or the right area to move forward.';
+        const screenText = 'Resonance of Silence. A meeting between Rodin’s The Thinker and the National Treasure Pensive Bodhisattva; experience the resonance that carries from anguish to compassion. The viewing order is Room 1, Encounter, then Room 2, Contemplation and Embodiment. A thought that has not passed through the body is not yet a thought. Tap the screen once to enter the room. This exhibit provides its own complete spoken guidance for the whole screen. If your phone\u2019s screen reader is also on, the two voices may overlap and be hard to follow, so we recommend turning your screen reader off while using this exhibit. On each caption, tap the left area to go back, or the right area to move forward.';
         // v-remove-swipe-voice — 참가자 요청: "쓸어넘긴다는 내용은 음성
         // 해설에서 빼줘." 왼쪽/오른쪽 쓸어넘기기 문장을 지웠다. 위
         // screenText에서 이미 "한 번 터치하면 입장"·"왼쪽/오른쪽 영역
