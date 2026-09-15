@@ -844,21 +844,17 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
        row로 두면 카드와 버튼 줄이 옆으로 나란히 붙어버린다. */
     display:none; flex-direction:column; overflow-y:auto;
     padding:calc(60px + env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
-    /* v-cert-top-clip-fix — 참가자 지적: "여일에 들어가면 나오는 화면의
-       윗부분이 잘려서 안 보인다." / v-cert-top-clip-fix-2 — 참가자 지적:
-       "수료증의 윗부분이 짤려서 안 보인다." 두 차례 모두 align-items를
-       고쳐봤지만 실제로는 계속 잘렸다 — flex-direction:column인 컨테이너
-       에서 세로(메인축) 정렬을 담당하는 속성은 justify-content이고,
-       align-items는 가로(교차축) 정렬만 담당한다. 진짜 원인은 아래
-       justify-content:center였다: 내용이 화면보다 길어지면 가운데
-       정렬을 위해 카드 위쪽이 화면 위로 밀려나는데, 그쪽으로는
-       스크롤이 닿지 않는(위로 스크롤할 "공간" 자체가 없는) 잘 알려진
-       flexbox 동작이라 카드 맨 위가 항상 잘려 보였다. justify-content를
-       flex-start로 바꿔, 내용이 짧을 때는 화면 위쪽에 붙고 길 때는
-       위부터 순서대로 쌓여 스크롤로 전체를 다 볼 수 있게 한다.
-       align-items는 기본값(stretch)으로 두어도 #certificate-card가
-       width:100%를 명시하고 있어 가로 폭에는 변화가 없다. */
-    justify-content:flex-start;
+    /* v-cert-top-clip-fix — justify-content:flex-start (세로/메인축)를
+       유지해 내용이 길어질 때 카드 위쪽이 화면 밖으로 밀려 잘리지
+       않게 한다(위로 스크롤할 공간이 없는 flexbox 특성 때문).
+       v-cert-center-fix — 참가자 지적: "수료증 위치가 오른쪽으로
+       치우쳐 있다." align-items(가로/교차축)가 명시돼 있지 않아 기본값
+       (normal → 정의된 너비가 있는 아이템은 stretch가 적용되지 않고
+       시작 정렬로 남는 경우가 있다)에 의존하고 있었다 — 화면이 카드의
+       max-width(480px)보다 넓을 때 카드가 가운데로 오지 못하고 한쪽에
+       붙어 보이던 원인이다. align-items:center를 명시해 항상 화면
+       가로 중앙에 오게 한다. */
+    justify-content:flex-start; align-items:center;
 }
 #certificate-overlay.show{display:flex;}
 #certificate-card{
@@ -1214,7 +1210,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
             <p><b>[13]</b> E. Conze, Buddhist Wisdom: The Diamond Sutra and The Heart Sutra, Vintage, New York, 2001.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()">닫기</button>
+        <button id="info-close" onclick="closeInfo()" data-tap-name="닫기" data-tap-action="정보 창을 닫고 전시 화면으로 돌아갑니다">닫기</button>
     </div>
 </div>
 <!-- v47 — "여일" 수료증: 지금까지 만진 부위 기록(visited Set)을 근거로
@@ -1318,6 +1314,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
         <button class="btn" id="btn-lang-en" type="button"
                 aria-label="Switch to English version"
                 data-tap-name="영문 버전"
+                data-tap-action="영문 버전 화면으로 이동합니다"
                 onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2-en.html'">EN</button>
     </div>
     </div>

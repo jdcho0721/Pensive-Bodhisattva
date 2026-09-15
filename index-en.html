@@ -3194,7 +3194,16 @@ function goToRoom2(e) {
     // 이미 시간이 지나버려 확인되지 않는, 앞서 게이트 버튼에서 고쳤던
     // 것과 같은 유형의 문제가 생긴다. 게이트와 동일하게, 시간 제한 없이
     // "같은 버튼을 다시 눌렀는지"만으로 확인하도록 통일한다.
-    const TWO_PRESS_CONFIRM_IDS = ['btn-exit'];
+    // v-all-buttons-twotap — participant request: "for all buttons, after
+    // the first tap's name/description, a second tap should execute the
+    // action along with execution-related voice narration and a
+    // vibration signifying execution." All three already had
+    // data-tap-action (execution voice) — they just weren't in this list,
+    // so they took the "execute on first tap" path instead. Toggle-style
+    // controls (speed, easy sentences, background music, language) stay
+    // excluded, matching room2.html's TWOTAP_HANDS_OFF_SELECTOR — only
+    // buttons whose result is hard to undo or worth confirming are added.
+    const TWO_PRESS_CONFIRM_IDS = ['btn-exit', 'btn-replay', 'btn-pause', 'refs-toggle-btn'];
     function isNextExhibitBtn(el){ return !!(el && TWO_PRESS_CONFIRM_IDS.includes(el.id)); }
 
     function handlePointerUp(x, y, upTarget){

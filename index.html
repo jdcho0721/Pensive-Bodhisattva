@@ -3255,7 +3255,17 @@ function goToRoom2(e) {
     // 이미 시간이 지나버려 확인되지 않는, 앞서 게이트 버튼에서 고쳤던
     // 것과 같은 유형의 문제가 생긴다. 게이트와 동일하게, 시간 제한 없이
     // "같은 버튼을 다시 눌렀는지"만으로 확인하도록 통일한다.
-    const TWO_PRESS_CONFIRM_IDS = ['btn-exit'];
+    // v-all-buttons-twotap — 참가자 요청: "모든 버튼에 대해서 최초 클릭 후
+    // 나오는 버튼 설명 후에 한 번 더 누르면 실행되면서 실행에 관련된
+    // 음성해설을, 실행을 의미하는 진동과 함께 넣어달라." 세 버튼
+    // 모두 이미 data-tap-action(실행 음성)까지 갖고 있었지만, 정작 이
+    // 목록에 없어 "한 번 탭에 곧바로 실행"(v-direct-tap) 경로를 타고
+    // 있었다 — 즉 인프라는 있는데 연결만 안 돼 있었다. 다만 속도·쉬운
+    // 문장·배경음악·언어 전환처럼 "즉시 반응이 자연스러운 토글"은
+    // room2.html의 TWOTAP_HANDS_OFF_SELECTOR와 같은 이유로 제외하고,
+    // 결과가 되돌리기 어렵거나(재생 중단, 참고문헌 목록 열기 등) 확인이
+    // 유의미한 버튼만 넣는다.
+    const TWO_PRESS_CONFIRM_IDS = ['btn-exit', 'btn-replay', 'btn-pause', 'refs-toggle-btn'];
     function isNextExhibitBtn(el){ return !!(el && TWO_PRESS_CONFIRM_IDS.includes(el.id)); }
 
     function handlePointerUp(x, y, upTarget){
