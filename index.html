@@ -3572,12 +3572,28 @@ function goToRoom2(e) {
             speak(screenText, function(){
                 if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
                 speak(msg, function remind(){
-                    setTimeout(function again(){
-                        if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                        speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', function(){
-                            setTimeout(again, 8000);
-                        });
-                    }, 6000);
+                    // v-gate-reminder-too-frequent — 참가자 지적: "'화면
+                    // 아무곳이나 한번 두드리면~' 이 안내가 해설 중에 자주
+                    // 튀어나온다." 이 리마인더는 입장 전(게이트 화면)에만
+                    // 나가야 정상이고, isGateShowing() 확인도 이미 있었지만,
+                    // 6초 뒤 → 8초마다 무한 반복은 그 확인을 통과하는 짧은
+                    // 순간에도 너무 자주 다시 끼어들 기회를 준다 — 특히 이
+                    // 리마인더도 공용 speak()를 쓰므로, 그 순간 다른 안내가
+                    // 나가고 있었다면 speak() 내부의 cancel()이 그것을
+                    // 끊고 이 문장으로 덮어써 버린다. 반복 자체를 최대
+                    // 2번으로 제한하고, 간격도 6~8초에서 20초로 늘려 훨씬
+                    // 뜸하게 만든다 — 안내가 필요한 경우엔 여전히 나가지만,
+                    // 몇 번이고 끼어드는 느낌은 없앤다.
+                    let remindCount = 0;
+                    const MAX_REMINDS = 2;
+                    (function again(){
+                        if(remindCount >= MAX_REMINDS) return;
+                        setTimeout(function(){
+                            if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
+                            remindCount++;
+                            speak('화면 아무 곳이나 한 번 두드리면 입장합니다.', again);
+                        }, 20000);
+                    })();
                 });
             });
         }catch(err){}

@@ -3538,12 +3538,21 @@ function goToRoom2(e) {
             speak(screenText, function(){
                 if(!isGateShowing()) return; // 그 사이 이미 입장했으면 조작법 안내는 생략
                 speak(msg, function remind(){
-                    setTimeout(function again(){
-                        if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
-                        speak('Tap anywhere on the screen once to enter.', function(){
-                            setTimeout(again, 8000);
-                        });
-                    }, 6000);
+                    // v-gate-reminder-too-frequent — participant report:
+                    // "'Tap anywhere on the screen...' keeps popping up
+                    // often during the narration." Capped the repeat
+                    // count at 2 and widened the interval from 6-8s to
+                    // 20s, matching the same fix in index.html.
+                    let remindCount = 0;
+                    const MAX_REMINDS = 2;
+                    (function again(){
+                        if(remindCount >= MAX_REMINDS) return;
+                        setTimeout(function(){
+                            if(!isGateShowing()) return; // 이미 시작했으면 더 이상 안내하지 않는다
+                            remindCount++;
+                            speak('Tap anywhere on the screen once to enter.', again);
+                        }, 20000);
+                    })();
                 });
             });
         }catch(err){}

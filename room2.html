@@ -269,8 +269,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    #stage's sibling rather than its child (see body markup) — makes it
    take its own small row in the #room-layout column, directly between
    the image and the caption box, with zero overlap on any screen. */
+/* v-top-bar-more-gap — participant request: "move the exploration bar's
+   position down a bit more so it doesn't cover the bottom of the
+   image, and move the chat button up a bit more." Even as a
+   non-overlapping flow row, 14px felt too close to the image edge;
+   widened the gap further. */
 #top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
-    padding:4px 10px; margin-top:14px; flex:0 0 auto; z-index:5;}
+    padding:4px 10px; margin-top:26px; flex:0 0 auto; z-index:5;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -459,11 +464,12 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    커지는 환경에서 안의 아이콘이 원 밖으로 잘려나갔다. 고정 크기 대신
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(172px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;right:16px;bottom:calc(198px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-nudge-up — participant request: "move the chat button
-   up a bit." Raised bottom from 150px to 172px. */
+   up a bit." Raised bottom from 150px to 172px, then further to 198px
+   per a follow-up request to move it up a bit more still. */
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
    다리가 잘리면... 사유의 방 버튼을 내려서 맞춰달라. 버튼 크기도 좀
    줄여달라." bottom을 182px → 150px로 내리고, 52px → 44px(WCAG 2.5.5
