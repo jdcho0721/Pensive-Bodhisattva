@@ -1369,7 +1369,11 @@ let easyMode = false;
 
 let autoTimer = null;   
 let speechGen = 0;      
-const LINE_PAUSE_MS  = 120;  // v-line-pause-shorten-3 — participant report: "waiting for the automatic transition to the next caption feels too long / boring." Cut further from 500ms to 250ms.
+const LINE_PAUSE_MS  = 80;  // v-line-pause-shorten-3 — participant report: "waiting for the automatic transition to the next caption feels too long / boring." Cut further from 500ms to 250ms.
+// v-en-transition-too-slow — participant report: "the sentence-to-sentence
+// transition feels long in the English version." Along with easing
+// EN_RATE_ADJUST above, shortened this gap further (120ms → 80ms) since it
+// stacks with every single-sentence transition.
 const LAYER_PAUSE_MS = 350;   // v-page-pause-shorten-2 — 참가자 요청: "페이지 넘어가는 게 너무 늦다." 한 단계(레이어/턴 = "페이지")가 끝난 뒤 다음 단계로 자동 전환되기까지의 대기시간을 800ms → 350ms로 줄였다. 이 값은 항상 speak()의 onEnd(음성이 실제로 끝난 시점) 콜백 이후에만 시작되므로, 음성이 끝나기 전에 페이지가 넘어가는 일은 없다 — 그 뒤에 붙는 여백만 줄인 것이다. 문장 사이 여백(LINE_PAUSE_MS)은 가독성 이유로 그대로 둔다 — 이건 "단계 전환" 속도만 다룬다.
 
 const captionEl = document.getElementById('caption');
@@ -1988,7 +1992,15 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     // was tuned against), so apply a small English-only correction factor
     // on top of the visible Speed button's steps, without changing what
     // the button itself displays (still "Speed 1.0x" etc.).
-    const EN_RATE_ADJUST = 0.85;
+    // v-en-transition-too-slow — participant report (index-en.html):
+    // "the wait between one caption and the next is too long." The next
+    // sentence only starts once this utterance's onEnd fires (plus the
+    // short LINE_PAUSE_MS gap), so the 0.85x slowdown above was stacking
+    // with already-longer English sentences and making every transition
+    // feel sluggish. Eased the correction back toward 1x (0.85 → 0.97) —
+    // still slightly gentler than the raw Korean-tuned rate, but no longer
+    // the dominant cause of a slow-feeling transition.
+    const EN_RATE_ADJUST = 0.97;
     u.rate = TTS_RATE * EN_RATE_ADJUST * baseRateMult;
     // v-more-natural-intonation — participant note: "the voice sounds
     // monotonous, it'd be nice if it were more natural." The Web Speech
@@ -3560,6 +3572,69 @@ function goToRoom2(e) {
         }catch(err){}
         timer = setTimeout(disarm, ARM_MS);
     }, true); // 캡처 단계 — 버튼의 onclick(버블 단계)보다 먼저 가로챈다
+})();
+
+/* ══════════════════════════════════════════════════════
+   v-lang-btn-twotap — participant request: "the KO button should
+   work like other buttons: one tap explains it, a second tap moves
+   with vibration and an execution announcement." Same mechanism as
+   #btn-next-exhibit right above, attached only to the KO button — the
+   first tap blocks navigation and only announces the name; a second
+   tap on the same button within 2.5s vibrates, speaks "Moves to the
+   Korean version screen." to completion, then navigates. This
+   listener reacts only to #btn-lang-ko and returns immediately
+   otherwise, so no other button's behavior is touched.
+   ══════════════════════════════════════════════════════ */
+(function(){
+    const btn = document.getElementById('btn-lang-ko');
+    if(!btn) return;
+    const ARM_MS = 2500;
+    let armed = false, timer = null;
+    function disarm(){
+        armed = false;
+        btn.classList.remove('control-armed');
+        clearTimeout(timer);
+    }
+    document.addEventListener('click', function(e){
+        if(e.target !== btn) return; // not this button — leave it alone
+        if(armed){
+            // Second tap — confirmed. Vibrate, speak "Moves to the Korean
+            // version screen." to completion (same onend/onerror/watchdog
+            // triple safety net as #btn-next-exhibit above), then navigate.
+            e.preventDefault(); e.stopImmediatePropagation();
+            disarm();
+            try{ hapticPulse('exit'); }catch(err){}
+            speechGen++; // invalidate any background narration still in flight
+            window.speechSynthesis.cancel();
+            let _navigated = false;
+            const go = function(){
+                if(_navigated) return;
+                _navigated = true;
+                location.href='index.html';
+            };
+            try{
+                const u = new SpeechSynthesisUtterance('Moves to the Korean version screen.');
+                u.lang = 'en-US';
+                const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
+                if(_v) u.voice = _v;
+                u.onend = go;
+                u.onerror = go;
+                window.speechSynthesis.speak(u);
+                setTimeout(go, 3500); // watchdog — final safety net if no event fires
+            }catch(err){ go(); }
+            return;
+        }
+        // First tap — block navigation, arm the button, announce its name only.
+        e.preventDefault(); e.stopImmediatePropagation();
+        armed = true;
+        btn.classList.add('control-armed');
+        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+        try{
+            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Korean version').trim();
+            speak('This is the ' + cleanName + ' button.');
+        }catch(err){}
+        timer = setTimeout(disarm, ARM_MS);
+    }, true); // capture phase — intercepts before the button's own onclick (bubble phase)
 })();
 
 </script>

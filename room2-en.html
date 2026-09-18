@@ -239,7 +239,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
    위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
    버튼과 화면 좌우로 확실히 떨어지게 한다. */
-#top-bar{position:absolute; left:0; right:0; bottom:8px; width:100%;display:flex;justify-content:flex-start;align-items:center;
+/* v-top-bar-overlap-fix — participant report: "the exploration
+   gauge overlaps the image." At the bottom edge, this pill could sit
+   over the lowest hotspots (both statues' feet, top:77~86%), making
+   them hard to tap on short viewports. No hotspot starts before 11%
+   from the top, so anchoring this bar to the TOP of the stage instead
+   keeps the same "doesn't take its own flex row, just floats over a
+   quiet corner of the image" behavior while clearing every hotspot. */
+#top-bar{position:absolute; left:0; right:0; top:calc(6px + env(safe-area-inset-top)); width:100%;display:flex;justify-content:flex-start;align-items:center;
     padding:0 10px;z-index:20; pointer-events:none;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
@@ -1115,7 +1122,6 @@ body.low-vision-mode #hint-row .btn{
         <h3>Exhibition Introduction</h3>
         <p class="label">A tactile and voice-interactive exhibition for the blind and hearing-impaired: Resonance of Silence</p>
         <p>An exhibition for everyone, touching the statues — a dialogue between two statues completed by fingertip: the Pensive Bodhisattva and The Thinker.</p>
-        <p>An exhibition completed by fingertip and ear, beyond the eye. Meet National Treasure No. 83, the Gilt-Bronze Pensive Bodhisattva (Maitreya), and Rodin's The Thinker, through smaller-than-life tactile replicas and tactile and voice narration.</p>
         <p class="label">Exhibition Dates and Venue</p>
         <p>Sep 10 (Thu)–Sep 12 (Sat), 2026, World Heritage Industry Expo · Gyeongju HICO Convention Center<br>Sep 20 (Sun)–Sep 21 (Mon), 2nd floor lobby, National Assembly Members' Office Building</p>
 
@@ -1281,6 +1287,7 @@ body.low-vision-mode #hint-row .btn{
         <button class="btn" id="btn-lang-ko" type="button"
                 aria-label="Switches to the Korean version"
                 data-tap-name="Korean version"
+                data-tap-action="Moves to the Korean version screen."
                 onclick="event.stopPropagation();window.speechSynthesis.cancel();location.href='room2.html'">KO</button>
     </div>
     </div>

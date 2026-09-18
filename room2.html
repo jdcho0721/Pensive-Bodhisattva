@@ -238,7 +238,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
    위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
    버튼과 화면 좌우로 확실히 떨어지게 한다. */
-#top-bar{position:absolute; left:0; right:0; bottom:8px; width:100%;display:flex;justify-content:flex-start;align-items:center;
+/* v-top-bar-overlap-fix — participant report: "the exploration
+   gauge overlaps the image." At the bottom edge, this pill could sit
+   over the lowest hotspots (both statues' feet, top:77~86%), making
+   them hard to tap on short viewports. No hotspot starts before 11%
+   from the top, so anchoring this bar to the TOP of the stage instead
+   keeps the same "doesn't take its own flex row, just floats over a
+   quiet corner of the image" behavior while clearing every hotspot. */
+#top-bar{position:absolute; left:0; right:0; top:calc(6px + env(safe-area-inset-top)); width:100%;display:flex;justify-content:flex-start;align-items:center;
     padding:0 10px;z-index:20; pointer-events:none;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
@@ -1140,7 +1147,6 @@ body.low-vision-mode #hint-row .btn{
         <h3>전시소개</h3>
         <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
         <p>모두를 위한 전시, 조각상을 만지다 — 손끝으로 완성하는 두 조각상의 대화, 반가사유상과 생각하는 사람.</p>
-        <p>눈을 넘어서 손끝과 귀로 완성하는 전시입니다. 국보 83호 금동미륵보살반가사유상과 로댕의 &lt;생각하는 사람&gt;을, 실물보다 작은 촉각 복제품과 촉각 및 음성 해설로 만나 보세요.</p>
         <p class="label">전시 일정 및 장소</p>
         <p>9.10(목)–9.12(토) 2026 세계국가유산산업전 · 경주화백컨벤션센터<br>9.20(일)–9.21(월) 국회의원회관 2층 로비</p>
 
