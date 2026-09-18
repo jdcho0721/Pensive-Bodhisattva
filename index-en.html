@@ -983,11 +983,11 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     <div class="gate-route" role="group" aria-label="Viewing order">
         <span class="gate-route-title">Viewing Order</span>
         <button type="button" class="gate-route-item" id="gate-route-room1"
-                data-tap-name="Room 1, Encounter"
-                aria-label="Switches to Room 1, Encounter">Room 1 · Encounter</button>
+                onclick="event.stopPropagation(); try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}; enterRoom();"
+                aria-label="Enters Room 1, Encounter">Room 1 · Encounter</button>
         <button type="button" class="gate-route-item" id="gate-route-room2"
-                data-tap-name="Room 2, Contemplation and Embodiment"
-                aria-label="Switches to Room 2, Contemplation and Embodiment">Room 2 · Contemplation and Embodiment</button>
+                onclick="event.stopPropagation(); try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){} speechGen++; window.speechSynthesis.cancel(); location.href='room2-en.html';"
+                aria-label="Moves to Room 2, Contemplation and Embodiment">Room 2 · Contemplation and Embodiment</button>
     </div>
 
     <p class="gate-epigraph">A thought that has not passed through the body is not yet a thought.</p>
@@ -3459,7 +3459,13 @@ function goToRoom2(e) {
                 // 원래 onclick에 맡기고(중복 호출 방지), 그 외 화면 어디를
                 // 두드리면 한 번에 곧장 입장한다(handleGateScreenTap — 위
                 // v-gate-single-tap 참고).
-                if(target && target.closest && target.closest('.btn')) return;
+                // v-gate-route-talkback-format — #gate-route-room1/2
+                // (class="gate-route-item") are now real buttons that
+                // execute directly via their own onclick, so they must
+                // be excluded here alongside .btn — otherwise tapping
+                // them falls through to handleGateScreenTap() (always
+                // entering Room 1) instead of running their own onclick.
+                if(target && target.closest && target.closest('.btn, .gate-route-item')) return;
                 suppressNextClick = true;
                 try{ hapticPulse('turn'); }catch(err){}
                 try{ handleGateScreenTap(); }catch(err){}
@@ -3738,101 +3744,20 @@ function goToRoom2(e) {
 })();
 
 /* ══════════════════════════════════════════════════════
-   v-gate-route-room2-twotap — participant request: "make Room 1
-   Encounter and Room 2 Contemplation & Embodiment buttons on the first
-   screen." The new #gate-route-room2 button gets the same confirm flow
-   as #btn-next-exhibit right above, going to the same destination
-   (room2-en.html) with the same voice line and haptic pattern.
-   v-gate-route-room1-twotap — follow-up participant request: "Room 1
-   Encounter should also enter on press, the same way as the other
-   room-transition buttons." It originally just re-ran the same
-   already-immediate "tap anywhere to enter" action; the participant
-   instead wanted the same "first tap names it, second tap vibrates and
-   executes" flow as #gate-route-room2 below — the two IIFEs below
-   react independently to #gate-route-room1 and #gate-route-room2.
+   v-gate-route-talkback-format — participant request: "clicking Room 1
+   in the viewing order should enter Room 1, and clicking Room 2 should
+   move to Room 2 — in TalkBack format." Replaced the app's own "tap
+   the same button twice at the same spot" confirm flow (used just
+   above) with the standard behavior screen readers like TalkBack
+   expect: swipe to move focus, then double-tap anywhere on screen to
+   activate — one activation, one action. That flow has no way to know
+   a button is "armed" (focus and activation are separate gestures), so
+   requiring a second confirming tap only gets in the way. Removed the
+   dedicated two-tap IIFEs for both buttons; the onclick attributes in
+   the HTML above now run immediately on click. aria-label is still in
+   place, so screen readers still announce the name correctly when
+   focus lands on them.
    ══════════════════════════════════════════════════════ */
-(function(){
-    const btn = document.getElementById('gate-route-room2');
-    if(!btn) return;
-    const ARM_MS = 2500;
-    let armed = false, timer = null;
-    function disarm(){
-        armed = false;
-        btn.classList.remove('control-armed');
-        clearTimeout(timer);
-    }
-    document.addEventListener('click', function(e){
-        if(e.target !== btn) return;
-        if(armed){
-            e.preventDefault(); e.stopImmediatePropagation();
-            disarm();
-            try{ hapticPulse('exit'); }catch(err){}
-            speechGen++;
-            window.speechSynthesis.cancel();
-            let _navigated = false;
-            const go = function(){
-                if(_navigated) return;
-                _navigated = true;
-                location.href='room2-en.html';
-            };
-            try{
-                const u = new SpeechSynthesisUtterance('Moving to Room 2.');
-                u.lang = 'en-US';
-                const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
-                if(_v) u.voice = _v;
-                u.onend = go;
-                u.onerror = go;
-                window.speechSynthesis.speak(u);
-                setTimeout(go, 3500);
-            }catch(err){ go(); }
-            return;
-        }
-        e.preventDefault(); e.stopImmediatePropagation();
-        armed = true;
-        btn.classList.add('control-armed');
-        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
-        try{
-            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 2').trim();
-            speak('This is the ' + cleanName + ' button.');
-        }catch(err){}
-        timer = setTimeout(disarm, ARM_MS);
-    }, true);
-})();
-
-(function(){
-    const btn = document.getElementById('gate-route-room1');
-    if(!btn) return;
-    const ARM_MS = 2500;
-    let armed = false, timer = null;
-    function disarm(){
-        armed = false;
-        btn.classList.remove('control-armed');
-        clearTimeout(timer);
-    }
-    document.addEventListener('click', function(e){
-        if(e.target !== btn) return;
-        if(armed){
-            // Second tap — confirmed. This enters the same page (no
-            // navigation), so no separate confirmation utterance is
-            // spoken — enterRoom() itself already announces "Room 1,
-            // Encounter."
-            e.preventDefault(); e.stopImmediatePropagation();
-            disarm();
-            try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
-            enterRoom();
-            return;
-        }
-        e.preventDefault(); e.stopImmediatePropagation();
-        armed = true;
-        btn.classList.add('control-armed');
-        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
-        try{
-            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 1').trim();
-            speak('This is the ' + cleanName + ' button.');
-        }catch(err){}
-        timer = setTimeout(disarm, ARM_MS);
-    }, true);
-})();
 
 </script>
 </body>
