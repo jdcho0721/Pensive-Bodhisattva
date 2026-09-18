@@ -190,7 +190,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    들어가기 쉬웠다.
    해결도 동일하게, 침범하는 쪽(주먹)의 여유 영역만 줄인다 — 좌표·다른
    핫스팟은 그대로 둔다. */
-#rodin-fist::before{ inset: -5px; }
+/* v-rodin-fist-hard-to-tap — follow-up participant report: "the chin-
+   resting fist hotspot doesn't register." Shrinking all four sides
+   equally above made the fist's already-small (7%x6%) touch area fall
+   well short of the WCAG minimum on many viewports — the overlap only
+   ever happened on the side facing the forehead. Splitting inset by
+   side (narrow only on top, full -16px elsewhere) keeps the forehead
+   free of overlap while restoring generous touch area on the other
+   three sides. */
+#rodin-fist::before{ inset: -5px -16px -16px -16px; }
 .hotspot:hover,.hotspot:focus-visible{background:rgba(212,175,55,.14);}
 .hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 .hotspot.visited{background:rgba(212,175,55,.05);}
@@ -260,24 +268,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
    위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
    버튼과 화면 좌우로 확실히 떨어지게 한다. */
-/* v-top-bar-below-image — participant request: "put the exploration
-   gauge right below the image." The earlier absolute-positioned
-   versions (bottom, then top) always floated over some part of the
-   image and risked covering a hotspot on short viewports. Restoring
-   this to a plain, non-absolute flex child — placed in the HTML as
-   #stage's sibling rather than its child (see body markup) — makes it
-   take its own small row in the #room-layout column, directly between
-   the image and the caption box, with zero overlap on any screen. */
-/* v-chat-toggle-overlap-fix — participant report: "the bottom part of
-   Room 2's image isn't visible. The exploration bar and chat button
-   need to move down so it shows." Root cause: #chat-toggle is
-   position:fixed, independent of the flex flow — the earlier "move it
-   up" request kept raising it further up the screen until, on shorter
-   viewports, it started floating over the lower part of the image
-   itself rather than sitting below it. Moving both back down frees
-   that space back to the image. */
-#top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
-    padding:4px 10px; margin-top:20px; flex:0 0 auto; z-index:5;}
+/* v-top-bar-overlay-root-cause-fix — participant report: legs/feet
+   showing as black background, exploration bar needs to move down,
+   image can be raised. Root cause and fix explained in the matching
+   HTML comment above #top-bar — restoring this to an absolute overlay
+   on #stage realigns the CSS with what fitHotspotLayer()'s enlargement
+   math has assumed all along. Placed toward the bottom, with clearance
+   from the lowest hotspots (toes, 80-86%). */
+#top-bar{position:absolute; left:0; right:0; bottom:calc(6px + env(safe-area-inset-bottom));
+    width:100%; display:flex; justify-content:center; align-items:center;
+    padding:4px 10px; z-index:5; pointer-events:none;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -405,10 +405,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
      min-height:44px; /* WCAG 2.5.5 — 스마트폰에서 손가락으로 정확히 누르기 위한 최소 터치 영역 */
      display:inline-flex;align-items:center;justify-content:center;
      font-size:.85rem;padding:9px 18px;border-radius:24px;cursor:pointer;white-space:normal;word-break:keep-all;}
-/* v90 — 참가자 요청: "전시실2 각 화면 아래에 있는 4가지 버튼(다시듣기·
-   수료증·여일·전시1)의 폰트크기가 크니 좀 작게 해달라." 패딩·높이·
-   모양은 그대로 두고 글자 크기만 줄인다. */
-#hint-row .btn{padding:8px 10px;font-size:.7rem;min-width:0;white-space:nowrap;}
+/* v91 — participant request: "make the Replay/Certificate/Serenity/
+   Room1 buttons a bit smaller — the same font size as the Speed button
+   above." Matched to #speed-btn's .66rem (previously .7rem from v90). */
+#hint-row .btn{padding:8px 10px;font-size:.66rem;min-width:0;white-space:nowrap;}
 
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 /* v-yeoil-exhibit1-btn-white — participant request: "change the Room 1
@@ -1433,14 +1433,20 @@ body.low-vision-mode #hint-row .btn{
          style="top:80%; left:72%; width:9%; height:6%;" aria-label="반가사유상 — 발가락"></div>
     </div>
 
-</div>
-
-<!-- v-top-bar-below-image — participant request: "put the exploration
-     gauge right below the image." Moved out of #stage to be its plain
-     sibling here, so it takes its own small row in #room-layout,
-     directly under the image and above the caption box — see the CSS
-     comment on #top-bar for why this replaces the earlier
-     absolute-positioned (bottom-, then top-anchored) versions. -->
+<!-- v-top-bar-overlay-root-cause-fix — participant report: "the
+     statue's legs and feet in the image are black and not visible.
+     The exploration bar needs to move down. The image can be raised
+     up a bit." Root cause: fitHotspotLayer()'s 1.3x enlargement math
+     below was written assuming "#top-bar is an overlay on #stage, so
+     it takes no flex space" (see the v-back-to-full-zoom comment
+     there), but the CSS had since moved #top-bar back to its own flow
+     row below the image. That shrank the image's actual available
+     height (ch) below what the math assumed, and the shortfall showed
+     up exactly at the bottom of the enlarged image (legs/feet) as
+     background showing through. Restoring #top-bar as an absolute
+     overlay inside #stage realigns the assumption with the real
+     structure — placed toward the bottom per the request, but with
+     enough clearance from the lowest hotspots (toes, 80-86%). -->
 <div id="top-bar">
     <div class="pill" id="progress-pill" aria-hidden="true">
         <span id="progress-count">Explored 0/11</span>
@@ -1457,6 +1463,8 @@ body.low-vision-mode #hint-row .btn{
          볼 수 없어 동일한 정보를 얻지 못했다 — 아래 sr-only 리전이 그
          정보를 텍스트로 대신 전달한다(updateProgress()에서 갱신). -->
     <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
+</div>
+
 </div>
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
@@ -1632,7 +1640,7 @@ function fitHotspotLayer(){
     // 만큼 이미지가 쓸 수 있는 세로 공간(ch)이 커졌고, 아래에서
     // #chat-toggle도 아래로 내리고 크기를 줄여 겹침 여지를 더 줄인다.
     const topControls = document.getElementById('top-controls');
-    const TOP_GAP = 14; // 버튼줄 바로 아래 추가 여유(위치 하한에서만 사용)
+    const TOP_GAP = 6; // v-top-bar-overlay-root-cause-fix — participant request: "the image can be raised up a bit." Reduced from 14px to give the image a bit more room to shift up when legs/feet would otherwise be clipped.
     const TOP_CLEARANCE = topControls ? (topControls.getBoundingClientRect().bottom + TOP_GAP) : 60;
     const _easyBtnForShift = document.getElementById('easy-mode-btn');
     const _imageDownShift = (_easyBtnForShift ? _easyBtnForShift.getBoundingClientRect().height : 36) / 2;
@@ -2663,7 +2671,7 @@ function _processTouch(key){
     visited.add(key);
     updateProgress();
 
-    document.getElementById('focus-tag').textContent = '🗿 You are touching — ' + d.title;
+    document.getElementById('focus-tag').textContent = 'You are touching — ' + d.title;
     // v-ai-vs-narration-distinction — back to scripted narration, so if the
     // previous caption was an AI answer/synthesis, clear that indicator
     // (blue border) now.

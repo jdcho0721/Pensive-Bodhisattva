@@ -190,8 +190,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    안팎으로 원래도 얇아서, 이마 한가운데를 짚어도 그 침범 범위 안에
    들어가기 쉬웠다.
    해결도 동일하게, 침범하는 쪽(주먹)의 여유 영역만 줄인다 — 좌표·다른
-   핫스팟은 그대로 둔다. */
-#rodin-fist::before{ inset: -5px; }
+   핫스팟은 그대로 둔다.
+   v-rodin-fist-hard-to-tap — 후속 참가자 지적: "턱을 괸 부분 핫스팟이
+   안 잡힌다." 위에서 사방을 -5px로 균등하게 줄인 탓에, 원래 7%×6%로
+   작았던 주먹의 실제 터치 영역이 뷰포트에 따라 WCAG 최소 터치 크기
+   (44px)에 크게 못 미치게 좁아져 있었다 — 겹침 문제는 이마와 맞닿은
+   위쪽 한 방향에서만 생겼는데, 사방을 똑같이 줄여 나머지 세 방향
+   (아래·좌·우)의 여유 공간까지 불필요하게 함께 줄어든 것이다. inset을
+   방향별로 나눠(위쪽만 좁게, 나머지는 기존 넓은 값 그대로) 이마와는
+   여전히 겹치지 않으면서 아래·좌·우로는 원래의 넉넉한 터치 영역을
+   되찾는다. */
+#rodin-fist::before{ inset: -5px -16px -16px -16px; }
 .hotspot:hover,.hotspot:focus-visible{background:rgba(212,175,55,.14);}
 .hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 .hotspot.visited{background:rgba(212,175,55,.05);}
@@ -261,26 +270,22 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
    위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
    버튼과 화면 좌우로 확실히 떨어지게 한다. */
-/* v-top-bar-below-image — participant request: "put the exploration
-   gauge right below the image." The earlier absolute-positioned
-   versions (bottom, then top) always floated over some part of the
-   image and risked covering a hotspot on short viewports. Restoring
-   this to a plain, non-absolute flex child — placed in the HTML as
-   #stage's sibling rather than its child (see body markup) — makes it
-   take its own small row in the #room-layout column, directly between
-   the image and the caption box, with zero overlap on any screen. */
-/* v-chat-toggle-overlap-fix — participant report: "the bottom part of
-   Room 2's image isn't visible. The exploration bar and chat button
-   need to move down so it shows." Root cause: #chat-toggle is
-   position:fixed, independent of the flex flow — the earlier "move it
-   up" request (bottom: 150px → 172px → 198px) kept raising it further
-   up the screen until, on shorter viewports, it started floating over
-   the lower part of the image itself rather than sitting below it in
-   the control row. Moving both back down (top-bar's margin trimmed,
-   chat-toggle's bottom offset lowered) frees that space back to the
-   image and keeps the button out of it. */
-#top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
-    padding:4px 10px; margin-top:20px; flex:0 0 auto; z-index:5;}
+/* v-top-bar-overlay-root-cause-fix — 참가자 지적: "이미지 안의 조각상
+   다리와 발 부분이 검정색으로 되어 있어서 안 보인다. 탐색바를 아래로
+   내려야 한다. 이미지는 조금 올려도 된다." 근본 원인은 위쪽 JS
+   fitHotspotLayer()의 확대 계산과 실제 CSS 사이의 불일치였다 — 그
+   계산은 처음부터 "#top-bar가 #stage 위 오버레이라 flex 공간을
+   차지하지 않는다"는 전제였는데, 그사이 CSS는 다시 #top-bar를 이미지
+   "아래" 별도 줄로 되돌려놓은 상태였다. 그만큼 이미지가 실제로 쓸 수
+   있는 세로 공간(ch)이 계산이 가정한 것보다 줄어들었고, 1.3배로 키운
+   이미지의 아래쪽(다리·발)이 그 부족분만큼 화면 밖으로 밀려나
+   보이지 않게 된 것이다. #top-bar를 다시 #stage 안의 절대 위치
+   오버레이로 되돌려 이 전제와 실제 구조를 맞춘다 — 참가자 요청대로
+   화면 "아래쪽"에 두되, 핫스팟 중 가장 아래(발가락, 80~86%)와는
+   충분히 떨어진 자리(안전 여백 안)에 놓는다. */
+#top-bar{position:absolute; left:0; right:0; bottom:calc(6px + env(safe-area-inset-bottom));
+    width:100%; display:flex; justify-content:center; align-items:center;
+    padding:4px 10px; z-index:5; pointer-events:none;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -410,10 +415,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    비슷한 부분 위에 놓이면 테두리와 글자 모두 사진에 묻혀 버렸다.
    사진의 어느 부분 위에 있든 항상 일정한 대비를 보장하도록, 어둡고
    불투명에 가까운 배경을 버튼 자체에 깔고 테두리도 더 진하게 했다.
-/* v90 — 참가자 요청: "전시실2 각 화면 아래에 있는 4가지 버튼(다시듣기·
-   수료증·여일·전시1)의 폰트크기가 크니 좀 작게 해달라." 패딩·높이·
-   모양은 그대로 두고 글자 크기만 줄인다. */
-#hint-row .btn{padding:8px 10px;font-size:.7rem;min-width:0;white-space:nowrap;}
+/* v91 — 참가자 요청: "다시듣기·수료증·여일·전시1 버튼을 조금 더
+   작게 해줘 — 위에 있는 속도 버튼의 폰트 크기로." 위 v90에서 한 번
+   줄인 .7rem을, 화면 위쪽 속도 버튼(#speed-btn)과 같은 크기인 .66rem
+   으로 다시 맞췄다. */
+#hint-row .btn{padding:8px 10px;font-size:.66rem;min-width:0;white-space:nowrap;}
 
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
 /* v-yeoil-exhibit1-btn-white — 참가자 요청: "여일 창의 전시1 버튼을
@@ -1504,14 +1510,20 @@ body.low-vision-mode #hint-row .btn{
          style="top:80%; left:72%; width:9%; height:6%;" aria-label="반가사유상 — 발가락"></div>
     </div>
 
-</div>
-
-<!-- v-top-bar-below-image — participant request: "put the exploration
-     gauge right below the image." Moved out of #stage to be its plain
-     sibling here, so it takes its own small row in #room-layout,
-     directly under the image and above the caption box — see the CSS
-     comment on #top-bar for why this replaces the earlier
-     absolute-positioned (bottom-, then top-anchored) versions. -->
+<!-- v-top-bar-overlay-root-cause-fix — 참가자 지적: "이미지 안의 조각상
+     다리와 발 부분이 검정색으로 되어 있어서 안 보인다. 탐색바를 아래로
+     내려야 한다. 이미지는 조금 올려도 된다." 원인을 찾았다 — 바로 아래
+     fitHotspotLayer()의 1.3배 확대 계산은 애초에 "탐색바가 #stage 위
+     오버레이라 별도의 flex 공간을 차지하지 않는다"는 전제로 짜여
+     있었는데(주석 v-back-to-full-zoom 참고), 실제 CSS는 그 사이
+     #top-bar를 다시 이미지 "아래" 별도 줄(flex 흐름)로 되돌려놓은
+     상태였다 — 그만큼 이미지가 실제로 쓸 수 있는 세로 공간(ch)이
+     계산이 가정한 것보다 작아졌고, 그 부족분이 정확히 확대된 이미지의
+     아래쪽(다리·발)이 잘려나가 그 자리에 배경색(검정)이 드러나는
+     형태로 나타났다. #top-bar를 다시 #stage 안의 절대 위치 오버레이로
+     되돌려 이 전제와 실제 구조를 맞춘다 — 화면 "아래쪽"에 두되(참가자
+     요청대로), 핫스팟 중 가장 아래(발가락, 80~86%)와는 충분히 떨어진
+     자리에 놓는다. */
 <div id="top-bar">
     <div class="pill" id="progress-pill" aria-hidden="true">
         <span id="progress-count">탐색 0/11</span>
@@ -1528,6 +1540,8 @@ body.low-vision-mode #hint-row .btn{
          볼 수 없어 동일한 정보를 얻지 못했다 — 아래 sr-only 리전이 그
          정보를 텍스트로 대신 전달한다(updateProgress()에서 갱신). -->
     <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
+</div>
+
 </div>
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
@@ -1710,7 +1724,7 @@ function fitHotspotLayer(){
     // 만큼 이미지가 쓸 수 있는 세로 공간(ch)이 커졌고, 아래에서
     // #chat-toggle도 아래로 내리고 크기를 줄여 겹침 여지를 더 줄인다.
     const topControls = document.getElementById('top-controls');
-    const TOP_GAP = 14; // 버튼줄 바로 아래 추가 여유(위치 하한에서만 사용)
+    const TOP_GAP = 6; // v-top-bar-overlay-root-cause-fix — 참가자 요청: "이미지는 조금 올려도 된다." 14px에서 줄여, 다리·발이 잘릴 상황에서 이미지가 조금 더 위로 올라갈 여지를 준다.
     const TOP_CLEARANCE = topControls ? (topControls.getBoundingClientRect().bottom + TOP_GAP) : 60;
     const _easyBtnForShift = document.getElementById('easy-mode-btn');
     const _imageDownShift = (_easyBtnForShift ? _easyBtnForShift.getBoundingClientRect().height : 36) / 2;
@@ -2697,7 +2711,7 @@ function _processTouch(key){
     visited.add(key);
     updateProgress();
 
-    document.getElementById('focus-tag').textContent = '🗿 지금 만지신 곳 — ' + d.title;
+    document.getElementById('focus-tag').textContent = '지금 만지신 곳 — ' + d.title;
     // v-ai-vs-narration-distinction — 정해진 대본 해설로 돌아왔으므로,
     // 혹시 직전이 AI 답변/종합 사유였다면 그 표시(파란 띠)를 지운다.
     document.getElementById('caption-wrap')?.classList.remove('ai-mode');
