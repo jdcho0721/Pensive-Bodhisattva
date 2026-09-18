@@ -1251,7 +1251,7 @@ const LAYERS = [
           wide:'rodin', detail:{x:23, y:45.0}, speaker:'rodin', source:"Author's interpretation — no source" },
         { text:"Though they walked different paths, both statues are alike in being the gesture of a human being thinking deeply.", textSimple:"The two statues are different, but both show a person thinking deeply.", wide:'both', source:"Author's interpretation — no source" },
         { text:"Right where your hand can reach now are replicas of the two statues.", textSimple:"Right where your hand can reach are the two statues.", wide:'both', source:"Direction (exhibition author)" },
-        { text:"Rodin on the left, the Pensive Bodhisattva on the right — the Rodin and Bodhisattva displayed here are smaller than life size.", textSimple:"Rodin is on the left, the Pensive Bodhisattva is on the right. The statues here are smaller than the real ones.", wide:'both', source:"Direction (exhibition author)" },
+        { text:"Rodin on the left, the Pensive Bodhisattva on the right.", textSimple:"Rodin is on the left, the Pensive Bodhisattva is on the right.", wide:'both', source:"Direction (exhibition author)" },
         { text:"As you listen to the story that follows, feel free to comfortably touch the whole form with both hands.", textSimple:"As you listen to the story, feel free to touch them with both hands.", wide:'both', source:"Direction (exhibition author)" },
         { text:"Now let me walk you through the scene where the two statues stand, moving from the whole down to the details.", textSimple:"Now let me tell you about the two statues, from the big picture down to the small details.", wide:'both', source:"Direction (exhibition author)" }
     ]},
@@ -1575,7 +1575,7 @@ speak(gateText, ()=>{
     // "the first screen needs an overview of the whole interface
     // structure." gateText only covered the theme ("Encounter"), never
     // the screen's spatial layout — new information, not a repeat.
-    speak('At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that is the current story, along with the replay, pause, and room 2 buttons.', ()=> playLayer(0));
+    speak('At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that, the current story is shown as a caption. Below that are the replay, pause, and room 2 buttons.', ()=> playLayer(0));
 });
     startAmbientSound();
     fadeArrivalIn();
