@@ -137,10 +137,26 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .caption-nav-hint:hover{opacity:1;}
 .caption-nav-hint.left{left:10px;}
 .caption-nav-hint.right{right:10px;}
+/* v-caption-nav-visibility — participant report: "At first the
+   previous/next arrow icons weren't visible on screen, so I hesitated
+   for 1-2 seconds about where to tap to move on. A light border or
+   guide mark on both sides of the screen would be better." Raised the
+   arrows' own default opacity (.6 → .8) and added a soft vertical
+   gradient band along both edges so the tap zones read even before the
+   arrows themselves are noticed. Purely visual — doesn't intercept
+   clicks (pointer-events:none). */
+.caption-nav-hint{ opacity:.8; }
+.caption-nav-edge{
+    position:absolute; top:0; bottom:0; width:42px;
+    pointer-events:none; z-index:1;
+}
+.caption-nav-edge.left{ left:0; background:linear-gradient(to right, rgba(212,175,55,.10), transparent); border-left:1px solid rgba(212,175,55,.22); }
+.caption-nav-edge.right{ right:0; background:linear-gradient(to left, rgba(212,175,55,.10), transparent); border-right:1px solid rgba(212,175,55,.22); }
 @media(max-width:480px){
     .caption-nav-hint{font-size:1.3rem;}
     .caption-nav-hint.left{left:6px;}
     .caption-nav-hint.right{right:6px;}
+    .caption-nav-edge{ width:28px; }
 }
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(1.1rem, 3.6vw, 1.6rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
@@ -631,12 +647,33 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     margin:0;
     width:100%;
     box-sizing:border-box;
-    padding-left:20px;
+    padding:6px 4px 6px 20px;
     color:#e9e4d6;
     line-height:1.6;
     font-size:.82rem;
     text-align:left;
     letter-spacing:.01em;
+    /* v-gate-route-buttons — participant request: "make Room 1 Encounter
+       and Room 2 Contemplation & Embodiment buttons on the first
+       screen." Reset default button chrome now that these are
+       <button> elements instead of <span>, and widen the vertical
+       padding for a comfortable tap target. */
+    display:block;
+    border:none;
+    background:transparent;
+    font-family:inherit;
+    cursor:pointer;
+    border-radius:6px;
+    -webkit-tap-highlight-color:transparent;
+}
+#intro-gate .gate-route-item:hover,
+#intro-gate .gate-route-item:focus-visible{
+    background:rgba(212,175,55,.1);
+    outline:1px solid rgba(212,175,55,.5);
+}
+#intro-gate .gate-route-item.control-armed{
+    background:rgba(212,175,55,.16);
+    outline:1px solid var(--gold);
 }
 #intro-gate .gate-route-item::before{
     content:'';
@@ -940,8 +977,12 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 
     <div class="gate-route" role="group" aria-label="Viewing order">
         <span class="gate-route-title">Viewing Order</span>
-        <span class="gate-route-item">Room 1 · Encounter</span>
-        <span class="gate-route-item">Room 2 · Contemplation and Embodiment</span>
+        <button type="button" class="gate-route-item" id="gate-route-room1"
+                onclick="event.stopPropagation(); try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}; enterRoom();"
+                aria-label="Enter Room 1, Encounter, right now">Room 1 · Encounter</button>
+        <button type="button" class="gate-route-item" id="gate-route-room2"
+                data-tap-name="Room 2, Contemplation and Embodiment"
+                aria-label="Switches to Room 2, Contemplation and Embodiment">Room 2 · Contemplation and Embodiment</button>
     </div>
 
     <p class="gate-epigraph">A thought that has not passed through the body is not yet a thought.</p>
@@ -1101,6 +1142,8 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      where the actual narration lives, but it had no landmark, so a
      screen reader's "jump by region" couldn't reach it directly. -->
 <div id="caption-wrap" role="main" aria-label="Room 1 core area — narration and navigation" onclick="onCaptionAreaClick(event)" inert aria-hidden="true">
+    <div class="caption-nav-edge left" aria-hidden="true"></div>
+    <div class="caption-nav-edge right" aria-hidden="true"></div>
     <button type="button" class="caption-nav-hint left" aria-label="Move to the previous story" onclick="event.stopPropagation(); onBackClick();">‹</button>
     <button type="button" class="caption-nav-hint right" aria-label="Move to the next story" onclick="event.stopPropagation(); onNextClick();">›</button>
     <div id="speaker-tag"></div>
@@ -1145,7 +1188,15 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
          무시되어 이동 자체가 실행되지 않는 경우가 있었다. room2.html의
          전시1 버튼(#exhibit1-btn)처럼 확인 절차 없는 단순 클릭으로
          바꿔, 이런 경합 자체가 생기지 않게 한다. -->
-    <button class="btn primary" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
+    <!-- v-exhibit2-btn-color-confusion — participant report: "While
+         viewing Room 1, the Room 2 button at the bottom is highlighted
+         gold, which makes it confusing whether I'm currently in Room 1
+         or Room 2." The "primary" (solid gold) class doubles elsewhere
+         in this app as a "currently on/active" signal, so leaving it
+         here made this button read like "you are in Room 2 now."
+         Demoted to the same plain button style as the EN button next to
+         it — same function, no more misleading emphasis. -->
+    <button class="btn" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
 </div>
 </div>
 
@@ -2646,6 +2697,11 @@ function onReplayClick(){
 
 function onBackClick(){
     clearTimeout(autoTimer);
+    // v-step-advance-haptic — participant request: "A soft 'tok' vibration
+    // when moving to the next step would let me know right away it went
+    // through, even without looking at the screen." Reuses the existing
+    // 'turn' (15ms) pattern.
+    try{ hapticPulse('turn'); }catch(err){}
     // v23 — 참가자 요청: "해설이 진행되는 동안 다음/뒤로가기를 누르면
     // 지금 읽고 있던 해설은 즉시 중단해야 한다." speak()도 내부에서
     // cancel()을 부르긴 하지만, 여기서 클릭 시점에 곧바로 한 번 더 멈추고
@@ -2733,6 +2789,8 @@ function playDialogueLineAt(tIdx, dIdx){
 // 도달했을 때에만 다음 단계·다음 화자로 넘어간다.
 function onNextClick(){
     clearTimeout(autoTimer);
+    // v-step-advance-haptic — same as onBackClick() above.
+    try{ hapticPulse('turn'); }catch(err){}
     // v23 — 뒤로가기와 동일한 이유: 지금 읽고 있는 해설을 즉시 중단한다.
     window.speechSynthesis.cancel();
     speechGen++;
@@ -3663,6 +3721,64 @@ function goToRoom2(e) {
         }catch(err){}
         timer = setTimeout(disarm, ARM_MS);
     }, true); // capture phase — intercepts before the button's own onclick (bubble phase)
+})();
+
+/* ══════════════════════════════════════════════════════
+   v-gate-route-room2-twotap — participant request: "make Room 1
+   Encounter and Room 2 Contemplation & Embodiment buttons on the first
+   screen." The new #gate-route-room2 button gets the same confirm flow
+   as #btn-next-exhibit right above, going to the same destination
+   (room2-en.html) with the same voice line and haptic pattern.
+   #gate-route-room1 (Room 1 Encounter) just re-runs the same
+   already-immediate "tap anywhere to enter" action, so it needs no
+   confirmation — this IIFE reacts only to #gate-route-room2.
+   ══════════════════════════════════════════════════════ */
+(function(){
+    const btn = document.getElementById('gate-route-room2');
+    if(!btn) return;
+    const ARM_MS = 2500;
+    let armed = false, timer = null;
+    function disarm(){
+        armed = false;
+        btn.classList.remove('control-armed');
+        clearTimeout(timer);
+    }
+    document.addEventListener('click', function(e){
+        if(e.target !== btn) return;
+        if(armed){
+            e.preventDefault(); e.stopImmediatePropagation();
+            disarm();
+            try{ hapticPulse('exit'); }catch(err){}
+            speechGen++;
+            window.speechSynthesis.cancel();
+            let _navigated = false;
+            const go = function(){
+                if(_navigated) return;
+                _navigated = true;
+                location.href='room2-en.html';
+            };
+            try{
+                const u = new SpeechSynthesisUtterance('Moving to Room 2.');
+                u.lang = 'en-US';
+                const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
+                if(_v) u.voice = _v;
+                u.onend = go;
+                u.onerror = go;
+                window.speechSynthesis.speak(u);
+                setTimeout(go, 3500);
+            }catch(err){ go(); }
+            return;
+        }
+        e.preventDefault(); e.stopImmediatePropagation();
+        armed = true;
+        btn.classList.add('control-armed');
+        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+        try{
+            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 2').trim();
+            speak('This is the ' + cleanName + ' button.');
+        }catch(err){}
+        timer = setTimeout(disarm, ARM_MS);
+    }, true);
 })();
 
 </script>

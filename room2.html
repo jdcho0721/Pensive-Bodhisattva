@@ -129,6 +129,29 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 .hotspot{position:absolute;cursor:pointer;border-radius:50%;z-index:10;-webkit-tap-highlight-color:rgba(212,175,55,.3);
     background:transparent; transition:background .4s ease, box-shadow .4s ease;}
+/* v-hotspot-findability — 참가자 요청: "터치 가능한 영역을 조금 더 쉽게
+   찾을 수 있으면 좋겠다." 바로 위 v14가 "핫스팟에 늘 보이는 점선
+   테두리는 조각상의 시각적 미를 해친다"는 지적으로 완전한 투명함을
+   택했는데, 그 결과 이번엔 반대로 "어디를 만져야 할지 못 찾겠다"는
+   지적이 나왔다. 굵은 원형 테두리 대신, 아직 만나지 않은 부위 한가운데
+   에만 아주 작고 은은하게 숨쉬듯 깜빡이는 점 하나를 둔다 — 조형미를
+   크게 해치지 않으면서도, 화면을 훑어보면 "여기다" 하고 눈에 띌 만큼의
+   최소한의 단서는 남긴다. 이미 만난 부위(.visited/.explored)에는
+   붙이지 않아, 아직 안 찾은 곳과 이미 찾은 곳이 한눈에 구분된다.
+   실제 터치 판정에는 관여하지 않도록 pointer-events:none을 준다. */
+.hotspot:not(.visited):not(.explored)::after{
+    content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:7px; height:7px; border-radius:50%; background:var(--gold);
+    opacity:.5; box-shadow:0 0 7px rgba(212,175,55,.65);
+    pointer-events:none; animation:hotspotFindPulse 2.6s ease-in-out infinite;
+}
+@keyframes hotspotFindPulse{
+    0%,100%{ opacity:.32; transform:translate(-50%,-50%) scale(.85); }
+    50%{ opacity:.75; transform:translate(-50%,-50%) scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce){
+    .hotspot:not(.visited):not(.explored)::after{ animation:none; opacity:.55; }
+}
 /* v14 — 참가자 지적: "점선 테두리가 조각상의 시각적 미를 해친다." index.html의
    핫스팟은 기본 상태에서 테두리·배경이 전혀 없어(hover/focus에서만 옅게
    반응) 조각상 사진 위에 아무 도형도 겹치지 않는다. room2도 그 방식을
@@ -247,7 +270,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    take its own small row in the #room-layout column, directly between
    the image and the caption box, with zero overlap on any screen. */
 #top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
-    padding:4px 10px; flex:0 0 auto; z-index:5;}
+    padding:4px 10px; margin-top:14px; flex:0 0 auto; z-index:5;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -436,9 +459,11 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    커지는 환경에서 안의 아이콘이 원 밖으로 잘려나갔다. 고정 크기 대신
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;right:16px;bottom:calc(172px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
+/* v-chat-toggle-nudge-up — participant request: "move the chat button
+   up a bit." Raised bottom from 150px to 172px. */
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
    다리가 잘리면... 사유의 방 버튼을 내려서 맞춰달라. 버튼 크기도 좀
    줄여달라." bottom을 182px → 150px로 내리고, 52px → 44px(WCAG 2.5.5
@@ -498,6 +523,19 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     border-bottom:1px solid rgba(212,175,55,.18);color:var(--gold-light);font-size:.78rem;letter-spacing:.03em;}
 #chat-drag-handle .hint{font-size:.68rem;color:#8a8a8a;}
 #chat-drag-handle.dragging{cursor:grabbing;}
+/* v-chat-close-btn — participant feedback: "The pop-up window would be
+   easier to use if it had a clear close button." The only way to close
+   this panel was to find the far-away floating 💬 toggle again — the
+   drag handle (its title bar) had no close control of its own. */
+#chat-drag-handle .chat-close-btn{
+    flex:0 0 auto; cursor:pointer; touch-action:manipulation;
+    width:28px; height:28px; min-width:28px; min-height:28px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--gold-dim); border-radius:50%;
+    background:rgba(0,0,0,.3); color:var(--gold-light); font-size:.9rem; line-height:1;
+}
+#chat-drag-handle .chat-close-btn:hover,
+#chat-drag-handle .chat-close-btn:focus-visible{background:rgba(212,175,55,.18); border-color:var(--gold);}
 #chat-panel.dragging{transition:none !important;}
 #chat-resize-handle{flex:0 0 auto;display:flex;justify-content:center;align-items:center;
     height:16px;margin:0 -14px;cursor:ns-resize;touch-action:none;}
@@ -1264,6 +1302,12 @@ body.low-vision-mode #hint-row .btn{
         <div class="cert-stat" id="cert-stat">0 / 11</div>
         <div class="cert-stat-label">곳을 손끝으로 만나셨습니다</div>
         <div class="cert-list" id="cert-list"></div>
+        <!-- v-cert-remaining-hints — 참가자 요청: "11개 중 후반부 남은
+             지점을 찾기가 어려웠다. 수료증에서는 찾은 개수만 확인할 수
+             있어 어느 부위를 놓쳤는지 알기 어렵다. 일정 개수(약 7~8개)
+             이후부터 단계적으로 힌트를 제공하면 좋겠다." showCertificate()
+             에서 채운다 — 자세한 단계 기준은 그 함수 주석 참고. -->
+        <div class="cert-list" id="cert-hints"></div>
         <div class="cert-chat-log" id="cert-chat-log"></div>
         <div class="cert-line" id="cert-line"></div>
         <div class="cert-date" id="cert-date"></div>
@@ -1483,7 +1527,9 @@ body.low-vision-mode #hint-row .btn{
         <button type="button" id="chat-back-btn" onclick="toggleChat()" aria-label="대화를 닫고 전시 화면으로 돌아가기">← 돌아가기</button>
         <span id="chat-page-title">사유의 상담소</span>
     </div>
-    <div id="chat-drag-handle" aria-hidden="true"><span>✥ 사유의 상담소</span><span class="hint">드래그해서 이동</span></div>
+    <div id="chat-drag-handle"><span aria-hidden="true">✥ 사유의 상담소</span><span class="hint" aria-hidden="true">드래그해서 이동</span>
+        <button type="button" class="chat-close-btn" onclick="event.stopPropagation(); toggleChat();" aria-label="대화창 닫기">✕</button>
+    </div>
     <div id="chat-resize-handle" aria-hidden="true"><span></span></div>
     <div id="chat-corner-resize" aria-hidden="true"></div>
     <!-- v47 — 위/아래/왼쪽/오른쪽 각 변 리사이즈 손잡이. 눈에 보이지 않는
@@ -1554,8 +1600,8 @@ body.low-vision-mode #hint-row .btn{
              음성 안내를 맡고 있으므로, 화면에 보이는 글자 앞에 아이콘만
              추가해도 안내 음성에는 영향이 없다. -->
         <button class="btn" id="btn-replay" onclick="repeatCurrent()" aria-label="다시듣기 버튼입니다. 방금 만진 부위의 설명을 처음부터 다시 들려드립니다." data-tap-name="다시듣기" data-tap-action="방금 만진 부위의 설명을 처음부터 다시 들려드립니다.">다시듣기</button>
-        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 탐색한 기록을 수료증으로 봅니다" data-tap-name="수료증" data-tap-action="지금까지 만진 기록을 보여드립니다">수료증</button>
-        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="마음을 비우는 화면으로 이동합니다" data-tap-name="여일" data-tap-action="마음을 비우는 화면으로 이동합니다">여일</button>
+        <button class="btn" id="btn-view-cert" onclick="requestLeave()" aria-label="지금까지 만진 기록과 챗봇대화 내용을 보여드립니다." data-tap-name="수료증" data-tap-action="지금까지 만진 기록과 챗봇대화 내용을 보여드립니다.">수료증</button>
+        <button class="btn" id="btn-leave" onclick="beginYeoilExit()" aria-label="여일, 한결같다는 뜻입니다. 마음을 비우는 화면으로 이동합니다" data-tap-name="여일 — 한결같다는 뜻, 마음을 비우는 화면" data-tap-action="마음을 비우는 화면으로 이동합니다">여일</button>
         <!-- v-remove-finish-btn — 참가자 요청: "11곳 만나고 나면 마치기
              버튼은 제거해달라." 완주 후에는 기존처럼 '수료증' 버튼으로
              언제든 기록을 확인할 수 있으므로, 별도의 '마치기' 버튼 없이도
@@ -2180,7 +2226,19 @@ function enterRoom(){
     // 본문 문단까지 포함해 사실상 같은 내용을 통째로 다시 읽고 있었다.
     // 표지에서 이미 들은 안내를 반복하지 않도록, 입장 직후에는 지금
     // 들어온 전시실 이름만 짧게 알려주는 것으로 줄였다.
-    const introLine = '전시실 2 · 사유 및 체화, 몸으로 생각하기를 시작합니다. 손을 뻗으면 닿는 두 조각상의 열한 개 부위를 찾아보세요.';
+    // v-room2-recap — 참가자 요청: "전시 2 시작 시 전시 1의 핵심 차이를
+    // 짧게 다시 보여주는 요약 기능이 있었으면 좋겠다." 바로 위 v85는
+    // "표지에서 이미 다 읽어준 긴 소개 문단을 통째로 반복하지 말자"는
+    // 취지였을 뿐, 두 조각상의 몸짓 대비 자체를 한 문장으로 다시
+    // 짚어주는 것까지 막는 취지는 아니었다 — 그래서 전체 소개가 아니라
+    // 딱 한 문장, 전시실 1에서 손끝으로 확인한 핵심 대비(웅크림/힘든
+    // 마음 ↔ 걸침/따뜻한 마음)만 짧게 되짚어준다.
+    // v-keyword-preview — 참가자 제안: "작품에 대한 핵심 키워드를 미리
+    // 공개해보면, 사용자의 상상력을 이끌어 낼 수 있지 않을까." 부위를
+    // 만지기 전, 앞으로 만나게 될 핵심 낱말 몇 개를 먼저 살짝 들려줘
+    // 궁금증을 자극한다 — 정답을 알려주는 게 아니라, 손끝으로 찾아가며
+    // 그 낱말과 부위를 스스로 연결해보게 하는 예고편에 가깝다.
+    const introLine = '전시실 1에서 만난 두 조각상, 기억하시나요? 생각하는 사람은 근육을 조이며 웅크린 힘든 마음을, 반가사유상은 힘을 뺀 채 편안히 기댄 따뜻한 마음을 보여주었습니다. 전시실 2 · 사유 및 체화, 몸으로 생각하기를 시작합니다. 손을 뻗으면 닿는 두 조각상의 열한 개 부위를 찾아보세요. 고뇌, 코나투스, 경청, 적멸, 중도 — 이런 낱말들을 마음에 담아두었다가, 손끝으로 부위를 하나씩 찾아가며 어떤 부위와 어울리는지 직접 확인해 보세요.';
     _displaySentencesTimed(introLine, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
     // v-screen-structure-orientation — 참가자(전맹) 지적: "첫 화면에서
@@ -2820,6 +2878,38 @@ function _describeRelativeDirection(key){
 // 않았다면 null이며, 이 경우 buildOtherPartsAnswer()는 양쪽 조각상의
 // 부위를 모두 나열한다.
 let _lastChatBody = null;
+
+/* v-chat-conversation-memory — 참가자 지적: "챗봇이 정해진 질문이나
+   비슷한 질문 위주로만 작동하고, 대화의 맥락을 잘 유지하지 못해 후속
+   질문이 부자연스럽게 느껴진다." 원인: fetchDetailAI()가 매번 이전
+   대화 내용 없이 이번 질문 하나만 담아 Claude API를 불렀다 — 그래서
+   "그건 왜 그래?", "더 자세히 말해줘" 같은 후속 질문에서 "그건"이
+   무엇을 가리키는지 모델이 전혀 알 수 없었다(_lastChatBody는 어느
+   조각상 얘기였는지만 기억할 뿐, 실제 주고받은 문장 자체는 기억하지
+   않았다). Claude Messages API는 messages 배열에 이전 turn들을 그대로
+   포함하는 것만으로 멀티턴 대화가 되므로, 실제 주고받은 질문·답변을
+   여기 쌓아두고 매 호출마다 함께 보낸다. 토큰 비용과 프롬프트 길이를
+   고려해 최근 6턴(질문+답변 12개 메시지)만 유지한다.
+   지식베이스 즉답·200개 철학 문답처럼 LLM을 거치지 않은 답도
+   _pushChatHistory()로 함께 쌓아, 그 다음 질문이 그 답을 이어받는
+   후속 질문이어도 모델이 인지할 수 있게 한다. */
+const CHAT_HISTORY_MAX_TURNS = 6;
+let _chatConversationHistory = [];
+function _pushChatHistory(userText, assistantText){
+    if(!userText || !assistantText) return;
+    _chatConversationHistory.push({ role:'user', content:String(userText) });
+    _chatConversationHistory.push({ role:'assistant', content:String(assistantText) });
+    while(_chatConversationHistory.length > CHAT_HISTORY_MAX_TURNS * 2){
+        _chatConversationHistory.shift();
+    }
+}
+// v-chat-conversation-memory — 대화창을 닫고 완전히 새로 시작할 때
+// (예: 여일/수료증으로 관람을 마칠 때)만 맥락을 비운다. 단순히 대화창을
+// 열고 닫는 것만으로는 비우지 않아, 잠깐 닫았다 다시 열어도 하던 대화를
+// 그대로 이어갈 수 있게 한다.
+function _resetChatHistory(){
+    _chatConversationHistory = [];
+}
 
 function buildOtherPartsAnswer(q){
     const shortName = k => DETAILS[k].title.split(' · ')[1];
@@ -3796,6 +3886,51 @@ function showCertificate(isComplete){
     addSection('로댕 · 생각하는 사람', rodinDone);
     addSection('반가사유상', maitreyaDone);
 
+    // v-cert-remaining-hints — 참가자 요청: "11개 중 후반부 남은 지점을
+    // 찾기가 어려웠다. 수료증에서는 찾은 개수만 확인할 수 있어 어느
+    // 부위를 놓쳤는지 알기 어렵다. 일정 개수(약 7~8개) 이후부터
+    // 단계적으로 힌트를 제공하면 좋겠다." 두 단계로 나눈다 —
+    //   1) 7곳 이상 만나고 아직 4곳 넘게 남았을 때: 부위 이름은 밝히지
+    //      않고, 위 _describeRelativeDirection(기존 "요약해줘" 챗봇
+    //      답변에 이미 쓰던 좌표 기반 대략적 방향)만 통계 문장으로
+    //      알려준다 — 정답을 그대로 주지 않으면서도 "어느 방향을 더
+    //      더듬어야 할지" 단서는 준다.
+    //   2) 남은 곳이 3곳 이하로 줄었을 때(거의 다 찾은 상태): 부담 없이
+    //      정답지 형태로 부위 이름 + 방향을 그대로 알려준다 — 마지막
+    //      한둘을 못 찾아 헤매다 관람을 포기하는 것을 막는 것이 이
+    //      단계의 목적이므로, 이 시점부터는 굳이 숨길 이유가 없다.
+    const hintsEl = document.getElementById('cert-hints');
+    if(hintsEl){
+        hintsEl.innerHTML = '';
+        const remainKeys = ORDER.filter(k => !visited.has(k));
+        const HINT_THRESHOLD = 7;
+        const ANSWER_THRESHOLD_REMAIN = 3; // 남은 곳이 이 숫자 이하면 정답지 단계
+        if(visited.size >= HINT_THRESHOLD && remainKeys.length > 0){
+            const h = document.createElement('h3');
+            h.textContent = remainKeys.length <= ANSWER_THRESHOLD_REMAIN ? '아직 만나지 못한 곳' : '아직 못 찾은 곳 힌트';
+            hintsEl.appendChild(h);
+            if(remainKeys.length <= ANSWER_THRESHOLD_REMAIN){
+                remainKeys.forEach(k => {
+                    const dir = _describeRelativeDirection(k);
+                    const p = document.createElement('p');
+                    p.textContent = `${DETAILS[k].body} — ${shortName(k)}${dir ? ` (${dir})` : ''}`;
+                    hintsEl.appendChild(p);
+                });
+            } else {
+                const byBody = {};
+                remainKeys.forEach(k => {
+                    const dir = _describeRelativeDirection(k) || '어딘가';
+                    (byBody[DETAILS[k].body] = byBody[DETAILS[k].body] || []).push(dir);
+                });
+                Object.keys(byBody).forEach(body => {
+                    const p = document.createElement('p');
+                    p.textContent = `${body} — ${byBody[body].join(', ')} 쪽을 더 더듬어 보세요.`;
+                    hintsEl.appendChild(p);
+                });
+            }
+        }
+    }
+
     // v-cert-chat-summary — 참가자 요청: "챗봇에 질문한 내용과 답변을
     // 간략히 적어줘." 챗봇 로직 곳곳(지식베이스·회상·AI 스트리밍 등
     // 여러 경로)을 따로 가로채는 대신, 이미 화면에 그려져 있는
@@ -4743,8 +4878,23 @@ function _renderPhilosophyAnswer(item, existingBubble){
     else if(hasMaitreya) text = `반가사유상 — ${item.maitreya}`;
     else text = String(item.single || '').trim();
 
-    if(existingBubble) existingBubble.textContent = text;
-    else pushLog('ai', text);
+    // v-chat-log-readability — 참가자 지적: "챗봇의 설명이 줄바꿈 없이
+    // 쭉 나열되어 있어 가독성이 저하되고, 진입장벽이 생성된다." 위 text는
+    // 자막(#caption)·음성(speak())과 그대로 같은 문자열을 써야 하는
+    // 이유가 있어(아래 v-caption-lag-samsung 주석 참고, 자막 실측 동기화가
+    // 문자열이 완전히 같아야 정확히 맞는다) 그대로 두고, 챗봇창에만 쓰는
+    // 별도의 표시용 문자열(logText)을 만든다 — 화자 이름을 답변과 같은
+    // 줄에 붙이는 "이름 — 내용" 대신, 이름을 독립된 줄로 떼어 그 아래에
+    // 내용이 오도록 한다. #chat-log .ai에는 이미 white-space:pre-line이
+    // 있어 이 줄바꿈이 그대로 화면에 보인다.
+    let logText;
+    if(hasRodin && hasMaitreya) logText = `생각하는 사람\n${item.rodin}\n\n반가사유상\n${item.maitreya}`;
+    else if(hasRodin) logText = `생각하는 사람\n${item.rodin}`;
+    else if(hasMaitreya) logText = `반가사유상\n${item.maitreya}`;
+    else logText = text;
+
+    if(existingBubble) existingBubble.textContent = logText;
+    else pushLog('ai', logText);
     _scrollChatLogToBottom();
     _chatAnswerActive = true;
     // v-phil-caption-sync — 참가자 지적: "자막 출력보다 음성해설이 먼저
@@ -5310,6 +5460,7 @@ const DETAIL_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 다음 세
 2. 그 다음 눈에 보이거나 만져지는 사실을 말하십시오.
 3. 참고 자료가 있을 때만, 그 범위 안에서 아주 짧은 사유적 여운(예: 힘든 마음과 따뜻한 마음의 대비) 한 문장을 마지막에 붙일 수 있습니다.
 [미시구조 — 문장 자체의 규칙]
+- 참가자 요청: "더 일상적인 말투로 답해주면 좋겠다." 딱딱한 논문투나 지나치게 격식 차린 문어체 대신, 존댓말은 유지하면서도 사람이 옆에서 편안하게 설명해주는 듯한 자연스럽고 일상적인 어투로 쓰십시오. 어려운 한자어나 딱딱한 관형구보다는, 실제로 입으로 말하듯 부드럽게 풀어 쓰십시오.
 - 문장을 쓰기 전에 먼저 핵심만 추려 200자 이내로 요약한다는 생각으로 쓰십시오. 2~3문장 이내, 150자를 넘지 않아야 합니다. 한 문장에 여러 사실을 욱여넣지 마십시오.
 - "그것", "저것" 같은 지시대명사나 "전자", "후자"처럼 순서로 대신 가리키는 표현 대신, 매번 "생각하는 사람"·"반가사유상"이라는 이름을 그대로 쓰십시오. 이 답은 음성으로도 들리므로, 청자가 "전자가 어느 쪽이었지"를 되짚어야 하는 표현은 특히 혼란을 줍니다.
 - 매번 같은 조각상·부위를 가리킬 때는 같은 용어를 일관되게 쓰십시오.
@@ -5405,6 +5556,7 @@ const DETAIL_TWO_VOICE_SYSTEM_PROMPT = DETAIL_SYSTEM_PROMPT + `
 const CENTER_SYNTHESIS_SYSTEM_PROMPT = `당신은 미술관 도슨트입니다. 관람객이 로댕의 '생각하는 사람'과 반가사유상 두 조각상에서 지금까지 만진 부위들이 아래에 주어집니다. 이를 아우르는 짧은 종합적 사유를 들려주십시오.
 
 [규칙]
+- 참가자 요청: "더 일상적인 말투로 답해주면 좋겠다." 딱딱한 논문투 대신, 존댓말은 유지하면서 사람이 편안하게 말을 건네는 듯한 일상적인 어투로 쓰십시오.
 - 핵심만 추려 150자 이내로 요약한다는 생각으로, 2~3문장 안에 담으십시오. 한 문장에 여러 생각을 욱여넣지 마십시오.
 - 주어진 부위 설명에 이미 담긴 내용을 바탕으로 통합하십시오. 새로운 사실이나 인용, 인물을 지어내지 마십시오.
 - 개별 부위를 하나씩 나열하지 말고, 로댕 쪽과 반가사유상 쪽이 보여주는 대비나 공명을 짧게 묶어내십시오.
@@ -5544,7 +5696,7 @@ async function _summarizeToLimit(text){
 // 코드가 먼저 한 번 조용히 재시도하게 한다 — 순간적인 끊김이라면 두 번째
 // 시도에서 대부분 성공하고, 관람객은 약간의 지연만 느낄 뿐 실패 메시지
 // 자체를 보지 않게 된다.
-async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
+async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt, history){
     const fullPrompt = ragBlock ? (prompt + ragBlock) : prompt;
     const sysPrompt = systemPrompt || DETAIL_SYSTEM_PROMPT;
     // v-cloud-api — LM Studio(OpenAI 호환 /v1/chat/completions) 대신,
@@ -5552,6 +5704,10 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     // Messages API를 부른다. system 프롬프트는 messages 배열 안이 아니라
     // 최상위 system 필드로 따로 보낸다(Claude API의 요청 형식 — OpenAI와
     // 다른 부분).
+    // v-chat-conversation-memory — messages 배열 맨 앞에 지금까지의 실제
+    // 대화 turn들(history)을 그대로 붙인다. Claude API는 이 배열 자체가
+    // 대화 기록이므로, 이 한 줄만으로 후속 질문에 필요한 멀티턴 맥락이
+    // 생긴다.
     const response = await fetch(CLAUDE_PROXY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -5559,6 +5715,7 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
             model: CLAUDE_MODEL,
             system: sysPrompt,
             messages: [
+                ...(Array.isArray(history) ? history : []),
                 { role: "user", content: fullPrompt }
             ],
             temperature: 0.3,
@@ -5622,12 +5779,12 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     return finalText;
 }
 
-async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
+async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt, history){
     const MAX_ATTEMPTS = 2; // 처음 실패 시 한 번만 조용히 재시도한다(무한 재시도로 관람객을 오래 기다리게 하지 않는다).
     let lastErr = null;
     for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
         try{
-            const finalText = await _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt);
+            const finalText = await _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt, history);
             if(onUpdate) onUpdate(finalText);
             return finalText;
         }catch(e){
@@ -6184,6 +6341,11 @@ function toggleChatMic(){
     let startX = 0, startY = 0, startLeft = 0, startTop = 0, dragging = false;
 
     function onPointerDown(e){
+        // v-chat-close-btn — the new close button lives inside this
+        // drag handle; without this guard, starting a drag here would
+        // capture the pointer and swallow the button's click before it
+        // ever fires.
+        if(e.target && e.target.closest && e.target.closest('.chat-close-btn')) return;
         dragging = true;
         const rect = panel.getBoundingClientRect();
         startX = e.clientX; startY = e.clientY;
@@ -6361,10 +6523,31 @@ initChatEdgeResize('chat-resize-edge-bottom', 'bottom');
 initChatEdgeResize('chat-resize-edge-left', 'left');
 initChatEdgeResize('chat-resize-edge-right', 'right');
 
+// v-chat-log-readability — 참가자 지적: "챗봇의 설명이 줄바꿈 없이 쭉
+// 나열되어 있어 가독성이 저하되고, 진입장벽이 생성된다." 요약·회상·
+// 사실형 KB 답변·자유생성 답변처럼 긴 한 덩어리 문단으로 오는 여러
+// 경로를 여기 한곳에서 공통으로 손본다 — 문장 두 개마다 빈 줄을 하나
+// 끼워 넣어, 답이 길어도 한눈에 숨 쉴 자리를 만든다. 이미 화자별로
+// 줄이 나뉜 두 목소리 답변(_renderPhilosophyAnswer)에는 영향을 주지
+// 않도록, 이미 줄바꿈이 있는 텍스트는 건드리지 않는다.
+function _addParagraphBreaks(text){
+    const s = String(text || '');
+    if(!s || s.includes('\n')) return s; // 이미 문단 구분이 있으면 그대로 둔다
+    if(s.length < 90) return s; // 짧은 답은 굳이 쪼갤 필요가 없다
+    // 마침표·물음표·느낌표 뒤에 공백이 오는 지점을 문장 경계로 본다.
+    const sentences = s.split(/(?<=[.!?])\s+/).filter(Boolean);
+    if(sentences.length < 3) return s; // 문장이 얼마 안 되면 그대로 둔다
+    const paragraphs = [];
+    for(let i = 0; i < sentences.length; i += 2){
+        paragraphs.push(sentences.slice(i, i + 2).join(' '));
+    }
+    return paragraphs.join('\n\n');
+}
+
 function pushLog(cls, text){
     const log = document.getElementById('chat-log');
     const p = document.createElement('div');
-    p.className = cls; p.textContent = text;
+    p.className = cls; p.textContent = cls === 'ai' ? _addParagraphBreaks(text) : text;
     log.appendChild(p);
     // v-chat-scroll-to-top — 참가자 지적: "예상질문이 항상 보이고 답변은
     // 화면 위에 나와 스크롤해서 위로 올려야 보이는데 불편하다." 원인:
@@ -6605,6 +6788,7 @@ async function sendChat(e, overrideText, forceLLM){
 const TWO_VOICE_LIFE_SYSTEM_PROMPT = `당신은 미술관에 나란히 놓인 두 조각상, "생각하는 사람"(로댕, 1880년경, 프랑스, 청동)과 "반가사유상"(삼국시대, 6~7세기, 한반도, 금동)입니다. 관람객이 사실 정보가 아니라 걱정·고민·인생·감정에 관한 질문을 건넸습니다. 두 조각상이 각자의 관점에서 짧게 답하십시오.
 
 [화자 성격]
+- 참가자 요청: "더 일상적인 말투로 답해주면 좋겠다." 두 화자 모두 존댓말은 유지하되, 딱딱한 경전·철학서 인용투가 아니라 사람이 옆에서 다정하게 말을 건네는 듯한 편안하고 일상적인 어투로 답하십시오.
 - 생각하는 사람: 서양 실존주의와 스피노자의 코나투스(자기 존재를 지키려는 근원적 노력) 언어로 말합니다. 세계의 무게를 온몸으로 짊어지고 버텨내는, 긴장되고 무거운 어조입니다. 괴로움을 피하지 말고 정면으로 마주하라는 쪽입니다.
 - 반가사유상: 불교의 무상·자비·내려놓음 언어로 말합니다. 집착에서 놓여나 고요히 관조하는, 부드럽고 평온한 어조입니다. 괴로움을 있는 그대로 바라보고 내려놓으라는 쪽입니다.
 - 두 화자는 같은 질문에도 서로 다른 태도(정면으로 마주하라 / 내려놓으라)로 답합니다. 위 성격 차이가 실제 답변에 드러나야 하며, 두 줄이 단어만 살짝 바뀐 거의 같은 문장이 되어서는 안 됩니다.
@@ -6706,8 +6890,9 @@ async function _answerFreeformTwoVoice(q, philRef){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    }, TWO_VOICE_LIFE_SYSTEM_PROMPT);
+    }, TWO_VOICE_LIFE_SYSTEM_PROMPT, _chatConversationHistory);
     recordPartChatQA(q, raw); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    _pushChatHistory(q, raw); // v-chat-conversation-memory — 다음 후속 질문이 이 turn을 그대로 이어받을 수 있게 기록
     // v-chatbot-always-two-voice — 형식 파싱에 실패해도(_parseTwoVoiceReply가
     // v-single-voice-when-specific — 형식 파싱에 실패하면(드문 경우)
     // 억지로 두 목소리로 쪼개지 않고, 화자 표시 없는 하나의 답으로
@@ -6809,6 +6994,7 @@ async function _processChatAnswer(q, forceLLM){
                     kbHit.body === '로댕' ? { rodin: kbHit.text } : { maitreya: kbHit.text }
                 );
             }, 250);
+            _pushChatHistory(q, kbHit.text); // v-chat-conversation-memory — KB 즉답도 대화 맥락에 남긴다
             return;
         }
 
@@ -6829,6 +7015,7 @@ async function _processChatAnswer(q, forceLLM){
                 setTimeout(()=>{ _answerFreeformTwoVoice(q, philItem); }, 250);
             } else {
                 setTimeout(()=>{ _renderPhilosophyAnswer(philItem); }, 250);
+                _pushChatHistory(q, `생각하는 사람 — ${philItem.rodin} / 반가사유상 — ${philItem.maitreya}`); // v-chat-conversation-memory
             }
             return;
         }
@@ -6917,8 +7104,9 @@ async function _processChatAnswer(q, forceLLM){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT);
+    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT, _chatConversationHistory);
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    _pushChatHistory(q, answer); // v-chat-conversation-memory — 다음 후속 질문이 이 turn을 그대로 이어받을 수 있게 기록
     // v-single-voice-when-specific — 형식 파싱에 실패하면(드문 경우)
     // 억지로 두 목소리로 쪼개지 않고, 화자 표시 없는 하나의 답으로
     // 그대로 보여준다.
