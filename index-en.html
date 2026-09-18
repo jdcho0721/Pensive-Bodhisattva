@@ -204,6 +204,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .btn:active{transform:scale(.96);}
 .btn.primary{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700;}
 .btn.primary:hover{box-shadow:0 0 18px rgba(212,175,55,.5);}
+/* v-exhibit2-btn-white — participant request: "change the Room 1
+   'Room 2' button to white." Distinct from .primary (solid gold, used
+   elsewhere as an "on/active" signal). */
+.btn.on-white{background:#fff;color:#000;border-color:#fff;font-weight:700;}
+.btn.on-white:hover,.btn.on-white:focus-visible{box-shadow:0 0 18px rgba(255,255,255,.5);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 /* v-controls-refine — room2.html의 하단 4버튼과 같은 언어: 언제든 눌러도
    그만인 보조 동작(다시듣기·멈춤)은 옅은 톤으로 가라앉히고, 다음
@@ -978,8 +983,8 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     <div class="gate-route" role="group" aria-label="Viewing order">
         <span class="gate-route-title">Viewing Order</span>
         <button type="button" class="gate-route-item" id="gate-route-room1"
-                onclick="event.stopPropagation(); try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}; enterRoom();"
-                aria-label="Enter Room 1, Encounter, right now">Room 1 · Encounter</button>
+                data-tap-name="Room 1, Encounter"
+                aria-label="Switches to Room 1, Encounter">Room 1 · Encounter</button>
         <button type="button" class="gate-route-item" id="gate-route-room2"
                 data-tap-name="Room 2, Contemplation and Embodiment"
                 aria-label="Switches to Room 2, Contemplation and Embodiment">Room 2 · Contemplation and Embodiment</button>
@@ -1196,7 +1201,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
          here made this button read like "you are in Room 2 now."
          Demoted to the same plain button style as the EN button next to
          it — same function, no more misleading emphasis. -->
-    <button class="btn" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
+    <button class="btn on-white" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
 </div>
 </div>
 
@@ -3738,9 +3743,13 @@ function goToRoom2(e) {
    screen." The new #gate-route-room2 button gets the same confirm flow
    as #btn-next-exhibit right above, going to the same destination
    (room2-en.html) with the same voice line and haptic pattern.
-   #gate-route-room1 (Room 1 Encounter) just re-runs the same
-   already-immediate "tap anywhere to enter" action, so it needs no
-   confirmation — this IIFE reacts only to #gate-route-room2.
+   v-gate-route-room1-twotap — follow-up participant request: "Room 1
+   Encounter should also enter on press, the same way as the other
+   room-transition buttons." It originally just re-ran the same
+   already-immediate "tap anywhere to enter" action; the participant
+   instead wanted the same "first tap names it, second tap vibrates and
+   executes" flow as #gate-route-room2 below — the two IIFEs below
+   react independently to #gate-route-room1 and #gate-route-room2.
    ══════════════════════════════════════════════════════ */
 (function(){
     const btn = document.getElementById('gate-route-room2');
@@ -3784,6 +3793,41 @@ function goToRoom2(e) {
         try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
         try{
             const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 2').trim();
+            speak('This is the ' + cleanName + ' button.');
+        }catch(err){}
+        timer = setTimeout(disarm, ARM_MS);
+    }, true);
+})();
+
+(function(){
+    const btn = document.getElementById('gate-route-room1');
+    if(!btn) return;
+    const ARM_MS = 2500;
+    let armed = false, timer = null;
+    function disarm(){
+        armed = false;
+        btn.classList.remove('control-armed');
+        clearTimeout(timer);
+    }
+    document.addEventListener('click', function(e){
+        if(e.target !== btn) return;
+        if(armed){
+            // Second tap — confirmed. This enters the same page (no
+            // navigation), so no separate confirmation utterance is
+            // spoken — enterRoom() itself already announces "Room 1,
+            // Encounter."
+            e.preventDefault(); e.stopImmediatePropagation();
+            disarm();
+            try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+            enterRoom();
+            return;
+        }
+        e.preventDefault(); e.stopImmediatePropagation();
+        armed = true;
+        btn.classList.add('control-armed');
+        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+        try{
+            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 1').trim();
             speak('This is the ' + cleanName + ' button.');
         }catch(err){}
         timer = setTimeout(disarm, ARM_MS);
