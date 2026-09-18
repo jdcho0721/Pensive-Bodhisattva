@@ -277,7 +277,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    itself rather than sitting below it. Moving both back down frees
    that space back to the image. */
 #top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
-    padding:4px 10px; margin-top:10px; flex:0 0 auto; z-index:5;}
+    padding:4px 10px; margin-top:20px; flex:0 0 auto; z-index:5;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -469,7 +469,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    커지는 환경에서 안의 아이콘이 원 밖으로 잘려나갔다. 고정 크기 대신
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(120px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;right:16px;bottom:calc(148px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-overlap-fix — participant report: "the bottom of the
