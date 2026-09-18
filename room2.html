@@ -269,13 +269,18 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    #stage's sibling rather than its child (see body markup) — makes it
    take its own small row in the #room-layout column, directly between
    the image and the caption box, with zero overlap on any screen. */
-/* v-top-bar-more-gap — participant request: "move the exploration bar's
-   position down a bit more so it doesn't cover the bottom of the
-   image, and move the chat button up a bit more." Even as a
-   non-overlapping flow row, 14px felt too close to the image edge;
-   widened the gap further. */
+/* v-chat-toggle-overlap-fix — participant report: "the bottom part of
+   Room 2's image isn't visible. The exploration bar and chat button
+   need to move down so it shows." Root cause: #chat-toggle is
+   position:fixed, independent of the flex flow — the earlier "move it
+   up" request (bottom: 150px → 172px → 198px) kept raising it further
+   up the screen until, on shorter viewports, it started floating over
+   the lower part of the image itself rather than sitting below it in
+   the control row. Moving both back down (top-bar's margin trimmed,
+   chat-toggle's bottom offset lowered) frees that space back to the
+   image and keeps the button out of it. */
 #top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
-    padding:4px 10px; margin-top:26px; flex:0 0 auto; z-index:5;}
+    padding:4px 10px; margin-top:10px; flex:0 0 auto; z-index:5;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -411,6 +416,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 #hint-row .btn{padding:8px 10px;font-size:.7rem;min-width:0;white-space:nowrap;}
 
 .btn.primary{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold);}
+/* v-yeoil-exhibit1-btn-white — 참가자 요청: "여일 창의 전시1 버튼을
+   하얀색으로 바꾸어줘." index.html의 전시2 버튼에 만든 것과 같은
+   스타일(금색이 아닌 흰색 강조)을 여기에도 그대로 둔다. */
+.btn.on-white{background:#fff;color:#000;font-weight:700;border-color:#fff;}
+.btn.on-white:hover,.btn.on-white:focus-visible{box-shadow:0 0 18px rgba(255,255,255,.5);}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 /* v-two-tap-buttons — 참가자 요청: 각 버튼은 처음 누르면 이름만
    안내하고, 같은 버튼을 한 번 더 눌러야 실제로 작동한다(아래
@@ -464,9 +474,15 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    커지는 환경에서 안의 아이콘이 원 밖으로 잘려나갔다. 고정 크기 대신
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(198px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;right:16px;bottom:calc(120px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
+/* v-chat-toggle-overlap-fix — participant report: "the bottom of the
+   image isn't visible; the chat button needs to move down." Lowered
+   from 198px back down to 120px — the earlier round of "move it up"
+   requests had pushed it far enough up the screen to float over the
+   image's lower edge on shorter viewports instead of sitting below it.
+   See the #top-bar comment above for the matching fix on that side. */
 /* v-chat-toggle-nudge-up — participant request: "move the chat button
    up a bit." Raised bottom from 150px to 172px, then further to 198px
    per a follow-up request to move it up a bit more still. */
@@ -1347,7 +1363,7 @@ body.low-vision-mode #hint-row .btn{
     <div id="yeoil-meaning"></div>
     <div id="yeoil-actions" role="group" aria-label="마무리 화면 버튼">
         <button class="btn" id="btn-yeoil-room2" onclick="window.speechSynthesis.cancel();location.reload()" aria-label="전시실 2로 이동합니다" data-tap-name="전시2" data-tap-action="전시실 2로 이동합니다">전시2</button>
-        <button class="btn primary" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">전시1</button>
+        <button class="btn on-white" id="btn-yeoil-continue" onclick="window.speechSynthesis.cancel();location.href='index.html'" aria-label="전시실 1로 이동합니다" data-tap-name="전시1" data-tap-action="전시실 1로 이동합니다">전시1</button>
     </div>
 </div>
 
