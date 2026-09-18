@@ -1553,6 +1553,11 @@ function toggleBgm(){
         btn.textContent = bgmMuted ? '🔇 Music' : '🔊 Music';
         btn.setAttribute('aria-label', bgmMuted ? 'Background music is off. Press to turn it on.' : 'Background music is on. Press to turn it off.');
     }
+    // v-execute-haptic — participant request: "vibrate when a button
+    // executes." Immediate toggle-style buttons (background music,
+    // speed, easy sentences, etc.) skip the two-tap confirm flow, so
+    // they had no execution vibration at all until now.
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     speak(bgmMuted ? 'Background music turns off.' : 'Background music turns on.');
 }
 
@@ -2028,11 +2033,23 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     // 음량에 영향을 주지 않는다. 내레이션은 고정 음량으로 재생한다.
     u.volume = NARRATION_VOLUME;
 
-    // v49/v31과 동일한 이유로, 문장 단위로 축소한 estMs를 하한선 겸
-    // 안전망 워치독으로 함께 쓴다 — 음성엔진이 실제보다 일찍 onend를
-    // 보내거나 아예 이벤트를 안 보내는 경우에도 다음 문장으로 넘어간다.
+    // v-en-transition-lag-fix — participant report: "after reading one
+    // sentence, it takes too long to move to the next." The previous
+    // proceedNoEarlierThanEst() forced every sentence to wait out the
+    // *entire* estMs estimate even when the browser's onend fired much
+    // earlier — and estMs's 260ms-per-character assumption runs well
+    // above real English TTS speaking speed (roughly 70-110ms/char at
+    // normal rate), so genuine onend was routinely followed by several
+    // extra seconds of pure waiting before advancing. onend/onerror now
+    // call proceed() directly — the moment the browser reports the
+    // utterance is actually done, the small inter-sentence pause below
+    // (80-150ms) is all that's left before the next sentence starts.
+    // estMs is kept only as a separate, pure fallback watchdog (see the
+    // setTimeout after speak() below) for the rarer case where
+    // onend/onerror never fire at all.
     const startedAt = Date.now();
-    const estMs = Math.max(1200, (raw.length * 260) / TTS_RATE);
+    const effectiveRate = TTS_RATE * EN_RATE_ADJUST * baseRateMult;
+    const estMs = Math.max(1200, (raw.length * 260) / effectiveRate);
     let _ended = false;
     const proceed = ()=>{
         if(_ended) return;
@@ -2042,16 +2059,17 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
         const pause = idx < sentences.length - 1 ? (endsFully ? 150 : 80) : 0;
         setTimeout(()=>{ if(myGen===speechGen) _speakSentenceQueue(sentences, idx + 1, speaker, myGen, onEnd); }, pause);
     };
-    const proceedNoEarlierThanEst = ()=>{
-        if(_ended) return;
-        const remaining = estMs - (Date.now() - startedAt);
-        if(remaining > 0){ setTimeout(()=>{ if(myGen===speechGen) proceed(); }, remaining); }
-        else proceed();
-    };
-    u.onend = proceedNoEarlierThanEst;
-    u.onerror = proceedNoEarlierThanEst;
+    u.onend = proceed;
+    u.onerror = proceed;
     window.speechSynthesis.speak(u);
-    setTimeout(()=>{ if(myGen===speechGen) proceed(); }, estMs + 4000);
+    // v-en-autoadvance-fix (continued) — pure fallback watchdog: only
+    // fires proceed() if onend/onerror never arrive at all (a known Web
+    // Speech API flakiness, especially with English voices). Since
+    // proceed() no longer runs on the hot path above, this timer never
+    // adds delay to the normal case — it only rescues a genuinely stuck
+    // utterance, after giving it the accurate estMs plus a safety
+    // margin to actually finish speaking.
+    setTimeout(()=>{ if(myGen===speechGen) proceed(); }, estMs + 2500);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2332,6 +2350,8 @@ function toggleEasyMode(){
     btn.textContent = 'Easy sentences';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     // v87 — cycleSpeed()와 동일한 이유로, 이어듣기를 문자열 재생이 아닌
     // 재생 상태 스냅샷 방식으로 교체(자세한 설명은 cycleSpeed() 주석 참고).
     const announceText = easyMode ? 'Switching to easy sentences.' : 'Returning to the original sentences.';
@@ -2816,6 +2836,8 @@ function openInfo(){
     // v-exhibit-intro-split — 버튼이 3개에서 4개(전시소개 추가)로 늘어난
     // 만큼 안내 문구도 함께 갱신한다.
     try{ speak('There are four buttons: Exhibition, Artist, Room 1 Artworks, and Room 1 How-To. Press whichever you’d like to hear.'); }catch(err){}
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
 }
 function infoStillOpen(){
     const ov = document.getElementById('info-overlay');
@@ -2855,6 +2877,8 @@ function openInfoDetail(kind){
     overlay.setAttribute('data-info-kind', kind);
     const card = document.getElementById('info-card');
     if(card){ card.scrollTop = 0; }
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     playInfoAudio(kind);
     try{
         // v90 — 참가자 지적: "작품소개·작가소개·이용방법을 누르면 자막의
@@ -2877,6 +2901,8 @@ function backToInfoMenu(){
     overlay.classList.remove('detail');
     overlay.classList.add('menu');
     overlay.removeAttribute('data-info-kind');
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     try{
         const btn = document.querySelector('.info-audio-btn[data-kind="exhibit"]');
         if(btn && typeof btn.focus === 'function'){ btn.focus(); }
@@ -2889,6 +2915,8 @@ function closeInfo(){
     document.getElementById('info-overlay').classList.remove('detail');
     document.getElementById('info-overlay').removeAttribute('data-info-kind');
     document.removeEventListener('keydown', _infoDialogKeydown);
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     if(_infoLastFocused && typeof _infoLastFocused.focus === 'function'){
         _infoLastFocused.focus();
     }

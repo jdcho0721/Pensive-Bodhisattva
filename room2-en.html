@@ -239,15 +239,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
    위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
    버튼과 화면 좌우로 확실히 떨어지게 한다. */
-/* v-top-bar-overlap-fix — participant report: "the exploration
-   gauge overlaps the image." At the bottom edge, this pill could sit
-   over the lowest hotspots (both statues' feet, top:77~86%), making
-   them hard to tap on short viewports. No hotspot starts before 11%
-   from the top, so anchoring this bar to the TOP of the stage instead
-   keeps the same "doesn't take its own flex row, just floats over a
-   quiet corner of the image" behavior while clearing every hotspot. */
-#top-bar{position:absolute; left:0; right:0; top:calc(6px + env(safe-area-inset-top)); width:100%;display:flex;justify-content:flex-start;align-items:center;
-    padding:0 10px;z-index:20; pointer-events:none;}
+/* v-top-bar-below-image — participant request: "put the exploration
+   gauge right below the image." The earlier absolute-positioned
+   versions (bottom, then top) always floated over some part of the
+   image and risked covering a hotspot on short viewports. Restoring
+   this to a plain, non-absolute flex child — placed in the HTML as
+   #stage's sibling rather than its child (see body markup) — makes it
+   take its own small row in the #room-layout column, directly between
+   the image and the caption box, with zero overlap on any screen. */
+#top-bar{position:relative; width:100%; display:flex; justify-content:flex-start; align-items:center;
+    padding:4px 10px; flex:0 0 auto; z-index:5;}
 #top-bar .pill{pointer-events:auto;}
 .pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
 #progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
@@ -1371,14 +1372,14 @@ body.low-vision-mode #hint-row .btn{
          style="top:80%; left:72%; width:9%; height:6%;" aria-label="반가사유상 — 발가락"></div>
     </div>
 
-<!-- v-top-bar-overlay — 참가자 요청: "이미지를 1.3배로 키우고, 다리가
-     잘리면 탐색 바와 사유의 방 버튼을 내려서 맞춰달라." 이 블록은
-     원래 #stage 바로 다음의 독립된 형제 요소로, flex 레이아웃에서
-     자기 몫의 세로 공간을 따로 차지하고 있었다 — 그만큼 #stage(이미지)
-     가 쓸 수 있는 높이가 줄어들었다. #stage 안쪽으로 옮기고 절대
-     위치로 띄워서, 더 이상 별도의 flex 공간을 차지하지 않게 한다 —
-     그 공간이 고스란히 이미지 쪽으로 돌아간다. 시각적으로는 이미지
-     아래쪽에 살짝 겹쳐 보이는 자리로, 기존과 크게 다르지 않다. -->
+</div>
+
+<!-- v-top-bar-below-image — participant request: "put the exploration
+     gauge right below the image." Moved out of #stage to be its plain
+     sibling here, so it takes its own small row in #room-layout,
+     directly under the image and above the caption box — see the CSS
+     comment on #top-bar for why this replaces the earlier
+     absolute-positioned (bottom-, then top-anchored) versions. -->
 <div id="top-bar">
     <div class="pill" id="progress-pill" aria-hidden="true">
         <span id="progress-count">Explored 0/11</span>
@@ -1395,8 +1396,6 @@ body.low-vision-mode #hint-row .btn{
          볼 수 없어 동일한 정보를 얻지 못했다 — 아래 sr-only 리전이 그
          정보를 텍스트로 대신 전달한다(updateProgress()에서 갱신). -->
     <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
-</div>
-
 </div>
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
@@ -2017,6 +2016,8 @@ function toggleBgm(){
         btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
         btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
     }
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     // v-bgm-toggle-speech — 참가자 요청: "배경음악이 켜질 때는 '배경음악이
     // 켜집니다.', 꺼질 때는 '배경음악이 꺼집니다.'라고 해달라." 이 버튼의
     // data-tap-action(두 번째 탭 때 미리 읽어주던 고정 문구)은 제거했고,
@@ -5905,6 +5906,8 @@ if(ChatSpeechRecognition){
 }
 
 function toggleChatMic(){
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     if(!chatRecognition){
         const msg = '이 브라우저는 음성 입력을 지원하지 않습니다. 텍스트로 입력하거나 예상 질문을 눌러 주세요.';
         document.getElementById('chat-mic-status').textContent = msg;
@@ -6816,6 +6819,8 @@ function openInfo(){
     // v-info-reorganize — 버튼이 3개에서 4개(전시소개 추가)로 늘고 순서도
     // 바뀐 만큼 안내 문구도 함께 갱신한다.
     try{ speak('There are four buttons: Exhibition, Artist, Room 2 Artworks, and Room 2 How-To. Press whichever you’d like to hear.'); }catch(err){}
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
 }
 function infoStillOpen(){
     const ov = document.getElementById('info-overlay');
@@ -6871,6 +6876,8 @@ function openInfoDetail(kind){
     overlay.setAttribute('data-info-kind', kind);
     const card = document.getElementById('info-card');
     if(card){ card.scrollTop = 0; }
+    // v-execute-haptic — participant request: "vibrate when a button executes."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     playInfoAudio(kind);
     try{
         // v90 — index.html과 동일한 원인/수정. 자세한 설명은 index.html의

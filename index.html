@@ -1596,6 +1596,10 @@ function toggleBgm(){
         btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
         btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
     }
+    // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로
+    // 알려줘." 즉시 실행되는 토글류 버튼들(배경음악·속도·쉬운 문장 등)은
+    // 두 번 탭 확인 절차를 거치지 않아 지금까지 실행 진동이 전혀 없었다.
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.');
 }
 
@@ -2004,18 +2008,18 @@ function _speakSentenceQueue(sentences, idx, speaker, myGen, onEnd){
     // 버튼은 여전히 전체 속도를 조절하고, 그 위에 화자별 상대적인
     // 빠르기 차이만 얹는다.
     let basePitch, baseRateMult;
-    // v-pitch-reference-match — 참가자 지적: "'전시실 2로 이동합니다'
-    // 음성이 좋다. 그 음성으로 바꿔달라." 그 안내는 #btn-next-exhibit의
-    // 두 번째 탭 확인 발화(아래쪽 별도 SpeechSynthesisUtterance)인데,
-    // 지금까지 여러 차례 "피치가 높다"는 지적을 반영해 로댕(0.76)·
-    // 반가사유상(0.70)·기본(0.82)까지 계속 낮춰온 이 speak() 함수와
-    // 달리, 그 발화는 u.pitch를 아예 건드리지 않아 브라우저 기본값
-    // (1.0)을 그대로 쓴다. 즉 참가자가 좋다고 느낀 건 "더 낮춘 피치"가
-    // 아니라 "전혀 손대지 않은 원래 피치"였다 — 그동안의 하향 조정이
-    // 방향을 잘못 잡았던 것으로 보고, 세 값 모두 원복한다.
-    if(speaker==='rodin'){ basePitch = 1.0; baseRateMult = 0.94; }
-    else if(speaker==='maitreya'){ basePitch = 1.0; baseRateMult = 0.90; }
-    else { basePitch = 1.0; baseRateMult = 1.0; }
+    // v-pitch-too-high — participant report: "the narration pitch is too
+    // high — make it a more pleasant voice tone." An earlier round had
+    // reverted all three pitches to the untouched browser default (1.0),
+    // reasoning from a single confirmation line ("Moving to Room 2")
+    // that happened to sound good at 1.0 — but that was a very short,
+    // separate utterance, not proof the main narration should sit at
+    // full pitch. Lowering it again here, but more moderately than the
+    // earlier 0.70/0.76/0.82 extreme that prompted that revert, aiming
+    // for a warmer tone without swinging back too far.
+    if(speaker==='rodin'){ basePitch = 0.86; baseRateMult = 0.94; }
+    else if(speaker==='maitreya'){ basePitch = 0.80; baseRateMult = 0.90; }
+    else { basePitch = 0.90; baseRateMult = 1.0; }
     u.rate = TTS_RATE * baseRateMult;
     // v-more-natural-intonation — 참가자 지적: "목소리가 단조롭다, 좀 더
     // 자연스러웠으면 좋겠다." Web Speech API는 문장 하나의 음높이·속도를
@@ -2352,6 +2356,8 @@ function toggleEasyMode(){
     btn.textContent = '쉬운 문장';
     btn.setAttribute('aria-pressed', String(easyMode));
     btn.classList.toggle('primary', easyMode);
+    // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로 알려줘."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     // v87 — cycleSpeed()와 동일한 이유로, 이어듣기를 문자열 재생이 아닌
     // 재생 상태 스냅샷 방식으로 교체(자세한 설명은 cycleSpeed() 주석 참고).
     const announceText = easyMode ? '쉬운 문장으로 전환됩니다.' : '원래 문장으로 돌아옵니다.';
@@ -2843,6 +2849,8 @@ function openInfo(){
     // v-exhibit-intro-split — 버튼이 3개에서 4개(전시소개 추가)로 늘어난
     // 만큼 안내 문구도 함께 갱신한다.
     try{ speak('전시 소개, 작가 소개, 전시1 작품소개, 전시1 이용방법, 네 가지 버튼이 있습니다. 원하는 버튼을 눌러 들어보세요.'); }catch(err){}
+    // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로 알려줘."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
 }
 function infoStillOpen(){
     const ov = document.getElementById('info-overlay');
@@ -2882,6 +2890,8 @@ function openInfoDetail(kind){
     overlay.setAttribute('data-info-kind', kind);
     const card = document.getElementById('info-card');
     if(card){ card.scrollTop = 0; }
+    // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로 알려줘."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     playInfoAudio(kind);
     try{
         // v90 — 참가자 지적: "작품소개·작가소개·이용방법을 누르면 자막의
@@ -2904,6 +2914,8 @@ function backToInfoMenu(){
     overlay.classList.remove('detail');
     overlay.classList.add('menu');
     overlay.removeAttribute('data-info-kind');
+    // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로 알려줘."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     try{
         const btn = document.querySelector('.info-audio-btn[data-kind="exhibit"]');
         if(btn && typeof btn.focus === 'function'){ btn.focus(); }
@@ -2916,6 +2928,8 @@ function closeInfo(){
     document.getElementById('info-overlay').classList.remove('detail');
     document.getElementById('info-overlay').removeAttribute('data-info-kind');
     document.removeEventListener('keydown', _infoDialogKeydown);
+    // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로 알려줘."
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     if(_infoLastFocused && typeof _infoLastFocused.focus === 'function'){
         _infoLastFocused.focus();
     }
