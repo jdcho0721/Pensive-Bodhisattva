@@ -304,6 +304,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border:1px solid rgba(212,175,55,.6);}
 #cam-toggle-btn.active{background:var(--gold); color:#000; font-weight:700; border-color:var(--gold);}
 
+/* v-explore-bar-restored — 참가자 요청: "전시2 탐색 바를 이미지 바로
+   밑에 넣어줘." #stage(이미지)와 #caption-wrap(자막창) 사이에 끼는
+   얇은 막대 — flex 흐름 안에 있어 그만큼 이미지가 쓸 수 있는 세로
+   공간이 줄어들지만, "이미지 바로 밑"이라는 요청을 그대로 따른다. */
+#explore-bar{flex:0 0 auto;display:flex;align-items:center;gap:10px;
+    padding:6px 16px;background:rgba(0,0,0,.85);border-top:1px solid rgba(212,175,55,.14);
+    border-bottom:1px solid rgba(212,175,55,.14);}
+#explore-bar-track{flex:1 1 auto;height:4px;border-radius:2px;background:rgba(212,175,55,.18);overflow:hidden;}
+#explore-bar-fill{height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width .4s ease;}
+#explore-bar-text{flex:0 0 auto;font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
+
 #caption-wrap{position:relative;flex:0 0 auto;width:100%;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
     z-index:25;min-height:clamp(180px, 34vh, 320px);max-height:46vh;box-sizing:border-box;
@@ -1459,25 +1470,33 @@ body.low-vision-mode #hint-row .btn{
      v39 — 참가자 요청: "배경음악을 종소리로 바꾸고, 좀 더 작게." 종소리는
      특정 조각상 전용 소리에서는 빼되, 입장 내내 은은하게 깔리는 배경음
      (snd-base) 자리로 옮겼다. 볼륨도 0.18 → 0.09로 낮췄다.
+     v-bgm-unify — 참가자 요청: "전시1과 전시2의 생각하는 사람 배경음은
+     Where_Bamboo_Bends, 반가사유상 배경음은 Temple_Bell_at_Daybreak로
+     통일하고, 전시2 두 조각상 가운데는 Lotus_at_the_Gate, 여일 화면은
+     Echoes_of_the_Void로 해달라." 아래 다섯 파일명은 이제 이 최신 배정을
+     그대로 따른다 — 예전 주석에 남아 있던 옛 파일명(로댕 쪽 Echoes_of_
+     the_Void, 반가사유상 쪽 Lotus_at_the_Gate 등)은 이번 요청으로
+     서로 자리를 바꾼 것이니 혼동하지 않도록 주석도 함께 고쳤다.
      ① snd-base(Temple_Bell_at_Daybreak) — 입장부터 끝까지 항상 켜져
         있는 아주 낮은 배경음. 아무 부위도 만지지 않은 "빈 시간"에도
         완전한 무음이 되지 않도록 이 방 자체의 공기를 깐다.
      ② snd-arrival(Sacred_Morning) — 입장 직후 한 번만 차올랐다가, 첫
         부위를 만지는 순간 조용히 사라지는 "도착"의 소리.
-     ③ snd-rodin(Echoes_of_the_Void) — 로댕 쪽 부위를 만질 때 겹쳐지는
+     ③ snd-rodin(Where_Bamboo_Bends) — 로댕 쪽 부위를 만질 때 겹쳐지는
         소리.
-     ④ snd-maitreya(Lotus_at_the_Gate) — 반가사유상 쪽 부위를 만질 때
-        겹쳐지는 소리. 연꽃은 불교 도상의 흔한 상징이라 잘 맞는다.
-     ⑤ snd-meeting(Sacred_Morning) — 두 조각상 "사이" 빈 자리
+     ④ snd-maitreya(Temple_Bell_at_Daybreak) — 반가사유상 쪽 부위를
+        만질 때 겹쳐지는 소리.
+     ⑤ snd-meeting(Lotus_at_the_Gate) — 두 조각상 "사이" 빈 자리
         (center-zone)에 실제로 손이 들어섰을 때만 켜지는 소리.
-        snd-arrival과 같은 파일을 돌려쓰지만, 둘 다 아주 드물게(입장
-        직후 한 번 / 가운데 자리를 짚었을 때) 서로 겹치지 않는 순간에만
-        나오므로 소리가 겹칠 일은 없다. -->
+     ⑥ snd-yeoil(Echoes_of_the_Void) — "여일"(마음 비우기) 화면으로
+        넘어가는 순간 다른 배경음을 모두 끄고 이 소리만 남긴다
+        (beginYeoilExit() 참고). -->
 <audio id="snd-base" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <audio id="snd-arrival" src="Sacred_Morning.mp4" preload="auto" loop></audio>
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp4" preload="auto" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
-<audio id="snd-meeting" src="Sacred_Morning.mp4" preload="auto" loop></audio>
+<audio id="snd-meeting" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
+<audio id="snd-yeoil" src="Echoes_of_the_Void.mp4" preload="auto" loop></audio>
 
 <div id="room-layout">
 <!-- v-nonvisual-orientation — 참가자(전맹 시각장애인) 지적: "현재 화면에서
@@ -1519,11 +1538,11 @@ body.low-vision-mode #hint-row .btn{
     <div class="hotspot" id="maitreya-fingers" data-key="maitreya-fingers" role="button" tabindex="0" aria-pressed="false"
          style="top:24%; left:70%; width:6%; height:11%;" aria-label="반가사유상 — 뺨에 댄 두 손가락"></div>
     <div class="hotspot" id="maitreya-leg" data-key="maitreya-leg" role="button" tabindex="0" aria-pressed="false"
-         style="top:51%; left:72%; width:10%; height:8%;" aria-label="반가사유상 — 반가좌 자세, 무릎 위 발"></div>
+         style="top:50%; left:72%; width:10%; height:8%;" aria-label="반가사유상 — 반가좌 자세, 무릎 위 발"></div>
     <div class="hotspot" id="maitreya-robe" data-key="maitreya-robe" role="button" tabindex="0" aria-pressed="false"
          style="top:64%; left:70%; width:14%; height:11%;" aria-label="반가사유상 — 옷주름"></div>
     <div class="hotspot" id="maitreya-toes" data-key="maitreya-toes" role="button" tabindex="0" aria-pressed="false"
-         style="top:80%; left:72%; width:9%; height:6%;" aria-label="반가사유상 — 발가락"></div>
+         style="top:81%; left:72%; width:9%; height:6%;" aria-label="반가사유상 — 발가락"></div>
     </div>
 
 <!-- v-top-bar-removed — 참가자 요청: "탐색바를 없애고 대신 아직
@@ -1536,6 +1555,16 @@ body.low-vision-mode #hint-row .btn{
      둔다. -->
 <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
 
+</div>
+
+<!-- v-explore-bar-restored — 참가자 요청: "전시2 탐색 바를 이미지 바로
+     밑에 넣어줘." 예전에 화면 위쪽에 떠 있다가 없앤 탐색 진행률
+     표시를, 이번엔 이미지(#stage) 바로 아래·자막창(#caption-wrap)
+     바로 위 자리에 얇은 막대로 다시 둔다. 화면에 보이는 숫자·막대와
+     별개로, 스크린리더용 안내는 여전히 #progress-sr(위)이 맡는다. -->
+<div id="explore-bar" role="presentation" aria-hidden="true">
+    <div id="explore-bar-track"><div id="explore-bar-fill"></div></div>
+    <span id="explore-bar-text">탐색 0 / 11</span>
 </div>
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
@@ -2167,7 +2196,7 @@ function startAmbientSound(){
 // 전혀 건드리지 않는다 — 다시 켜면 그 순간의 진짜 볼륨으로 바로
 // 돌아온다.
 let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-base','snd-arrival','snd-rodin','snd-maitreya','snd-meeting'];
+const BGM_AUDIO_IDS = ['snd-base','snd-arrival','snd-rodin','snd-maitreya','snd-meeting','snd-yeoil'];
 function _applyBgmMuteState(){
     BGM_AUDIO_IDS.forEach(id=>{
         const el = document.getElementById(id);
@@ -2498,8 +2527,18 @@ function _speakSentenceQueueRoom2(sentences, idx, speakerKey, mySeq, captionEl, 
         const _bestVoice = _pickBestKoreanVoice();
         if(_bestVoice) u.voice = _bestVoice;
         let basePitch, baseRateMult;
-        if(speakerKey === 'rodin'){ basePitch = 1.0; baseRateMult = 0.94; }
-        else if(speakerKey === 'maitreya'){ basePitch = 1.0; baseRateMult = 0.90; }
+        // v-speaker-pitch-differentiation — 참가자 지적: "전체 나레이션,
+        // 로댕 나레이션, 반가사유상 나레이션이 다 같은 목소리로 들려서,
+        // 화면(자막)을 볼 수 없는 상황(시각장애인, 또는 실물을 보느라
+        // 화면에서 눈을 뗀 관람객)에서는 지금 어느 쪽 설명인지 소리만으로
+        // 구분할 수 없다." 원인: 지금까지는 음높이(pitch)가 두 조각상
+        // 모두 1.0으로 완전히 같았고, 속도(rate)만 0.94 vs 0.90으로
+        // 4%밖에 차이 나지 않아 실제로 듣고 구분하기 어려웠다. 로댕은
+        // 더 낮고 무겁게, 반가사유상은 더 높고 부드럽게 음높이 자체를
+        // 뚜렷이 갈라, 화면을 보지 않고 소리만 들어도 지금 누구의
+        // 설명인지 알 수 있게 한다.
+        if(speakerKey === 'rodin'){ basePitch = 0.86; baseRateMult = 0.94; }
+        else if(speakerKey === 'maitreya'){ basePitch = 1.16; baseRateMult = 0.90; }
         else { basePitch = 1.0; baseRateMult = 1.0; }
         // v-more-natural-intonation(계속) — 이제 문장을 실제로 쪼개 개별
         // 발화로 재생하므로, index.html처럼 문장 끝 문장부호에 따른
@@ -3030,10 +3069,13 @@ function buildRecapAnswer(){
 const RECAP_TRIGGER = /요약|복습|정리해줘|정리해 줘|지금까지\s*(뭘|무엇을|뭐)|여태\s*(뭘|무엇을)|들은\s*거\s*(정리|요약)|다시\s*(들려줘|알려줘)\s*전체|몇\s*곳/;
 
 function updateProgress(){
-    // v-top-bar-removed — 참가자 요청으로 화면 위 진행률 알약(점 11개 +
-    // 숫자)을 없앴으므로, 그 알약 안 점을 채우던 아래 두 줄과 숫자
-    // 갱신 줄도 함께 정리한다 — 이제 미탐색 표시는 각 핫스팟 위
-    // ::after 점(CSS)이 스스로 처리하므로 여기서 더 할 일이 없다.
+    // v-explore-bar-restored — 참가자 요청으로 이미지 바로 아래에
+    // 되살린 탐색 바(#explore-bar)의 채움 막대와 숫자를 갱신한다.
+    const fillEl = document.getElementById('explore-bar-fill');
+    const textEl = document.getElementById('explore-bar-text');
+    const pct = ORDER.length ? Math.round((visited.size / ORDER.length) * 100) : 0;
+    if(fillEl) fillEl.style.width = pct + '%';
+    if(textEl) textEl.textContent = `탐색 ${visited.size} / ${ORDER.length}`;
     // 웹 접근성: 스크린리더 사용자를 위한 진행률 안내는 계속 남겨둔다.
     const srEl = document.getElementById('progress-sr');
     if(srEl) srEl.textContent = `탐색 진행 — 11곳 중 ${visited.size}곳을 확인했습니다.`;
@@ -3457,13 +3499,26 @@ function playIdentityTone(freq, type, duration, gain){
         osc.start(); osc.stop(audioCtx.currentTime + duration + 0.02);
     }catch(e){ /* 조용히 무시 — 오디오 실패가 낭독·촉각까지 막으면 안 된다 */ }
 }
+// v-overlapping-touch-tone-fix — 참가자 지적: "하나의 부위 해설이
+// 끝나기 전에 다른 오브젝트를 터치하면 배경 음악이 겹쳐 나오는 것
+// 같다." 원인: 이 함수는 진동 패턴에 맞춰 짧은 확인음 여러 개를
+// setTimeout으로 예약해두는데, 그 예약들이 다 끝나기 전에 다른
+// 부위를 만지면 이 함수가 다시 호출되어 새 예약을 추가로 쌓기만
+// 했다 — 먼저 만진 부위의 남은 예약음과 방금 만진 부위의 확인음이
+// 동시에 울려 "겹쳐 들리는" 원인이 됐다. 새로 예약하기 전에 아직
+// 울리지 않은 이전 예약을 모두 취소해, 현재 터치한 부위의 확인음만
+// 나오게 한다.
+let _pendingToneTimers = [];
 function scheduleHapticSyncTone(pattern, freq, soundType){
+    _pendingToneTimers.forEach(id => clearTimeout(id));
+    _pendingToneTimers = [];
     if(!pattern || !pattern.length) return;
     let t = 0;
     for(let i = 0; i < pattern.length; i += 2){ // 짝수 인덱스 = 진동이 "켜지는" 구간
         const onMs = pattern[i];
         const durationSec = Math.min(Math.max(onMs, 40), 600) / 1000;
-        setTimeout(()=> playIdentityTone(freq, soundType, durationSec, 0.55), t);
+        const timerId = setTimeout(()=> playIdentityTone(freq, soundType, durationSec, 0.55), t);
+        _pendingToneTimers.push(timerId);
         t += onMs + (pattern[i + 1] || 0);
     }
 }
@@ -4111,6 +4166,17 @@ function beginYeoilExit(){
     document.removeEventListener('keydown', _certDialogKeydown);
     stopHandTracking();
 
+    // v-bgm-unify — 참가자 요청: "전시2 여일 사운드는 Echoes_of_the_Void로
+    // 해달라." 여일 화면으로 들어가는 순간, 그때까지 켜져 있던 다른
+    // 배경음(로댕/반가사유상/가운데 자리/기본 배경)은 모두 끄고
+    // snd-yeoil만 서서히 올린다.
+    _fadeStatueAudio(document.getElementById('snd-rodin'), 0);
+    _fadeStatueAudio(document.getElementById('snd-maitreya'), 0);
+    _fadeStatueAudio(document.getElementById('snd-meeting'), 0);
+    _fadeStatueAudio(document.getElementById('snd-base'), 0);
+    _currentStatueSound = null;
+    _fadeStatueAudio(document.getElementById('snd-yeoil'), STATUE_SOUND_VOLUME);
+
     const yeoil = document.getElementById('yeoil-overlay');
     yeoil.classList.add('show');
     // 두 프레임 뒤에 .visible을 붙여 CSS transition(opacity)이 실제로
@@ -4164,6 +4230,12 @@ function closeYeoilOverlay(){
     const yeoil = document.getElementById('yeoil-overlay');
     yeoil.classList.remove('visible');
     yeoil.classList.remove('show');
+    // v-bgm-unify — 여일 화면을 벗어나 탐색으로 돌아가면 snd-yeoil을
+    // 끄고, 늘 켜져 있던 기본 배경음(snd-base)을 다시 올린다 — 조각상별
+    // 소리는 다음에 손끝이 닿는 부위에 따라 updateStatueSound()가 알아서
+    // 다시 켠다.
+    _fadeStatueAudio(document.getElementById('snd-yeoil'), 0);
+    _fadeStatueAudio(document.getElementById('snd-base'), AMBIENT_VOLUME);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -5543,6 +5615,7 @@ const DETAIL_TWO_VOICE_SYSTEM_PROMPT = DETAIL_SYSTEM_PROMPT + `
 - 질문에 "로댕"·"생각하는 사람"만 나오거나 로댕에게만 있는 부위·사실을 물으면 → 형식 A(생각하는 사람).
 - 질문에 "반가사유상"만 나오거나 반가사유상에게만 있는 부위·사실을 물으면 → 형식 A(반가사유상).
 - 비교를 묻거나("두 조각상은 뭐가 달라요?"), 걱정·인생처럼 각자의 관점이 의미 있게 답을 갈라놓는 질문 → 형식 B.
+- "너는 누구야", "당신은 누구세요", "자기소개 해줘"처럼 특정 조각상 이름 없이 상대방(챗봇) 자신의 정체를 묻는 질문은 → 항상 형식 B. 어느 한쪽만 가리키는 표현이 전혀 없다는 이유로 형식 A를 고르지 마십시오 — 이런 질문은 "로댕"·"반가사유상" 어느 쪽 이름도 등장하지 않는다는 바로 그 이유 때문에, 위 형식 A 조건("질문에 로댕/반가사유상만 나오거나...")을 만족하지 못합니다.
 - "조우가 무슨 뜻이에요?", "원융이 뭐예요?"처럼 전시 용어나 사실을 묻는, 특정 조각상의 개성과 무관한 질문 → 형식 C.
 - 확신이 서지 않으면, 두 조각상이 실제로 다르게 답할 만한 내용이 있는지 스스로 먼저 판단하십시오 — 다르게 답할 근거가 없다면 형식 B가 아니라 형식 C를 고르십시오. "일단 둘 다 답하고 보자"는 태도로 형식 B를 기본값처럼 쓰지 마십시오.
 

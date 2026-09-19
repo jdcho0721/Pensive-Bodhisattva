@@ -2541,9 +2541,12 @@ function showNextStageAnnouncement(){
 // 지금 보고 있는 바로 그 자막만 다시 들려준다.
 function _showFinishStep1(){
     announceStep = 1;
-    setCaptionWithHighlight('A difficult mind and a warm mind — different answers, but both born from a person’s deep contemplation.<br>That’s all the story prepared for today.');
+    // v-room2-transition-guide — participant request: matches
+    // index.html — explain how to actually move to Room 2 (tap the
+    // right side of the screen as before, or the Room 2 button).
+    setCaptionWithHighlight('A difficult mind and a warm mind — different answers, but both born from a person’s deep contemplation.<br>That’s all the story prepared for today.<br>Tap the right side of the screen as before, or press the Room 2 button at the bottom, to move to Room 2.');
     nextStageTag.classList.add('show');
-    speak('A difficult mind and a warm mind — different answers, but both born from a person’s deep contemplation. That’s all the story prepared for today. Move to the next exhibition stage.', ()=>{
+    speak('A difficult mind and a warm mind — different answers, but both born from a person’s deep contemplation. That’s all the story prepared for today. Tap the right side of the screen as before, or press the Room 2 button at the bottom, to move to Room 2.', ()=>{
         if(isPaused) return;
         clearTimeout(autoTimer);
         // v-finish-loops-to-start — 참가자 지적: "3단계 마침 화면에서
