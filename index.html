@@ -1181,30 +1181,35 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
      받은 사운드스케이프 5종을 각자 뚜렷한 역할로 나눠 배치한다.
      v37 — 참가자 지적: "처음에 나오는 종소리가 별로다." 반가사유상 쪽
-     소리로 쓰던 Temple_Bell_at_Daybreak(종소리)를 완전히 빼고, 그
-     자리에 연꽃 소리를 대신 돌려썼다 — 이제 이 전시에서 종소리는
-     전혀 나오지 않는다.
-     ① snd-base(Where_Bamboo_Bends) — 입장부터 끝까지 항상 켜져 있는
-        아주 낮은 배경음. 대나무가 바람에 휘어지는 소리로, 어느 조각상
-        편도 들지 않는 중립적인 "이 방 자체"의 공기를 깐다.
-     ② snd-arrival(Lotus at the Gate) — 오직 처음 입장하는 순간(0단계)에만
+     소리로 쓰던 Temple_Bell_at_Daybreak(종소리)를 한때 완전히 뺐었지만,
+     v-bgm-unify(아래) 요청으로 다시 반가사유상 전용 소리로 돌아왔다.
+     v-bgm-unify — 참가자 요청: "로댕 관련 해설은 Where_Bamboo_Bends,
+     반가사유상 관련 해설은 Temple_Bell_at_Daybreak, 그 이외 기본
+     배경음(snd-base)은 Lotus_at_the_Gate로 하고, 두 배경음이 섞여
+     나오지 않게 해달라." 이어서 "snd-base의 Temple_Bell_at_Daybreak를
+     빼고, 그 소리는 snd-maitreya에만 배정해 반가사유상 해설에서만
+     나오게 해달라"는 후속 요청으로, 그동안 같은 종소리를 함께 쓰던
+     snd-arrival·snd-meeting도 다른 파일로 바꿔 이제 Temple_Bell_at_
+     Daybreak는 오직 snd-maitreya 하나에서만 나온다.
+     ① snd-base(Lotus_at_the_Gate) — 특정 조각상 해설이 아닐 때 항상
+        켜져 있는 기본 배경음. 연꽃 소리로, 어느 조각상 편도 들지 않는
+        중립적인 "이 방 자체"의 공기를 깐다(로댕·반가사유상 전용
+        소리가 켜지는 동안은 완전히 꺼져 서로 섞이지 않는다 —
+        updateStatueSound() 참고).
+     ② snd-arrival(Sacred_Morning) — 오직 처음 입장하는 순간(0단계)에만
         한 번 차올랐다가 1단계가 시작되면 다시 사라지는 "도착"의 소리.
-        전시 전체에서 단 한 번만 들리므로 특별하게 남는다. (v.sound-swap
-        — 더 이상 Sacred_Morning을 쓰지 않는다. 종소리(Temple_Bell_at_
-        Daybreak)는 위 v37 사유로 이미 이 전시에서 뺀 상태라 그 대안으로
-        쓰지 않고, snd-maitreya와 같은 연꽃 소리로 돌려썼다.)
-     ③ snd-rodin(Echoes_of_the_Void) — 로댕 차례일 때 겹쳐지는 소리.
-        메아리치는 공허가 실존적 고뇌·공허감과 어울린다.
-     ④ snd-maitreya(Lotus_at_the_Gate) — 반가사유상 차례일 때 겹쳐지는
-        소리. 연꽃은 불교 도상에서 흔히 쓰이는 상징이라 반가사유상과도
-        잘 맞는다(종소리를 뺀 자리를 대신한다).
-     ⑤ snd-meeting(Lotus at the Gate) — 두 조각상이 실제로 만나는 단 한
+        전시 전체에서 단 한 번만 들리므로 특별하게 남는다.
+     ③ snd-rodin(Where_Bamboo_Bends) — 로댕 차례일 때 겹쳐지는 소리.
+        대나무가 바람에 휘어지는 소리.
+     ④ snd-maitreya(Temple_Bell_at_Daybreak) — 반가사유상 차례일 때만
+        겹쳐지는 소리. 이제 이 종소리를 쓰는 곳은 여기 하나뿐이다.
+     ⑤ snd-meeting(Lotus_at_the_Gate) — 두 조각상이 실제로 만나는 단 한
         지점(2단계 마지막 줄 "두 조각상 사이, 빈 중앙 공간")에서만
-        짧게 켜지는 특별한 소리. snd-arrival과 같은 파일을 돌려쓰지만,
-        둘 다 아주 드물게(각각 딱 한 번씩) 서로 겹치지 않는 순간에만
-        나오므로 소리가 겹칠 일은 없다. -->
+        짧게 켜지는 소리. snd-base와 같은 파일을 돌려쓰지만, 서로 다른
+        순간에만 나오므로 겹칠 일은 없다. -->
+
 <audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
-<audio id="snd-arrival" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
+<audio id="snd-arrival" src="Sacred_Morning.mp4" preload="auto" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
      Temple_Bell_at_Daybreak.mp4로, 생각하는 사람 부위는
@@ -1214,7 +1219,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      요청은 그 반대로 각자 다른 곡을 다시 배정해달라는 것이므로
      되돌린다. -->
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp4" preload="auto" loop></audio>
-<audio id="snd-meeting" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
+<audio id="snd-meeting" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
 <div class="spot-wide" id="spot" aria-hidden="true"></div>
 <div id="detail-spot" aria-hidden="true"></div>
 <svg id="effect-svg" aria-hidden="true"></svg>
