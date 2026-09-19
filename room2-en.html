@@ -190,6 +190,15 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    해결도 동일하게, 침범하는 쪽(주먹)의 여유 영역만 줄인다 — 좌표·다른
    핫스팟은 그대로 둔다. */
 #rodin-fist::before{ inset: -5px; }
+/* v-rodin-fist-elbow-gap — participant request: "raise The Thinker's
+   face hotspot 1% and lower the elbow-and-knee hotspot 1%, so the
+   clenched-fist hotspot registers." Pushed forehead (top:13%→12%) and
+   elbow (top:40%→41%) apart, widening the gap around the fist
+   (top:25-31%). The elbow is drawn after the fist in the DOM, so its
+   default ±16px hit-area margin could bleed upward into the fist's
+   bottom edge — narrowed only that top side (other three sides stay
+   -16px), same technique already used on the forehead/fist side. */
+#rodin-elbow::before{ inset: -5px -16px -16px -16px; }
 /* v-rodin-forehead-up-2pct — participant request: "raise the Thinker's
    face hotspot 2% so the chin hotspot registers." Moved forehead's top
    from 15% to 13%, widening the gap from the fist hotspot right below
@@ -1220,7 +1229,7 @@ body.low-vision-mode #hint-row .btn{
         <p>When using a phone camera to recognize your hand instead of a physical statue, the vibration rhythm the moment your fingertip reaches a part tells you its rough shape — short and dense means a rounded, clustered part (like a fist), a long continuous buzz means an elongated part (arm, ear, robe fold), two very short pulses means a narrow, pointed part (finger, toe), and a slow, gentle wave means a broad, flat part (forehead, face).</p>
         <p>Press the <b>Replay</b> button at the bottom of the screen to hear the explanation of the part you just touched again from the start. Touching the same part again also replays it.</p>
         <p>Most other buttons (<b>Certificate</b>, <b>Serenity</b>, <b>Room 1</b>, <b>ⓘ</b>, <b>💬</b>, etc.) speak their name and glow gold on the first press; pressing the same button again within a few seconds actually activates it. Only the <b>Speed</b> and <b>Easy sentences</b> buttons, and the <b>background music volume</b> slider, respond immediately on press or movement.</p>
-        <p>Press the <b>💬</b> button at the right-center to open the "Contemplation Counsel" chatbot. Tap a ready-made suggested question to ask without typing, or type or use the microphone button to ask freely about the part you just touched or either statue. Personal questions like worry or life are answered side by side, in each statue's own voice — if you're currently touching a part, the answer draws on that part's story, and this is not historical fact but a creative interpretation voiced by the two statues. Asking "summarize what I've touched so far" gives you your record so far, plus a rough direction (like "upper left, on the Rodin side") toward any part you haven't touched yet.</p>
+        <p>Press the <b>💬</b> button at the center of the screen to open the "Contemplation Counsel" chatbot. Tap a ready-made suggested question to ask without typing, or type or use the microphone button to ask freely about the part you just touched or either statue. Personal questions like worry or life are answered side by side, in each statue's own voice — if you're currently touching a part, the answer draws on that part's story, and this is not historical fact but a creative interpretation voiced by the two statues. Asking "summarize what I've touched so far" gives you your record so far, plus a rough direction (like "upper left, on the Rodin side") toward any part you haven't touched yet.</p>
         <p>If you missed an explanation while focused on the touch itself, you can always hear it again by touching the same part again or pressing Replay.</p>
         <p>Press the <b>Certificate</b> button (twice) any time to see your record of what you've encountered so far. Pressing the <b>Print</b> button on the certificate screen twice saves it as a PDF file.</p>
         <p>Pressing the <b>Serenity</b> button (twice) moves you to a mind-clearing screen — after listening to the guidance through to the end, you must press either the <b>Room 1</b> or <b>Room 2</b> button shown on that screen yourself to actually move. Pressing the <b>Room 1</b> button at the bottom (twice) skips this and goes straight to Room 1 any time.</p>
@@ -1249,6 +1258,10 @@ body.low-vision-mode #hint-row .btn{
         </div>
 
         <button id="info-close" onclick="closeInfo()">Close</button>
+        <!-- v-info-return-btn — participant request: matches room2.html
+             — same closeInfo() action, always visible at the very end
+             of the card. -->
+        <button type="button" id="info-return-btn" onclick="closeInfo()" data-tap-name="Return" data-tap-action="Returns to the exhibit screen">Return</button>
     </div>
 </div>
 <!-- v47 — "여일" 수료증: 지금까지 만진 부위 기록(visited Set)을 근거로
@@ -1378,11 +1391,11 @@ body.low-vision-mode #hint-row .btn{
     <div id="hotspot-layer">
     <!-- ── 로댕: 생각하는 사람 ── -->
     <div class="hotspot" id="rodin-forehead" data-key="rodin-forehead" role="button" tabindex="0" aria-pressed="false"
-         style="top:13%; left:27%; width:8%; height:6%;" aria-label="로댕 — 이마와 미간"></div>
+         style="top:12%; left:27%; width:8%; height:6%;" aria-label="로댕 — 이마와 미간"></div>
     <div class="hotspot" id="rodin-fist" data-key="rodin-fist" role="button" tabindex="0" aria-pressed="false"
          style="top:25%; left:26%; width:7%; height:6%;" aria-label="로댕 — 턱 아래 주먹 쥔 손"></div>
     <div class="hotspot" id="rodin-elbow" data-key="rodin-elbow" role="button" tabindex="0" aria-pressed="false"
-         style="top:40%; left:23%; width:8%; height:6%;" aria-label="로댕 — 팔꿈치가 무릎에 닿은 지점"></div>
+         style="top:41%; left:23%; width:8%; height:6%;" aria-label="로댕 — 팔꿈치가 무릎에 닿은 지점"></div>
     <div class="hotspot" id="rodin-muscle" data-key="rodin-muscle" role="button" tabindex="0" aria-pressed="false"
          style="top:22%; left:12%; width:10%; height:20%; border-radius:40%;" aria-label="로댕 — 등과 어깨 근육"></div>
     <div class="hotspot" id="rodin-toes" data-key="rodin-toes" role="button" tabindex="0" aria-pressed="false"
@@ -2136,7 +2149,7 @@ function enterRoom(){
     // structure." This is spatial/structural information, distinct from
     // the content-only introLine above, so it doesn't repeat anything.
     speak(introLine, () => {
-        speak('At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that is the description of whatever part you just touched, along with the replay, certificate, serenity, and room 1 buttons. The chat button in the middle-right opens a conversation with the Contemplation Counsel.');
+        speak('At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that is the description of whatever part you just touched, along with the replay, certificate, serenity, and room 1 buttons. The chat button in the center of the screen opens a conversation with the Contemplation Counsel.');
     });
     checkRAGStatus(); // 원격 RAG 검색 서버 연결 여부 콘솔 확인(실패해도 무시, UI 비차단)
     // v11 — 중앙 공간 표시는 이제 페이지가 뜰 때 한 번만 조용히 옅게
@@ -6876,7 +6889,7 @@ const INFO_SPEECH = {
     exhibit: 'This is the exhibition introduction. This exhibition is called Resonance of Silence, a tactile and voice-interactive exhibition for the blind and hearing-impaired. It presents a dialogue between two statues completed by fingertip, the Pensive Bodhisattva and The Thinker, letting you experience the National Treasure Gilt-Bronze Pensive Bodhisattva and Rodin’s The Thinker through smaller-than-life tactile replicas and voice narration. It runs September 10 to 12 at the World Heritage Industry Expo at Gyeongju HICO Convention Center, and September 20 to 21 at the 2nd floor lobby of the National Assembly Members’ Office Building. Most exhibitions are designed on the premise of seeing, but this one begins from the opposite premise: it is built around tactile replica statues, voice narration, and a touch-based AI chatbot, so blind visitors can complete the visit on their own, without a screen reader and without a companion. In Room 1, Encounter, visitors touch replica bronze statues of both figures directly to grasp form and posture first; in Room 2, Contemplation and Embodiment, visitors touch individual parts to hear their meaning and can freely ask an AI chatbot anything they’re curious about. Exhibition direction and digital interaction were led by Jun-Dong Cho, bronze replica production by Ho-Yong Kim, and disability accessibility by Geun-Hae Yuk.',
     intro: 'This is the Room 2 artwork introduction. The title is Resonance of Silence: Contemplation and Embodiment. Room 2 is not about the overall form, but about tracing, part by part, the meaning and contemplation held in each spot. In The Thinker, an unreleased weight is condensed into the brow, the clenched fist, the elbow, and the tensed muscles of the back, moments of what Spinoza called conatus, the basic effort of a being to persist in its own existence, still colliding forcefully with the outside world. In the Pensive Bodhisattva, that same weight has been set down at the ear, the smile, the fingers, the folds of drapery, the seated pose, and the toes, moments that have slipped free of affliction and touched an unconditioned joy of cessation. Each time you touch a single part in Room 2, this difference between the two minds will reach your fingertips. The Gilt-Bronze Pensive Bodhisattva is a Buddhist sculpture estimated to have been made during the Three Kingdoms period, around the sixth to seventh century, depicting Maitreya, the bodhisattva who will save all beings in the future, absorbed in deep contemplation. It is notable for the half-lotus posture, right foot resting on the left knee, and fingers lightly touching the cheek. Its maker is believed to have been a Three Kingdoms-period artisan, but the name has not been passed down. The Thinker was first created by the French sculptor Auguste Rodin around 1880 as a figure atop The Gates of Hell, then recast in 1904 as an independent, large-scale bronze. It is a masterpiece of modern sculpture expressing, through tensed muscle and a hunched posture, the difficult mind a person carries through life.',
     artist: "This is the Resonance of Silence artist introduction. Jun-Dong Cho is Professor Emeritus in the School of Electronic and Electrical Engineering at Sungkyunkwan University. He majored in electronic engineering at Sungkyunkwan University, earned a master’s in computer science from the New York Institute of Technology, and a Ph.D. in computer science from Northwestern University. He founded the Human-ICT Convergence graduate program at Sungkyunkwan University, and with an interest in human-computer interaction and multimodal interface development, coined the concept Humartology, fusing humanities, art, and technology, to create digital interactive artworks.",
-    usage: "This is the Room 2 usage guide. Tap the first screen once, lightly, to begin right away. It also starts automatically after one minute if you don’t tap. Use the background music button on this screen to turn background music on or off before starting. Touching a part you’re curious about on the statues on screen plays a short explanation of that part immediately in voice and captions. Press the Replay button at the bottom of the screen to hear the explanation of the part you just touched again from the start. Most other buttons speak their name on the first press, and pressing the same button again within a few seconds actually activates it. Only the Speed and Easy sentences buttons, and the background music volume slider, take effect immediately. The background music volume only adjusts the music; the narration volume is fixed separately. Pressing the button at the lower right opens the Contemplation Counsel chatbot, where you can freely ask whatever you’re curious about. Once you send a question, it stays pinned to the top of the window, so you don’t have to scroll back to find it while reading the answer. Personal questions like worry or life are answered side by side in each statue’s own voice, drawing on the story of whatever part you’re currently touching. This is not historical fact but a creative interpretation. Asking to summarize what you’ve touched so far gives you your record, plus a rough direction toward any part you haven’t touched yet. Swiping the empty space at the bottom of the screen, or touching the same part again, replays the explanation you just heard. Pressing the Certificate button at the bottom of the screen lets you check your record at any time. Pressing the Print button on the certificate screen twice saves it as a PDF file. Pressing the Serenity button moves you to a mind-clearing screen, where you must press either the Room 1 or Room 2 button yourself to actually move. Pressing the Room 1 button at the bottom skips this and goes straight to Room 1. This info panel you’re viewing now closes as soon as you tap the screen once."
+    usage: "This is the Room 2 usage guide. Tap the first screen once, lightly, to begin right away. It also starts automatically after one minute if you don’t tap. Use the background music button on this screen to turn background music on or off before starting. Touching a part you’re curious about on the statues on screen plays a short explanation of that part immediately in voice and captions. Press the Replay button at the bottom of the screen to hear the explanation of the part you just touched again from the start. Most other buttons speak their name on the first press, and pressing the same button again within a few seconds actually activates it. Only the Speed and Easy sentences buttons, and the background music volume slider, take effect immediately. The background music volume only adjusts the music; the narration volume is fixed separately. Pressing the button at the center of the screen opens the Contemplation Counsel chatbot, where you can freely ask whatever you’re curious about. Once you send a question, it stays pinned to the top of the window, so you don’t have to scroll back to find it while reading the answer. Personal questions like worry or life are answered side by side in each statue’s own voice, drawing on the story of whatever part you’re currently touching. This is not historical fact but a creative interpretation. Asking to summarize what you’ve touched so far gives you your record, plus a rough direction toward any part you haven’t touched yet. Swiping the empty space at the bottom of the screen, or touching the same part again, replays the explanation you just heard. Pressing the Certificate button at the bottom of the screen lets you check your record at any time. Pressing the Print button on the certificate screen twice saves it as a PDF file. Pressing the Serenity button moves you to a mind-clearing screen, where you must press either the Room 1 or Room 2 button yourself to actually move. Pressing the Room 1 button at the bottom skips this and goes straight to Room 1. This info panel you’re viewing now closes as soon as you tap the screen once."
 };
 function playInfoAudio(kind){
     if(!infoStillOpen()) return;
@@ -6987,7 +7000,8 @@ function _infoDialogKeydown(e){
             focusables = [
                 document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close')
+                document.getElementById('info-close'),
+                document.getElementById('info-return-btn')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -6995,7 +7009,8 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="artist"]'),
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
-                document.getElementById('refs-toggle-btn')
+                document.getElementById('refs-toggle-btn'),
+                document.getElementById('info-return-btn')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);

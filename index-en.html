@@ -869,13 +869,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="Listen to the Room 1 usage guide">🔊 Room 1 How-To</button>
         </div>
 
-        <!-- v-info-back-btn-restored — participant request: "keep the
-             back button in the info popup and the 4 menu screens
-             below it, so PC screens can go back." Restored as an
-             alternative for mouse users, who don't have the swipe
-             gesture. -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
-
         <div class="info-section" data-kind="exhibit">
         <h3>Exhibition Introduction</h3>
         <p class="label">A tactile and voice-interactive exhibition for the blind and hearing-impaired: Resonance of Silence</p>
@@ -962,6 +955,12 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
+        <!-- v-info-back-btn-moved — participant request: matches the
+             move already done in index.html — the back button now sits
+             at the bottom of each detail screen (just above References/
+             Close) instead of right after #info-audio-nav. -->
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
+
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="View References" data-tap-action="Opens the reference list">View References</button>
         <div id="refs-list" role="region" aria-label="Reference list">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
@@ -974,6 +973,10 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
         </div>
 
         <button id="info-close" onclick="closeInfo()" aria-label="Close">Close</button>
+        <!-- v-info-return-btn — participant request: matches
+             index.html — same closeInfo() action, always visible at
+             the very end of the card. -->
+        <button type="button" id="info-return-btn" onclick="closeInfo()" aria-label="Return to the exhibit screen" data-tap-action="Returns to the exhibit screen">Return</button>
     </div>
 </div>
 
@@ -3037,7 +3040,8 @@ function _infoDialogKeydown(e){
             focusables = [
                 document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close')
+                document.getElementById('info-close'),
+                document.getElementById('info-return-btn')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -3045,7 +3049,8 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="artist"]'),
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
-                document.getElementById('refs-toggle-btn')
+                document.getElementById('refs-toggle-btn'),
+                document.getElementById('info-return-btn')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);

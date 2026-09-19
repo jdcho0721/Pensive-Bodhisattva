@@ -905,13 +905,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="전시실 1 이용 방법 음성 듣기">🔊 전시1 이용방법</button>
         </div>
 
-        <!-- v-info-back-btn-restored — 참가자 요청: "정보창과 그 아래
-             메뉴 4개창에서 뒤로가기 버튼은 남겨두자. PC화면에서 뒤로 갈
-             수 있도록." 이전에 스와이프 안내로 대체하며 없앴던 버튼을
-             다시 둔다 — 스와이프 제스처가 없는 PC(마우스) 사용자를
-             위한 대안이다. -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
-
         <div class="info-section" data-kind="exhibit">
         <h3>전시소개</h3>
         <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
@@ -1007,6 +1000,17 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
 
+        <!-- v-info-back-btn-moved — 참가자 요청: "전시1의 정보 창에 있는
+             4가지 버튼으로 각각 들어가면 나오는 돌아가기 버튼도 그
+             각각의 창 맨 아래로 이동해줘." 원래 #info-audio-nav 바로
+             아래(4개 상세 화면 내용보다 위)에 있던 이 버튼을, 내용이
+             끝나는 이 자리(참고문헌·닫기 버튼 바로 위, 즉 상세 화면들
+             중 어느 것을 보고 있든 항상 그 화면의 "맨 아래")로 옮겼다 —
+             메뉴 화면에서는 이 버튼 자체가 보이지 않으므로(위 CSS
+             #info-overlay.detail #info-back 참고) 이동으로 인한 변화가
+             없다. -->
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
+
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="참고문헌 보기" data-tap-action="참고문헌 목록을 엽니다">참고문헌 보기</button>
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
@@ -1019,6 +1023,12 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
         </div>
 
         <button id="info-close" onclick="closeInfo()" aria-label="닫기">닫기</button>
+        <!-- v-info-return-btn — 참가자 요청: "전시1과 전시2 정보 창에
+             돌아가기 버튼을 맨 아래에 만들어줘. 전시 화면으로 돌아갈
+             수 있게." "닫기"와 동일하게 closeInfo()를 불러 전시 화면
+             으로 돌아간다 — 메뉴 화면·상세 화면 어디서든 항상 이
+             카드의 맨 끝(#info-close 바로 다음)에 보인다. -->
+        <button type="button" id="info-return-btn" onclick="closeInfo()" aria-label="전시 화면으로 돌아가기" data-tap-action="전시 화면으로 돌아갑니다">돌아가기</button>
     </div>
 </div>
 
@@ -3072,7 +3082,8 @@ function _infoDialogKeydown(e){
             focusables = [
                 document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close')
+                document.getElementById('info-close'),
+                document.getElementById('info-return-btn')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -3080,7 +3091,8 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="artist"]'),
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
-                document.getElementById('refs-toggle-btn')
+                document.getElementById('refs-toggle-btn'),
+                document.getElementById('info-return-btn')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);
