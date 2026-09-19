@@ -192,6 +192,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    해결도 동일하게, 침범하는 쪽(주먹)의 여유 영역만 줄인다 — 좌표·다른
    핫스팟은 그대로 둔다. */
 #rodin-fist::before{ inset: -5px; }
+/* v-rodin-forehead-up-2pct — 참가자 요청: "생각하는 얼굴 hotspot을
+   2% 위로 올려서 턱 hotspot이 잡히게 해줘." 이마(rodin-forehead)의
+   top을 15% → 13%로 올려, 바로 아래 턱 밑 주먹(rodin-fist, top:25%)
+   과의 간격을 넓혔다 — 위 -5px 여유 영역이 겹치는 폭이 줄어 주먹
+   쪽이 더 정확히 잡힌다. */
 .hotspot:hover,.hotspot:focus-visible{background:rgba(212,175,55,.14);}
 .hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 .hotspot.visited{background:rgba(212,175,55,.05);}
@@ -445,8 +450,12 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    함께 커지도록 했다. */
 /* v-caption-gap-fix — 참가자 요청: "챗봇 버튼을 위로 올려줘." bottom을
    150px → 220px로 올렸다가, 후속 요청으로 220px → 170px로 다시
-   내렸다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(170px + env(safe-area-inset-bottom));z-index:35;
+   내렸다.
+   v-chat-toggle-center — 참가자 요청: "챗봇 버튼을 5px 위로 올리고
+   화면 가운데로 이동해줘." bottom을 170px → 175px로 한 번 더 올리고,
+   right:16px(오른쪽 고정) 대신 left:50% + transform으로 가로 가운데
+   정렬로 바꿨다. */
+#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(175px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -831,6 +840,7 @@ body.low-vision-mode #hint-row .btn{
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
+#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -1151,6 +1161,12 @@ body.low-vision-mode #hint-row .btn{
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="전시실 2 이용 방법 음성 듣기">🔊 전시2 이용방법</button>
         </div>
 
+        <!-- v-info-back-btn-restored — 참가자 요청: "정보창과 그 아래
+             메뉴 4개창에서 뒤로가기 버튼은 남겨두자. PC화면에서 뒤로
+             갈 수 있도록." 스와이프 제스처가 없는 PC(마우스) 사용자를
+             위한 대안으로 다시 둔다. -->
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
+
         <div class="info-section" data-kind="exhibit">
         <h3>전시소개</h3>
         <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
@@ -1423,7 +1439,7 @@ body.low-vision-mode #hint-row .btn{
     <div id="hotspot-layer">
     <!-- ── 로댕: 생각하는 사람 ── -->
     <div class="hotspot" id="rodin-forehead" data-key="rodin-forehead" role="button" tabindex="0" aria-pressed="false"
-         style="top:15%; left:27%; width:8%; height:6%;" aria-label="로댕 — 이마와 미간"></div>
+         style="top:13%; left:27%; width:8%; height:6%;" aria-label="로댕 — 이마와 미간"></div>
     <div class="hotspot" id="rodin-fist" data-key="rodin-fist" role="button" tabindex="0" aria-pressed="false"
          style="top:25%; left:26%; width:7%; height:6%;" aria-label="로댕 — 턱 아래 주먹 쥔 손"></div>
     <div class="hotspot" id="rodin-elbow" data-key="rodin-elbow" role="button" tabindex="0" aria-pressed="false"
@@ -7160,6 +7176,7 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
+                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
                 document.getElementById('info-close')
             ].filter(Boolean);
@@ -7182,26 +7199,15 @@ function _infoDialogKeydown(e){
     }
 }
 
-// v-info-exit-gestures — 참가자 요청: "안내창을 한 번 터치하거나
-// 왼쪽에서 오른쪽으로 스와이프하면 빠져나오게 해달라." 오른쪽 스와이프와,
-// 큰 움직임 없이 짧게 한 번 두드리기(=스크롤하려고 길게 끈 게 아닌
-// 경우) 모두 안내창을 닫는다. "닫기"·"참고문헌" 버튼은 이미 위
-// 두-번-탭(v-two-tap-buttons) 체계로 자기 동작을 처리하므로, 그 버튼
-// 위에서는 이 제스처가 끼어들지 않게 제외한다.
-// v-info-back-gesture — 참가자 요청: "4개 버튼(전시소개·작품소개·
-// 작가소개·이용방법) 중 하나에 탭하여 들어간 다음 빠져나올 때는
-// 뒤로가기 제스처로 그 이전 창으로 빠져나오게 해달라." 원래는 이
-// 제스처가 detail 화면이든 menu(버튼 목록) 화면이든 구분 없이 항상
-// closeInfo()를 불러 안내창 전체를 곧장 닫아버렸다 — 상세 화면에서
-// "뒤로"를 기대하고 제스처를 했는데 실제로는 메뉴 화면을 건너뛰고
-// 바로 전시 해설 화면까지 나가버렸다. 아래 _exitInfoOneLevel()이 지금
-// 어느 화면인지 먼저 확인해 한 단계씩만 물러난다: 상세 화면에서는
-// backToInfoMenu()로 메뉴로, 메뉴 화면에서는 기존처럼 closeInfo()로
-// 안내창 전체를 닫고 전시 해설 화면으로 돌아간다 — 닫힐 때 자동으로
-// 방금 듣던 자막을 이어 들려주는 동작은 closeInfo() 안에 이미 있다
-// (위 v81/v92 주석 참고. 참가자 요청 "다시 전시 해설 창으로 빠져나오면
-// 현재 자막 음성재생이 자동으로 나오게 해달라"는 이 기존 로직으로
-// 그대로 충족된다).
+// v-info-tap-close-removed — 참가자 요청: "정보 버튼에서 뒤로 갈 때
+// 화면을 한 번 클릭하는 제스처는 제거해줘. 정보 안에 있는 4가지
+// 팝업창에 들어가고 나서도 마찬가지로 제거해줘." 아래
+// initInfoOverlayExitGestures()가 갖고 있던 세 가지 뒤로가기 방법
+// (오른쪽 스와이프·짧게 한 번 두드리기·PC 클릭) 중 오른쪽 스와이프만
+// 남기고, "짧게 한 번 두드리기"와 "PC 클릭" 두 가지는 없앤다 —
+// 메뉴 화면(4개 버튼)이든 상세 화면(전시소개·작가소개·작품소개·
+// 이용방법)이든 모두 적용된다(같은 함수 하나가 두 화면 모두를
+// 처리하므로 따로 손댈 곳이 없다).
 function _exitInfoOneLevel(){
     const overlay = document.getElementById('info-overlay');
     if(overlay && overlay.classList.contains('detail')){
@@ -7213,39 +7219,18 @@ function _exitInfoOneLevel(){
 (function initInfoOverlayExitGestures(){
     const overlay = document.getElementById('info-overlay');
     if(!overlay) return;
-    let startX = 0, startY = 0, startTime = 0;
-    function isOwnControl(t){
-        // v-info-back-gesture — #info-back("← 돌아가기")도 여기 제외
-        // 목록에 추가했다. 빼놓으면 터치 기기에서 그 버튼을 한 번 탭할
-        // 때 touchend 제스처(아래)가 그 버튼 고유의 두-번-탭 확인
-        // 절차보다 먼저 끼어들어, 확인 없이 곧장 화면이 넘어가 버리는
-        // 문제가 있었다.
-        return !!(t && t.closest && t.closest('#info-close, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
-    }
+    let startX = 0, startY = 0;
     overlay.addEventListener('touchstart', (e)=>{
         if(!overlay.classList.contains('show')) return;
         startX = e.changedTouches[0].screenX;
         startY = e.changedTouches[0].screenY;
-        startTime = Date.now();
     }, { passive:true });
     overlay.addEventListener('touchend', (e)=>{
         if(!overlay.classList.contains('show')) return;
         const dx = e.changedTouches[0].screenX - startX;
         const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
-        const dt = Date.now() - startTime;
-        if(dx > 60 && dyAbs < 60){ _exitInfoOneLevel(); return; } // 오른쪽으로 스와이프 → 뒤로/닫기
-        if(Math.abs(dx) < 12 && dyAbs < 12 && dt < 600 && !isOwnControl(e.target)){
-            _exitInfoOneLevel(); // 짧게 한 번 두드리기 → 뒤로/닫기
-        }
+        if(dx > 60 && dyAbs < 60){ _exitInfoOneLevel(); } // 오른쪽으로 스와이프 → 뒤로/닫기
     }, { passive:true });
-    // PC(마우스) 사용자를 위한 동일 동작. 버튼 클릭은 document의
-    // 두-번-탭 캡처 리스너가 먼저 가로채 stopImmediatePropagation()로
-    // 전파를 끊으므로, 이 리스너까지 도달하지 않아 서로 부딪히지 않는다.
-    overlay.addEventListener('click', (e)=>{
-        if(!overlay.classList.contains('show')) return;
-        if(isOwnControl(e.target)) return;
-        _exitInfoOneLevel();
-    });
 })();
 
 // v-yeoil-room-buttons — 참가자 요청: "여일 창에서 왼쪽에서 오른쪽으로
