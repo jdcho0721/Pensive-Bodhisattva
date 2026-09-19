@@ -1215,7 +1215,13 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      실제 오디오 데이터는 그 소리가 필요한 시점에 받도록 미룬다 —
      이미지 로딩이 더는 오디오와 경쟁하지 않는다. -->
 
-<audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="metadata" loop></audio>
+<!-- v-base-removed — 참가자 요청: "snd-base(Lotus_at_the_Gate)도
+     제거하자." 이미지와의 네트워크 경합을 더 줄이기 위해 마지막 남은
+     배경음 요소도 없앤다 — 이제 특정 조각상(로댕/반가사유상) 해설이
+     나올 때만 그 조각상 전용 소리가 들리고, 그 외 시간에는 배경음이
+     전혀 나오지 않는다. updateStatueSound()의 baseEl 관련 호출은 그대로
+     남아 있지만, _fadeStatueAudio()가 el이 없으면 조용히 아무 일도
+     하지 않으므로 에러 없이 무해하게 넘어간다. -->
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="metadata" loop></audio>
 <!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
      Temple_Bell_at_Daybreak.mp4로, 생각하는 사람 부위는
@@ -1676,7 +1682,15 @@ speak(gateText, ()=>{
     // 있습니다.'" gateText는 "조우"라는 주제(내용)만 알려줬을 뿐,
     // 화면이 어떻게 구획돼 있는지(구조)는 한 번도 말한 적이 없었다 —
     // 반복 안내가 아니라 새로운 정보이므로 한 번만 짧게 이어 들려준다.
-    speak('화면 위쪽에는 작품정보, 속도, 쉬운 문장, 배경음악 버튼이 있습니다. 가운데에는 두 조각상 그림이 있습니다. 그 아래에는 지금 나오는 이야기가 자막으로 표시됩니다. 그 아래에는 다시듣기, 멈춤, 전시2 이동 버튼이 있습니다.', ()=> playLayer(0));
+    // v-caption-missing-fix — 참가자 지적: "index 첫 페이지에서 음성해설의
+    // 자막이 안 나오는 경우가 있다." 원인: 바로 위 gateText는 speak() 전에
+    // captionEl.innerHTML을 직접 정해뒀지만, 이 두 번째 구조 안내
+    // 문장은 지금까지 그 작업 없이 곧바로 speak()만 불렀다 — 그래서 이
+    // 안내가 나오는 동안 화면에는 여전히 방금 전 gateText 자막만 남아
+    // 있고, 정작 지금 들리는 이 문장에 대한 자막은 전혀 뜨지 않았다.
+    const structureText = '화면 위쪽에는 작품정보, 속도, 쉬운 문장, 배경음악 버튼이 있습니다. 가운데에는 두 조각상 그림이 있습니다. 그 아래에는 지금 나오는 이야기가 자막으로 표시됩니다. 그 아래에는 다시듣기, 멈춤, 전시2 이동 버튼이 있습니다.';
+    captionEl.innerHTML = structureText;
+    speak(structureText, ()=> playLine(0));
 });
     startAmbientSound();
     fadeArrivalIn();
@@ -1689,7 +1703,7 @@ speak(gateText, ()=>{
 // 각 <audio> 요소의 muted 속성만 토글한다 — 음성 해설(speak())은 이
 // 토글의 대상이 아니라 꺼도 그대로 들린다.
 let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-base','snd-rodin','snd-maitreya'];
+const BGM_AUDIO_IDS = ['snd-rodin','snd-maitreya'];
 function _applyBgmMuteState(){
     BGM_AUDIO_IDS.forEach(id=>{
         const el = document.getElementById(id);
@@ -2659,7 +2673,12 @@ function proceedToRoom2AfterFinish(){
             return;
         }catch(e){ /* postMessage 실패 시 아래로 계속 — 직접 이동 */ }
     }
-    speak('전시실 1의 이야기를 모두 마쳤습니다. 전시실 2로 이동합니다.', goToRoom2);
+    // v-caption-missing-fix — 참가자 지적: "index 첫 페이지에서 음성해설의
+    // 자막이 안 나오는 경우가 있다." 같은 원인의 또 다른 사례 — 이 마지막
+    // 안내도 지금까지 자막 없이 speak()만 불렀다.
+    const finishText = '전시실 1의 이야기를 모두 마쳤습니다. 전시실 2로 이동합니다.';
+    setCaptionWithHighlight(finishText);
+    speak(finishText, goToRoom2);
 }
 
 function jumpToStage(targetIdx){

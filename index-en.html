@@ -1147,7 +1147,13 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      실제 오디오 데이터는 그 소리가 필요한 시점에 받도록 미룬다 —
      이미지 로딩이 더는 오디오와 경쟁하지 않는다. -->
 
-<audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="metadata" loop></audio>
+<!-- v-base-removed — participant request: matches index.html — remove
+     the last remaining background sound element too, to further cut
+     network contention with the image. Now the only sound is each
+     statue's own narration-specific ambience; nothing plays otherwise.
+     updateStatueSound()'s baseEl calls remain but are harmless no-ops
+     since _fadeStatueAudio() already returns immediately when given a
+     missing element. -->
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="metadata" loop></audio>
 <!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
      Temple_Bell_at_Daybreak.mp4로, 생각하는 사람 부위는
@@ -1613,7 +1619,12 @@ speak(gateText, ()=>{
     // "the first screen needs an overview of the whole interface
     // structure." gateText only covered the theme ("Encounter"), never
     // the screen's spatial layout — new information, not a repeat.
-    speak('At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that, the current story is shown as a caption. Below that are the replay, pause, and room 2 buttons.', ()=> playLayer(0));
+    // v-caption-missing-fix — participant report: matches index.html —
+    // this second announcement never set the caption before speaking,
+    // so it played while the caption still showed the earlier gateText.
+    const structureText = 'At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that, the current story is shown as a caption. Below that are the replay, pause, and room 2 buttons.';
+    captionEl.innerHTML = structureText;
+    speak(structureText, ()=> playLayer(0));
 });
     startAmbientSound();
     fadeArrivalIn();
@@ -1626,7 +1637,7 @@ speak(gateText, ()=>{
 // 각 <audio> 요소의 muted 속성만 토글한다 — 음성 해설(speak())은 이
 // 토글의 대상이 아니라 꺼도 그대로 들린다.
 let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-base','snd-rodin','snd-maitreya'];
+const BGM_AUDIO_IDS = ['snd-rodin','snd-maitreya'];
 function _applyBgmMuteState(){
     BGM_AUDIO_IDS.forEach(id=>{
         const el = document.getElementById(id);
@@ -1691,23 +1702,33 @@ function onVolumeChange(v){
 // 주석 참고). 내레이션 음량(NARRATION_VOLUME)은 그대로 두고, 배경음만 상대적으로
 // 더 조용해지도록 이 기준값만 낮췄다.
 const AMBIENT_VOLUME = 0.14;
+// v-audio-unlock-after-base-removed — 참가자 지적: "반가사유상 관련
+// 해설에 BGM이 안 나온다." 원인을 찾았다: snd-base를 완전히 없애면서,
+// 이 함수(startAmbientSound)가 항상 el이 없어 곧바로 return해버려 —
+// 결과적으로 사용자가 화면을 탭한 바로 그 동작(동기적 호출 스택) 안에서
+// 오디오 요소를 한 번도 재생해보지 않게 됐다. 브라우저의 자동재생 정책은
+// 보통 "사용자 제스처 안에서 처음 성공한 재생"을 기준으로 그 페이지의
+// 오디오 재생을 허용하는데, 그 최초 재생 기회가 사라지면서, 나중에
+// 음성 안내 콜백 체인 안에서(사용자 제스처와 여러 단계 떨어진 시점에)
+// snd-rodin·snd-maitreya를 재생하려는 시도가 일부 브라우저에서 조용히
+// 차단됐다 — 그래서 로댕 쪽은 우연히 먼저 재생 기회를 얻어 들렸어도,
+// 반가사유상 쪽은 막혀서 안 들리는 등 편차가 생길 수 있다. 여기서
+// 지금 남아 있는 조각상 소리 요소를 아주 짧게(무음으로) 재생했다가
+// 즉시 멈춰, 사용자 제스처 안에서 확실히 "재생 허용"을 확보해둔다.
 function startAmbientSound(){
-    const el = document.getElementById('snd-base');
-    if(!el) return;
-    _audioBaseTarget['snd-base'] = AMBIENT_VOLUME;
-    el.volume = 0;
-    el.loop = true;
-    const p = el.play();
-    if(p && typeof p.catch === 'function'){
-        p.catch(e => console.warn('[앰비언트] 자동재생 차단:', e.message));
-    }
-    let v = 0;
-    const effectiveTarget = AMBIENT_VOLUME * bgmVolume;
-    const fadeIn = setInterval(()=>{
-        v = Math.min(effectiveTarget, v + 0.01);
-        el.volume = v;
-        if(v >= effectiveTarget) clearInterval(fadeIn);
-    }, 60);
+    ['snd-rodin', 'snd-maitreya'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const prevMuted = el.muted;
+        el.muted = true;
+        const p = el.play();
+        if(p && typeof p.then === 'function'){
+            p.then(()=>{ el.pause(); el.currentTime = 0; el.muted = prevMuted; })
+             .catch(()=>{ el.muted = prevMuted; });
+        } else {
+            el.muted = prevMuted;
+        }
+    });
 }
 
 // v82 — 위 AMBIENT_VOLUME과 같은 참가자 요청으로 함께 낮췄다(0.18 → 0.10).
@@ -1915,14 +1936,38 @@ let lastSpokenSpeaker = null;
 // 뒤늦게(1초 이후) 준비된 경우에도 다음 문장부터는 정상적으로 그 목소리를
 // 찾아 실제 음성으로 읽는다.
 let _voicesReadyPromise = null;
+// v-korean-narration-on-english-page-fix — 참가자 지적: "index-en에서
+// 갑자기 초기 화면 국문 해설이 나온다." 원인을 찾았다: 이 함수는 지금까지
+// "voices가 하나라도 있으면" 곧바로 준비됐다고 판단했는데, 한국어
+// 로캘 기기·브라우저에서는 한국어 음성 목록이 영어 음성보다 먼저
+// 채워지는 경우가 있다 — 그 순간에 이 함수가 "준비 완료"로 착각해
+// 곧바로 진행하면, 아직 영어 음성은 하나도 없는 상태라 아래
+// _pickBestKoreanVoice()(영어 음성만 걸러내는 함수, 이름은 예전
+// 한국어판 이름을 그대로 물려받았을 뿐이다)가 null을 반환하고, 그
+// 결과 u.voice를 지정하지 못한 발화가 브라우저의 절대 기본 음성(기기
+// 로캘이 한국어면 한국어 음성)으로 대신 읽혀버렸다 — 특히 아직 아무
+// 음성도 충분히 안 걸린 첫 화면(초기 진입 시점)에서 이 경합이 가장
+// 먼저, 가장 잦게 일어난다. "음성이 하나라도 있는지"가 아니라 "영어
+// 음성이 하나라도 있는지"를 기준으로 준비 완료를 판단하도록 고친다.
 function _ensureVoicesReady(){
-    if(window.speechSynthesis.getVoices().length > 0) return Promise.resolve();
+    const hasEnglish = v => /^en/i.test(v.lang);
+    if(window.speechSynthesis.getVoices().some(hasEnglish)) return Promise.resolve();
     if(_voicesReadyPromise) return _voicesReadyPromise;
     _voicesReadyPromise = new Promise(resolve=>{
         let done = false;
         const finish = ()=>{ if(done) return; done = true; _voicesReadyPromise = null; resolve(); };
-        try{ window.speechSynthesis.onvoiceschanged = finish; }catch(e){}
-        setTimeout(finish, 1000); // 안전장치: 1초 안에 목소리가 안 뜨면 일단 진행(단, 다음 문장에서 다시 확인)
+        // v-korean-narration-on-english-page-fix(계속) — onvoiceschanged는
+        // 음성 목록이 "바뀔 때마다" 여러 번 울릴 수 있다(한국어 팩 먼저,
+        // 영어 팩 나중처럼 단계적으로 도착하는 기기가 있다) — 그런데
+        // 예전엔 이 이벤트가 처음 한 번만 와도 무조건 "준비 완료"로
+        // 넘어갔다. 이제는 이벤트가 올 때마다 그 시점에 실제로 영어
+        // 음성이 들어왔는지 다시 확인하고, 아직이면 계속 기다린다 —
+        // 최종적으로는 1초 안전장치가 여전히 막아준다.
+        const onChange = ()=>{
+            if(window.speechSynthesis.getVoices().some(hasEnglish)) finish();
+        };
+        try{ window.speechSynthesis.onvoiceschanged = onChange; }catch(e){}
+        setTimeout(finish, 1000); // 안전장치: 1초 안에 영어 목소리가 안 뜨면 일단 진행(단, 다음 문장에서 다시 확인)
     });
     return _voicesReadyPromise;
 }
@@ -2610,7 +2655,11 @@ function proceedToRoom2AfterFinish(){
             return;
         }catch(e){ /* postMessage 실패 시 아래로 계속 — 직접 이동 */ }
     }
-    speak('You’ve reached the end of Room 1. Moving to Room 2.', goToRoom2);
+    // v-caption-missing-fix — participant report: matches index.html —
+    // this final announcement never set the caption before speaking.
+    const finishText = 'You’ve reached the end of Room 1. Moving to Room 2.';
+    captionEl.innerHTML = finishText;
+    speak(finishText, goToRoom2);
 }
 
 function jumpToStage(targetIdx){
