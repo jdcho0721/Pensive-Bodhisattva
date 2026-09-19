@@ -471,9 +471,13 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    for horizontal centering.
    v-chat-toggle-up-5px — follow-up participant request: "raise the
    chat button 5px." Raised bottom from 175px to 180px. */
-#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(190px + env(safe-area-inset-bottom));z-index:35;
+/* v-chat-toggle-draggable — participant request: "let me move the chat
+   button's position." touch-action:none needed so the browser's
+   default touch gestures (scrolling) don't intercept drag first. */
+#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
-    min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
+    min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
+    touch-action:none;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
    다리가 잘리면... 사유의 방 버튼을 내려서 맞춰달라. 버튼 크기도 좀
    줄여달라." bottom을 182px → 150px로 내리고, 52px → 44px(WCAG 2.5.5
@@ -6161,6 +6165,57 @@ function toggleChatMic(){
     handle.addEventListener('pointercancel', onPointerUp);
 })();
 
+// v-chat-toggle-draggable — participant request: "let me move the chat
+// button's position." Same principle as initChatDrag() above, but this
+// button is also "the button that opens the chat when tapped," so
+// drag and tap need to be told apart — moving more than DRAG_THRESHOLD
+// counts as a drag and repositions it; the trailing click event is then
+// suppressed (below, in the two-tap listener) so it doesn't also open
+// the chat. Staying under the threshold is treated as a normal tap.
+let _chatToggleJustDragged = false;
+(function initChatToggleDrag(){
+    const btn = document.getElementById('chat-toggle');
+    if(!btn) return;
+    const DRAG_THRESHOLD = 8; // movement below this is just a shaky tap
+    let startX = 0, startY = 0, startLeft = 0, startTop = 0, dragging = false, moved = false;
+
+    function onPointerDown(e){
+        const rect = btn.getBoundingClientRect();
+        startX = e.clientX; startY = e.clientY;
+        startLeft = rect.left; startTop = rect.top;
+        dragging = true; moved = false;
+        try{ btn.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    function onPointerMove(e){
+        if(!dragging) return;
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if(!moved && Math.hypot(dx, dy) > DRAG_THRESHOLD) moved = true;
+        if(!moved) return;
+        const rect = btn.getBoundingClientRect();
+        const maxLeft = window.innerWidth - rect.width - 4;
+        const maxTop = window.innerHeight - rect.height - 4;
+        const newLeft = Math.max(4, Math.min(maxLeft, startLeft + dx));
+        const newTop = Math.max(4, Math.min(maxTop, startTop + dy));
+        btn.style.left = newLeft + 'px';
+        btn.style.top = newTop + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+        btn.style.transform = 'none';
+    }
+    function onPointerUp(e){
+        if(!dragging) return;
+        dragging = false;
+        try{ btn.releasePointerCapture(e.pointerId); }catch(err){}
+        if(moved){
+            _chatToggleJustDragged = true;
+        }
+    }
+    btn.addEventListener('pointerdown', onPointerDown);
+    btn.addEventListener('pointermove', onPointerMove);
+    btn.addEventListener('pointerup', onPointerUp);
+    btn.addEventListener('pointercancel', function(){ dragging = false; });
+})();
+
 // v17 — 모서리 손잡이로 너비·높이를 함께 조절한다. initChatDrag와 같은
 // 방식으로, 처음 상호작용하는 순간 패널을 "가운데 자동 정렬(left/right +
 // margin:auto)" 상태에서 "고정 left/top + 명시적 width/height" 상태로
@@ -7245,6 +7300,16 @@ function _runOriginalButtonAction(target){
 document.addEventListener('click', function(e){
     const target = e.target.closest('button');
     if(!target) return;
+    // v-chat-toggle-draggable — participant request: "let me move the
+    // chat button's position." If a drag just finished
+    // (_chatToggleJustDragged), suppress the trailing click so it
+    // doesn't also open the chat.
+    if(target.id === 'chat-toggle' && _chatToggleJustDragged){
+        _chatToggleJustDragged = false;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+    }
     // v-mic-twotap-unify — participant request: "the chatbot's mic
     // button should also explain on first press, and execute
     // immediately on a fast second press, like the other buttons."
