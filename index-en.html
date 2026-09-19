@@ -437,10 +437,16 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #info-overlay.menu #info-card > #refs-toggle-btn{display:block;}
 #info-overlay.menu #info-card > #refs-list{display:none;}
 #info-overlay.menu #info-card > #refs-list.show{display:block;}
+#info-overlay.menu #info-card > #info-back{display:block;}
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
+/* v-info-buttons-consolidated — participant request: consolidate the
+   three buttons (Back/Close/Return) to one "돌아가기"/Return button at
+   the bottom, executing in a single tap. Applies to both modes now
+   instead of detail-only. */
+/* v-info-buttons-consolidated — #info-close removed (consolidated
+   into #info-back below). */
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -483,9 +489,9 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #info-card figure{ margin:6px 0 16px; }
 #info-card figure img{ display:block; width:100%; max-width:320px; margin:0 auto; border-radius:4px; border:1px solid var(--gold-dim); }
 #info-card figcaption{ text-align:center; margin-top:8px; font-size:.78rem; color:#999; letter-spacing:.02em; }
-#info-close{display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
+#info-back{display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px; border-radius:26px; cursor:pointer;}
-#info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+#info-back:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #copyright-tag{position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;}
 /* 모바일 반응형 — 참가자 요청: 좁은 화면에서 상단 버튼이 겹치지 않고,
@@ -955,12 +961,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
-        <!-- v-info-back-btn-moved — participant request: matches the
-             move already done in index.html — the back button now sits
-             at the bottom of each detail screen (just above References/
-             Close) instead of right after #info-audio-nav. -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
-
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="View References" data-tap-action="Opens the reference list">View References</button>
         <div id="refs-list" role="region" aria-label="Reference list">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
@@ -972,11 +972,13 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p><b>[7]</b> J.Y. Jeon, "The Most Exquisite Smile Humanity Has Ever Created, an Overwhelming Enlightenment," Munhwajae Sarang [Heritage Love] monthly magazine, no. 170, January 2019, Cultural Heritage Administration.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()" aria-label="Close">Close</button>
-        <!-- v-info-return-btn — participant request: matches
-             index.html — same closeInfo() action, always visible at
-             the very end of the card. -->
-        <button type="button" id="info-return-btn" onclick="closeInfo()" aria-label="Return to the exhibit screen" data-tap-action="Returns to the exhibit screen">Return</button>
+        <!-- v-info-buttons-consolidated — participant request: matches
+             index.html/room2.html/room2-en.html — three overlapping
+             buttons (Back, Close, Return) consolidated into one, using
+             _exitInfoOneLevel() so a single click/tap goes back one
+             step: detail→menu on the menu screen, or menu→exhibit
+             screen. -->
+        <button type="button" id="info-back" onclick="_exitInfoOneLevel()">Return</button>
     </div>
 </div>
 
@@ -2984,7 +2986,9 @@ function openInfoDetail(kind){
         // openInfo()의 메뉴 화면에서 이미 한 번 겪고 고쳤던 것과 똑같은
         // 원인이다(그때는 focus({preventScroll:true})로 해결했다). 여기도
         // 같은 방식으로 통일한다.
-        const closeBtn = document.getElementById('info-close');
+        // v-info-buttons-consolidated — #info-close is gone; focus the
+        // one remaining #info-back button instead.
+        const closeBtn = document.getElementById('info-back');
         if(closeBtn && typeof closeBtn.focus === 'function'){
             try{ closeBtn.focus({preventScroll:true}); }catch(e2){ closeBtn.focus(); }
         }
@@ -3061,10 +3065,8 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -3073,7 +3075,7 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);

@@ -218,13 +218,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .hotspot:hover,.hotspot:focus-visible{background:rgba(212,175,55,.14);}
 .hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 .hotspot.visited{background:rgba(212,175,55,.05);}
-/* 참가자 제안: 해설이 끝난 핫스팟은 실루엣(점선 테두리·옅은 배경)이 화면에
-   계속 남아 있으면 "이미 들은 곳"과 "아직 안 들은 곳"이 똑같아 보이고,
-   다 들은 자리도 계속 시선을 끈다는 지적이 있었다. 낭독이 끝나면 이
-   .explored 클래스를 붙여 배경을 완전히 투명하게 만들어 실루엣을
-   지운다 — 다시 만지거나(재생) 키보드 포커스가 오면 여전히 반응하도록
-   hover/focus 상태는 별도로 살려둔다(아래 참조). */
-.hotspot.explored{background:transparent;}
+/* v-explored-silhouette-restored — 참가자 요청: "각 부위의 해설이
+   마무리되면 그 부위의 hotspot 서클의 실루엣이 남도록 선굵기를 얇게
+   해줘." 위 설명(v-explored-transparent, 배경만 지우고 테두리 자체가
+   없던 시절)과 달리, 이번에는 실루엣을 다시 남기되 아주 얇은
+   테두리(1px)만 쓴다 — 조형미를 크게 해치지 않으면서도 "이미 다
+   들은 곳"이 어디인지 한눈에 남는다. */
+.hotspot.explored{background:transparent; border:1px solid rgba(212,175,55,.4);}
 .hotspot.explored:hover, .hotspot.explored:focus-visible{
     background:rgba(212,175,55,.14);
 }
@@ -475,7 +475,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    정렬로 바꿨다.
    v-chat-toggle-up-5px — 후속 참가자 요청: "챗봇 버튼을 5px 위로
    올려줘." bottom을 175px → 180px로 한 번 더 올렸다. */
-#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(180px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(190px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -537,18 +537,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     border-bottom:1px solid rgba(212,175,55,.18);color:var(--gold-light);font-size:.78rem;letter-spacing:.03em;}
 #chat-drag-handle .hint{font-size:.68rem;color:#8a8a8a;}
 #chat-drag-handle.dragging{cursor:grabbing;}
-/* v-chat-back-btn-visible — 참가자 요청: "챗봇창에 들어가면 나오는
-   돌아가기 버튼을 한 번 누르면 버튼 설명, 한 번 더 누르면 실행되게
-   해줘." 원래 숨겨진 #chat-page-header 안에만 있어 눌러볼 수도 없던
-   버튼을 실제로 보이는 이 손잡이(제목줄) 안으로 옮기며 필요한 스타일을
-   새로 준다 — 다른 곳의 작은 원형 아이콘 버튼과 같은 크기감. */
+/* v-chat-back-btn-to-close-x — 참가자 요청: "PC에서 챗봇 창의 돌아가기
+   버튼은 제거하고 대신 닫기(x) 버튼을 만들어줘." 글자가 있는 알약
+   모양(padding 좌우로 긴 형태) 대신, 다른 곳의 작은 원형 아이콘
+   버튼과 같은 크기·모양(28×28px 정원)으로 바꾼다. */
 #chat-drag-handle #chat-back-btn{
     flex:0 0 auto; cursor:pointer; touch-action:manipulation;
-    padding:4px 10px; min-height:28px;
+    width:28px; height:28px; min-width:28px; min-height:28px; padding:0;
     display:flex; align-items:center; justify-content:center;
-    border:1px solid var(--gold-dim); border-radius:999px;
-    background:rgba(0,0,0,.3); color:var(--gold-light); font-size:.7rem; line-height:1;
-    white-space:nowrap;
+    border:1px solid var(--gold-dim); border-radius:50%;
+    background:rgba(0,0,0,.3); color:var(--gold-light); font-size:.9rem; line-height:1;
 }
 #chat-drag-handle #chat-back-btn:hover,
 #chat-drag-handle #chat-back-btn:focus-visible{background:rgba(212,175,55,.18); border-color:var(--gold);}
@@ -875,7 +873,9 @@ body.low-vision-mode #hint-row .btn{
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
+/* v-info-buttons-consolidated — #info-back is now the single,
+   always-visible bottom button in both menu and detail modes (styled
+   above), so the old detail-only conditional style is removed. */
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -919,12 +919,12 @@ body.low-vision-mode #hint-row .btn{
 #refs-list.show{display:block;}
 #refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
 #refs-list p b{color:var(--gold-light);}
-#info-close{
+#info-back{
     display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px;
     border-radius:26px; cursor:pointer;
 }
-#info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+#info-back:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 /* v47 — "여일" 버튼: 방문객이 원하는 시점에 나가면서(또는 11곳을 모두
    마치고 정상적으로 나가면서) 자신이 실제로 만진 부위만 근거로 한
    수료증을 보여준다. 스타일은 위 #info-overlay/#info-card를 그대로
@@ -1291,13 +1291,6 @@ body.low-vision-mode #hint-row .btn{
             <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
 
-        <!-- v-info-back-btn-moved — 참가자 요청: "정보 창에 있는 4가지
-             (전시소개 등)에 들어가면 나오는 돌아가기 버튼은 그 팝업창의
-             맨 아래로 이동해줘." index.html에서 이미 옮긴 것과 같은
-             자리 — 참고문헌·닫기 버튼 바로 위, 즉 어떤 상세 화면을
-             보고 있든 그 화면의 맨 아래. -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
-
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="참고문헌 목록을 엽니다">참고문헌</button>
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
             <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63.</p>
@@ -1310,13 +1303,18 @@ body.low-vision-mode #hint-row .btn{
             <p><b>[13]</b> E. Conze, Buddhist Wisdom: The Diamond Sutra and The Heart Sutra, Vintage, New York, 2001.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()" data-tap-name="닫기" data-tap-action="정보 창을 닫고 전시 화면으로 돌아갑니다">닫기</button>
-        <!-- v-info-return-btn — 참가자 요청: "전시1과 전시2 정보 창에
-             돌아가기 버튼을 맨 아래에 만들어줘. 전시 화면으로 돌아갈
-             수 있게." "닫기"와 동일하게 closeInfo()를 불러 전시 화면
-             으로 돌아간다 — 메뉴 화면·상세 화면 어디서든 항상 이
-             카드의 맨 끝(#info-close 바로 다음)에 보인다. -->
-        <button type="button" id="info-return-btn" onclick="closeInfo()" data-tap-name="돌아가기" data-tap-action="전시 화면으로 돌아갑니다">돌아가기</button>
+        <!-- v-info-buttons-consolidated — 참가자 요청: "정보창에서
+             돌아가기 버튼은 화면 아래에 넣어주고 한 번 클릭/탭하면
+             이전 단계로 돌아가도록 해줘. 지금은 back·close·return 등
+             3가지나 있는데 돌아가기 하나만 남겨줘." 세 버튼(#info-back
+             — 상세→메뉴, #info-close — 전체 닫기, #info-return-btn —
+             전체 닫기, 서로 기능이 겹쳤다)을 하나로 합친다. 오른쪽
+             스와이프·짧은 두드리기가 이미 쓰던 _exitInfoOneLevel()을
+             그대로 불러, 지금이 상세 화면이면 메뉴로, 메뉴 화면이면
+             전시 화면으로 — 한 번의 클릭/탭으로 "한 단계만" 돌아간다.
+             두 번 탭 확인 없이 즉시 실행되도록 아래 TWOTAP_HANDS_OFF_
+             SELECTOR에도 추가했다. -->
+        <button type="button" id="info-back" onclick="_exitInfoOneLevel()" aria-label="이전 화면으로 돌아가기" data-tap-name="돌아가기" data-tap-action="이전 화면으로 돌아갑니다">돌아가기</button>
     </div>
 </div>
 <!-- v47 — "여일" 수료증: 지금까지 만진 부위 기록(visited Set)을 근거로
@@ -1539,14 +1537,14 @@ body.low-vision-mode #hint-row .btn{
     <div id="chat-page-header">
         <span id="chat-page-title">사유의 상담소</span>
     </div>
-    <!-- v-chat-back-btn-visible — 참가자 요청: "챗봇창에 들어가면
-         나오는 돌아가기 버튼을 한 번 누르면 버튼 설명, 한 번 더
-         누르면 실행되게 해줘." #chat-back-btn은 원래 위 숨겨진
-         #chat-page-header 안에 있어 실제로는 눌러볼 수도 없었다 —
-         제목줄 역할을 하는 이 손잡이(#chat-drag-handle) 안으로 옮겨
-         실제로 보이고 눌리게 한다. -->
+    <!-- v-chat-back-btn-to-close-x — 참가자 요청: "PC에서 챗봇 창의
+         돌아가기 버튼은 제거하고 대신 닫기(x) 버튼을 만들어줘. 한 번
+         x를 클릭하면 챗봇창을 닫을 수 있게." "← 돌아가기" 글자 버튼
+         대신 "✕" 아이콘으로 바꾼다 — 동작(toggleChat, 이미 열려
+         있으므로 곧 닫힘)과 즉시 실행(두 번 탭 필요 없음)은 그대로
+         유지한다. -->
     <div id="chat-drag-handle"><span aria-hidden="true">✥ 사유의 상담소</span><span class="hint" aria-hidden="true">드래그해서 이동</span>
-        <button type="button" id="chat-back-btn" onclick="event.stopPropagation(); toggleChat();" aria-label="대화를 닫고 전시 화면으로 돌아가기" data-tap-name="돌아가기" data-tap-action="대화를 닫고 전시 화면으로 돌아갑니다">← 돌아가기</button>
+        <button type="button" id="chat-back-btn" onclick="event.stopPropagation(); toggleChat();" aria-label="대화창 닫기" data-tap-name="닫기" data-tap-action="대화창을 닫습니다">✕</button>
     </div>
     <div id="chat-resize-handle" aria-hidden="true"><span></span></div>
     <div id="chat-corner-resize" aria-hidden="true"></div>
@@ -7222,7 +7220,9 @@ function openInfoDetail(kind){
     try{
         // v90 — index.html과 동일한 원인/수정. 자세한 설명은 index.html의
         // openInfoDetail() 주석 참고.
-        const closeBtn = document.getElementById('info-close');
+        // v-info-buttons-consolidated — #info-close가 없어졌으므로,
+        // 하나 남은 #info-back으로 포커스를 준다.
+        const closeBtn = document.getElementById('info-back');
         if(closeBtn && typeof closeBtn.focus === 'function'){
             try{ closeBtn.focus({preventScroll:true}); }catch(e2){ closeBtn.focus(); }
         }
@@ -7279,10 +7279,8 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -7291,7 +7289,7 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);
@@ -7416,7 +7414,19 @@ function _exitInfoOneLevel(){
    실행된다. 다른 버튼을 누르면 무장 상태가 그 버튼으로 옮겨간다.
    ══════════════════════════════════════════════════════ */
 const TWOTAP_ARM_WINDOW_MS = 2500;
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn';
+/* v-back-btn-single-tap — 참가자 요청: "정보와 챗봇창에서 돌아가기
+   버튼은 한 번 클릭/탭하면 이전 단계로 돌아가도록 해줘." 정보창의
+   돌아가기 버튼(#info-back)은 원래 다른 버튼들처럼 두 번 탭 확인
+   절차를 거쳤는데, 참가자는 이 버튼만은 즉시 실행되길 원했다 — 여기
+   추가해 예외로 둔다(챗봇창의 #chat-back-btn은 #chat-panel 전체가
+   이미 이 목록에 있어 별도 추가 없이 즉시 실행된다 — 아래 document
+   click 리스너의 #chat-mic 전용 예외 목록에서 #chat-back-btn을 뺀
+   것과 짝을 이룬다).
+   v-info-buttons-consolidated — 후속 참가자 요청: "back·close·return
+   3가지나 있는데 돌아가기 하나만 남겨줘." #info-close·#info-return-btn
+   두 버튼을 없애고 #info-back 하나로 합쳤으므로, 목록에서도 그 두
+   이름을 뺀다. */
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn, #info-back';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 
@@ -7454,12 +7464,11 @@ document.addEventListener('click', function(e){
     // 같이] 처음 누르면 설명, 두 번째 빠르게 누르면 바로 동작하게
     // 해달라." #chat-panel 전체가 위 TWOTAP_HANDS_OFF_SELECTOR에 있어
     // 마이크도 함께 제외되고 있었다 — 마이크 버튼(#chat-mic)만 예외로
-    // 다시 포함시킨다(그 외 챗봇창 안의 입력창·전송·예상질문 칩은
-    // 실시간 대화 특성상 그대로 즉시 반응 유지).
-    // v-chat-back-btn-twotap — 후속 참가자 요청: "챗봇창의 돌아가기
-    // 버튼도 한 번 누르면 설명, 한 번 더 누르면 실행되게 해달라."
-    // 마이크와 같은 이유로 #chat-back-btn도 함께 예외 목록에 추가한다.
-    if(target.id !== 'chat-mic' && target.id !== 'chat-back-btn' && target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
+    // 다시 포함시킨다(그 외 챗봇창 안의 입력창·전송·예상질문 칩·
+    // 돌아가기는 실시간 대화/한 번에 나가기 특성상 그대로 즉시 반응
+    // 유지 — #chat-back-btn을 한 번 눌러 바로 닫히게 해달라는 후속
+    // 요청으로 이 예외 목록에서 도로 뺐다).
+    if(target.id !== 'chat-mic' && target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
     if(target.disabled) return;
 
     if(_armedTwoTapEl === target){

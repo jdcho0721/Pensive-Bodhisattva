@@ -457,10 +457,21 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #info-overlay.menu #info-card > #refs-toggle-btn{display:block;}
 #info-overlay.menu #info-card > #refs-list{display:none;}
 #info-overlay.menu #info-card > #refs-list.show{display:block;}
+#info-overlay.menu #info-card > #info-back{display:block;}
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
+/* v-info-buttons-consolidated — 참가자 요청: "정보와 챗봇창에서 돌아가기
+   버튼은 화면 아래에 넣어주고 한 번 클릭/탭하면 이전 단계로 돌아가도록
+   해줘. 지금은 back, close, return 등 3가지나 있는데 돌아가기 하나만
+   남겨줘." "닫기"(#info-close)·"돌아가기"(#info-return-btn) 두 버튼을
+   완전히 없애고, 원래 상세 화면 전용이던 이 스타일을 모드에 관계없이
+   항상 적용한다 — #info-back 하나가 메뉴 화면에서는 전시 화면으로,
+   상세 화면에서는 메뉴로, 매번 "한 단계 뒤로"를 담당한다(아래
+   _exitInfoOneLevel() 참고). */
+#info-back{display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
+    font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px; border-radius:26px; cursor:pointer;}
+#info-back:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -503,9 +514,8 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #info-card figure{ margin:6px 0 16px; }
 #info-card figure img{ display:block; width:100%; max-width:320px; margin:0 auto; border-radius:4px; border:1px solid var(--gold-dim); }
 #info-card figcaption{ text-align:center; margin-top:8px; font-size:.78rem; color:#999; letter-spacing:.02em; }
-#info-close{display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
-    font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px; border-radius:26px; cursor:pointer;}
-#info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+/* v-info-buttons-consolidated — #info-close was removed (consolidated
+   into #info-back below), so this now-unused rule is dropped. */
 #copyright-tag{position:fixed; left:8px; bottom:calc(4px + env(safe-area-inset-bottom)); z-index:22;
     font-size:.6rem; color:rgba(255,255,255,.32); letter-spacing:.02em; pointer-events:none;}
 /* 모바일 반응형 — 참가자 요청: 좁은 화면에서 상단 버튼이 겹치지 않고,
@@ -1000,17 +1010,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
 
-        <!-- v-info-back-btn-moved — 참가자 요청: "전시1의 정보 창에 있는
-             4가지 버튼으로 각각 들어가면 나오는 돌아가기 버튼도 그
-             각각의 창 맨 아래로 이동해줘." 원래 #info-audio-nav 바로
-             아래(4개 상세 화면 내용보다 위)에 있던 이 버튼을, 내용이
-             끝나는 이 자리(참고문헌·닫기 버튼 바로 위, 즉 상세 화면들
-             중 어느 것을 보고 있든 항상 그 화면의 "맨 아래")로 옮겼다 —
-             메뉴 화면에서는 이 버튼 자체가 보이지 않으므로(위 CSS
-             #info-overlay.detail #info-back 참고) 이동으로 인한 변화가
-             없다. -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
-
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="참고문헌 보기" data-tap-action="참고문헌 목록을 엽니다">참고문헌 보기</button>
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
@@ -1022,13 +1021,14 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p><b>[7]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()" aria-label="닫기">닫기</button>
-        <!-- v-info-return-btn — 참가자 요청: "전시1과 전시2 정보 창에
-             돌아가기 버튼을 맨 아래에 만들어줘. 전시 화면으로 돌아갈
-             수 있게." "닫기"와 동일하게 closeInfo()를 불러 전시 화면
-             으로 돌아간다 — 메뉴 화면·상세 화면 어디서든 항상 이
-             카드의 맨 끝(#info-close 바로 다음)에 보인다. -->
-        <button type="button" id="info-return-btn" onclick="closeInfo()" aria-label="전시 화면으로 돌아가기" data-tap-action="전시 화면으로 돌아갑니다">돌아가기</button>
+        <!-- v-info-buttons-consolidated — 참가자 요청: "정보와 챗봇창에서
+             돌아가기 버튼은 화면 아래에 넣어주고 한 번 클릭/탭하면
+             이전 단계로 돌아가도록 해줘. 지금은 back, close, return 등
+             3가지나 있는데 돌아가기 하나만 남겨줘." 이 버튼 하나가
+             메뉴 화면에서는 closeInfo()(전시 화면으로), 상세 화면에서는
+             backToInfoMenu()(메뉴로) 역할을 모두 맡는다 — 한 번
+             클릭/탭하면 바로 실행된다(두 번 탭 확인 절차 없음). -->
+        <button type="button" id="info-back" onclick="_exitInfoOneLevel()">돌아가기</button>
     </div>
 </div>
 
@@ -3021,14 +3021,16 @@ function openInfoDetail(kind){
         // v90 — 참가자 지적: "작품소개·작가소개·이용방법을 누르면 자막의
         // 맨 아래 부분이 나와서 위로 스크롤해야 한다." 원인: 바로 위에서
         // card.scrollTop = 0으로 맨 위로 되돌려놨는데, 그 다음 줄이
-        // (맨 아래에 있는) 닫기 버튼에 포커스를 주면서 브라우저가 "포커스된
+        // (맨 아래에 있는) 버튼에 포커스를 주면서 브라우저가 "포커스된
         // 요소를 보이게" 자동으로 다시 아래로 스크롤해버렸다 — 위
         // openInfo()의 메뉴 화면에서 이미 한 번 겪고 고쳤던 것과 똑같은
         // 원인이다(그때는 focus({preventScroll:true})로 해결했다). 여기도
-        // 같은 방식으로 통일한다.
-        const closeBtn = document.getElementById('info-close');
-        if(closeBtn && typeof closeBtn.focus === 'function'){
-            try{ closeBtn.focus({preventScroll:true}); }catch(e2){ closeBtn.focus(); }
+        // 같은 방식으로 통일한다. v-info-buttons-consolidated 이후로는
+        // "닫기"·"돌아가기" 두 버튼이 하나(#info-back)로 합쳐졌으므로,
+        // 그 버튼에 포커스를 준다.
+        const backBtn = document.getElementById('info-back');
+        if(backBtn && typeof backBtn.focus === 'function'){
+            try{ backBtn.focus({preventScroll:true}); }catch(e2){ backBtn.focus(); }
         }
     }catch(e){}
 }
@@ -3104,10 +3106,8 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -3116,7 +3116,7 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);

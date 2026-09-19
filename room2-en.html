@@ -216,13 +216,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .hotspot:hover,.hotspot:focus-visible{background:rgba(212,175,55,.14);}
 .hotspot:focus-visible{outline:3px solid #fff;outline-offset:2px;}
 .hotspot.visited{background:rgba(212,175,55,.05);}
-/* 참가자 제안: 해설이 끝난 핫스팟은 실루엣(점선 테두리·옅은 배경)이 화면에
-   계속 남아 있으면 "이미 들은 곳"과 "아직 안 들은 곳"이 똑같아 보이고,
-   다 들은 자리도 계속 시선을 끈다는 지적이 있었다. 낭독이 끝나면 이
-   .explored 클래스를 붙여 배경을 완전히 투명하게 만들어 실루엣을
-   지운다 — 다시 만지거나(재생) 키보드 포커스가 오면 여전히 반응하도록
-   hover/focus 상태는 별도로 살려둔다(아래 참조). */
-.hotspot.explored{background:transparent;}
+/* v-explored-silhouette-restored — participant request: "once each
+   part's narration finishes, leave a thin-outline silhouette of that
+   hotspot's circle." Reversed from the earlier fully-transparent
+   design — now leaves a very thin (1px) border so "already listened
+   to" spots stay visible without dominating the artwork. */
+.hotspot.explored{background:transparent; border:1px solid rgba(212,175,55,.4);}
 .hotspot.explored:hover, .hotspot.explored:focus-visible{
     background:rgba(212,175,55,.14);
 }
@@ -472,7 +471,7 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    for horizontal centering.
    v-chat-toggle-up-5px — follow-up participant request: "raise the
    chat button 5px." Raised bottom from 175px to 180px. */
-#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(180px + env(safe-area-inset-bottom));z-index:35;
+#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(190px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -534,6 +533,18 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     border-bottom:1px solid rgba(212,175,55,.18);color:var(--gold-light);font-size:.78rem;letter-spacing:.03em;}
 #chat-drag-handle .hint{font-size:.68rem;color:#8a8a8a;}
 #chat-drag-handle.dragging{cursor:grabbing;}
+/* v-chat-back-btn-to-close-x — participant request: swap the pill-
+   shaped text button for a small round X icon button (28×28px),
+   matching other icon buttons elsewhere. */
+#chat-drag-handle #chat-back-btn{
+    flex:0 0 auto; cursor:pointer; touch-action:manipulation;
+    width:28px; height:28px; min-width:28px; min-height:28px; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--gold-dim); border-radius:50%;
+    background:rgba(0,0,0,.3); color:var(--gold-light); font-size:.9rem; line-height:1;
+}
+#chat-drag-handle #chat-back-btn:hover,
+#chat-drag-handle #chat-back-btn:focus-visible{background:rgba(212,175,55,.18); border-color:var(--gold);}
 #chat-panel.dragging{transition:none !important;}
 #chat-resize-handle{flex:0 0 auto;display:flex;justify-content:center;align-items:center;
     height:16px;margin:0 -14px;cursor:ns-resize;touch-action:none;}
@@ -851,7 +862,9 @@ body.low-vision-mode #hint-row .btn{
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
+/* v-info-buttons-consolidated — #info-back is now the single,
+   always-visible bottom button in both menu and detail modes (styled
+   below), so the old detail-only conditional style is removed. */
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -895,12 +908,12 @@ body.low-vision-mode #hint-row .btn{
 #refs-list.show{display:block;}
 #refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
 #refs-list p b{color:var(--gold-light);}
-#info-close{
+#info-back{
     display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px;
     border-radius:26px; cursor:pointer;
 }
-#info-close:focus-visible{outline:3px solid #fff; outline-offset:2px;}
+#info-back:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 /* v47 — "여일" 버튼: 방문객이 원하는 시점에 나가면서(또는 11곳을 모두
    마치고 정상적으로 나가면서) 자신이 실제로 만진 부위만 근거로 한
    수료증을 보여준다. 스타일은 위 #info-overlay/#info-card를 그대로
@@ -1242,12 +1255,6 @@ body.low-vision-mode #hint-row .btn{
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
-        <!-- v-info-back-btn-moved — participant request: matches the
-             move already done in index.html/room2.html — the back
-             button now sits at the bottom of each detail screen (just
-             above References/Close). -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
-
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="Opens the reference list">References</button>
         <div id="refs-list" role="region" aria-label="Reference list">
             <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63.</p>
@@ -1260,11 +1267,15 @@ body.low-vision-mode #hint-row .btn{
             <p><b>[13]</b> E. Conze, Buddhist Wisdom: The Diamond Sutra and The Heart Sutra, Vintage, New York, 2001.</p>
         </div>
 
-        <button id="info-close" onclick="closeInfo()">Close</button>
-        <!-- v-info-return-btn — participant request: matches room2.html
-             — same closeInfo() action, always visible at the very end
-             of the card. -->
-        <button type="button" id="info-return-btn" onclick="closeInfo()" data-tap-name="Return" data-tap-action="Returns to the exhibit screen">Return</button>
+        <!-- v-info-buttons-consolidated — participant request: "put the
+             back button at the bottom of the screen and make a single
+             click/tap go back one step. Right now there are 3 (back,
+             close, return) — leave just one 'Return'." Consolidated
+             the three overlapping buttons into one, reusing
+             _exitInfoOneLevel() (already used by swipe/short-tap) so a
+             single click/tap goes back exactly one step: detail→menu,
+             or menu→exhibit screen. -->
+        <button type="button" id="info-back" onclick="_exitInfoOneLevel()" aria-label="Return to the previous screen" data-tap-name="Return" data-tap-action="Returns to the previous screen">Return</button>
     </div>
 </div>
 <!-- v47 — "여일" 수료증: 지금까지 만진 부위 기록(visited Set)을 근거로
@@ -1448,10 +1459,17 @@ body.low-vision-mode #hint-row .btn{
          지금은 항상 숨겨져 있다(위 CSS #chat-page-header{display:none}
          참고) — HTML에는 남겨두어, 필요해지면 되살릴 수 있게 했다. -->
     <div id="chat-page-header">
-        <button type="button" id="chat-back-btn" onclick="toggleChat()" aria-label="Close the chat and return to the exhibit screen">← Back</button>
         <span id="chat-page-title">Contemplation Counsel</span>
     </div>
-    <div id="chat-drag-handle" aria-hidden="true"><span>✥ Contemplation Counsel</span><span class="hint">Drag to move</span></div>
+    <!-- v-chat-back-btn-to-close-x — participant request: "On PC,
+         remove the chat panel's back button and make an X close
+         button instead; one click closes the chat panel." Swapped the
+         "← Back" text button for a "✕" icon — action (toggleChat,
+         closes since it's already open) and immediate single-click
+         execution stay the same. -->
+    <div id="chat-drag-handle"><span aria-hidden="true">✥ Contemplation Counsel</span><span class="hint" aria-hidden="true">Drag to move</span>
+        <button type="button" id="chat-back-btn" onclick="event.stopPropagation(); toggleChat();" aria-label="Close the chat panel" data-tap-name="Close" data-tap-action="Closes the chat panel">✕</button>
+    </div>
     <div id="chat-resize-handle" aria-hidden="true"><span></span></div>
     <div id="chat-corner-resize" aria-hidden="true"></div>
     <!-- v47 — 위/아래/왼쪽/오른쪽 각 변 리사이즈 손잡이. 눈에 보이지 않는
@@ -6102,6 +6120,10 @@ function toggleChatMic(){
     let startX = 0, startY = 0, startLeft = 0, startTop = 0, dragging = false;
 
     function onPointerDown(e){
+        // v-chat-back-btn-visible — the back button lives inside this
+        // drag handle; without this guard, starting a drag here would
+        // capture the pointer and swallow the button's click.
+        if(e.target && e.target.closest && e.target.closest('#chat-back-btn')) return;
         dragging = true;
         const rect = panel.getBoundingClientRect();
         startX = e.clientX; startY = e.clientY;
@@ -6992,7 +7014,9 @@ function openInfoDetail(kind){
     try{
         // v90 — index.html과 동일한 원인/수정. 자세한 설명은 index.html의
         // openInfoDetail() 주석 참고.
-        const closeBtn = document.getElementById('info-close');
+        // v-info-buttons-consolidated — #info-close is gone; focus the
+        // one remaining #info-back button instead.
+        const closeBtn = document.getElementById('info-back');
         if(closeBtn && typeof closeBtn.focus === 'function'){
             try{ closeBtn.focus({preventScroll:true}); }catch(e2){ closeBtn.focus(); }
         }
@@ -7049,10 +7073,8 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-close'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         } else {
             focusables = [
@@ -7061,7 +7083,7 @@ function _infoDialogKeydown(e){
                 document.querySelector('.info-audio-btn[data-kind="intro"]'),
                 document.querySelector('.info-audio-btn[data-kind="usage"]'),
                 document.getElementById('refs-toggle-btn'),
-                document.getElementById('info-return-btn')
+                document.getElementById('info-back')
             ].filter(Boolean);
         }
         const idx = focusables.indexOf(document.activeElement);
@@ -7182,7 +7204,14 @@ function _exitInfoOneLevel(){
    실행된다. 다른 버튼을 누르면 무장 상태가 그 버튼으로 옮겨간다.
    ══════════════════════════════════════════════════════ */
 const TWOTAP_ARM_WINDOW_MS = 2500;
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn';
+/* v-back-btn-single-tap — participant request: "in the info and chat
+   windows, the back button should return to the previous step with a
+   single click/tap." #info-back and #info-return-btn used to go
+   through the same two-tap confirm flow as other buttons; excluded
+   here so they execute immediately (#chat-back-btn needs no separate
+   addition — #chat-panel as a whole is already in this list; see the
+   matching removal from the #chat-mic-only exception below). */
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn, #info-back';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 
