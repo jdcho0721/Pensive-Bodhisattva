@@ -1102,7 +1102,7 @@ body.low-vision-mode #hint-row .btn{
      (TWOTAP_HANDS_OFF_SELECTOR) data-tap-name이 필요 없고, 화면에 보이는
      글자 자체가 곧 스크린리더 이름이다 — 아이콘을 글자 앞에 그대로
      붙여도 안내 음성에는 영향이 없다. -->
-<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 1배입니다">속도 1.0x</button>
+<button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 일엑스입니다.">속도 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
 
 <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
@@ -2252,16 +2252,23 @@ let _speedIdx = 1; // 0.85배에서 시작
 let TTS_RATE = SPEED_STEPS[_speedIdx];
 let _lastSpokenText = '';
 let _lastSpokenSpeaker = null; // v81 — 정보창 "이어 듣기" 기능(아래 openInfo/closeInfo)에 화자(로댕/반가사유상) 목소리까지 그대로 이어가기 위해 추가
+// v-speed-announce-exact — 참가자 요청: "속도 1X → '속도 일엑스입니다.',
+// 속도 1.2X → '속도 일쩜이배입니다.', 1.5X → '속도 일쩜오배입니다.',
+// 0.7X → '속도 영쩜칠배입니다.', 0.85X → '속도 영쩜팔오배입니다.'로
+// 바꾸어달라." 값별로 정확한 문구를 그대로 매핑한다(1배속만 예외로
+// "일엑스", 나머지는 "쩜"+숫자 낭독+"배").
+const SPEED_ANNOUNCE_KO = {
+    0.7:  '속도 영쩜칠배입니다.',
+    0.85: '속도 영쩜팔오배입니다.',
+    1.0:  '속도 일엑스입니다.',
+    1.2:  '속도 일쩜이배입니다.',
+    1.5:  '속도 일쩜오배입니다.'
+};
 function cycleSpeed(){
     _speedIdx = (_speedIdx + 1) % SPEED_STEPS.length;
     TTS_RATE = SPEED_STEPS[_speedIdx];
     const btn = document.getElementById('speed-btn');
-    // v-speed-announce-korean — 참가자 요청: "속도 1.2x는 '속도
-    // 1점2배입니다.'라고 음성해설이 나와야 한다. 다른 속도도 그런
-    // 식으로." 소수점(.)은 "점"으로, x는 "배"로 바꿔 자연스러운
-    // 한국어 낭독 문구를 만든다 — 화면 버튼 글자("1.2x" 표기)는
-    // 그대로 두고 음성 문구만 바꾼다.
-    const announceText = `속도 ${String(TTS_RATE).replace('.', '점')}배입니다`;
+    const announceText = SPEED_ANNOUNCE_KO[TTS_RATE] || `속도 ${String(TTS_RATE).replace('.', '점')}배입니다`;
     if(btn){
         // v-button-icons — 아이콘이 클릭할 때마다 사라지지 않도록
         // textContent를 다시 쓸 때도 함께 붙인다.
