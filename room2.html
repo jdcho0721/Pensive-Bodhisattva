@@ -6015,6 +6015,19 @@ function toggleChat(){
         }
     }
 }
+// v-chat-escape-key — 접근성 점검: 정보창(#info-overlay)·수료증
+// (#certificate-overlay)에는 모두 Escape로 닫는 키보드 단축키가
+// 있었는데, 챗봇창(#chat-panel)만 빠져 있었다 — 키보드만 쓰는
+// 사용자(스크린리더 사용자 다수 포함)는 마우스로 X 버튼을 누르거나
+// 화면을 스와이프할 수 없어, Tab을 여러 번 눌러 닫기 버튼까지
+// 이동해야만 챗봇창을 나갈 수 있었다. 다른 모달과 똑같이 Escape 한
+// 번으로 닫히게 한다.
+document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    const panel = document.getElementById('chat-panel');
+    if(panel && panel.classList.contains('open')) toggleChat();
+});
+
 // v-chat-fullscreen — 브라우저/기기 뒤로가기(제스처 포함)로도 챗봇
 // '페이지'를 닫을 수 있게 한다. pushState로 남긴 #chat 상태를 벗어날
 // 때마다 챗봇을 닫힌 상태로 동기화한다.

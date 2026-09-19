@@ -5808,6 +5808,19 @@ function toggleChat(){
         }
     }
 }
+
+// v-chat-escape-key — accessibility review finding: the info popup
+// (#info-overlay) and certificate (#certificate-overlay) both close
+// with Escape, but the chat panel (#chat-panel) didn't — keyboard-only
+// users (including many screen reader users) had no way to dismiss it
+// except tabbing all the way to the close button or using the mouse/
+// swipe. Matches the other modals: one Escape press closes it.
+document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    const panel = document.getElementById('chat-panel');
+    if(panel && panel.classList.contains('open')) toggleChat();
+});
+
 // v-chat-fullscreen — 브라우저/기기 뒤로가기(제스처 포함)로도 챗봇
 // '페이지'를 닫을 수 있게 한다. pushState로 남긴 #chat 상태를 벗어날
 // 때마다 챗봇을 닫힌 상태로 동기화한다.
