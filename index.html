@@ -31,7 +31,14 @@
 html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Serif KR',serif;overflow:hidden;}
 
 /* ── 배경(0단계부터 끝까지 동일) ── */
-#stage{position:fixed;inset:0;background:url('반가-로댕.png') no-repeat center center;background-size:contain;filter:brightness(.88);transition:filter 2s ease;}
+/* v-image-appear-instant — 참가자 지적: "이미지가 바로 안 나오고
+   천천히 나온다." 원인을 찾았다 — 전시실 1에 처음 입장하는 순간
+   #stage에 .lit 클래스가 붙는데(enterRoom()), 그 전까지는
+   brightness(.88)로 살짝 어둡게 시작했다가 2초에 걸쳐 서서히
+   brightness(1)로 밝아지는 "천천히 드러나는" 연출이 걸려 있었다.
+   전환 시간을 0으로 줄여, 입장하자마자 이미지가 곧바로(그리고 항상)
+   제 밝기로 보이게 한다. */
+#stage{position:fixed;inset:0;background:url('반가-로댕.png') no-repeat center center;background-size:contain;filter:brightness(.88);transition:filter 0s;}
 /* v8.1 — 참가자 지적 반영: 처음 두 조각상을 비추는 안개 같은 빛의 투명도를 낮추어(알파값 조정) 조각상이 더 선명하고 뚜렷하게 보이도록 수정함 */
 #spotlight-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
     background:

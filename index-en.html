@@ -31,7 +31,12 @@
 html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Serif KR',serif;overflow:hidden;}
 
 /* ── 배경(0단계부터 끝까지 동일) ── */
-#stage{position:fixed;inset:0;background:url('반가-로댕.png') no-repeat center center;background-size:contain;filter:brightness(.88);transition:filter 2s ease;}
+/* v-image-appear-instant — participant report: matches index.html —
+   the image used to start slightly dimmed (brightness .88) and take
+   2 seconds to slowly brighten to full (brightness 1) via the .lit
+   class added on entering Room 1. Transition time reduced to 0 so the
+   image appears at full brightness immediately on entry. */
+#stage{position:fixed;inset:0;background:url('반가-로댕.png') no-repeat center center;background-size:contain;filter:brightness(.88);transition:filter 0s;}
 /* v8.1 — 참가자 지적 반영: 처음 두 조각상을 비추는 안개 같은 빛의 투명도를 낮추어(알파값 조정) 조각상이 더 선명하고 뚜렷하게 보이도록 수정함 */
 #spotlight-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
     background:
