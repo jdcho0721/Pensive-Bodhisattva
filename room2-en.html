@@ -302,12 +302,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border:1px solid rgba(212,175,55,.6);}
 #cam-toggle-btn.active{background:var(--gold); color:#000; font-weight:700; border-color:var(--gold);}
 
-/* v-explore-bar-number-only — participant request: "remove the
-   exploration bar, keep only the number." */
-#explore-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
-    padding:6px 16px;background:rgba(0,0,0,.85);border-top:1px solid rgba(212,175,55,.14);
-    border-bottom:1px solid rgba(212,175,55,.14);}
-#explore-bar-text{font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
+/* v-explore-bar-removed — #explore-bar CSS removed (see HTML comment above). */
 
 #caption-wrap{position:relative;flex:0 0 auto;width:100%;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
@@ -1476,11 +1471,11 @@ body.low-vision-mode #hint-row .btn{
 
 </div>
 
-<!-- v-explore-bar-number-only — participant request: "remove the
-     exploration bar, keep only the number." -->
-<div id="explore-bar" role="presentation" aria-hidden="true">
-    <span id="explore-bar-text">Explored 0 / 11</span>
-</div>
+<!-- v-explore-bar-removed — participant confirmed: #explore-bar was
+     taking up its own share of vertical space in #room-layout's flex
+     flow, which is exactly what shrank #stage (the image) and made it
+     look zoomed out — removed entirely so the image returns to its
+     original size. -->
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
     text-align:center;padding:8px 12px;background:#7a1f1f;color:#fff;font-size:.8rem;
@@ -3002,10 +2997,9 @@ function buildRecapAnswer(){
 const RECAP_TRIGGER = /summarize|summary|recap|what have i touched|what did i touch|how many (spots|places)|review what/i;
 
 function updateProgress(){
-    // v-explore-bar-number-only — the fill bar is gone; update only the text.
-    const textEl = document.getElementById('explore-bar-text');
-    if(textEl) textEl.textContent = `Explored ${visited.size} / ${ORDER.length}`;
-    // The screen-reader progress announcement stays.
+    // v-explore-bar-removed — #explore-bar itself is gone, so the two
+    // lines updating its text are removed too. The screen-reader
+    // progress announcement stays.
     const srEl = document.getElementById('progress-sr');
     if(srEl) srEl.textContent = `Exploration progress — you have checked ${visited.size} of 11 spots.`;
 }

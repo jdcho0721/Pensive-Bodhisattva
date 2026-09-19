@@ -304,13 +304,7 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border:1px solid rgba(212,175,55,.6);}
 #cam-toggle-btn.active{background:var(--gold); color:#000; font-weight:700; border-color:var(--gold);}
 
-/* v-explore-bar-number-only — 참가자 요청: "탐색 바는 제거해줘. 숫자만
-   놔두고." 채움 막대(track/fill)는 없애고, 가운데 정렬된 숫자만
-   남긴다. */
-#explore-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
-    padding:6px 16px;background:rgba(0,0,0,.85);border-top:1px solid rgba(212,175,55,.14);
-    border-bottom:1px solid rgba(212,175,55,.14);}
-#explore-bar-text{font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
+/* v-explore-bar-removed — #explore-bar CSS 없앰(위 HTML 주석 참고). */
 
 #caption-wrap{position:relative;flex:0 0 auto;width:100%;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
@@ -1554,12 +1548,11 @@ body.low-vision-mode #hint-row .btn{
 
 </div>
 
-<!-- v-explore-bar-number-only — 참가자 요청: "탐색 바는 제거해줘.
-     숫자만 놔두고." 위 채움 막대(#explore-bar-track/#explore-bar-fill)를
-     없애고, "탐색 N / 11" 숫자 표시만 남긴다. -->
-<div id="explore-bar" role="presentation" aria-hidden="true">
-    <span id="explore-bar-text">탐색 0 / 11</span>
-</div>
+<!-- v-explore-bar-removed — 참가자 확인: 탐색 바(#explore-bar)가
+     #room-layout의 flex 흐름 안에서 자기 몫의 세로 공간을 차지하고
+     있어, 그만큼 #stage(이미지)가 쓸 수 있는 높이가 줄어들어 이미지가
+     예전보다 작게(줌 아웃) 보이는 원인이었다 — 참가자 확인 후 다시
+     완전히 없앤다. 이미지가 다시 원래 크기로 확대된다. -->
 
 <div id="depth-status" role="status" style="display:none;position:fixed;left:0;right:0;top:0;z-index:50;
     text-align:center;padding:8px 12px;background:#7a1f1f;color:#fff;font-size:.8rem;
@@ -3074,11 +3067,9 @@ function buildRecapAnswer(){
 const RECAP_TRIGGER = /요약|복습|정리해줘|정리해 줘|지금까지\s*(뭘|무엇을|뭐)|여태\s*(뭘|무엇을)|들은\s*거\s*(정리|요약)|다시\s*(들려줘|알려줘)\s*전체|몇\s*곳/;
 
 function updateProgress(){
-    // v-explore-bar-number-only — 참가자 요청으로 채움 막대는 없앴으니,
-    // 여기서도 숫자 텍스트만 갱신한다.
-    const textEl = document.getElementById('explore-bar-text');
-    if(textEl) textEl.textContent = `탐색 ${visited.size} / ${ORDER.length}`;
-    // 웹 접근성: 스크린리더 사용자를 위한 진행률 안내는 계속 남겨둔다.
+    // v-explore-bar-removed — #explore-bar 자체를 없앴으니 그 텍스트를
+    // 갱신하던 두 줄도 함께 정리한다. 스크린리더용 진행률 안내는
+    // 그대로 남겨둔다.
     const srEl = document.getElementById('progress-sr');
     if(srEl) srEl.textContent = `탐색 진행 — 11곳 중 ${visited.size}곳을 확인했습니다.`;
 }
