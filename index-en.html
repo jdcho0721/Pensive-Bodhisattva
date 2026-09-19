@@ -2691,23 +2691,24 @@ function onPauseClick(){
 //    순서대로 나온다(showNextStageAnnouncement 위쪽 v-replay-announce-step
 //    주석 참고) — announceStep으로 지금 어느 자막인지 구분해, 그 자막만
 //    정확히 다시 보여주고 다시 들려준다.
+function _replayCurrentCaption(){
+    if(phase === 'screen'){
+        playLine();
+    } else if(announcing){
+        if(announceStep === 0) showNextStageAnnouncement();
+        else _showFinishStep1();
+    } else if(dLineIdx < 0){
+        playTurn(turnIdx);
+    } else {
+        dLineIdx--;
+        playDialogueLine();
+    }
+}
 function onReplayClick(){
     clearTimeout(autoTimer);
     speechGen++;
     try{ hapticPulse('turn'); }catch(err){}
-    speak('Playing the caption you’re currently viewing again.', ()=>{
-        if(phase === 'screen'){
-            playLine();
-        } else if(announcing){
-            if(announceStep === 0) showNextStageAnnouncement();
-            else _showFinishStep1();
-        } else if(dLineIdx < 0){
-            playTurn(turnIdx);
-        } else {
-            dLineIdx--;
-            playDialogueLine();
-        }
-    });
+    speak('Playing the caption you’re currently viewing again.', _replayCurrentCaption);
 }
 
 // v18 — 참가자 요청: "뒤로가기 버튼은 바로 이전 해설창으로 돌아가도록."
@@ -3021,10 +3022,19 @@ function closeInfo(){
     // 위치를 그대로 이어 붙여주진 않지만, 중단됐던 바로 그 문장을
     // 처음부터 다시 들려줌으로써 안내창 때문에 끊겼던 해설을 계속
     // 들을 수 있게 한다.
+    // v-info-resume-stuck-fix — participant report: "In Room 1, going
+    // into the info window and exiting via the back gesture narrates
+    // the current screen and then stops — it doesn't move on to the
+    // next narration automatically." Root cause: the onEnd callback
+    // below was undefined — the line got replayed, but nothing chained
+    // the next sentence/step after it finished. Instead of speaking
+    // resumeText directly, call the same phase-aware function
+    // onReplayClick() uses — those functions already speak() with a
+    // proper continuation callback, so playback keeps advancing after
+    // the info window closes instead of stalling.
     if(_infoResumeText){
-        const resumeText = _infoResumeText, resumeSpeaker = _infoResumeSpeaker;
         _infoResumeText = null; _infoResumeSpeaker = null;
-        try{ speak(resumeText, undefined, resumeSpeaker); }catch(err){}
+        try{ _replayCurrentCaption(); }catch(err){}
     }
 }
 function toggleRefsList(){

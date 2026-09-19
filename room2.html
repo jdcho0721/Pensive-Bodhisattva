@@ -1181,12 +1181,6 @@ body.low-vision-mode #hint-row .btn{
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="전시실 2 이용 방법 음성 듣기">🔊 전시2 이용방법</button>
         </div>
 
-        <!-- v-info-back-btn-restored — 참가자 요청: "정보창과 그 아래
-             메뉴 4개창에서 뒤로가기 버튼은 남겨두자. PC화면에서 뒤로
-             갈 수 있도록." 스와이프 제스처가 없는 PC(마우스) 사용자를
-             위한 대안으로 다시 둔다. -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
-
         <div class="info-section" data-kind="exhibit">
         <h3>전시소개</h3>
         <p class="label">시청각장애인을 위한 촉각·음성 인터랙티브 전시: 침묵의 공명</p>
@@ -1281,6 +1275,13 @@ body.low-vision-mode #hint-row .btn{
             <p>금동미륵보살반가사유상 원본 소장: 국립중앙박물관</p>
             <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
+
+        <!-- v-info-back-btn-moved — 참가자 요청: "정보 창에 있는 4가지
+             (전시소개 등)에 들어가면 나오는 돌아가기 버튼은 그 팝업창의
+             맨 아래로 이동해줘." index.html에서 이미 옮긴 것과 같은
+             자리 — 참고문헌·닫기 버튼 바로 위, 즉 어떤 상세 화면을
+             보고 있든 그 화면의 맨 아래. -->
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
 
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="참고문헌 목록을 엽니다">참고문헌</button>
         <div id="refs-list" role="region" aria-label="참고문헌 목록">

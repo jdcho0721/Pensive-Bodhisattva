@@ -2725,23 +2725,24 @@ function onPauseClick(){
 //    순서대로 나온다(showNextStageAnnouncement 위쪽 v-replay-announce-step
 //    주석 참고) — announceStep으로 지금 어느 자막인지 구분해, 그 자막만
 //    정확히 다시 보여주고 다시 들려준다.
+function _replayCurrentCaption(){
+    if(phase === 'screen'){
+        playLine();
+    } else if(announcing){
+        if(announceStep === 0) showNextStageAnnouncement();
+        else _showFinishStep1();
+    } else if(dLineIdx < 0){
+        playTurn(turnIdx);
+    } else {
+        dLineIdx--;
+        playDialogueLine();
+    }
+}
 function onReplayClick(){
     clearTimeout(autoTimer);
     speechGen++;
     try{ hapticPulse('turn'); }catch(err){}
-    speak('지금 보고 계신 자막을 다시 들려드립니다.', ()=>{
-        if(phase === 'screen'){
-            playLine();
-        } else if(announcing){
-            if(announceStep === 0) showNextStageAnnouncement();
-            else _showFinishStep1();
-        } else if(dLineIdx < 0){
-            playTurn(turnIdx);
-        } else {
-            dLineIdx--;
-            playDialogueLine();
-        }
-    });
+    speak('지금 보고 계신 자막을 다시 들려드립니다.', _replayCurrentCaption);
 }
 
 // v18 — 참가자 요청: "뒤로가기 버튼은 바로 이전 해설창으로 돌아가도록."
@@ -3063,10 +3064,20 @@ function closeInfo(){
     // 위치를 그대로 이어 붙여주진 않지만, 중단됐던 바로 그 문장을
     // 처음부터 다시 들려줌으로써 안내창 때문에 끊겼던 해설을 계속
     // 들을 수 있게 한다.
+    // v-info-resume-stuck-fix — 참가자 지적: "정보 창에 들어갔다가 뒤로
+    // 가기 제스처로 빠져나오면 현재 창 해설하고 멈춘다. 자동으로 다음
+    // 해설로 넘어가지 않는다." 원인: 아래 speak() 호출의 onEnd 콜백이
+    // 그동안 undefined였다 — 문장을 다시 들려주기는 했지만, 그 문장이
+    // 끝난 뒤 다음 문장으로 이어가는 절차가 전혀 없어서 그 자리에서
+    // 멈춰버렸다. resumeText를 직접 speak()로 들려주는 대신, 위
+    // onReplayClick()과 똑같이 지금 단계(화면/마침 안내/대화)에 맞는
+    // 함수를 다시 불러 재생한다 — 이 함수들은 이미 각자 알아서
+    // speak()를 부르고, 그 문장이 끝나면 자동으로 다음 문장·다음
+    // 단계로 이어가는 콜백까지 갖추고 있으므로, 안내창을 닫은 뒤에도
+    // 끊기지 않고 계속 진행된다.
     if(_infoResumeText){
-        const resumeText = _infoResumeText, resumeSpeaker = _infoResumeSpeaker;
         _infoResumeText = null; _infoResumeSpeaker = null;
-        try{ speak(resumeText, undefined, resumeSpeaker); }catch(err){}
+        try{ _replayCurrentCaption(); }catch(err){}
     }
 }
 function toggleRefsList(){

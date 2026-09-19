@@ -1154,11 +1154,6 @@ body.low-vision-mode #hint-row .btn{
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="Listen to the Room 2 usage guide">🔊 Room 2 How-To</button>
         </div>
 
-        <!-- v-info-back-btn-restored — participant request: "keep the
-             back button in the info popup and the 4 menu screens below
-             it, so PC screens can go back." -->
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
-
         <div class="info-section" data-kind="exhibit">
         <h3>Exhibition Introduction</h3>
         <p class="label">A tactile and voice-interactive exhibition for the blind and hearing-impaired: Resonance of Silence</p>
@@ -1246,6 +1241,12 @@ body.low-vision-mode #hint-row .btn{
             <p>Gilt-Bronze Pensive Bodhisattva (Maitreya), original held by: National Museum of Korea</p>
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
+
+        <!-- v-info-back-btn-moved — participant request: matches the
+             move already done in index.html/room2.html — the back
+             button now sits at the bottom of each detail screen (just
+             above References/Close). -->
+        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
 
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="Opens the reference list">References</button>
         <div id="refs-list" role="region" aria-label="Reference list">
