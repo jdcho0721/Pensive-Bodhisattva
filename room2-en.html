@@ -469,8 +469,10 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    v-chat-toggle-center — participant request: "raise the chat button
    5px and move it to the center of the screen." Raised bottom from
    170px to 175px, and replaced right:16px with left:50% + transform
-   for horizontal centering. */
-#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(175px + env(safe-area-inset-bottom));z-index:35;
+   for horizontal centering.
+   v-chat-toggle-up-5px — follow-up participant request: "raise the
+   chat button 5px." Raised bottom from 175px to 180px. */
+#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(180px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -1619,7 +1621,22 @@ function fitHotspotLayer(){
     // index.html과 동일: 실제 화면에서는 이 작은 여백만큼만 아래에서 시작한다.
     y += _imageDownShift;
 
-    const IMAGE_SHRINK = 1.3;
+    // v-pc-feet-clipped-fix — participant report: "On PC, Room 2's
+    // statue feet are hidden behind a black area." Root cause: in the
+    // "viewport wider than image" (PC/landscape) branch above, the
+    // pre-enlarge height (h) already equals #stage's box height (ch),
+    // so multiplying by 1.3x always makes the enlarged height (sh) 30%
+    // taller than ch — no amount of downstream sy adjustment can avoid
+    // clipping that overflow, and the clipped-off area exposed the
+    // black background of the caption box right below it, looking like
+    // the feet were "covered by something black." Capping the
+    // enlargement to the vertical room actually available
+    // ((ch - TOP_CLEARANCE) / h) keeps the existing full 1.3x on tall
+    // (portrait/phone) screens where there's plenty of room, while
+    // automatically easing it back on tight screens like PC so the
+    // feet are never clipped.
+    const IMAGE_SHRINK_MAX = 1.3;
+    const IMAGE_SHRINK = Math.min(IMAGE_SHRINK_MAX, Math.max(1, (ch - TOP_CLEARANCE) / h));
     const sw = w * IMAGE_SHRINK, sh = h * IMAGE_SHRINK;
     const sx = x + (w - sw) / 2;
     // 발끝이 화면 밖으로 나갈 것 같으면 상단 버튼줄 여백까지는 끌어올린다
