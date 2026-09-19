@@ -444,8 +444,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
 /* v-caption-gap-fix — 참가자 요청: "챗봇 버튼을 위로 올려줘." bottom을
-   150px → 220px로 올려, 화면 아래쪽에서 더 위로 이동시켰다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(220px + env(safe-area-inset-bottom));z-index:35;
+   150px → 220px로 올렸다가, 후속 요청으로 220px → 170px로 다시
+   내렸다. */
+#chat-toggle{position:fixed;right:16px;bottom:calc(170px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -1675,7 +1676,10 @@ function fitHotspotLayer(){
     // "가능한 한 아래"로 다시 계산한다 — 자막창 자체는 그대로지만,
     // 이미지가 그 경계까지 채워지면서 둘 사이의 공백이 사라진다.
     if(sy < TOP_CLEARANCE) sy = TOP_CLEARANCE;
-    sy = Math.max(TOP_CLEARANCE, ch - sh);
+    // v-image-up-10px — 참가자 요청: "이미지를 10px 올려줘." 바닥에 딱
+    // 붙이던 위치에서 10px만큼 위로 올린다(TOP_CLEARANCE 하한은 그대로
+    // 지켜, 버튼줄과는 겹치지 않는다).
+    sy = Math.max(TOP_CLEARANCE, ch - sh - 10);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';

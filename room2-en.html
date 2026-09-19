@@ -441,8 +441,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
 /* v-caption-gap-fix — participant request: "move the chat button up."
-   Raised bottom from 150px to 220px. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(220px + env(safe-area-inset-bottom));z-index:35;
+   Raised bottom from 150px to 220px, then lowered it again to 170px
+   per a follow-up request. */
+#chat-toggle{position:fixed;right:16px;bottom:calc(170px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -1598,7 +1599,11 @@ function fitHotspotLayer(){
     // #stage — the caption box itself hasn't moved, but the image now
     // fills up to meet it, closing the gap.
     if(sy < TOP_CLEARANCE) sy = TOP_CLEARANCE;
-    sy = Math.max(TOP_CLEARANCE, ch - sh);
+    // v-image-up-10px — participant request: "raise the image by
+    // 10px." Moves it up from the flush-to-bottom position (still
+    // respecting the TOP_CLEARANCE floor, so it won't overlap the
+    // button row).
+    sy = Math.max(TOP_CLEARANCE, ch - sh - 10);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
