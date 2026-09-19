@@ -2833,6 +2833,31 @@ function _describeRelativeDirection(key){
 // was just about; null until a statue is first named.
 let _lastChatBody = null;
 
+/* v-chat-conversation-memory — participant feedback: "The chatbot
+   seems to work mainly with predefined or similar questions and does
+   not maintain conversational context very well. Follow-up questions
+   can therefore feel less natural." Root cause: fetchDetailAI() called
+   the Claude API with only the current question each time, no prior
+   turns — so the model had no way to resolve "why is that", "tell me
+   more" in a follow-up. The Claude Messages API becomes multi-turn
+   simply by including prior turns in the messages array, so real
+   exchanged questions/answers are kept here and sent along with every
+   call. Capped at the last 6 turns (12 messages) to bound prompt size
+   and cost. Knowledge-base fixed answers are pushed here too (via
+   _pushChatHistory), even though they don't go through the LLM, so a
+   follow-up building on one of those still has something to refer
+   back to. */
+const CHAT_HISTORY_MAX_TURNS = 6;
+let _chatConversationHistory = [];
+function _pushChatHistory(userText, assistantText){
+    if(!userText || !assistantText) return;
+    _chatConversationHistory.push({ role:'user', content:String(userText) });
+    _chatConversationHistory.push({ role:'assistant', content:String(assistantText) });
+    while(_chatConversationHistory.length > CHAT_HISTORY_MAX_TURNS * 2){
+        _chatConversationHistory.shift();
+    }
+}
+
 function buildOtherPartsAnswer(q){
     const shortName = k => DETAILS[k].title.split(' · ')[1];
     const exclude = currentKey;
@@ -5507,7 +5532,7 @@ async function _summarizeToLimit(text){
 // 코드가 먼저 한 번 조용히 재시도하게 한다 — 순간적인 끊김이라면 두 번째
 // 시도에서 대부분 성공하고, 관람객은 약간의 지연만 느낄 뿐 실패 메시지
 // 자체를 보지 않게 된다.
-async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
+async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt, history){
     const fullPrompt = ragBlock ? (prompt + ragBlock) : prompt;
     const sysPrompt = systemPrompt || DETAIL_SYSTEM_PROMPT;
     // v-cloud-api — LM Studio(OpenAI 호환 /v1/chat/completions) 대신,
@@ -5515,6 +5540,9 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     // Messages API를 부른다. system 프롬프트는 messages 배열 안이 아니라
     // 최상위 system 필드로 따로 보낸다(Claude API의 요청 형식 — OpenAI와
     // 다른 부분).
+    // v-chat-conversation-memory — prior real turns (history) go at the
+    // front of messages; that alone is what makes this a multi-turn
+    // conversation to the Claude API.
     const response = await fetch(CLAUDE_PROXY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -5522,6 +5550,7 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
             model: CLAUDE_MODEL,
             system: sysPrompt,
             messages: [
+                ...(Array.isArray(history) ? history : []),
                 { role: "user", content: fullPrompt }
             ],
             temperature: 0.3,
@@ -5585,12 +5614,12 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     return finalText;
 }
 
-async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
+async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt, history){
     const MAX_ATTEMPTS = 2; // 처음 실패 시 한 번만 조용히 재시도한다(무한 재시도로 관람객을 오래 기다리게 하지 않는다).
     let lastErr = null;
     for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
         try{
-            const finalText = await _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt);
+            const finalText = await _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt, history);
             if(onUpdate) onUpdate(finalText);
             return finalText;
         }catch(e){
@@ -6603,8 +6632,9 @@ async function _answerFreeformTwoVoice(q, philRef){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    }, TWO_VOICE_LIFE_SYSTEM_PROMPT);
+    }, TWO_VOICE_LIFE_SYSTEM_PROMPT, _chatConversationHistory);
     recordPartChatQA(q, raw); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    _pushChatHistory(q, raw); // v-chat-conversation-memory — keep this turn so the next follow-up can build on it
     // v-chatbot-always-two-voice — 형식 파싱에 실패해도(_parseTwoVoiceReply가
     // v-single-voice-when-specific — 형식 파싱에 실패하면(드문 경우)
     // 억지로 두 목소리로 쪼개지 않고, 화자 표시 없는 하나의 답으로
@@ -6704,6 +6734,7 @@ async function _processChatAnswer(q, forceLLM){
                     kbHit.body === 'Rodin' ? { rodin: kbHit.text } : { maitreya: kbHit.text }
                 );
             }, 250);
+            _pushChatHistory(q, kbHit.text); // v-chat-conversation-memory
             return;
         }
 
@@ -6724,6 +6755,7 @@ async function _processChatAnswer(q, forceLLM){
                 setTimeout(()=>{ _answerFreeformTwoVoice(q, philItem); }, 250);
             } else {
                 setTimeout(()=>{ _renderPhilosophyAnswer(philItem); }, 250);
+                _pushChatHistory(q, `The Thinker — ${philItem.rodin} / The Pensive Bodhisattva — ${philItem.maitreya}`); // v-chat-conversation-memory
             }
             return;
         }
@@ -6812,8 +6844,9 @@ async function _processChatAnswer(q, forceLLM){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT);
+    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT, _chatConversationHistory);
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    _pushChatHistory(q, answer); // v-chat-conversation-memory — keep this turn so the next follow-up can build on it
     // v-single-voice-when-specific — 형식 파싱에 실패하면(드문 경우)
     // 억지로 두 목소리로 쪼개지 않고, 화자 표시 없는 하나의 답으로
     // 그대로 보여준다.

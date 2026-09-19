@@ -537,6 +537,21 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     border-bottom:1px solid rgba(212,175,55,.18);color:var(--gold-light);font-size:.78rem;letter-spacing:.03em;}
 #chat-drag-handle .hint{font-size:.68rem;color:#8a8a8a;}
 #chat-drag-handle.dragging{cursor:grabbing;}
+/* v-chat-back-btn-visible — 참가자 요청: "챗봇창에 들어가면 나오는
+   돌아가기 버튼을 한 번 누르면 버튼 설명, 한 번 더 누르면 실행되게
+   해줘." 원래 숨겨진 #chat-page-header 안에만 있어 눌러볼 수도 없던
+   버튼을 실제로 보이는 이 손잡이(제목줄) 안으로 옮기며 필요한 스타일을
+   새로 준다 — 다른 곳의 작은 원형 아이콘 버튼과 같은 크기감. */
+#chat-drag-handle #chat-back-btn{
+    flex:0 0 auto; cursor:pointer; touch-action:manipulation;
+    padding:4px 10px; min-height:28px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--gold-dim); border-radius:999px;
+    background:rgba(0,0,0,.3); color:var(--gold-light); font-size:.7rem; line-height:1;
+    white-space:nowrap;
+}
+#chat-drag-handle #chat-back-btn:hover,
+#chat-drag-handle #chat-back-btn:focus-visible{background:rgba(212,175,55,.18); border-color:var(--gold);}
 #chat-panel.dragging{transition:none !important;}
 #chat-resize-handle{flex:0 0 auto;display:flex;justify-content:center;align-items:center;
     height:16px;margin:0 -14px;cursor:ns-resize;touch-action:none;}
@@ -1522,10 +1537,17 @@ body.low-vision-mode #hint-row .btn{
          지금은 항상 숨겨져 있다(위 CSS #chat-page-header{display:none}
          참고) — HTML에는 남겨두어, 필요해지면 되살릴 수 있게 했다. -->
     <div id="chat-page-header">
-        <button type="button" id="chat-back-btn" onclick="toggleChat()" aria-label="대화를 닫고 전시 화면으로 돌아가기">← 돌아가기</button>
         <span id="chat-page-title">사유의 상담소</span>
     </div>
-    <div id="chat-drag-handle" aria-hidden="true"><span>✥ 사유의 상담소</span><span class="hint">드래그해서 이동</span></div>
+    <!-- v-chat-back-btn-visible — 참가자 요청: "챗봇창에 들어가면
+         나오는 돌아가기 버튼을 한 번 누르면 버튼 설명, 한 번 더
+         누르면 실행되게 해줘." #chat-back-btn은 원래 위 숨겨진
+         #chat-page-header 안에 있어 실제로는 눌러볼 수도 없었다 —
+         제목줄 역할을 하는 이 손잡이(#chat-drag-handle) 안으로 옮겨
+         실제로 보이고 눌리게 한다. -->
+    <div id="chat-drag-handle"><span aria-hidden="true">✥ 사유의 상담소</span><span class="hint" aria-hidden="true">드래그해서 이동</span>
+        <button type="button" id="chat-back-btn" onclick="event.stopPropagation(); toggleChat();" aria-label="대화를 닫고 전시 화면으로 돌아가기" data-tap-name="돌아가기" data-tap-action="대화를 닫고 전시 화면으로 돌아갑니다">← 돌아가기</button>
+    </div>
     <div id="chat-resize-handle" aria-hidden="true"><span></span></div>
     <div id="chat-corner-resize" aria-hidden="true"></div>
     <!-- v47 — 위/아래/왼쪽/오른쪽 각 변 리사이즈 손잡이. 눈에 보이지 않는
@@ -2893,6 +2915,30 @@ function _describeRelativeDirection(key){
 // 않았다면 null이며, 이 경우 buildOtherPartsAnswer()는 양쪽 조각상의
 // 부위를 모두 나열한다.
 let _lastChatBody = null;
+
+/* v-chat-conversation-memory — 참가자 지적: "The chatbot seems to work
+   mainly with predefined or similar questions and does not maintain
+   conversational context very well. Follow-up questions can therefore
+   feel less natural." 원인: fetchDetailAI()가 매번 이전 대화 내용 없이
+   이번 질문 하나만 담아 Claude API를 불렀다 — 그래서 "그건 왜 그래?",
+   "더 자세히 말해줘" 같은 후속 질문에서 "그건"이 무엇을 가리키는지
+   모델이 전혀 알 수 없었다. Claude Messages API는 messages 배열에
+   이전 turn들을 그대로 포함하는 것만으로 멀티턴 대화가 되므로, 실제
+   주고받은 질문·답변을 여기 쌓아두고 매 호출마다 함께 보낸다. 토큰
+   비용과 프롬프트 길이를 고려해 최근 6턴(질문+답변 12개 메시지)만
+   유지한다. 지식베이스 즉답처럼 LLM을 거치지 않은 답도
+   _pushChatHistory()로 함께 쌓아, 그 다음 질문이 그 답을 이어받는
+   후속 질문이어도 모델이 인지할 수 있게 한다. */
+const CHAT_HISTORY_MAX_TURNS = 6;
+let _chatConversationHistory = [];
+function _pushChatHistory(userText, assistantText){
+    if(!userText || !assistantText) return;
+    _chatConversationHistory.push({ role:'user', content:String(userText) });
+    _chatConversationHistory.push({ role:'assistant', content:String(assistantText) });
+    while(_chatConversationHistory.length > CHAT_HISTORY_MAX_TURNS * 2){
+        _chatConversationHistory.shift();
+    }
+}
 
 function buildOtherPartsAnswer(q){
     const shortName = k => DETAILS[k].title.split(' · ')[1];
@@ -5638,7 +5684,7 @@ async function _summarizeToLimit(text){
 // 코드가 먼저 한 번 조용히 재시도하게 한다 — 순간적인 끊김이라면 두 번째
 // 시도에서 대부분 성공하고, 관람객은 약간의 지연만 느낄 뿐 실패 메시지
 // 자체를 보지 않게 된다.
-async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
+async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt, history){
     const fullPrompt = ragBlock ? (prompt + ragBlock) : prompt;
     const sysPrompt = systemPrompt || DETAIL_SYSTEM_PROMPT;
     // v-cloud-api — LM Studio(OpenAI 호환 /v1/chat/completions) 대신,
@@ -5646,6 +5692,10 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     // Messages API를 부른다. system 프롬프트는 messages 배열 안이 아니라
     // 최상위 system 필드로 따로 보낸다(Claude API의 요청 형식 — OpenAI와
     // 다른 부분).
+    // v-chat-conversation-memory — messages 배열 맨 앞에 지금까지의 실제
+    // 대화 turn들(history)을 그대로 붙인다. Claude API는 이 배열 자체가
+    // 대화 기록이므로, 이 한 줄만으로 후속 질문에 필요한 멀티턴 맥락이
+    // 생긴다.
     const response = await fetch(CLAUDE_PROXY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -5653,6 +5703,7 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
             model: CLAUDE_MODEL,
             system: sysPrompt,
             messages: [
+                ...(Array.isArray(history) ? history : []),
                 { role: "user", content: fullPrompt }
             ],
             temperature: 0.3,
@@ -5716,12 +5767,12 @@ async function _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt){
     return finalText;
 }
 
-async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt){
+async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt, history){
     const MAX_ATTEMPTS = 2; // 처음 실패 시 한 번만 조용히 재시도한다(무한 재시도로 관람객을 오래 기다리게 하지 않는다).
     let lastErr = null;
     for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
         try{
-            const finalText = await _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt);
+            const finalText = await _fetchDetailAIOnce(prompt, ragBlock, onUpdate, systemPrompt, history);
             if(onUpdate) onUpdate(finalText);
             return finalText;
         }catch(e){
@@ -6279,6 +6330,12 @@ function toggleChatMic(){
     let startX = 0, startY = 0, startLeft = 0, startTop = 0, dragging = false;
 
     function onPointerDown(e){
+        // v-chat-back-btn-visible — the back button now lives inside
+        // this drag handle; without this guard, starting a drag here
+        // would capture the pointer and swallow the button's click
+        // before it ever fires (same fix used for the mic/close
+        // buttons elsewhere in this file).
+        if(e.target && e.target.closest && e.target.closest('#chat-back-btn')) return;
         dragging = true;
         const rect = panel.getBoundingClientRect();
         startX = e.clientX; startY = e.clientY;
@@ -6801,8 +6858,9 @@ async function _answerFreeformTwoVoice(q, philRef){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    }, TWO_VOICE_LIFE_SYSTEM_PROMPT);
+    }, TWO_VOICE_LIFE_SYSTEM_PROMPT, _chatConversationHistory);
     recordPartChatQA(q, raw); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    _pushChatHistory(q, raw); // v-chat-conversation-memory — 다음 후속 질문이 이 turn을 그대로 이어받을 수 있게 기록
     // v-chatbot-always-two-voice — 형식 파싱에 실패해도(_parseTwoVoiceReply가
     // v-single-voice-when-specific — 형식 파싱에 실패하면(드문 경우)
     // 억지로 두 목소리로 쪼개지 않고, 화자 표시 없는 하나의 답으로
@@ -6904,6 +6962,7 @@ async function _processChatAnswer(q, forceLLM){
                     kbHit.body === '로댕' ? { rodin: kbHit.text } : { maitreya: kbHit.text }
                 );
             }, 250);
+            _pushChatHistory(q, kbHit.text); // v-chat-conversation-memory — KB 즉답도 대화 맥락에 남긴다
             return;
         }
 
@@ -6924,6 +6983,7 @@ async function _processChatAnswer(q, forceLLM){
                 setTimeout(()=>{ _answerFreeformTwoVoice(q, philItem); }, 250);
             } else {
                 setTimeout(()=>{ _renderPhilosophyAnswer(philItem); }, 250);
+                _pushChatHistory(q, `생각하는 사람 — ${philItem.rodin} / 반가사유상 — ${philItem.maitreya}`); // v-chat-conversation-memory
             }
             return;
         }
@@ -7012,8 +7072,9 @@ async function _processChatAnswer(q, forceLLM){
         // 맞춰 스크롤해뒀다. 스트리밍 도중 매번 맨 아래로 다시 스크롤하면
         // 답이 길어질수록 시작 부분이 다시 화면 밖으로 밀려나 버리므로,
         // 여기서는 스크롤을 건드리지 않고 그 자리에서 글자만 채운다.
-    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT);
+    }, DETAIL_TWO_VOICE_SYSTEM_PROMPT, _chatConversationHistory);
     recordPartChatQA(q, answer); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
+    _pushChatHistory(q, answer); // v-chat-conversation-memory — 다음 후속 질문이 이 turn을 그대로 이어받을 수 있게 기록
     // v-single-voice-when-specific — 형식 파싱에 실패하면(드문 경우)
     // 억지로 두 목소리로 쪼개지 않고, 화자 표시 없는 하나의 답으로
     // 그대로 보여준다.
@@ -7393,9 +7454,12 @@ document.addEventListener('click', function(e){
     // 같이] 처음 누르면 설명, 두 번째 빠르게 누르면 바로 동작하게
     // 해달라." #chat-panel 전체가 위 TWOTAP_HANDS_OFF_SELECTOR에 있어
     // 마이크도 함께 제외되고 있었다 — 마이크 버튼(#chat-mic)만 예외로
-    // 다시 포함시킨다(그 외 챗봇창 안의 입력창·전송·예상질문 칩·
-    // 돌아가기는 실시간 대화 특성상 그대로 즉시 반응 유지).
-    if(target.id !== 'chat-mic' && target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
+    // 다시 포함시킨다(그 외 챗봇창 안의 입력창·전송·예상질문 칩은
+    // 실시간 대화 특성상 그대로 즉시 반응 유지).
+    // v-chat-back-btn-twotap — 후속 참가자 요청: "챗봇창의 돌아가기
+    // 버튼도 한 번 누르면 설명, 한 번 더 누르면 실행되게 해달라."
+    // 마이크와 같은 이유로 #chat-back-btn도 함께 예외 목록에 추가한다.
+    if(target.id !== 'chat-mic' && target.id !== 'chat-back-btn' && target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
     if(target.disabled) return;
 
     if(_armedTwoTapEl === target){
