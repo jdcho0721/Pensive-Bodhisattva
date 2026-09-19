@@ -981,9 +981,11 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
         <span class="gate-route-title">Viewing Order</span>
         <button type="button" class="gate-route-item" id="gate-route-room1"
                 onclick="event.stopPropagation(); try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}; enterRoom();"
+                data-tap-name="Room 1, Encounter"
                 aria-label="Enters Room 1, Encounter">Room 1 · Encounter</button>
         <button type="button" class="gate-route-item" id="gate-route-room2"
                 onclick="event.stopPropagation(); try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){} speechGen++; window.speechSynthesis.cancel(); location.href='room2-en.html';"
+                data-tap-name="Room 2, Contemplation and Embodiment"
                 aria-label="Moves to Room 2, Contemplation and Embodiment">Room 2 · Contemplation and Embodiment</button>
     </div>
 
@@ -3748,20 +3750,99 @@ function goToRoom2(e) {
 })();
 
 /* ══════════════════════════════════════════════════════
-   v-gate-route-talkback-format — participant request: "clicking Room 1
-   in the viewing order should enter Room 1, and clicking Room 2 should
-   move to Room 2 — in TalkBack format." Replaced the app's own "tap
-   the same button twice at the same spot" confirm flow (used just
-   above) with the standard behavior screen readers like TalkBack
-   expect: swipe to move focus, then double-tap anywhere on screen to
-   activate — one activation, one action. That flow has no way to know
-   a button is "armed" (focus and activation are separate gestures), so
-   requiring a second confirming tap only gets in the way. Removed the
-   dedicated two-tap IIFEs for both buttons; the onclick attributes in
-   the HTML above now run immediately on click. aria-label is still in
-   place, so screen readers still announce the name correctly when
-   focus lands on them.
+   v-button-interaction-unify — participant request: "unify all buttons
+   in the 4 files: on first press, one tap explains the button and two
+   quick taps activate it; from the second time onward, since the
+   button is already known, two quick taps activate it right along with
+   its narration. Exception: leave the Speed button as is." Restoring
+   the same two-tap confirm mechanism (used by #btn-next-exhibit and
+   #btn-lang-ko above) to #gate-route-room1 and #gate-route-room2 —
+   these had been switched to immediate execution for TalkBack-style
+   compatibility, but this request reverses that back to the two-tap
+   confirm flow.
    ══════════════════════════════════════════════════════ */
+(function(){
+    const btn = document.getElementById('gate-route-room2');
+    if(!btn) return;
+    const ARM_MS = 2500;
+    let armed = false, timer = null;
+    function disarm(){
+        armed = false;
+        btn.classList.remove('control-armed');
+        clearTimeout(timer);
+    }
+    document.addEventListener('click', function(e){
+        if(e.target !== btn) return;
+        if(armed){
+            e.preventDefault(); e.stopImmediatePropagation();
+            disarm();
+            try{ hapticPulse('exit'); }catch(err){}
+            speechGen++;
+            window.speechSynthesis.cancel();
+            let _navigated = false;
+            const go = function(){
+                if(_navigated) return;
+                _navigated = true;
+                location.href='room2-en.html';
+            };
+            try{
+                const u = new SpeechSynthesisUtterance('Moving to Room 2.');
+                u.lang = 'en-US';
+                const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
+                if(_v) u.voice = _v;
+                u.onend = go;
+                u.onerror = go;
+                window.speechSynthesis.speak(u);
+                setTimeout(go, 3500);
+            }catch(err){ go(); }
+            return;
+        }
+        e.preventDefault(); e.stopImmediatePropagation();
+        armed = true;
+        btn.classList.add('control-armed');
+        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+        try{
+            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 2').trim();
+            speak('This is the ' + cleanName + ' button.');
+        }catch(err){}
+        timer = setTimeout(disarm, ARM_MS);
+    }, true);
+})();
+
+(function(){
+    const btn = document.getElementById('gate-route-room1');
+    if(!btn) return;
+    const ARM_MS = 2500;
+    let armed = false, timer = null;
+    function disarm(){
+        armed = false;
+        btn.classList.remove('control-armed');
+        clearTimeout(timer);
+    }
+    document.addEventListener('click', function(e){
+        if(e.target !== btn) return;
+        if(armed){
+            // Second tap — confirmed. Enters the same page (no
+            // navigation), so no separate confirmation utterance is
+            // spoken — enterRoom() itself already announces "Room 1,
+            // Encounter."
+            e.preventDefault(); e.stopImmediatePropagation();
+            disarm();
+            try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+            enterRoom();
+            return;
+        }
+        e.preventDefault(); e.stopImmediatePropagation();
+        armed = true;
+        btn.classList.add('control-armed');
+        try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}
+        try{
+            const cleanName = (btn.dataset && btn.dataset.tapName) || (btn.textContent || 'Room 1').trim();
+            speak('This is the ' + cleanName + ' button.');
+        }catch(err){}
+        timer = setTimeout(disarm, ARM_MS);
+    }, true);
+})();
 
 </script>
 </body>

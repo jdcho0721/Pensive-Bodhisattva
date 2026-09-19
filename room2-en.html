@@ -1435,7 +1435,7 @@ body.low-vision-mode #hint-row .btn{
         <label for="chat-input" class="sr-only">궁금한 점을 입력하세요</label>
         <!-- v-chat-stt — 마이크 버튼을 입력창 옆에 둔다. 상태 안내
              (#chat-mic-status)는 화면엔 안 보이고 스크린리더에만 읽힌다. -->
-        <button type="button" id="chat-mic" onclick="toggleChatMic()" aria-label="Ask by voice">🎤</button>
+        <button type="button" id="chat-mic" onclick="toggleChatMic()" aria-label="Ask by voice" data-tap-name="Microphone">🎤</button>
         <span id="chat-mic-status" class="sr-only" role="status" aria-live="polite"></span>
         <!-- v-chat-placeholder-scope-update — 참가자 지적: "만진 부분이
              궁금하면 물어보세요"는 챗봇이 실제로 답할 수 있는 범위를
@@ -7149,7 +7149,14 @@ function _runOriginalButtonAction(target){
 document.addEventListener('click', function(e){
     const target = e.target.closest('button');
     if(!target) return;
-    if(target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
+    // v-mic-twotap-unify — participant request: "the chatbot's mic
+    // button should also explain on first press, and execute
+    // immediately on a fast second press, like the other buttons."
+    // #chat-panel as a whole is in TWOTAP_HANDS_OFF_SELECTOR above, so
+    // the mic was excluded along with it — carve out #chat-mic alone as
+    // an exception (the rest of the chat panel — input, send, suggested
+    // questions, back — stays immediate for real-time conversation).
+    if(target.id !== 'chat-mic' && target.closest(TWOTAP_HANDS_OFF_SELECTOR)) return; // 챗봇·속도·쉬운문장·배경음악처럼 즉시 반응이 필요한 토글은 손대지 않음
     if(target.disabled) return;
 
     if(_armedTwoTapEl === target){
