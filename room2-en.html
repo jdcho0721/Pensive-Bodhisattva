@@ -60,7 +60,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    고정 폭 띠)이 그 안에서 위/아래로 겹치지 않고 "나눠" 갖는다. 스크롤은
    전혀 없고, 자막 영역은 이전 v33보다 더 넉넉한 높이로 잡아 "길게" 나오라는
    요청도 함께 만족시킨다. */
-#room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden;}
+/* v-hint-row-cutoff-fix — participant report: matches room2.html —
+   #stage + #caption-wrap's combined height can slightly exceed
+   100vh/100dvh on some devices (mobile browsers whose address bar
+   grows/shrinks, very short screens, etc.), and with overflow:hidden
+   the overflowing part (usually the bottom of the button row) was
+   simply clipped with no way to scroll to it. Allow vertical scrolling
+   as a safety net — invisible in the normal case where everything
+   fits, but lets a visitor scroll down to reach the buttons on the
+   rare device where it doesn't (horizontal scroll stays blocked). */
+#room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow-x:hidden; overflow-y:auto;}
 #stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
@@ -486,10 +495,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 /* v-chat-toggle-draggable — participant request: "let me move the chat
    button's position." touch-action:none needed so the browser's
    default touch gestures (scrolling) don't intercept drag first. */
+/* v-chat-toggle-obtrusive-fix — participant report: "the chat button
+   at the center of the screen was a bit distracting when viewing the
+   artwork." Position stays the same (still draggable), but it now
+   rests at lower opacity and becomes fully visible on hover/focus/
+   touch, so it draws less attention away from the statues. */
 #chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
-    touch-action:none;}
+    touch-action:none;opacity:.55;transition:opacity .25s ease;}
+#chat-toggle:hover,#chat-toggle:focus-visible,#chat-toggle:active{opacity:1;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
    다리가 잘리면... 사유의 방 버튼을 내려서 맞춰달라. 버튼 크기도 좀
    줄여달라." bottom을 182px → 150px로 내리고, 52px → 44px(WCAG 2.5.5
@@ -601,6 +616,18 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    panel instead, via ::before so it survives later textContent
    rewrites (several code paths update bubble.textContent directly). */
 #chat-log .ai::before{content:"🤖 ";}
+/* v-answer-format-distinction — participant report: matches
+   room2.html — knowledge-base/philosophy-bank fixed answers and
+   live LLM-generated answers looked identical (both just a "🤖"
+   bubble). _renderPhilosophyAnswer()'s new-bubble path now uses
+   'ai-fixed' instead of 'ai' for pre-written content (its
+   existingBubble path, used to format genuine LLM output, still uses
+   'ai' unchanged). Book icon + faint tint marks it as prepared
+   content rather than something generated live. */
+#chat-log .ai-fixed{color:var(--gold-light); white-space:pre-line;
+    background:rgba(212,175,55,.06); border-left:2px solid var(--gold-dim);
+    padding:6px 8px; border-radius:4px;}
+#chat-log .ai-fixed::before{content:"📖 ";}
 #chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;max-height:96px;overflow-y:auto;padding-right:2px;}
 /* v47 — 패널 폭을 줄이면서 예상 질문 칩들이 줄바꿈으로 더 많은 세로
    공간을 차지하게 됐다. 무한정 늘어나 챗봇 입력창을 밀어내지 않도록
@@ -1173,6 +1200,12 @@ body.low-vision-mode #hint-row .btn{
            aria-label="Adjust background music volume, currently 70 percent"
            oninput="onVolumeChange(this.value)">
 </div>
+<!-- v-exit-btn-missing-fix — participant report: matches room2.html —
+     the exit button that index.html/index-en.html has was missing
+     entirely from this top button row. Added with the same two-tap
+     pattern (first press announces its name, second actually closes
+     the screen). -->
+<button class="btn" id="btn-exit" onclick="exitExhibit()" aria-label="This is the exit button." data-tap-name="Exit" data-tap-action="Closes the screen."><span aria-hidden="true">✕</span></button>
 </div>
 <button id="chat-toggle" onclick="toggleChat()" aria-label="Contemplation Counsel — ask a question" data-tap-name="Contemplation Counsel" data-tap-action="Opens the Contemplation Counsel">💬</button>
 <div id="info-overlay" role="dialog" aria-modal="true" aria-label="작품·작가 소개 및 저작권" onclick="if(event.target && event.target.id==='info-overlay') closeInfo();">
@@ -1534,13 +1567,17 @@ body.low-vision-mode #hint-row .btn{
          막막해하지 않도록, 자주 나올 법한 질문들을 미리 눌러볼 수 있게
          제시한다. 질문을 보낸 뒤에도 계속 떠 있어서, 언제든 이어서 다른
          예상 질문을 눌러볼 수 있다. -->
+    <!-- v-chat-double-scroll-fix — participant report: matches
+         room2.html — too many suggestion chips routinely exceeded the
+         96px cap below, giving this area its own scrollbar alongside
+         #chat-log's — two scrollbars inside one panel. Trimmed to 4
+         representative questions so this area usually fits within
+         96px without needing its own scroll. -->
     <div id="chat-suggestions" role="group" aria-label="Suggested questions">
         <button type="button" class="chip" onclick="askSuggested('What does the Pensive Bodhisattva’s posture mean?')">What does the Pensive Bodhisattva’s posture mean?</button>
-        <button type="button" class="chip" onclick="askSuggested('Summarize what I’ve touched so far')">Summarize what I’ve touched so far</button>
         <button type="button" class="chip" onclick="askSuggested('Why isn’t Rodin’s Thinker wearing clothes?')">Why isn’t Rodin’s Thinker wearing clothes?</button>
-        <button type="button" class="chip" onclick="askSuggested('Why is the Pensive Bodhisattva smiling?')">Why is the Pensive Bodhisattva smiling?</button>
-        <button type="button" class="chip" onclick="askSuggested('What was The Thinker originally called?')">What was The Thinker originally called?</button>
-        <button type="button" class="chip" onclick="askSuggested('How does jinsa-daecheonmyeong relate to the statues?')">How does jinsa-daecheonmyeong relate to the statues?</button>
+        <button type="button" class="chip" onclick="askSuggested('What’s different between the two statues?')">What’s different between the two statues?</button>
+        <button type="button" class="chip" onclick="askSuggested('Summarize what I’ve touched so far')">Summarize what I’ve touched so far</button>
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
         <label for="chat-input" class="sr-only">궁금한 점을 입력하세요</label>
@@ -2515,8 +2552,14 @@ function _speakSentenceQueueRoom2(sentences, idx, speakerKey, mySeq, captionEl, 
         // split apart: lower and heavier for Rodin, higher and softer
         // for the Bodhisattva, so the speaker is identifiable by sound
         // alone without looking at the screen.
+        // v-pitch-too-high-fix — participant report: matches
+        // room2.html — the Bodhisattva's pitch was raised to 1.16 to
+        // distinguish it from Rodin's, but that value itself sounded
+        // too high and unnatural. Keeping some distinction from Rodin
+        // (still a bit above the neutral 1.0), lowered from 1.16 to
+        // 1.08 for a less sharp sound.
         if(speakerKey === 'rodin'){ basePitch = 0.86; baseRateMult = 0.94; }
-        else if(speakerKey === 'maitreya'){ basePitch = 1.16; baseRateMult = 0.90; }
+        else if(speakerKey === 'maitreya'){ basePitch = 1.08; baseRateMult = 0.90; }
         else { basePitch = 1.0; baseRateMult = 1.0; }
         const endsWithQuestion = /[?]\s*$/.test(raw);
         const endsWithExclaim = /[!]\s*$/.test(raw);
@@ -4894,7 +4937,7 @@ function _renderPhilosophyAnswer(item, existingBubble){
     else text = String(item.single || '').trim();
 
     if(existingBubble) existingBubble.textContent = text;
-    else pushLog('ai', text);
+    else pushLog('ai-fixed', text);
     _scrollChatLogToBottom();
     _chatAnswerActive = true;
     // v-phil-caption-sync — 참가자 지적: "자막 출력보다 음성해설이 먼저
@@ -7112,6 +7155,21 @@ function recordPartChatQA(q, a){
 let _infoLastFocused = null;
 let _infoResumeText = null;
 let _infoResumeSpeaker = null;
+// v-exit-btn-missing-fix — participant report: matches room2.html —
+// same pattern as index.html's exitExhibit(): stop speech, close the
+// window, and fall back to about:blank if the browser's policy won't
+// allow closing. _captionSeq is bumped first so any already-scheduled
+// next-line callback recognizes itself as stale and doesn't speak
+// again.
+function exitExhibit(){
+    _captionSeq++;
+    try{ window.speechSynthesis.cancel(); }catch(err){}
+    try{ window.close(); }catch(err){}
+    setTimeout(function(){
+        try{ location.href = 'about:blank'; }catch(err){}
+    }, 250);
+}
+
 function openInfo(){
     // v81 — index.html(room1)과 동일한 참가자 요청: "정보창을 닫으면
     // 이전에 나오던 음성해설을 이어서 들을 수 있도록 해달라." 안내창을

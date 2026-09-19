@@ -6,8 +6,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>Room 1 · Encounter — Resonance of Silence</title>
+<!-- v-font-render-blocking-fix — participant report: matches
+     index.html — the Google Fonts stylesheet below is render-blocking
+     by default, so nothing (including #stage's background image)
+     paints until it loads, and only fonts.googleapis.com had a
+     preconnect while the actual font files come from
+     fonts.gstatic.com. Preconnect both, and load the stylesheet with
+     the media="print" → onload="all" swap trick so fonts load
+     asynchronously without blocking first paint. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <style>
 /* ══════════════════════════════════════════════════════
    전시실 1 · 소개(0~2단계) + 세부(3단계) — 단일 화면/단일 UI 통합판
@@ -162,6 +172,24 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     .caption-nav-hint.left{left:6px;}
     .caption-nav-hint.right{right:6px;}
     .caption-nav-edge{ width:28px; }
+}
+/* v-nav-hint-first-time-fix — participant report (recurring): "at
+   first, it was hard to tell how to move to the previous/next line.
+   It seemed like the left/right sides of the screen had some
+   function, but the arrows weren't very noticeable." The arrows
+   (opacity .8) and edge gradients already existed, but the very first
+   moment a visitor arrives was still easy to miss — now they pulse
+   gently for a few seconds right after entering the room, then settle
+   back to their normal quiet state (removed immediately on the first
+   real left/right tap too, so returning visitors who already know how
+   it works aren't bothered by it). */
+@keyframes navHintAttention{
+    0%,100%{ opacity:.8; transform:translateY(-50%) scale(1); }
+    50%{ opacity:1; transform:translateY(-50%) scale(1.18); }
+}
+.caption-nav-hint.attention{ animation:navHintAttention 1.1s ease-in-out 3; }
+@media (prefers-reduced-motion: reduce){
+    .caption-nav-hint.attention{ animation:none; opacity:1; }
 }
 #caption-tag{font-size:.72rem; letter-spacing:.12em; color:var(--gold); margin-bottom:10px; font-family:'Cinzel Decorative',serif;}
 #caption{font-size:clamp(1.1rem, 3.6vw, 1.6rem); line-height:1.75; max-width:640px; margin:0 auto; word-break:keep-all;}
@@ -1591,6 +1619,14 @@ function enterRoom(){
     // first screen is shown.
     _getImageRect();
     stageEl.classList.add('lit');
+    // v-nav-hint-first-time-fix — briefly draws attention to the
+    // previous/next arrows right after entering; removed immediately
+    // on the first real left/right tap, or automatically after a few
+    // seconds otherwise.
+    document.querySelectorAll('.caption-nav-hint').forEach(el => el.classList.add('attention'));
+    setTimeout(()=>{
+        document.querySelectorAll('.caption-nav-hint').forEach(el => el.classList.remove('attention'));
+    }, 4000);
     // v59 — 진입 화면 동안 TalkBack 스와이프 탐색에서 제외해뒀던 상단
     // 버튼·단계 점·자막 영역을 여기서 다시 활성화한다.
     ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
@@ -2853,6 +2889,10 @@ function onReplayClick(){
 
 function onBackClick(){
     clearTimeout(autoTimer);
+    // v-nav-hint-first-time-fix — a real left/right tap means the
+    // visitor already knows how it works, so stop any remaining
+    // attention animation right away.
+    document.querySelectorAll('.caption-nav-hint.attention').forEach(el => el.classList.remove('attention'));
     // v-step-advance-haptic — participant request: "A soft 'tok' vibration
     // when moving to the next step would let me know right away it went
     // through, even without looking at the screen." Reuses the existing
@@ -2945,6 +2985,8 @@ function playDialogueLineAt(tIdx, dIdx){
 // 도달했을 때에만 다음 단계·다음 화자로 넘어간다.
 function onNextClick(){
     clearTimeout(autoTimer);
+    // v-nav-hint-first-time-fix — matches onBackClick().
+    document.querySelectorAll('.caption-nav-hint.attention').forEach(el => el.classList.remove('attention'));
     // v-step-advance-haptic — same as onBackClick() above.
     try{ hapticPulse('turn'); }catch(err){}
     // v23 — 뒤로가기와 동일한 이유: 지금 읽고 있는 해설을 즉시 중단한다.

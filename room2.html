@@ -60,7 +60,17 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    고정 폭 띠)이 그 안에서 위/아래로 겹치지 않고 "나눠" 갖는다. 스크롤은
    전혀 없고, 자막 영역은 이전 v33보다 더 넉넉한 높이로 잡아 "길게" 나오라는
    요청도 함께 만족시킨다. */
-#room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow:hidden;}
+/* v-hint-row-cutoff-fix — 참가자 지적: "가끔 아래 버튼이 위의 머리
+   부분만 보이는 경우가 있음. 스크롤이 아래 버튼까지 되면 좋겠다."
+   원인: #stage(flex:1)와 #caption-wrap(최대 46vh)을 합친 실제 높이가
+   기기에 따라(주소창이 늘었다 줄었다 하는 모바일 브라우저, 매우
+   좁은 세로 화면 등) 100vh/100dvh를 살짝 넘어서는 경우가 있는데,
+   overflow:hidden이라 그 넘친 부분(주로 맨 아래 버튼 줄의 아랫부분)이
+   가려진 채 스크롤할 방법조차 없었다. 세로 스크롤을 허용해, 내용이
+   다 들어가는 보통의 경우엔 스크롤바가 아예 안 보이고, 못 들어가는
+   드문 경우에만 아래로 스크롤해 버튼까지 닿을 수 있는 안전장치로
+   쓰인다(가로 스크롤은 계속 막아둔다). */
+#room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow-x:hidden; overflow-y:auto;}
 #stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
@@ -490,10 +500,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 /* v-chat-toggle-draggable — 참가자 요청: "챗봇 버튼 위치를 이동할 수
    있게 해줘." 드래그로 옮길 수 있으려면 브라우저 기본 터치 제스처
    (스크롤 등)가 먼저 가로채지 않도록 touch-action:none이 필요하다. */
+/* v-chat-toggle-obtrusive-fix — 참가자 지적: "챗봇 버튼이 화면 가운데에
+   있어서 작품을 볼 때 조금 눈에 걸리는 느낌이 있었다." 위치는 그대로
+   두되(끌어서 옮길 수 있다는 이전 수정도 그대로 유지), 평소에는 옅게
+   비치다가 손을 가까이 대거나(hover) 포커스가 오면 또렷해지도록
+   투명도를 낮췄다 — 조각상 이미지를 볼 때 시선을 덜 가로챈다. */
 #chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
-    touch-action:none;}
+    touch-action:none;opacity:.55;transition:opacity .25s ease;}
+#chat-toggle:hover,#chat-toggle:focus-visible,#chat-toggle:active{opacity:1;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
    다리가 잘리면... 사유의 방 버튼을 내려서 맞춰달라. 버튼 크기도 좀
    줄여달라." bottom을 182px → 150px로 내리고, 52px → 44px(WCAG 2.5.5
@@ -607,8 +623,22 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    곳(_renderPhilosophyAnswer의 existingBubble.textContent = text 등)이
    여러 곳이라, 텍스트 자체에 아이콘을 섞으면 나중에 다시 쓸 때
    사라지기 쉽다 — 대신 CSS ::before로 항상 붙어 있게 한다(텍스트
-   내용이 몇 번을 바뀌어도 아이콘은 그대로 유지된다). */
+   내용이 몇 번을 바뀌어도 아이콘은 그대로 유지된다).
+   v-answer-format-distinction — 참가자 지적: "고정 해설과 AI 답변의
+   형식도 사용자에게 명확히 구분되어야 한다." 지금까지는 지식베이스·
+   철학 문답(미리 준비된 고정 답)과 실시간 LLM 생성 답이 챗봇창에서
+   똑같이 "🤖" 말풍선으로만 보여 구분이 안 됐다 — pushLog()를
+   호출하는 자리에서 미리 준비된 답에는 별도로 'ai-fixed' 클래스를
+   붙이도록 바꿨고(_renderPhilosophyAnswer의 새 말풍선 생성 경로만
+   해당 — 실제 LLM이 만든 두 목소리 답을 그 함수의 서식으로 표시할
+   때는 이미 'ai' 말풍선이 만들어진 뒤라 그대로 'ai' 유지), 여기서
+   책 아이콘과 옅은 배경으로 "미리 준비된 해설"임을 시각적으로 알 수
+   있게 한다. */
 #chat-log .ai::before{content:"🤖 ";}
+#chat-log .ai-fixed{color:var(--gold-light); white-space:pre-line;
+    background:rgba(212,175,55,.06); border-left:2px solid var(--gold-dim);
+    padding:6px 8px; border-radius:4px;}
+#chat-log .ai-fixed::before{content:"📖 ";}
 #chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;flex:0 0 auto;max-height:96px;overflow-y:auto;padding-right:2px;}
 /* v47 — 패널 폭을 줄이면서 예상 질문 칩들이 줄바꿈으로 더 많은 세로
    공간을 차지하게 됐다. 무한정 늘어나 챗봇 입력창을 밀어내지 않도록
@@ -1194,6 +1224,12 @@ body.low-vision-mode #hint-row .btn{
            aria-label="배경음악 크기 조절, 현재 70퍼센트"
            oninput="onVolumeChange(this.value)">
 </div>
+<!-- v-exit-btn-missing-fix — 참가자 지적: "전시2 상단버튼에 나가기 x
+     버튼이 빠져있다." index.html에는 있던 나가기 버튼이 room2.html
+     상단 버튼 줄에는 아예 없었다 — index.html과 같은 방식(두 번
+     탭: 처음엔 이름만 안내, 두 번째에 실제로 화면을 닫는다)으로
+     추가한다. -->
+<button class="btn" id="btn-exit" onclick="exitExhibit()" aria-label="이 버튼은 나가기 버튼입니다." data-tap-name="나가기" data-tap-action="화면을 종료합니다."><span aria-hidden="true">✕</span></button>
 </div>
 <!-- 웹 접근성: 챗봇 버튼을 여기(정보 버튼 바로 다음)로 옮겼다. 원래는
      11개 핫스팟 뒤에 있어서, 스크린리더로 화면을 순서대로 스와이프하는
@@ -1619,16 +1655,19 @@ body.low-vision-mode #hint-row .btn{
          막막해하지 않도록, 자주 나올 법한 질문들을 미리 눌러볼 수 있게
          제시한다. 질문을 보낸 뒤에도 계속 떠 있어서, 언제든 이어서 다른
          예상 질문을 눌러볼 수 있다. -->
+    <!-- v-chat-double-scroll-fix — 참가자 지적: "챗봇 대화창 내부에 2개의
+         스크롤 존재." 원인: 예상 질문 칩이 9개나 있어서, 이 좁은 패널
+         폭(320px)에서 줄바꿈되면 위 max-height(96px)를 거의 항상
+         넘겨 이 칩 영역 자체가 스크롤되고, 그 아래 대화 기록
+         (#chat-log)도 따로 스크롤되어 — 결과적으로 한 패널 안에 스크롤
+         영역이 두 개 생겼다. 대표성 있는 4개(개별 질문 2개·비교
+         질문·요약 기능 질문)만 남겨, 대부분의 화면 너비에서 이 칩
+         영역이 96px 안에 들어와 별도 스크롤이 필요 없게 한다. -->
     <div id="chat-suggestions" role="group" aria-label="예상 질문">
         <button type="button" class="chip" onclick="askSuggested('반가사유상의 자세는 어떤 의미인가요?')">반가사유상의 자세는 어떤 의미인가요?</button>
+        <button type="button" class="chip" onclick="askSuggested('로댕의 생각하는 사람은 왜 옷을 안 입었어요?')">로댕의 생각하는 사람은 왜 옷을 안 입었어요?</button>
         <button type="button" class="chip" onclick="askSuggested('두 조각상은 뭐가 달라요?')">두 조각상은 뭐가 달라요?</button>
         <button type="button" class="chip" onclick="askSuggested('지금까지 만진 곳 요약해줘')">지금까지 만진 곳 요약해줘</button>
-        <button type="button" class="chip" onclick="askSuggested('로댕의 생각하는 사람은 왜 옷을 안 입었어요?')">로댕의 생각하는 사람은 왜 옷을 안 입었어요?</button>
-        <button type="button" class="chip" onclick="askSuggested('반가사유상은 왜 미소 짓고 있나요?')">반가사유상은 왜 미소 짓고 있나요?</button>
-        <button type="button" class="chip" onclick="askSuggested('두 조각상은 재질이 뭐가 달라요?')">두 조각상은 재질이 뭐가 달라요?</button>
-        <button type="button" class="chip" onclick="askSuggested('생각하는 사람은 원래 이름이 뭐였어요?')">생각하는 사람은 원래 이름이 뭐였어요?</button>
-        <button type="button" class="chip" onclick="askSuggested('진인사대천명이 조각상과 무슨 관계예요?')">진인사대천명이 조각상과 무슨 관계예요?</button>
-        <button type="button" class="chip" onclick="askSuggested('금동미륵반가사유상과 로댕의 생각하는 사람의 제조 방법의 차이는?')">금동미륵반가사유상과 로댕의 생각하는 사람의 제조 방법의 차이는?</button>
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
         <label for="chat-input" class="sr-only">궁금한 점을 입력하세요</label>
@@ -2510,10 +2549,25 @@ const CHARS_PER_SEC_AT_1X = 7;     // 배속 1.0x 기준 대략적인 낭독 속
 // "일반 해설"은 이제 pitch=1.0·rate=TTS_RATE 그대로이므로, 전시실1의
 // 오리엔테이션(화자 지정 없이 speak()를 부르는 부분)과 자연히 같은
 // 소리가 된다.
+// v-korean-male-voice-fix — 참가자 지적: "PC에서 영문 버전은 남자
+// 목소리가 나오는데 국문 버전은 안 나온다. 나오게 할 수 있나?" 원인:
+// 이 함수는 지금까지 이름에 "neural"류 표시가 있는지만 보고, 성별은
+// 전혀 고려하지 않은 채 그중 맨 처음 걸리는 한국어 음성을 그대로
+// 썼다 — PC(Windows)에 설치된 한국어 음성 목록 순서상 여성 음성이
+// 먼저 걸리면 항상 여성 목소리만 나왔다. 영어 쪽은 우연히 그 반대
+// 순서였을 뿐이다. 이름에 "male"이 명시돼 있거나, Windows가 기본
+// 제공하는 한국어 남성 음성(예: "InJoon")처럼 널리 쓰이는 이름 패턴과
+// 맞는 음성을 우선 찾도록 바꿨다 — 그런 음성이 실제로 설치돼 있어야만
+// 들리므로, 기기에 한국어 남성 음성이 아예 없으면 여전히 기존처럼
+// 사용 가능한 것 중 하나가 나온다.
 function _pickBestKoreanVoice(){
     const voices = window.speechSynthesis.getVoices() || [];
     const koVoices = voices.filter(v => /^ko/i.test(v.lang));
     if(!koVoices.length) return null;
+    const maleNeural = koVoices.find(v => /male|injoon|남성/i.test(v.name) && /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
+    if(maleNeural) return maleNeural;
+    const male = koVoices.find(v => /male|injoon|남성/i.test(v.name));
+    if(male) return male;
     const neural = koVoices.find(v => /neural|online.*natural|natural.*online|wavenet/i.test(v.name));
     return neural || koVoices[0];
 }
@@ -2592,8 +2646,14 @@ function _speakSentenceQueueRoom2(sentences, idx, speakerKey, mySeq, captionEl, 
         // 더 낮고 무겁게, 반가사유상은 더 높고 부드럽게 음높이 자체를
         // 뚜렷이 갈라, 화면을 보지 않고 소리만 들어도 지금 누구의
         // 설명인지 알 수 있게 한다.
+        // v-pitch-too-high-fix — 참가자 지적: "음성해설의 피치가 높다."
+        // 이전에 로댕과 반가사유상 음높이를 뚜렷이 구분하려고 반가사유상
+        // 쪽을 1.16까지 올렸는데, 그 값 자체가 너무 높고 부자연스럽게
+        // 들렸던 것으로 보인다. 로댕과 구분은 유지하되(기본 1.0보다
+        // 여전히 살짝 높게), 덜 날카롭게 들리도록 1.16 → 1.08로
+        // 낮췄다.
         if(speakerKey === 'rodin'){ basePitch = 0.86; baseRateMult = 0.94; }
-        else if(speakerKey === 'maitreya'){ basePitch = 1.16; baseRateMult = 0.90; }
+        else if(speakerKey === 'maitreya'){ basePitch = 1.08; baseRateMult = 0.90; }
         else { basePitch = 1.0; baseRateMult = 1.0; }
         // v-more-natural-intonation(계속) — 이제 문장을 실제로 쪼개 개별
         // 발화로 재생하므로, index.html처럼 문장 끝 문장부호에 따른
@@ -5055,7 +5115,7 @@ function _renderPhilosophyAnswer(item, existingBubble){
     else text = String(item.single || '').trim();
 
     if(existingBubble) existingBubble.textContent = text;
-    else pushLog('ai', text);
+    else pushLog('ai-fixed', text);
     _scrollChatLogToBottom();
     _chatAnswerActive = true;
     // v-phil-caption-sync — 참가자 지적: "자막 출력보다 음성해설이 먼저
@@ -7348,6 +7408,21 @@ function recordPartChatQA(q, a){
 let _infoLastFocused = null;
 let _infoResumeText = null;
 let _infoResumeSpeaker = null;
+// v-exit-btn-missing-fix — 참가자 지적: "전시2 상단버튼에 나가기 x
+// 버튼이 빠져있다." index.html의 exitExhibit()과 같은 방식 —
+// 발화를 멈추고 창을 닫으며, 닫기가 안 되는 브라우저 정책에서는
+// about:blank로 대체한다. _captionSeq를 먼저 올려, 그 사이 이미
+// 예약돼 있던 다음 문장 콜백이 "아직 유효한 요청"으로 오인해 새
+// 발화를 시작하지 않게 한다.
+function exitExhibit(){
+    _captionSeq++;
+    try{ window.speechSynthesis.cancel(); }catch(err){}
+    try{ window.close(); }catch(err){}
+    setTimeout(function(){
+        try{ location.href = 'about:blank'; }catch(err){}
+    }, 250);
+}
+
 function openInfo(){
     // v81 — index.html(room1)과 동일한 참가자 요청: "정보창을 닫으면
     // 이전에 나오던 음성해설을 이어서 들을 수 있도록 해달라." 안내창을
