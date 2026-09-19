@@ -1406,7 +1406,7 @@ body.low-vision-mode #hint-row .btn{
      ⑥ snd-yeoil(Echoes_of_the_Void) — "여일"(마음 비우기) 화면으로
         넘어가는 순간 다른 배경음을 모두 끄고 이 소리만 남긴다
         (beginYeoilExit() 참고). -->
-<audio id="snd-base" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
+<audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
 <audio id="snd-arrival" src="Sacred_Morning.mp4" preload="auto" loop></audio>
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp4" preload="auto" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
@@ -2042,16 +2042,15 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
-    // v-maitreya-sound-inaudible-fix — participant report: matches
-    // room2.html — snd-base (always on) happened to use the same file
-    // as snd-maitreya (Temple_Bell_at_Daybreak), so touching the
-    // Bodhisattva's side just added more of the identical sound
-    // already playing, with nothing audibly new — unlike Rodin's side,
-    // whose file differs from snd-base and so is clearly noticeable.
-    // Duck the base ambience slightly whenever a statue sound is
-    // active so the change is audible either way.
+    // v-bgm-no-mixing — participant request: matches room2.html —
+    // Rodin narration plays Where_Bamboo_Bends, Bodhisattva narration
+    // plays Temple_Bell_at_Daybreak, and the base ambience (snd-base)
+    // is now Lotus_at_the_Gate, a different file from either — so the
+    // two backgrounds should never be heard mixed together. Fully
+    // mute the base ambience whenever a statue-specific sound is
+    // active, so only one background plays at a time.
     const baseEl = document.getElementById('snd-base');
-    _fadeStatueAudio(baseEl, target ? AMBIENT_VOLUME * 0.35 : AMBIENT_VOLUME);
+    _fadeStatueAudio(baseEl, target ? 0 : AMBIENT_VOLUME);
     // v-remove-resonance-engine — 참가자 요청: "합성 배경음(ResonanceEngine)
     // 은 제거하는 게 좋을 것 같다. 배경음도 시끄러우니." 좌/우 합성
     // Zone 전환 호출을 없앴다 — 이제 조각상별 배경음은 아래 <audio>

@@ -1203,7 +1203,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
         짧게 켜지는 특별한 소리. snd-arrival과 같은 파일을 돌려쓰지만,
         둘 다 아주 드물게(각각 딱 한 번씩) 서로 겹치지 않는 순간에만
         나오므로 소리가 겹칠 일은 없다. -->
-<audio id="snd-base" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
+<audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="auto" loop></audio>
 <audio id="snd-arrival" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="auto" loop></audio>
 <!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
@@ -1840,18 +1840,17 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
-    // v-maitreya-sound-inaudible-fix — 참가자 지적: "Temple_Bell_at_
-    // Daybreak.mp4 — 반가사유상 관련 부위 해설이 나올 때 이 배경음이
-    // 안 들리는데." 원인: 늘 켜져 있는 기본 배경음(snd-base)도 하필
-    // 같은 파일(Temple_Bell_at_Daybreak)을 쓰고 있어서, 반가사유상
-    // 쪽 해설이 나와도 이미 계속 흐르던 것과 똑같은 소리가 조금
-    // 더해질 뿐 귀로 구분할 변화가 없었다 — 로댕 쪽은 snd-base와
-    // 다른 파일(Where_Bamboo_Bends)이라 전환이 뚜렷이 들렸던 것과
-    // 대조된다. 특정 조각상 소리가 켜질 때는 기본 배경음을 살짝
-    // 줄여, 두 소리가 같은 파일이어도 "무언가 바뀌었다"는 것이
-    // 들리게 한다.
+    // v-bgm-no-mixing — 참가자 요청: "로댕 관련 해설이 나올 때는
+    // Where_Bamboo_Bends, 반가사유상 관련 해설이 나올 때는
+    // Temple_Bell_at_Daybreak, 그 이외는 기본 배경음(snd-base)으로
+    // Lotus_at_the_Gate. 두 가지 배경음이 섞여서 나오지 않게 해달라."
+    // snd-base는 이제 조각상 전용 소리와 다른 파일(Lotus_at_the_Gate)을
+    // 쓰므로 예전의 "같은 파일이라 안 들린다" 문제는 없지만, 대신 두
+    // 소리가 동시에 들리면 "섞여서" 나온다는 새 요청이 있어, 특정
+    // 조각상 소리가 켜지는 동안은 기본 배경음을 완전히 끈다(0으로
+    // 페이드) — 항상 한 번에 하나의 배경음만 들린다.
     const baseEl = document.getElementById('snd-base');
-    _fadeStatueAudio(baseEl, target ? AMBIENT_VOLUME * 0.35 : AMBIENT_VOLUME);
+    _fadeStatueAudio(baseEl, target ? 0 : AMBIENT_VOLUME);
     const moodEl = document.getElementById('mood-overlay');
     if(moodEl){
         moodEl.classList.toggle('mood-rodin', target === 'rodin');
