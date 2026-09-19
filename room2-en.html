@@ -3816,7 +3816,7 @@ function triggerCenterMoment(){
 
 function _processCenterMoment(){
     hapticPulse('meeting');
-    document.getElementById('focus-tag').textContent = '🗿 두 조각상 사이, 비어 있는 자리';
+    document.getElementById('focus-tag').textContent = '🗿 Between the two statues, the empty space';
     // v-ai-vs-narration-distinction — this arrival line is scripted, not
     // the AI synthesis below (_playCenterSynthesis) — clear the AI
     // indicator here (it's turned back on if a synthesis follows).
@@ -3824,7 +3824,7 @@ function _processCenterMoment(){
     // v-answer-replay — 위 touchPart()와 동일한 이유로, 이 자리로 넘어오면
     // 챗봇 답변 탭-재생 커서 표시를 지운다.
     document.getElementById('caption').classList.remove('replayable');
-    const line = '지금 두 조각상 사이, 비어 있는 그 자리에 서 계십니다. 힘든 마음과 따뜻한 마음이 소리 없이 만나는 자리입니다.';
+    const line = 'You are now standing in the empty space between the two statues. It is a place where a difficult heart and a warm heart meet without a sound.';
     _stopCaptionSync(); // v-stop-caption-sync — 진행 중이던 부위 해설의 자막 예약을 먼저 중지
     // v-one-sentence-per-screen — 참가자 요청: "해설은 한 페이지에 한
     // 문장씩만 보이게 해줘." 두 문장을 한 번에 띄우던 것을 문장 단위로
@@ -3880,7 +3880,7 @@ async function _playCenterSynthesis(moodEl){
     // touched so far, so it gets the same "AI indicator" (blue border +
     // 🤖 icon) as the chatbot answers.
     document.getElementById('caption-wrap')?.classList.add('ai-mode');
-    document.getElementById('focus-tag').textContent = '🤖 두 조각상 사이 — 지금까지의 사유';
+    document.getElementById('focus-tag').textContent = '🤖 Between the two statues — reflection so far';
     _stopCaptionSync();
     _displaySentencesTimed('Looking back over the spots you\u2019ve touched so far\u2026', document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
@@ -3894,14 +3894,14 @@ async function _playCenterSynthesis(moodEl){
 
     const touchedBlock = _buildTouchedPartsBlock();
     const synthesis = await fetchDetailAI(
-        '위 부위들을 아우르는 종합적인 철학적 사유를 2~3문장으로 들려주세요.',
+        'Please share a short, unifying philosophical reflection (2-3 sentences) drawing on the parts listed above.',
         '\n\n' + touchedBlock,
         null,
         CENTER_SYNTHESIS_SYSTEM_PROMPT
     );
 
     document.getElementById('caption-wrap')?.classList.add('ai-mode');
-    document.getElementById('focus-tag').textContent = '🤖 두 조각상 사이 — 지금까지의 사유';
+    document.getElementById('focus-tag').textContent = '🤖 Between the two statues — reflection so far';
     _stopCaptionSync();
     _displaySentencesTimed(synthesis, document.getElementById('caption'));
     document.getElementById('source-tag').textContent = '';
