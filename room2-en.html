@@ -863,6 +863,15 @@ body.low-vision-mode #hint-row .btn{
 #info-overlay.menu #info-card > #refs-toggle-btn{display:block;}
 #info-overlay.menu #info-card > #refs-list{display:none;}
 #info-overlay.menu #info-card > #refs-list.show{display:block;}
+/* v-info-back-menu-visible-fix — participant report: "entered the info
+   window in room2/room2-en but the back button wasn't created." Root
+   cause: the blanket rule above (#info-overlay.menu #info-card >
+   *{display:none;}) hid #info-back too, but unlike h2/.copyright/
+   #refs-toggle-btn/#refs-list, there was no rule re-showing it on the
+   menu screen — so on the very first screen you see when opening info,
+   the button didn't appear at all. index.html already had this rule;
+   added here to match. */
+#info-overlay.menu #info-card > #info-back{display:block;}
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
@@ -916,6 +925,13 @@ body.low-vision-mode #hint-row .btn{
     display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px;
     border-radius:26px; cursor:pointer;
+    /* v-info-back-sticky-bottom — participant report (repeated): "put
+       the back button at the bottom of the screen." Root cause: this
+       button was only the last element after long detail text, so on
+       long screens you had to scroll all the way down to reach it —
+       "bottom of the text," not "bottom of the screen." position:sticky
+       keeps it pinned to the bottom of the info window while scrolling. */
+    position:sticky; bottom:0; z-index:5;
 }
 #info-back:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 /* v47 — "여일" 버튼: 방문객이 원하는 시점에 나가면서(또는 11곳을 모두
