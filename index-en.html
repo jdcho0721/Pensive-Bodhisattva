@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta name="google" content="notranslate">
 <meta charset="UTF-8">
@@ -440,7 +440,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -868,8 +867,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <button type="button" class="info-audio-btn" data-kind="intro" onclick="openInfoDetail('intro')" aria-label="Listen to the Room 1 artwork introduction">🔊 Room 1 Artworks</button>
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="Listen to the Room 1 usage guide">🔊 Room 1 How-To</button>
         </div>
-
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
 
         <div class="info-section" data-kind="exhibit">
         <h3>Exhibition Introduction</h3>
@@ -2942,7 +2939,15 @@ function openInfoDetail(kind){
     if(card){ card.scrollTop = 0; }
     // v-execute-haptic — participant request: "vibrate when a button executes."
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
-    playInfoAudio(kind);
+    // v-info-back-btn-removed — participant request: "remove the back
+    // button from the info popup; announce via voice guidance that
+    // swiping left to right returns to the previous screen." The
+    // gesture itself (swipe/short tap) already existed below in
+    // initInfoOverlayExitGestures(); only the redundant button is
+    // removed, and this spoken hint now covers what it used to convey.
+    speak('Swipe from left to right to go back to the previous screen.', function(){
+        playInfoAudio(kind);
+    });
     try{
         // v90 — 참가자 지적: "작품소개·작가소개·이용방법을 누르면 자막의
         // 맨 아래 부분이 나와서 위로 스크롤해야 한다." 원인: 바로 위에서
@@ -3020,7 +3025,6 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
                 document.getElementById('info-close')
             ].filter(Boolean);
@@ -3088,7 +3092,7 @@ function _exitInfoOneLevel(){
         // 리스너까지 거품처럼 올라와 또 한 번 _exitInfoOneLevel()이
         // 실행되면서, 방금 메뉴로 바뀐 상태를 기준으로 판단해 곧장
         // closeInfo()까지 실행해버리는 이중 실행 문제가 생긴다.
-        return !!(t && t.closest && t.closest('#info-close, #info-back, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
+        return !!(t && t.closest && t.closest('#info-close, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
     }
     overlay.addEventListener('touchstart', (e)=>{
         if(!overlay.classList.contains('show')) return;

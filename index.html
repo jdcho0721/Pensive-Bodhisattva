@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" translate="no">
 <head>
+<meta name="google" content="notranslate">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
@@ -459,7 +460,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -903,8 +903,6 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <button type="button" class="info-audio-btn" data-kind="intro" onclick="openInfoDetail('intro')" aria-label="전시실 1 작품 소개 음성 듣기">🔊 전시1 작품소개</button>
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="전시실 1 이용 방법 음성 듣기">🔊 전시1 이용방법</button>
         </div>
-
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="안내 선택 화면으로 돌아갑니다">← 돌아가기</button>
 
         <div class="info-section" data-kind="exhibit">
         <h3>전시소개</h3>
@@ -2960,7 +2958,16 @@ function openInfoDetail(kind){
     if(card){ card.scrollTop = 0; }
     // v-execute-haptic — 참가자 요청: "버튼이 실행될 때 진동으로 알려줘."
     try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
-    playInfoAudio(kind);
+    // v-info-back-btn-removed — 참가자 요청: "정보 버튼으로 들어가면
+    // 나오는 창에서 돌아가기 버튼을 제거해줘. 음성해설로 '왼쪽에서
+    // 오른쪽으로 화면을 쓸면 이전 화면으로 돌아갑니다.' 안내해줘." 뒤로
+    // 가는 기능 자체(스와이프·짧게 탭하기)는 이미 아래
+    // initInfoOverlayExitGestures()에 있었으므로 버튼만 없앴고, 이제
+    // 그 버튼이 없어진 자리를 대신해 이 화면에 들어올 때마다 음성으로
+    // 짧게 안내한 뒤 본 내용을 이어서 들려준다.
+    speak('왼쪽에서 오른쪽으로 화면을 쓸면 이전 화면으로 돌아갑니다.', function(){
+        playInfoAudio(kind);
+    });
     try{
         // v90 — 참가자 지적: "작품소개·작가소개·이용방법을 누르면 자막의
         // 맨 아래 부분이 나와서 위로 스크롤해야 한다." 원인: 바로 위에서
@@ -3038,7 +3045,6 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
                 document.getElementById('info-close')
             ].filter(Boolean);
@@ -3106,7 +3112,7 @@ function _exitInfoOneLevel(){
         // 리스너까지 거품처럼 올라와 또 한 번 _exitInfoOneLevel()이
         // 실행되면서, 방금 메뉴로 바뀐 상태를 기준으로 판단해 곧장
         // closeInfo()까지 실행해버리는 이중 실행 문제가 생긴다.
-        return !!(t && t.closest && t.closest('#info-close, #info-back, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
+        return !!(t && t.closest && t.closest('#info-close, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
     }
     overlay.addEventListener('touchstart', (e)=>{
         if(!overlay.classList.contains('show')) return;

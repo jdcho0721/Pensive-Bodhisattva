@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta name="google" content="notranslate">
 <meta charset="UTF-8">
@@ -130,6 +130,26 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 .hotspot{position:absolute;cursor:pointer;border-radius:50%;z-index:10;-webkit-tap-highlight-color:rgba(212,175,55,.3);
     background:transparent; transition:background .4s ease, box-shadow .4s ease;}
+/* v-top-bar-removed — participant request: "remove the exploration bar
+   and instead show a dot directly on each unexplored hotspot." A tiny,
+   soft, breathing dot marks the center of each not-yet-found spot
+   only — enough of a cue without the "always-visible circles" look
+   v14 (below) deliberately removed. Disappears once a spot is found
+   (.visited/.explored). pointer-events:none so it never affects the
+   actual tap target. */
+.hotspot:not(.visited):not(.explored)::after{
+    content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:7px; height:7px; border-radius:50%; background:var(--gold);
+    opacity:.5; box-shadow:0 0 7px rgba(212,175,55,.65);
+    pointer-events:none; animation:hotspotFindPulse 2.6s ease-in-out infinite;
+}
+@keyframes hotspotFindPulse{
+    0%,100%{ opacity:.32; transform:translate(-50%,-50%) scale(.85); }
+    50%{ opacity:.75; transform:translate(-50%,-50%) scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce){
+    .hotspot:not(.visited):not(.explored)::after{ animation:none; opacity:.55; }
+}
 /* v14 — 참가자 지적: "점선 테두리가 조각상의 시각적 미를 해친다." index.html의
    핫스팟은 기본 상태에서 테두리·배경이 전혀 없어(hover/focus에서만 옅게
    반응) 조각상 사진 위에 아무 도형도 겹치지 않는다. room2도 그 방식을
@@ -234,25 +254,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    바꾸기만 하면 자연히 이미지(#stage) 바로 아래, 자막창(#caption-wrap)
    바로 위에 놓인다 — 이미지가 실제로 얼마나 크게 그려지든(레터박스
    포함) 상관없이 항상 "이미지 바로 아래"를 유지한다. */
-/* v-progress-left — 참가자 요청: "탐색 바를 왼쪽으로 보내서 챗봇
-   버튼과 겹치지 않게 해줘." 챗봇 진입 버튼(#chat-toggle)이 화면
-   오른쪽에 고정 위치로 떠 있어서, 가운데 정렬된 탐색 바와 세로
-   위치가 겹칠 수 있었다. 왼쪽 정렬로 바꿔, 오른쪽에 고정된 챗봇
-   버튼과 화면 좌우로 확실히 떨어지게 한다. */
-/* v-top-bar-overlap-fix — participant report: "the exploration
-   gauge overlaps the image." At the bottom edge, this pill could sit
-   over the lowest hotspots (both statues' feet, top:77~86%), making
-   them hard to tap on short viewports. No hotspot starts before 11%
-   from the top, so anchoring this bar to the TOP of the stage instead
-   keeps the same "doesn't take its own flex row, just floats over a
-   quiet corner of the image" behavior while clearing every hotspot. */
-#top-bar{position:absolute; left:0; right:0; top:calc(6px + env(safe-area-inset-top)); width:100%;display:flex;justify-content:flex-start;align-items:center;
-    padding:0 10px;z-index:20; pointer-events:none;}
-#top-bar .pill{pointer-events:auto;}
-.pill{background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);color:var(--gold);padding:8px 14px;border-radius:20px;font-size:.75rem;backdrop-filter:blur(8px);}
-#progress-pill{display:flex;gap:3px;align-items:center;padding:3px 9px;font-size:.6rem;}
-#progress-pill .dot{width:4px;height:4px;border-radius:50%;background:rgba(212,175,55,.25);}
-#progress-pill .dot.on{background:var(--gold);box-shadow:0 0 4px var(--gold);}
+/* v-top-bar-removed — participant request: "remove the exploration bar
+   and instead show a dot directly on each unexplored hotspot." Removed
+   #top-bar and its pill/dot-list CSS (.pill, #progress-pill) entirely —
+   the new unexplored marker is handled by the
+   .hotspot:not(.visited)::after rule above instead. */
 
 #hw-panel{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:30;
     background:rgba(0,0,0,.72);border:1px solid var(--gold-dim);border-radius:12px;padding:8px 12px;
@@ -813,7 +819,6 @@ body.low-vision-mode #hint-row .btn{
 #info-overlay.menu #info-card{max-width:520px;}
 #info-overlay.detail #info-card{max-width:none; width:100%; height:100%; border-radius:0; overflow:auto;}
 #info-overlay.detail #info-audio-nav{display:none;}
-#info-overlay.detail #info-back{display:inline-block; margin:0 0 18px; padding:10px 14px; border-radius:999px; border:1px solid var(--gold); background:transparent; color:#ddd;}
 #info-overlay.detail .info-section{display:none;}
 #info-overlay.detail[data-info-kind="exhibit"] .info-section[data-kind="exhibit"]{display:block;}
 #info-overlay.detail[data-info-kind="intro"] .info-section[data-kind="intro"]{display:block;}
@@ -1116,8 +1121,6 @@ body.low-vision-mode #hint-row .btn{
             <button type="button" class="info-audio-btn" data-kind="usage" onclick="openInfoDetail('usage')" aria-label="Listen to the Room 2 usage guide">🔊 Room 2 How-To</button>
         </div>
 
-        <button type="button" id="info-back" onclick="backToInfoMenu()" data-tap-action="Returns to the info menu">← Back</button>
-
         <div class="info-section" data-kind="exhibit">
         <h3>Exhibition Introduction</h3>
         <p class="label">A tactile and voice-interactive exhibition for the blind and hearing-impaired: Resonance of Silence</p>
@@ -1234,8 +1237,13 @@ body.low-vision-mode #hint-row .btn{
         <div class="cert-chat-log" id="cert-chat-log"></div>
         <div class="cert-line" id="cert-line"></div>
         <div class="cert-date" id="cert-date"></div>
-        <!-- v-cert-copyright — 참가자 요청: "수료증에 조준동 copyright 명시해줘." -->
-        <div class="cert-copyright" id="cert-copyright">© Jun-Dong Cho (趙浚東) · Resonance of Silence</div>
+        <!-- v-cert-copyright — 참가자 요청: "수료증에 조준동 copyright 명시해줘."
+             v-cert-copyright-format — follow-up: "format the copyright
+             properly, and include the year." Matches the format already
+             used in the info popup ("Title © Year Author · Affiliation.
+             All rights reserved."); the year is filled in with the
+             current year every time in showCertificate(). -->
+        <div class="cert-copyright" id="cert-copyright">Resonance of Silence © Jun-Dong Cho (趙浚東) · Humartology Lab. All rights reserved.</div>
     </div>
     <!-- v-cert-actions-outside — 참가자 요청: "기존에 있던 버튼 2개는 수료증
          네모 안에 넣지 말고 그 아래에 넣어줘." #certificate-card 밖으로
@@ -1371,31 +1379,13 @@ body.low-vision-mode #hint-row .btn{
          style="top:80%; left:72%; width:9%; height:6%;" aria-label="반가사유상 — 발가락"></div>
     </div>
 
-<!-- v-top-bar-overlay — 참가자 요청: "이미지를 1.3배로 키우고, 다리가
-     잘리면 탐색 바와 사유의 방 버튼을 내려서 맞춰달라." 이 블록은
-     원래 #stage 바로 다음의 독립된 형제 요소로, flex 레이아웃에서
-     자기 몫의 세로 공간을 따로 차지하고 있었다 — 그만큼 #stage(이미지)
-     가 쓸 수 있는 높이가 줄어들었다. #stage 안쪽으로 옮기고 절대
-     위치로 띄워서, 더 이상 별도의 flex 공간을 차지하지 않게 한다 —
-     그 공간이 고스란히 이미지 쪽으로 돌아간다. 시각적으로는 이미지
-     아래쪽에 살짝 겹쳐 보이는 자리로, 기존과 크게 다르지 않다. -->
-<div id="top-bar">
-    <div class="pill" id="progress-pill" aria-hidden="true">
-        <span id="progress-count">Explored 0/11</span>
-        <span class="dot" data-k="rodin-forehead"></span><span class="dot" data-k="rodin-fist"></span>
-        <span class="dot" data-k="rodin-elbow"></span>
-        <span class="dot" data-k="rodin-muscle"></span><span class="dot" data-k="rodin-toes"></span>
-        <span class="dot" data-k="maitreya-ear"></span><span class="dot" data-k="maitreya-smile"></span>
-        <span class="dot" data-k="maitreya-fingers"></span><span class="dot" data-k="maitreya-robe"></span>
-        <span class="dot" data-k="maitreya-leg"></span>
-        <span class="dot" data-k="maitreya-toes"></span>
-    </div>
-    <!-- 웹 접근성: 위 progress-pill은 시각적 점 11개로만 탐색 진행률을
-         보여준다. 스크린리더/점자 디스플레이 사용자는 색이 채워진 점을
-         볼 수 없어 동일한 정보를 얻지 못했다 — 아래 sr-only 리전이 그
-         정보를 텍스트로 대신 전달한다(updateProgress()에서 갱신). -->
-    <div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
-</div>
+<!-- v-top-bar-removed — participant request: "remove the exploration
+     bar and instead show a dot directly on each unexplored hotspot."
+     Removed the pill/dot-list progress bar that used to float above
+     the image; unexplored markers now live directly on the hotspots
+     themselves (see .hotspot:not(.visited)::after below). The
+     screen-reader progress status (#progress-sr) stays. -->
+<div id="progress-sr" class="sr-only" role="status" aria-live="polite"></div>
 
 </div>
 
@@ -2842,17 +2832,11 @@ function buildRecapAnswer(){
 const RECAP_TRIGGER = /summarize|summary|recap|what have i touched|what did i touch|how many (spots|places)|review what/i;
 
 function updateProgress(){
-    document.querySelectorAll('#progress-pill .dot').forEach(dot=>{
-        if(visited.has(dot.dataset.k)) dot.classList.add('on');
-    });
-    // v84 — 참가자 요청: "만질 수 있는 부분이 총 몇 곳인지 표시해달라."
-    // 점(dot) 11개만으로는 총 개수가 한눈에 드러나지 않아, 숫자로도
-    // 함께 보여준다.
-    const countEl = document.getElementById('progress-count');
-    if(countEl) countEl.textContent = `Explored ${visited.size}/${ORDER.length}`;
-    // 웹 접근성: 시각적 점(색이 채워진 정도)과 동등한 정보를 스크린리더
-    // 사용자에게도 전달한다 — 진행률이 바뀔 때만 갱신되므로 매 발화마다
-    // 스팸처럼 반복 낭독되지 않는다(값이 그대로면 aria-live는 재낭독하지 않음).
+    // v-top-bar-removed — participant request removed the on-screen
+    // progress pill (11 dots + count), so the two lines that used to
+    // fill its dots and update its count are gone too — unexplored
+    // markers are now handled by each hotspot's own CSS ::after dot.
+    // The screen-reader progress announcement stays.
     const srEl = document.getElementById('progress-sr');
     if(srEl) srEl.textContent = `Exploration progress — you have checked ${visited.size} of 11 spots.`;
 }
@@ -3769,27 +3753,34 @@ function showCertificate(isComplete){
             const h = document.createElement('h3'); h.textContent = 'Conversation with the Chatbot';
             chatLogEl.appendChild(h);
             qaPairs.forEach(pair => {
-                const qShort = _capToMaxLength(pair.q, 40);
-                const aShort = pair.aParts.length ? _capToMaxLength(pair.aParts.join(' '), 60) : '(no answer)';
+                // v-cert-full-answers — participant request: "show the
+                // full chatbot answer text on the certificate, not
+                // truncated." Removed the _capToMaxLength(40)/(60) caps.
+                const qFull = pair.q;
+                const aFull = pair.aParts.length ? pair.aParts.join(' ') : '(no answer)';
                 const p = document.createElement('p');
                 const qLine = document.createElement('span'); qLine.innerHTML = '<b>Q.</b> ';
-                qLine.appendChild(document.createTextNode(qShort));
+                qLine.appendChild(document.createTextNode(qFull));
                 const aLine = document.createElement('span'); aLine.innerHTML = '<br><b>A.</b> ';
-                aLine.appendChild(document.createTextNode(aShort));
+                aLine.appendChild(document.createTextNode(aFull));
                 p.appendChild(qLine); p.appendChild(aLine);
                 chatLogEl.appendChild(p);
             });
         }
     }
 
-    const certLineText = (visited.size >= ORDER.length)
-        ? 'You\u2019ve met all eleven spots.'
-        : (remain > 0 ? `There ${remain === 1 ? 'is' : 'are'} still ${remain} spot${remain === 1 ? '' : 's'} left.` : 'You\u2019ve met all eleven spots.');
+    // v-cert-remaining-count-removed — participant request: "remove
+    // 'there are still N spots left.'" Keeps the completion line when
+    // finished; adds nothing extra otherwise.
+    const certLineText = (visited.size >= ORDER.length) ? 'You\u2019ve met all eleven spots.' : '';
     document.getElementById('cert-line').textContent = certLineText;
 
     const now = new Date();
     document.getElementById('cert-date').textContent = now.toLocaleString('en-US',
         { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+    // v-cert-copyright-format — participant request: fill in the current year every time.
+    const cpEl = document.getElementById('cert-copyright');
+    if(cpEl) cpEl.textContent = `Resonance of Silence \u00A9 ${now.getFullYear()} Jun-Dong Cho (\u8d99\u6d5a\u6771) \u00B7 Humartology Lab. All rights reserved.`;
 
     // v48 — 완주 여부와 관계없이 도착지는 항상 같다(처음 화면).
     // v-cert-exit-label — 참가자 요청: "수료증 창 아래 '나가기' 버튼을
@@ -3862,8 +3853,26 @@ function closeCertificate(){
 // 인쇄 기능을 그대로 쓴다 — 인쇄 대화상자에서 프린터 대신 "PDF로 저장"을
 // 고르면 그대로 PDF 파일이 만들어진다(위 @media print 규칙이 수료증
 // 카드만 하얀 바탕에 검게 남기고 나머지 화면은 모두 감춘다).
+// v-cert-filename — participant request: "the certificate print file
+// name should be 'Certificate Resonance of Silence' followed by the
+// date." Browsers use document.title as the suggested filename for
+// "Save as PDF", so it's changed just before printing and restored
+// afterward (afterprint) — nothing else on screen (e.g. the tab title)
+// is affected.
 function printCertificate(){
+    const _originalTitle = document.title;
+    const _dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    document.title = `Certificate Resonance of Silence ${_dateStr}`;
+    let _restored = false;
+    const _restoreTitle = function(){
+        if(_restored) return;
+        _restored = true;
+        document.title = _originalTitle;
+        window.removeEventListener('afterprint', _restoreTitle);
+    };
+    window.addEventListener('afterprint', _restoreTitle);
     window.print();
+    setTimeout(_restoreTitle, 3000);
 }
 
 function _certDialogKeydown(e){
@@ -5637,7 +5646,9 @@ function toggleChat(){
         // speak('Returning to the exhibit screen.') below: announce chat
         // entry with a dedicated vibration and voice line too.
         hapticPulse('chatOpen');
-        speak('Starting a conversation with the Contemplation Counsel. Feel free to ask a question.');
+        // v-chat-panel-swipe-back — announce the same swipe-back gesture
+        // used in the info popup.
+        speak('Starting a conversation with the Contemplation Counsel. Feel free to ask a question. Swipe from left to right to go back to the previous screen.');
         // v-chat-fullscreen — 실제 페이지 이동처럼, 챗봇 화면도 브라우저/
         // 기기의 뒤로가기로 닫을 수 있도록 히스토리에 상태를 남긴다.
         history.pushState({ chatOpen:true }, '', '#chat');
@@ -6871,7 +6882,14 @@ function openInfoDetail(kind){
     overlay.setAttribute('data-info-kind', kind);
     const card = document.getElementById('info-card');
     if(card){ card.scrollTop = 0; }
-    playInfoAudio(kind);
+    // v-info-back-btn-removed — participant request: "remove the back
+    // button; announce via voice that swiping left to right returns to
+    // the previous screen." Backward navigation gesture already
+    // existed below in initInfoOverlayExitGestures(); only the
+    // redundant button is removed.
+    speak('Swipe from left to right to go back to the previous screen.', function(){
+        playInfoAudio(kind);
+    });
     try{
         // v90 — index.html과 동일한 원인/수정. 자세한 설명은 index.html의
         // openInfoDetail() 주석 참고.
@@ -6932,7 +6950,6 @@ function _infoDialogKeydown(e){
         let focusables;
         if(overlay && overlay.classList.contains('detail')){
             focusables = [
-                document.getElementById('info-back'),
                 document.getElementById('refs-toggle-btn'),
                 document.getElementById('info-close')
             ].filter(Boolean);
@@ -6993,7 +7010,7 @@ function _exitInfoOneLevel(){
         // 때 touchend 제스처(아래)가 그 버튼 고유의 두-번-탭 확인
         // 절차보다 먼저 끼어들어, 확인 없이 곧장 화면이 넘어가 버리는
         // 문제가 있었다.
-        return !!(t && t.closest && t.closest('#info-close, #info-back, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
+        return !!(t && t.closest && t.closest('#info-close, #refs-toggle-btn, #refs-list a, .info-audio-btn'));
     }
     overlay.addEventListener('touchstart', (e)=>{
         if(!overlay.classList.contains('show')) return;
@@ -7041,6 +7058,35 @@ function _exitInfoOneLevel(){
         const dx = e.changedTouches[0].screenX - startX;
         const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
         if(dx > 60 && dyAbs < 60) closeYeoilOverlay(); // 오른쪽으로 스와이프 → 이전 화면으로
+    }, { passive:true });
+})();
+
+// v-chat-panel-swipe-back — participant request: "unify the chat popup
+// window to also go back to the previous screen with a left-to-right
+// swipe, and announce it." Same principle as #info-overlay/
+// #yeoil-overlay — detects a rightward swipe and calls toggleChat()
+// (closing it, since it's already open). The drag handle and resize
+// handles use their own horizontal drag gestures, so touches starting
+// there are excluded from swipe-to-close.
+(function initChatPanelSwipeBack(){
+    const panel = document.getElementById('chat-panel');
+    if(!panel) return;
+    let startX = 0, startY = 0;
+    function isOwnDragControl(t){
+        return !!(t && t.closest && t.closest('#chat-drag-handle, #chat-resize-handle, #chat-corner-resize, #chat-resize-edge-top, #chat-resize-edge-bottom, #chat-resize-edge-left, #chat-resize-edge-right'));
+    }
+    panel.addEventListener('touchstart', (e)=>{
+        if(!panel.classList.contains('open')) return;
+        if(isOwnDragControl(e.target)) return;
+        startX = e.changedTouches[0].screenX;
+        startY = e.changedTouches[0].screenY;
+    }, { passive:true });
+    panel.addEventListener('touchend', (e)=>{
+        if(!panel.classList.contains('open')) return;
+        if(isOwnDragControl(e.target)) return;
+        const dx = e.changedTouches[0].screenX - startX;
+        const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
+        if(dx > 60 && dyAbs < 60) toggleChat(); // 오른쪽으로 스와이프 → 이전 화면으로
     }, { passive:true });
 })();
 
