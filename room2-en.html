@@ -2104,20 +2104,39 @@ const AMBIENT_VOLUME = 0.05;
 // page. Later attempts to play snd-rodin/snd-maitreya from deep inside
 // async speech callbacks could then be silently blocked. Prime the
 // remaining statue sounds with a brief muted play-then-pause instead.
+// v-audio-unlock-race-fix — participant report: matches
+// index.html/index-en.html/room2.html — the previous unlock fix
+// (mute → play → pause+reset) had a race: the play() promise can
+// resolve late (especially with preload="metadata", which only starts
+// fetching real audio data once play() is called), and if a visitor
+// touches a part before it resolves, _fadeStatueAudio() sees the
+// element as "already playing" and never re-triggers play() itself —
+// then this unlock's delayed cleanup pauses and resets the very
+// playback that had just started, leaving it silent. Removed the
+// pause/reset entirely: leave the element looping at volume 0 instead.
+// Autoplay permission is still secured, and _fadeStatueAudio() simply
+// ramps the volume up on that same already-playing element.
+// v-audio-unlock-vs-image-speed-fix — participant report: matches
+// index.html/index-en.html/room2.html — calling .play() directly on
+// snd-rodin/snd-maitreya (both preload="metadata") makes the browser
+// start fetching their full audio data immediately, putting them back
+// in bandwidth competition with the image on entry — exactly the
+// contention removing snd-base was meant to relieve. Fix: play a
+// separate few-byte silent data-URI clip instead, just to register
+// that playback was allowed within this user gesture (autoplay
+// permission is normally granted per page/document, not per element),
+// so the real statue sounds' later play() calls still succeed once
+// actually needed, without ever touching them on entry.
+const _SILENT_UNLOCK_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==';
 function startAmbientSound(){
-    ['snd-rodin', 'snd-maitreya'].forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        const prevMuted = el.muted;
-        el.muted = true;
-        const p = el.play();
-        if(p && typeof p.then === 'function'){
-            p.then(()=>{ el.pause(); el.currentTime = 0; el.muted = prevMuted; })
-             .catch(()=>{ el.muted = prevMuted; });
-        } else {
-            el.muted = prevMuted;
+    try{
+        const unlock = new Audio(_SILENT_UNLOCK_WAV);
+        unlock.volume = 0;
+        const p = unlock.play();
+        if(p && typeof p.catch === 'function'){
+            p.catch(e => console.warn('[audio unlock]', e.message));
         }
-    });
+    }catch(e){ console.warn('[audio unlock]', e.message); }
 }
 // v-bgm-toggle — 참가자 요청: "배경음악 버튼을 초기 화면에 두어 on/off
 // 하게 해달라." 여기서 말하는 "배경음악"은 계속 깔리는 배경 사운드

@@ -1711,24 +1711,61 @@ const AMBIENT_VOLUME = 0.14;
 // 오디오 재생을 허용하는데, 그 최초 재생 기회가 사라지면서, 나중에
 // 음성 안내 콜백 체인 안에서(사용자 제스처와 여러 단계 떨어진 시점에)
 // snd-rodin·snd-maitreya를 재생하려는 시도가 일부 브라우저에서 조용히
-// 차단됐다 — 그래서 로댕 쪽은 우연히 먼저 재생 기회를 얻어 들렸어도,
-// 반가사유상 쪽은 막혀서 안 들리는 등 편차가 생길 수 있다. 여기서
-// 지금 남아 있는 조각상 소리 요소를 아주 짧게(무음으로) 재생했다가
-// 즉시 멈춰, 사용자 제스처 안에서 확실히 "재생 허용"을 확보해둔다.
+// 차단됐다.
+// v-mp4-all-silent-fix — 참가자 재지적: "전체적으로 mp4가 하나도 안
+// 들린다." 원인을 찾았다: 위 수정에서 el.muted = true로 "무음 재생"을
+// 흉내 냈는데, muted 재생은 애초에 사용자 제스처 없이도 항상 허용되는
+// 별개의 권한이라 — 이렇게 해봐야 나중에 필요한 "음소거 안 된(unmuted)
+// 재생" 권한은 전혀 확보되지 않았다. 게다가 play() 프라미스가 어떤
+// 이유로든 완전히 응답하지 않으면 muted가 true로 영원히 남아, 그 뒤
+// _fadeStatueAudio()가 volume을 정상적으로 올려도 muted 상태 때문에
+// 소리 자체가 아예 안 들리는 상태가 될 수 있었다 — 조각상 소리뿐
+// 아니라 사실상 모든 오디오가 조용해진 이유다. 원래 snd-base가 쓰던
+// 정확한 방식(el.muted가 아니라 el.volume = 0으로 무음 상태를 만든 뒤
+// 재생)으로 바꾼다 — 이 방식은 진짜 "음소거 안 된 재생"으로 기록되어
+// 제대로 자동재생 허용을 확보하며, muted 속성 자체를 건드리지 않으므로
+// 이후 어떤 오디오도 의도치 않게 음소거된 채로 남을 위험이 없다.
+// v-audio-unlock-race-fix — participant re-report: "still, mp4s are
+// completely silent overall." The previous fix (el.volume = 0, play(),
+// then pause+reset once the promise resolves) still had the same root
+// problem regardless of using volume or muted for the "silent" part —
+// the promise can resolve late (especially with preload="metadata",
+// which only starts fetching real audio data once play() is called),
+// and if a visitor touches a part before it resolves,
+// _fadeStatueAudio() sees the element as "already playing" and never
+// re-triggers play() itself — then this unlock's delayed pause/reset
+// cuts off the very playback that had just started. Removed the
+// pause/reset entirely: leave the element looping at volume 0 forever
+// instead. Autoplay permission is still secured by the same play()
+// call, and _fadeStatueAudio() simply ramps the volume up on that same
+// already-playing element with nothing left to interrupt it.
+// v-audio-unlock-vs-image-speed-fix — participant report: "the image
+// is slow to appear again. Which of today's fixes caused this?" Root
+// cause: this very unlock fix. snd-rodin/snd-maitreya use
+// preload="metadata", so until now only their metadata was fetched
+// ahead of time — but calling .play() on them directly makes the
+// browser treat it as real playback and start fetching the full audio
+// data immediately, putting both statue sound files back in direct
+// bandwidth competition with the image on page entry — exactly the
+// contention that removing snd-base was meant to relieve. Fix: play a
+// separate few-byte silent data-URI clip instead, just to register
+// with the browser that playback was allowed within this user gesture
+// — autoplay permission is normally granted per page/document rather
+// than per element, so this alone is enough to let the later real
+// snd-rodin/snd-maitreya play() calls (triggered from
+// _fadeStatueAudio() on first touch) succeed. The real statue sound
+// files are left untouched until actually needed, so nothing competes
+// with the image on entry.
+const _SILENT_UNLOCK_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==';
 function startAmbientSound(){
-    ['snd-rodin', 'snd-maitreya'].forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        const prevMuted = el.muted;
-        el.muted = true;
-        const p = el.play();
-        if(p && typeof p.then === 'function'){
-            p.then(()=>{ el.pause(); el.currentTime = 0; el.muted = prevMuted; })
-             .catch(()=>{ el.muted = prevMuted; });
-        } else {
-            el.muted = prevMuted;
+    try{
+        const unlock = new Audio(_SILENT_UNLOCK_WAV);
+        unlock.volume = 0;
+        const p = unlock.play();
+        if(p && typeof p.catch === 'function'){
+            p.catch(e => console.warn('[audio unlock]', e.message));
         }
-    });
+    }catch(e){ console.warn('[audio unlock]', e.message); }
 }
 
 // v82 — 위 AMBIENT_VOLUME과 같은 참가자 요청으로 함께 낮췄다(0.18 → 0.10).

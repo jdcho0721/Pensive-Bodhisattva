@@ -1787,20 +1787,47 @@ const AMBIENT_VOLUME = 0.14;
 // 일부 브라우저에서 조용히 차단됐다. index-en.html에는 이미 적용했던
 // 수정을 여기에도 동일하게 적용한다 — 남아 있는 조각상 소리를 무음으로
 // 짧게 재생했다 즉시 멈춰, 사용자 제스처 안에서 재생 허용을 확보해둔다.
+// v-audio-unlock-race-fix — 참가자 지적: "전체적으로 mp4가 하나도
+// 들리지 않는다." 원인을 찾았다: 방금 전 수정(무음 재생 후 즉시
+// 정지)이 바로 그 자리에서 새 버그를 만들었다 — "재생 허용 확보"
+// 자체는 비동기(Promise)로 끝나는데, 그 Promise가 아직 끝나기 전에
+// (특히 preload="metadata"라 실제 오디오 데이터를 그제서야 받기
+// 시작하므로 이 대기가 꽤 길어질 수 있다) 관람객이 곧바로 부위를
+// 만지면, _fadeStatueAudio()는 "이미 재생 중"이라 보고 자기 스스로는
+// play()를 다시 부르지 않는데, 바로 그 순간 위 unlock의 뒤늦은
+// then()이 도착해 el.pause()·currentTime=0으로 되돌려버려 —
+// 방금 시작된 진짜 재생이 그 자리에서 통째로 끊겼다. 이제
+// pause·리셋을 아예 하지 않는다 — 무음(volume 0)으로 계속 재생만
+// 시켜 두면, 재생 허용은 그대로 확보되면서도 _fadeStatueAudio()가
+// "이미 재생 중"인 바로 그 요소를 가져다 볼륨만 서서히 올리면 되므로
+// 다시 끊길 일이 없다.
+// v-audio-unlock-vs-image-speed-fix — 참가자 지적: "이미지가 다시
+// 느리게 나타난다. 오늘 고친 어떤 사항이 이 문제를 만들어냈나?" 원인을
+// 찾았다 — 바로 위 재생 허용 확보 수정 자체였다. snd-rodin·snd-maitreya
+// 요소는 preload="metadata"라 지금까지는 재생 메타데이터만 미리
+// 받았는데, 이 함수가 그 두 요소에 실제로 .play()를 걸어버리면
+// 브라우저는 그 순간부터 "진짜 재생"으로 취급해 오디오 데이터 전체를
+// 그제서야 받기 시작한다 — 즉 조각상 사운드 두 개가 이미지와 똑같은
+// 순간에 나란히 네트워크 대역폭을 다투게 됐다. 이는 snd-base를
+// 없애면서 힘겹게 줄였던 바로 그 경합을 도로 만들어낸 것이다.
+// 해결: 실제 조각상 사운드 파일 대신, 몇 바이트짜리 무음
+// data URI(WAV)를 별도로 하나 재생해 "이 사용자 제스처 안에서 재생이
+// 허용됐다"는 사실만 브라우저에 등록해둔다 — 자동재생 허용은 보통
+// 요소 단위가 아니라 페이지(문서) 단위로 적용되므로, 이 작은 소리
+//하나만 성공적으로 재생돼도 나중에 snd-rodin·snd-maitreya를 실제로
+// 재생할 때 똑같이 허용된다. 두 조각상 sound 파일 자체는 손대지
+// 않으므로 첫 부위를 만지기 전까지는 다운로드가 전혀 시작되지 않고,
+// 이미지는 다시 오디오와 경합 없이 곧바로 나타난다.
+const _SILENT_UNLOCK_WAV = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==';
 function startAmbientSound(){
-    ['snd-rodin', 'snd-maitreya'].forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        const prevMuted = el.muted;
-        el.muted = true;
-        const p = el.play();
-        if(p && typeof p.then === 'function'){
-            p.then(()=>{ el.pause(); el.currentTime = 0; el.muted = prevMuted; })
-             .catch(()=>{ el.muted = prevMuted; });
-        } else {
-            el.muted = prevMuted;
+    try{
+        const unlock = new Audio(_SILENT_UNLOCK_WAV);
+        unlock.volume = 0;
+        const p = unlock.play();
+        if(p && typeof p.catch === 'function'){
+            p.catch(e => console.warn('[재생 허용 확보]', e.message));
         }
-    });
+    }catch(e){ console.warn('[재생 허용 확보]', e.message); }
 }
 
 // v82 — 위 AMBIENT_VOLUME과 같은 참가자 요청으로 함께 낮췄다(0.18 → 0.10).
