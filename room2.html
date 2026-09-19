@@ -2189,23 +2189,29 @@ function updateStatueSound(speaker){
 // v-bgm-quieter-2 — 참가자 후속 요청: "배경음악을 좀 더 작게 해줘."
 // 0.06 → 0.035로 한 번 더 낮췄다.
 const AMBIENT_VOLUME = 0.05;
+// v-audio-unlock-after-base-removed — 참가자 지적: "snd-maitreya가
+// 반가사유상 관련 해설에서 안 나온다." 원인을 찾았다: 이 함수는 원래
+// snd-base를 재생해 화면을 탭한 사용자 제스처 안에서 브라우저의
+// 자동재생 허용을 미리 확보해두는 역할도 했는데, snd-base 요소 자체를
+// 없애면서 이 함수가 매번 곧바로 return해버려 그 "허용 확보" 기회가
+// 사라졌다 — 그 결과 나중에 음성 안내 콜백 체인 안에서(사용자 제스처와
+// 여러 단계 떨어진 시점에) snd-rodin·snd-maitreya를 재생하려는 시도가
+// 일부 브라우저에서 조용히 차단됐다. 남아 있는 조각상 소리를 무음으로
+// 짧게 재생했다 즉시 멈춰, 사용자 제스처 안에서 재생 허용을 확보해둔다.
 function startAmbientSound(){
-    const el = document.getElementById('snd-base');
-    if(!el) return;
-    _audioBaseTarget['snd-base'] = AMBIENT_VOLUME;
-    el.volume = 0;
-    el.loop = true;
-    const p = el.play();
-    if(p && typeof p.catch === 'function'){
-        p.catch(e => console.warn('[앰비언트] 자동재생 차단:', e.message));
-    }
-    let v = 0;
-    const effectiveTarget = AMBIENT_VOLUME * bgmVolume;
-    const fadeIn = setInterval(()=>{
-        v = Math.min(effectiveTarget, v + 0.01);
-        el.volume = v;
-        if(v >= effectiveTarget) clearInterval(fadeIn);
-    }, 60);
+    ['snd-rodin', 'snd-maitreya'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const prevMuted = el.muted;
+        el.muted = true;
+        const p = el.play();
+        if(p && typeof p.then === 'function'){
+            p.then(()=>{ el.pause(); el.currentTime = 0; el.muted = prevMuted; })
+             .catch(()=>{ el.muted = prevMuted; });
+        } else {
+            el.muted = prevMuted;
+        }
+    });
 }
 // v-bgm-toggle — 참가자 요청: "배경음악 버튼을 초기 화면에 두어 on/off
 // 하게 해달라." 여기서 말하는 "배경음악"은 계속 깔리는 배경 사운드

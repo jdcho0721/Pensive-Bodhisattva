@@ -3753,10 +3753,11 @@ function goToRoom2(e) {
                 u.lang = 'en-US';
                 const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
                 if(_v) u.voice = _v;
+                u.rate = 1.15; // v-transition-speed-up — 참가자 요청: 이동 전 확인 음성을 조금 더 빠르게 읽어 대기 시간을 줄인다
                 u.onend = go;
                 u.onerror = go;
                 window.speechSynthesis.speak(u);
-                setTimeout(go, 3500); // 워치독 — 이벤트가 오지 않는 경우의 최종 안전장치
+                setTimeout(go, 2200); // 워치독 — 이벤트가 오지 않는 경우의 최종 안전장치(3500 → 2200으로 단축)
             }catch(err){ go(); }
             return;
         }
@@ -3819,10 +3820,11 @@ function goToRoom2(e) {
                 u.lang = 'en-US';
                 const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
                 if(_v) u.voice = _v;
+                u.rate = 1.15; // v-transition-speed-up — 참가자 요청: 이동 전 확인 음성을 조금 더 빠르게 읽어 대기 시간을 줄인다
                 u.onend = go;
                 u.onerror = go;
                 window.speechSynthesis.speak(u);
-                setTimeout(go, 3500); // watchdog — final safety net if no event fires
+                setTimeout(go, 2200); // 워치독 — 이벤트가 오지 않는 경우의 최종 안전장치(3500 → 2200으로 단축)
             }catch(err){ go(); }
             return;
         }
@@ -3880,10 +3882,11 @@ function goToRoom2(e) {
                 u.lang = 'en-US';
                 const _v = (typeof _pickBestKoreanVoice === 'function') ? _pickBestKoreanVoice() : null;
                 if(_v) u.voice = _v;
+                u.rate = 1.15; // v-transition-speed-up — 참가자 요청: 이동 전 확인 음성을 조금 더 빠르게 읽어 대기 시간을 줄인다
                 u.onend = go;
                 u.onerror = go;
                 window.speechSynthesis.speak(u);
-                setTimeout(go, 3500);
+                setTimeout(go, 2200); // 워치독 — 이벤트가 오지 않는 경우의 최종 안전장치(3500 → 2200으로 단축)
             }catch(err){ go(); }
             return;
         }

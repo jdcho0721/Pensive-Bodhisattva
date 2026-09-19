@@ -2096,23 +2096,28 @@ function updateStatueSound(speaker){
 // v-bgm-quieter-2 — 참가자 후속 요청: "배경음악을 좀 더 작게 해줘."
 // 0.06 → 0.035로 한 번 더 낮췄다.
 const AMBIENT_VOLUME = 0.05;
+// v-audio-unlock-after-base-removed — participant report: matches
+// index-en.html/room2.html — snd-base was removed, so this function
+// used to no-op every time (its element lookup returned null), losing
+// the moment where a real .play() call, made synchronously inside the
+// user's own tap, unlocked the browser's autoplay permission for the
+// page. Later attempts to play snd-rodin/snd-maitreya from deep inside
+// async speech callbacks could then be silently blocked. Prime the
+// remaining statue sounds with a brief muted play-then-pause instead.
 function startAmbientSound(){
-    const el = document.getElementById('snd-base');
-    if(!el) return;
-    _audioBaseTarget['snd-base'] = AMBIENT_VOLUME;
-    el.volume = 0;
-    el.loop = true;
-    const p = el.play();
-    if(p && typeof p.catch === 'function'){
-        p.catch(e => console.warn('[앰비언트] 자동재생 차단:', e.message));
-    }
-    let v = 0;
-    const effectiveTarget = AMBIENT_VOLUME * bgmVolume;
-    const fadeIn = setInterval(()=>{
-        v = Math.min(effectiveTarget, v + 0.01);
-        el.volume = v;
-        if(v >= effectiveTarget) clearInterval(fadeIn);
-    }, 60);
+    ['snd-rodin', 'snd-maitreya'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(!el) return;
+        const prevMuted = el.muted;
+        el.muted = true;
+        const p = el.play();
+        if(p && typeof p.then === 'function'){
+            p.then(()=>{ el.pause(); el.currentTime = 0; el.muted = prevMuted; })
+             .catch(()=>{ el.muted = prevMuted; });
+        } else {
+            el.muted = prevMuted;
+        }
+    });
 }
 // v-bgm-toggle — 참가자 요청: "배경음악 버튼을 초기 화면에 두어 on/off
 // 하게 해달라." 여기서 말하는 "배경음악"은 계속 깔리는 배경 사운드
