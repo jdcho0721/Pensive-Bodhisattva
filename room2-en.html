@@ -302,15 +302,12 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border:1px solid rgba(212,175,55,.6);}
 #cam-toggle-btn.active{background:var(--gold); color:#000; font-weight:700; border-color:var(--gold);}
 
-/* v-explore-bar-restored — participant request: "put the exploration
-   bar right below the image." A thin bar between #stage and
-   #caption-wrap. */
-#explore-bar{flex:0 0 auto;display:flex;align-items:center;gap:10px;
+/* v-explore-bar-number-only — participant request: "remove the
+   exploration bar, keep only the number." */
+#explore-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
     padding:6px 16px;background:rgba(0,0,0,.85);border-top:1px solid rgba(212,175,55,.14);
     border-bottom:1px solid rgba(212,175,55,.14);}
-#explore-bar-track{flex:1 1 auto;height:4px;border-radius:2px;background:rgba(212,175,55,.18);overflow:hidden;}
-#explore-bar-fill{height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width .4s ease;}
-#explore-bar-text{flex:0 0 auto;font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
+#explore-bar-text{font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
 
 #caption-wrap{position:relative;flex:0 0 auto;width:100%;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
@@ -1479,12 +1476,9 @@ body.low-vision-mode #hint-row .btn{
 
 </div>
 
-<!-- v-explore-bar-restored — participant request: "put the Room 2
-     exploration bar right below the image." Restored as a thin bar
-     between #stage (image) and #caption-wrap, right where it was
-     asked for. -->
+<!-- v-explore-bar-number-only — participant request: "remove the
+     exploration bar, keep only the number." -->
 <div id="explore-bar" role="presentation" aria-hidden="true">
-    <div id="explore-bar-track"><div id="explore-bar-fill"></div></div>
     <span id="explore-bar-text">Explored 0 / 11</span>
 </div>
 
@@ -2053,6 +2047,16 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
+    // v-maitreya-sound-inaudible-fix — participant report: matches
+    // room2.html — snd-base (always on) happened to use the same file
+    // as snd-maitreya (Temple_Bell_at_Daybreak), so touching the
+    // Bodhisattva's side just added more of the identical sound
+    // already playing, with nothing audibly new — unlike Rodin's side,
+    // whose file differs from snd-base and so is clearly noticeable.
+    // Duck the base ambience slightly whenever a statue sound is
+    // active so the change is audible either way.
+    const baseEl = document.getElementById('snd-base');
+    _fadeStatueAudio(baseEl, target ? AMBIENT_VOLUME * 0.35 : AMBIENT_VOLUME);
     // v-remove-resonance-engine — 참가자 요청: "합성 배경음(ResonanceEngine)
     // 은 제거하는 게 좋을 것 같다. 배경음도 시끄러우니." 좌/우 합성
     // Zone 전환 호출을 없앴다 — 이제 조각상별 배경음은 아래 <audio>
@@ -2998,11 +3002,8 @@ function buildRecapAnswer(){
 const RECAP_TRIGGER = /summarize|summary|recap|what have i touched|what did i touch|how many (spots|places)|review what/i;
 
 function updateProgress(){
-    // v-explore-bar-restored — updates the restored bar's fill and text.
-    const fillEl = document.getElementById('explore-bar-fill');
+    // v-explore-bar-number-only — the fill bar is gone; update only the text.
     const textEl = document.getElementById('explore-bar-text');
-    const pct = ORDER.length ? Math.round((visited.size / ORDER.length) * 100) : 0;
-    if(fillEl) fillEl.style.width = pct + '%';
     if(textEl) textEl.textContent = `Explored ${visited.size} / ${ORDER.length}`;
     // The screen-reader progress announcement stays.
     const srEl = document.getElementById('progress-sr');

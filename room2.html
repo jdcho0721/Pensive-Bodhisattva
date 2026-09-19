@@ -304,16 +304,13 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
     border:1px solid rgba(212,175,55,.6);}
 #cam-toggle-btn.active{background:var(--gold); color:#000; font-weight:700; border-color:var(--gold);}
 
-/* v-explore-bar-restored — 참가자 요청: "전시2 탐색 바를 이미지 바로
-   밑에 넣어줘." #stage(이미지)와 #caption-wrap(자막창) 사이에 끼는
-   얇은 막대 — flex 흐름 안에 있어 그만큼 이미지가 쓸 수 있는 세로
-   공간이 줄어들지만, "이미지 바로 밑"이라는 요청을 그대로 따른다. */
-#explore-bar{flex:0 0 auto;display:flex;align-items:center;gap:10px;
+/* v-explore-bar-number-only — 참가자 요청: "탐색 바는 제거해줘. 숫자만
+   놔두고." 채움 막대(track/fill)는 없애고, 가운데 정렬된 숫자만
+   남긴다. */
+#explore-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:center;
     padding:6px 16px;background:rgba(0,0,0,.85);border-top:1px solid rgba(212,175,55,.14);
     border-bottom:1px solid rgba(212,175,55,.14);}
-#explore-bar-track{flex:1 1 auto;height:4px;border-radius:2px;background:rgba(212,175,55,.18);overflow:hidden;}
-#explore-bar-fill{height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width .4s ease;}
-#explore-bar-text{flex:0 0 auto;font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
+#explore-bar-text{font-size:.68rem;color:var(--gold-light);letter-spacing:.03em;white-space:nowrap;}
 
 #caption-wrap{position:relative;flex:0 0 auto;width:100%;padding:22px 20px calc(18px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.97);border-top:1px solid rgba(212,175,55,.16);
@@ -1557,13 +1554,10 @@ body.low-vision-mode #hint-row .btn{
 
 </div>
 
-<!-- v-explore-bar-restored — 참가자 요청: "전시2 탐색 바를 이미지 바로
-     밑에 넣어줘." 예전에 화면 위쪽에 떠 있다가 없앤 탐색 진행률
-     표시를, 이번엔 이미지(#stage) 바로 아래·자막창(#caption-wrap)
-     바로 위 자리에 얇은 막대로 다시 둔다. 화면에 보이는 숫자·막대와
-     별개로, 스크린리더용 안내는 여전히 #progress-sr(위)이 맡는다. -->
+<!-- v-explore-bar-number-only — 참가자 요청: "탐색 바는 제거해줘.
+     숫자만 놔두고." 위 채움 막대(#explore-bar-track/#explore-bar-fill)를
+     없애고, "탐색 N / 11" 숫자 표시만 남긴다. -->
 <div id="explore-bar" role="presentation" aria-hidden="true">
-    <div id="explore-bar-track"><div id="explore-bar-fill"></div></div>
     <span id="explore-bar-text">탐색 0 / 11</span>
 </div>
 
@@ -2139,6 +2133,17 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
+    // v-maitreya-sound-inaudible-fix — 참가자 지적: "Temple_Bell_at_
+    // Daybreak.mp4 — 반가사유상 관련 부위 해설이 나올 때 이 배경음이
+    // 안 들리는데." 원인을 찾았다: 늘 켜져 있는 기본 배경음(snd-base)도
+    // 하필 같은 파일(Temple_Bell_at_Daybreak)을 쓰고 있어서, 반가사유상
+    // 쪽을 만져도 이미 계속 흐르던 것과 똑같은 소리가 조금 더해질
+    // 뿐 귀로 구분할 변화가 없었다 — 로댕 쪽은 snd-base와 다른 파일
+    // (Where_Bamboo_Bends)이라 전환이 뚜렷이 들렸던 것과 대조된다.
+    // 특정 조각상 소리가 켜질 때는 기본 배경음을 살짝 줄여, 두 소리가
+    // 같은 파일이어도 "무언가 바뀌었다"는 것이 들리게 한다.
+    const baseEl = document.getElementById('snd-base');
+    _fadeStatueAudio(baseEl, target ? AMBIENT_VOLUME * 0.35 : AMBIENT_VOLUME);
     // v-remove-resonance-engine — 참가자 요청: "합성 배경음(ResonanceEngine)
     // 은 제거하는 게 좋을 것 같다. 배경음도 시끄러우니." 좌/우 합성
     // Zone 전환 호출을 없앴다 — 이제 조각상별 배경음은 아래 <audio>
@@ -3069,12 +3074,9 @@ function buildRecapAnswer(){
 const RECAP_TRIGGER = /요약|복습|정리해줘|정리해 줘|지금까지\s*(뭘|무엇을|뭐)|여태\s*(뭘|무엇을)|들은\s*거\s*(정리|요약)|다시\s*(들려줘|알려줘)\s*전체|몇\s*곳/;
 
 function updateProgress(){
-    // v-explore-bar-restored — 참가자 요청으로 이미지 바로 아래에
-    // 되살린 탐색 바(#explore-bar)의 채움 막대와 숫자를 갱신한다.
-    const fillEl = document.getElementById('explore-bar-fill');
+    // v-explore-bar-number-only — 참가자 요청으로 채움 막대는 없앴으니,
+    // 여기서도 숫자 텍스트만 갱신한다.
     const textEl = document.getElementById('explore-bar-text');
-    const pct = ORDER.length ? Math.round((visited.size / ORDER.length) * 100) : 0;
-    if(fillEl) fillEl.style.width = pct + '%';
     if(textEl) textEl.textContent = `탐색 ${visited.size} / ${ORDER.length}`;
     // 웹 접근성: 스크린리더 사용자를 위한 진행률 안내는 계속 남겨둔다.
     const srEl = document.getElementById('progress-sr');
