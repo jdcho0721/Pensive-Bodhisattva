@@ -440,7 +440,9 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    커지는 환경에서 안의 아이콘이 원 밖으로 잘려나갔다. 고정 크기 대신
    min-width/min-height + em 단위 여백으로 바꿔, 글자가 커지면 버튼 자체가
    함께 커지도록 했다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:35;
+/* v-caption-gap-fix — participant request: "move the chat button up."
+   Raised bottom from 150px to 220px. */
+#chat-toggle{position:fixed;right:16px;bottom:calc(220px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;}
 /* v-chat-toggle-smaller-lower — 참가자 요청: "이미지를 1.3배로 키우고,
@@ -1585,14 +1587,18 @@ function fitHotspotLayer(){
     // 발끝이 화면 밖으로 나갈 것 같으면 상단 버튼줄 여백까지는 끌어올린다
     // (그 밑으로는 얼굴 핫스팟이 버튼줄과 겹칠 수 있어 넘지 않는다).
     let sy = y;
-    // v-image-below-topbar — 참가자 지적: "이미지가 탐색바와 함께 다시
-    // 올라가 있다." 원인: 위 상한 로직(발끝이 잘릴 때 위로 끌어올림)만
-    // 있고, 반대로 sy가 TOP_CLEARANCE보다 위에 있을 때 아래로 내려주는
-    // 하한선이 없었다 — 그래서 화면 비율에 따라 이미지가 버튼줄 위로
-    // 올라가 겹치는 경우를 막지 못했다. 발끝이 잘리지 않는 한 항상
-    // TOP_CLEARANCE 아래에서 시작하도록 하한을 추가한다.
+    // v-caption-gap-fix — participant request: "move the caption box
+    // and chat button up; no gap between the image and the caption box
+    // right below it." Root cause: on narrow (portrait phone) screens,
+    // y = (ch - h) * 0.25 above left the image from touching the
+    // bottom of #stage even after enlarging, and that leftover space
+    // showed up as a visible gap between the image and #caption-wrap
+    // right below it. As long as toes aren't clipped (TOP_CLEARANCE
+    // floor kept as before), always flush the image to the bottom of
+    // #stage — the caption box itself hasn't moved, but the image now
+    // fills up to meet it, closing the gap.
     if(sy < TOP_CLEARANCE) sy = TOP_CLEARANCE;
-    if(sy + sh > ch) sy = Math.max(TOP_CLEARANCE, ch - sh);
+    sy = Math.max(TOP_CLEARANCE, ch - sh);
 
     stage.style.backgroundSize = sw + 'px ' + sh + 'px';
     stage.style.backgroundPosition = sx + 'px ' + sy + 'px';
@@ -2564,7 +2570,7 @@ function _processTouch(key){
     visited.add(key);
     updateProgress();
 
-    document.getElementById('focus-tag').textContent = '🗿 You are touching — ' + d.title;
+    document.getElementById('focus-tag').textContent = 'You are touching — ' + d.title;
     // v-ai-vs-narration-distinction — back to scripted narration, so if the
     // previous caption was an AI answer/synthesis, clear that indicator
     // (blue border) now.
