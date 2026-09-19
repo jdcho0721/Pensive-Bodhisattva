@@ -11,8 +11,18 @@
      손 랜드마크 추적 라이브러리로, 실제 뎁스카메라 대신 웹캠으로 손끝 위치를
      추적해 pointerdown과 동일하게 touchPart()를 호출한다. CDN 로드 실패나
      카메라 권한 거부 시에도 기존 클릭/터치 인터랙션은 그대로 동작한다
-     (아래 startHandTracking()의 try/catch 참고). ── -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+     (아래 startHandTracking()의 try/catch 참고).
+     v-page-load-slow-fix — participant report: matches room2.html —
+     this script tag had no defer/async and sat at the very top of head,
+     before even the CSS and all body content — a browser blocks all
+     further HTML parsing/rendering until a script like this finishes
+     downloading and running. The whole screen, image included, was
+     waiting on this CDN library (not a small file) before it could
+     appear. The Hands object is only needed once the camera feature is
+     actually turned on (startHandTracking(), called asynchronously
+     after a user action), so defer lets this download in the
+     background while the page renders immediately. -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous" defer></script>
 <style>
 /* ══════════════════════════════════════════════════════
    전시실 2 · 실물 조각상 터치 인터랙션
@@ -1406,10 +1416,14 @@ body.low-vision-mode #hint-row .btn{
      ⑥ snd-yeoil(Echoes_of_the_Void) — "여일"(마음 비우기) 화면으로
         넘어가는 순간 다른 배경음을 모두 끄고 이 소리만 남긴다
         (beginYeoilExit() 참고). -->
-<audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="metadata" loop></audio>
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp4" preload="metadata" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="metadata" loop></audio>
 <audio id="snd-yeoil" src="Echoes_of_the_Void.mp4" preload="metadata" loop></audio>
+<!-- v-base-removed — participant request: matches room2.html — remove
+     the last remaining background sound element too. Only each
+     statue's own narration-specific ambience plays now; nothing plays
+     otherwise. startAmbientSound()/updateStatueSound()'s baseEl calls
+     remain but are harmless no-ops. -->
 <!-- v-arrival-meeting-removed — participant request: matches
      room2.html — snd-arrival·snd-meeting removed entirely to stop
      competing with the image for network connections. The center-zone
@@ -2113,7 +2127,7 @@ function startAmbientSound(){
 // 전혀 건드리지 않는다 — 다시 켜면 그 순간의 진짜 볼륨으로 바로
 // 돌아온다.
 let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-base','snd-rodin','snd-maitreya','snd-yeoil'];
+const BGM_AUDIO_IDS = ['snd-rodin','snd-maitreya','snd-yeoil'];
 function _applyBgmMuteState(){
     BGM_AUDIO_IDS.forEach(id=>{
         const el = document.getElementById(id);
@@ -2514,6 +2528,31 @@ function _speakSentenceQueueRoom2(sentences, idx, speakerKey, mySeq, captionEl, 
         if(mySeq === _captionSeq) setTimeout(()=>_speakSentenceQueueRoom2(sentences, idx + 1, speakerKey, mySeq, captionEl, onEnd), 1200);
     }
 }
+// v-korean-narration-on-english-page-fix — participant report: matches
+// index-en.html — English voices can load after Korean ones on a
+// Korean-locale device/browser. Without waiting for an English voice
+// specifically, the very first utterance (before any English voice has
+// loaded) falls through to the browser's absolute default voice, which
+// can be Korean — and a voice/lang mismatch like that can also make the
+// browser's onend event fire unreliably, which is what was breaking
+// auto-advance to the next line. Wait for at least one English voice
+// before speaking.
+let _voicesReadyPromiseRoom2 = null;
+function _ensureVoicesReadyRoom2(){
+    const hasEnglish = v => /^en/i.test(v.lang);
+    if(window.speechSynthesis.getVoices().some(hasEnglish)) return Promise.resolve();
+    if(_voicesReadyPromiseRoom2) return _voicesReadyPromiseRoom2;
+    _voicesReadyPromiseRoom2 = new Promise(resolve=>{
+        let done = false;
+        const finish = ()=>{ if(done) return; done = true; _voicesReadyPromiseRoom2 = null; resolve(); };
+        const onChange = ()=>{
+            if(window.speechSynthesis.getVoices().some(hasEnglish)) finish();
+        };
+        try{ window.speechSynthesis.onvoiceschanged = onChange; }catch(e){}
+        setTimeout(finish, 1000); // safety net: proceed anyway after 1s even without an English voice
+    });
+    return _voicesReadyPromiseRoom2;
+}
 function speak(text, onEnd, speakerKey){
     _lastSpokenText = text;
     _lastSpokenSpeaker = speakerKey || null;
@@ -2527,7 +2566,10 @@ function speak(text, onEnd, speakerKey){
             sentences = splitToSentences(text);
         }
         const mySeq = ++_captionSeq;
-        _speakSentenceQueueRoom2(sentences, 0, speakerKey, mySeq, captionEl, onEnd);
+        _ensureVoicesReadyRoom2().then(()=>{
+            if(mySeq !== _captionSeq) return; // a newer speak() call superseded this one while waiting
+            _speakSentenceQueueRoom2(sentences, 0, speakerKey, mySeq, captionEl, onEnd);
+        });
     }catch(e){ if(onEnd) setTimeout(onEnd,1200); }
 }
 

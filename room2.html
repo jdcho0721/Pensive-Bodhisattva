@@ -11,8 +11,18 @@
      손 랜드마크 추적 라이브러리로, 실제 뎁스카메라 대신 웹캠으로 손끝 위치를
      추적해 pointerdown과 동일하게 touchPart()를 호출한다. CDN 로드 실패나
      카메라 권한 거부 시에도 기존 클릭/터치 인터랙션은 그대로 동작한다
-     (아래 startHandTracking()의 try/catch 참고). ── -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+     (아래 startHandTracking()의 try/catch 참고).
+     v-page-load-slow-fix — 참가자 지적: "room2 화면 로딩이 느리다."
+     원인을 찾았다: 이 script 태그가 defer·async 없이 head 맨 위,
+     심지어 CSS(style)와 본문 전체보다도 먼저 있었다 — 브라우저는
+     defer/async가 없는 script를 만나면 그 스크립트를 전부 내려받고
+     실행할 때까지 이후의 HTML 파싱·렌더링을 전부 멈춘다. 즉 이미지를
+     포함한 화면 전체가, CDN에서 이 라이브러리(파일 크기가 결코 작지
+     않다)를 다 받을 때까지 기다렸다가 나타나고 있었다. Hands 객체는
+     카메라 기능을 실제로 켤 때(startHandTracking(), 사용자 조작 이후
+     비동기로 호출)만 필요하므로, defer를 붙여 이 스크립트를 백그라운드로
+     내려받게 하고 화면은 기다리지 않고 곧바로 렌더링되게 한다. -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous" defer></script>
 <style>
 /* ══════════════════════════════════════════════════════
    전시실 2 · 실물 조각상 터치 인터랙션
@@ -1482,10 +1492,18 @@ body.low-vision-mode #hint-row .btn{
      ⑥ snd-yeoil(Echoes_of_the_Void) — "여일"(마음 비우기) 화면으로
         넘어가는 순간 다른 배경음을 모두 끄고 이 소리만 남긴다
         (beginYeoilExit() 참고). -->
-<audio id="snd-base" src="Lotus_at_the_Gate.mp4" preload="metadata" loop></audio>
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp4" preload="metadata" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp4" preload="metadata" loop></audio>
 <audio id="snd-yeoil" src="Echoes_of_the_Void.mp4" preload="metadata" loop></audio>
+<!-- v-base-removed — 참가자 요청: "snd-base(Lotus_at_the_Gate)도
+     제거하자." 이미지와의 네트워크 경합을 더 줄이기 위해 마지막 남은
+     배경음 요소도 없앤다 — 이제 특정 조각상 해설이 나올 때만 그
+     조각상 전용 소리가 들리고, 그 외 시간에는 배경음이 전혀 나오지
+     않는다. startAmbientSound()·updateStatueSound()의 baseEl 관련
+     호출은 그대로 남아 있지만 el이 없으면 즉시 return하거나
+     _fadeStatueAudio()가 조용히 무시하므로 에러 없이 안전하다.
+     여일(snd-yeoil) 전환 로직도 이미 el 존재 여부와 무관하게 항상
+     안전하게 동작한다. -->
 <!-- v-arrival-meeting-removed — 참가자 요청: "snd-arrival·snd-meeting은
      모두 제거해줘. 이미지와 네트워크 연결을 경합하는 일이 안 생기지
      않을까?" 요청대로 두 <audio> 요소 자체를 없앤다 — 두 조각상
@@ -1495,6 +1513,7 @@ body.low-vision-mode #hint-row .btn{
      _fadeStatueAudio()가 이미 el이 없으면 조용히 아무 일도 하지
      않도록(if(!el) return;) 되어 있어 에러 없이 안전하게 아무 효과가
      없는 호출이 된다. -->
+
 
 <div id="room-layout">
 <!-- v-nonvisual-orientation — 참가자(전맹 시각장애인) 지적: "현재 화면에서
@@ -2201,7 +2220,7 @@ function startAmbientSound(){
 // 전혀 건드리지 않는다 — 다시 켜면 그 순간의 진짜 볼륨으로 바로
 // 돌아온다.
 let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-base','snd-rodin','snd-maitreya','snd-yeoil'];
+const BGM_AUDIO_IDS = ['snd-rodin','snd-maitreya','snd-yeoil'];
 function _applyBgmMuteState(){
     BGM_AUDIO_IDS.forEach(id=>{
         const el = document.getElementById(id);
@@ -2580,6 +2599,35 @@ function _speakSentenceQueueRoom2(sentences, idx, speakerKey, mySeq, captionEl, 
         if(mySeq === _captionSeq) setTimeout(()=>_speakSentenceQueueRoom2(sentences, idx + 1, speakerKey, mySeq, captionEl, onEnd), 1200);
     }
 }
+// v-mic-onend-reliability-fix — 참가자 지적: "마이크 버튼이 정상 실행이
+// 안되고 있다." 원인을 찾았다: 마이크는 speak()로 안내 문구를 먼저
+// 들려준 뒤, 그 발화가 "끝났다"는 신호(onEnd)를 받아야만 실제로
+// chatRecognition.start()를 부른다(toggleChatMic() 참고) — 그런데
+// 지금까지 speak()는 음성 목록이 준비됐는지 전혀 확인하지 않고 곧바로
+// 발화를 시작했다. 기기의 음성 목록이 아직 다 채워지기 전에(특히 기기
+// 로캘이 한국어가 아니거나, 한국어 음성이 늦게 뜨는 브라우저에서) 이
+// 시점에 발화가 걸리면, 목소리(voice)와 언어(lang) 설정이 어긋나면서
+// 일부 브라우저가 onEnd를 아예 안 보내거나 늦게 보내는 경우가 있다 —
+// 그러면 안내 음성은 들리는데 그 뒤에 이어져야 할
+// chatRecognition.start()가 영영 호출되지 않아 마이크가 켜지지 않는
+// 것처럼 보인다. 최소한 한국어 음성이 하나는 준비된 뒤에 발화를
+// 시작하도록 짧게 대기한다.
+let _voicesReadyPromiseRoom2 = null;
+function _ensureVoicesReadyRoom2(){
+    const hasKorean = v => /^ko/i.test(v.lang);
+    if(window.speechSynthesis.getVoices().some(hasKorean)) return Promise.resolve();
+    if(_voicesReadyPromiseRoom2) return _voicesReadyPromiseRoom2;
+    _voicesReadyPromiseRoom2 = new Promise(resolve=>{
+        let done = false;
+        const finish = ()=>{ if(done) return; done = true; _voicesReadyPromiseRoom2 = null; resolve(); };
+        const onChange = ()=>{
+            if(window.speechSynthesis.getVoices().some(hasKorean)) finish();
+        };
+        try{ window.speechSynthesis.onvoiceschanged = onChange; }catch(e){}
+        setTimeout(finish, 1000); // 안전장치: 1초 안에 한국어 목소리가 안 뜨면 일단 진행
+    });
+    return _voicesReadyPromiseRoom2;
+}
 function speak(text, onEnd, speakerKey){
     _lastSpokenText = text;
     _lastSpokenSpeaker = speakerKey || null;
@@ -2598,7 +2646,10 @@ function speak(text, onEnd, speakerKey){
             sentences = splitToSentences(text);
         }
         const mySeq = ++_captionSeq;
-        _speakSentenceQueueRoom2(sentences, 0, speakerKey, mySeq, captionEl, onEnd);
+        _ensureVoicesReadyRoom2().then(()=>{
+            if(mySeq !== _captionSeq) return; // 대기하는 사이 더 최신 요청이 들어왔으면 이 요청은 버린다
+            _speakSentenceQueueRoom2(sentences, 0, speakerKey, mySeq, captionEl, onEnd);
+        });
     }catch(e){ if(onEnd) setTimeout(onEnd,1200); }
 }
 
