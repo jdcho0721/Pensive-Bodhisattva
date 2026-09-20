@@ -518,8 +518,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    세로 위치(이미지 아래쪽 부근)는 그대로 두어, 조각상 가운데를
    가로막지 않으면서도 이미지 하단 언저리에 자연스럽게 자리한다.
    드래그로 옮길 수 있다는 점과 평소 반투명(opacity .55) 처리는
-   그대로 유지된다. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
+   그대로 유지된다.
+   v-chat-toggle-reposition-precise — 참가자 요청(재확인): "챗봇 버튼
+   위치가 화면 중앙이 아니라 우측 중앙이다. 그 쪽으로 이동시켜줘...
+   처음에 우측중앙에 있도록 해줘. 이미지 바로 아래에." 고정 200px
+   값 대신, #caption-wrap의 실제 최소 높이(clamp(180px, 34vh, 320px))를
+   그대로 참조해 화면 크기와 무관하게 이미지와 자막창의 경계, 즉
+   "이미지 바로 아래"에 정확히 맞춘다. 드래그로 옮긴 뒤에도 이 기본
+   위치는 처음 열 때마다 그대로 다시 적용된다(드래그 위치는 저장되지
+   않음). -->
+#chat-toggle{position:fixed;right:16px;bottom:calc(clamp(180px, 34vh, 320px) + 8px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
     touch-action:none;opacity:.55;transition:opacity .25s ease;}

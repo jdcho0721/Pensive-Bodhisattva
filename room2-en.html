@@ -509,8 +509,16 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    moved it to the right edge — the vertical position (near the bottom
    of the image) stays the same, so it no longer sits over the middle
    of the artwork. Still draggable, and still rests at lower opacity
-   (.55) until hovered/focused/touched. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
+   (.55) until hovered/focused/touched.
+   v-chat-toggle-reposition-precise — participant request (follow-up):
+   "the button's position isn't center, it's right-center — move it
+   there... make it start at right-center, right below the image."
+   Replaced the fixed 200px value with #caption-wrap's own min-height
+   (clamp(180px, 34vh, 320px)) so the button lands precisely at the
+   image/caption boundary regardless of screen size. Drag position
+   isn't saved, so this default position re-applies each time the
+   page opens. */
+#chat-toggle{position:fixed;right:16px;bottom:calc(clamp(180px, 34vh, 320px) + 8px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
     touch-action:none;opacity:.55;transition:opacity .25s ease;}
