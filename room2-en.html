@@ -856,17 +856,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
-/* v-lowvision-btn-style-fix — participant request: "make the large-text
-   button's style match the other buttons." Root cause: this button
-   only had a pressed-state ([aria-pressed="true"]) rule and no base
-   shape at all — matched to the same pill shape as easy-mode-btn. */
-#low-vision-btn{
-    height:36px; padding:0 10px; border-radius:18px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
-}
-#low-vision-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #low-vision-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 /* v-low-vision-mode — same as index.html/room2.html: a dedicated
    large-text mode instead of relying on pinch-zoom, so the fixed layout
@@ -887,16 +876,6 @@ body.low-vision-mode #hint-row .btn{
     height:clamp(38px, 10vw, 48px) !important; min-height:clamp(38px, 10vw, 48px) !important;
     font-size:clamp(.76rem, 2.7vw, .88rem) !important;
     padding:0 clamp(10px, 2.8vw, 15px) !important;
-}
-/* v-low-vision-gate-fix — participant report: matches
-   index.html/index-en.html/room2.html — large-text mode didn't cover
-   the gate screen (title, description, buttons). Enlarge it too. */
-body.low-vision-mode #intro-gate h1{font-size:clamp(1.7rem, 6.5vw, 2.5rem) !important;}
-body.low-vision-mode #intro-gate p{font-size:1.2em !important; line-height:1.5 !important;}
-body.low-vision-mode #intro-gate .gate-hint{font-size:1.2em !important;}
-body.low-vision-mode #intro-gate .intro-btn-row .btn{
-    font-size:clamp(.95rem, 3.6vw, 1.15rem) !important;
-    padding:clamp(10px, 2.6vw, 14px) clamp(14px, 3.4vw, 20px) !important;
 }
 #volume-control{
     height:36px; display:flex; align-items:center; gap:6px; padding:0 10px;
@@ -1219,10 +1198,6 @@ body.low-vision-mode #intro-gate .intro-btn-row .btn{
      prepending an icon to the text doesn't affect the announcement. -->
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences, currently off">Easy sentences</button>
-<!-- v-low-vision-btn-missing-fix — participant report: matches
-     room2.html — the large-text mode CSS/JS already existed, but no
-     button to turn it on was ever added. Adding it here. -->
-<button id="low-vision-btn" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="Large text mode, currently off">Large text</button>
 
 <div id="volume-control" role="group" aria-label="Background music volume">
     <span aria-hidden="true">🔊</span>
@@ -1441,14 +1416,6 @@ body.low-vision-mode #intro-gate .intro-btn-row .btn{
                 aria-label="Background music is on. Press to turn it off."
                 data-tap-name="Background music"
                 onclick="event.stopPropagation();toggleBgm()">🔊 Music</button>
-        <!-- v-low-vision-gate-fix — participant report: matches
-             index.html/index-en.html/room2.html — added the same
-             toggle to the gate screen so a low-vision visitor can
-             turn on large text before entering. -->
-        <button class="btn" id="btn-low-vision-gate" type="button" aria-pressed="false"
-                aria-label="Large text mode, currently off"
-                data-tap-name="Large text mode"
-                onclick="event.stopPropagation();toggleLowVisionMode();">Large text</button>
         <button class="btn" id="btn-lang-ko" type="button"
                 aria-label="Switches to the Korean version"
                 data-tap-name="Korean version"
@@ -2250,21 +2217,15 @@ function toggleBgm(){
     speak(bgmMuted ? '배경음악이 꺼집니다.' : '배경음악이 켜집니다.');
 }
 // v-low-vision-mode — same as index-en.html/room2.html.
-// v-low-vision-gate-fix — with a matching toggle now on the gate
-// screen too, keeps both buttons (#low-vision-btn, #btn-low-vision-gate)
-// in sync.
 let lowVisionMode = false;
 function toggleLowVisionMode(){
     lowVisionMode = !lowVisionMode;
     document.body.classList.toggle('low-vision-mode', lowVisionMode);
-    const label = lowVisionMode ? 'Large text mode, currently on' : 'Large text mode, currently off';
-    ['low-vision-btn', 'btn-low-vision-gate'].forEach(id=>{
-        const btn = document.getElementById(id);
-        if(btn){
-            btn.setAttribute('aria-pressed', String(lowVisionMode));
-            btn.setAttribute('aria-label', label);
-        }
-    });
+    const btn = document.getElementById('low-vision-btn');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(lowVisionMode));
+        btn.setAttribute('aria-label', lowVisionMode ? 'Large text mode, currently on' : 'Large text mode, currently off');
+    }
     speak(lowVisionMode ? 'Large text mode turned on.' : 'Large text mode turned off.');
 }
 // snd-arrival: 입장 직후 한 번만 차올랐다가, 첫 부위를 만지는 순간(또는
@@ -6312,17 +6273,17 @@ function toggleChatMic(){
         if(!panel.classList.contains('open')) toggleChat();
         document.getElementById('chat-input').value = '';
         _sttRetryCount = 0; // 사용자가 직접 마이크를 다시 눌렀으니 자동 재시도 횟수도 초기화
-        // v-mic-two-tap-immediate — participant request: matches
-        // room2.html — "make two taps on the mic button activate it
-        // right away." #chat-mic already requires the standard two-tap
-        // confirmation (tap 1 announces its name via data-tap-name)
-        // unlike other buttons inside #chat-panel — but this function
-        // used to play yet another full announcement after that before
-        // finally starting to listen, making it three steps in total.
-        // The name is already announced on the first tap, so the
-        // second tap now starts listening immediately.
-        try{ chatRecognition.start(); }
-        catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        // v-mic-input-announce — 참가자 요청: "마이크 버튼을 누르면 '사유의
+        // 상담소 입력창입니다'라고 안내해줘." #chat-mic은 다른 토글
+        // 버튼들과 같은 이유(TWOTAP_HANDS_OFF_SELECTOR)로 눌렀을 때 바로
+        // 실행되어, 화면을 보기 어려운 관람객은 지금 무엇을 눌렀는지 음성
+        // 안내 없이는 알 수 없었다. 이 안내를 먼저 들려주고, 안내가 끝난
+        // 뒤에 실제로 듣기 시작한다 — 안내 음성 자체가 마이크에 함께
+        // 잡혀 인식을 방해하지 않도록 순서를 나눴다.
+        speak('This is the Contemplation Counsel input field. Please say your question.', ()=>{
+            try{ chatRecognition.start(); }
+            catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        });
     }
 }
 
@@ -7557,7 +7518,7 @@ const TWOTAP_ARM_WINDOW_MS = 2500;
    here so they execute immediately (#chat-back-btn needs no separate
    addition — #chat-panel as a whole is already in this list; see the
    matching removal from the #chat-mic-only exception below). */
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn, #info-back, #btn-low-vision-gate';
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn, #info-back';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 

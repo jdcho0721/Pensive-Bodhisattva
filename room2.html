@@ -867,17 +867,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
 }
 #easy-mode-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
-/* v-lowvision-btn-style-fix — 참가자 요청: "큰 글씨 버튼 스타일을 다른
-   버튼과 같은 모양으로 바꾸어줘." 원인: 이 버튼에는 눌린 상태
-   ([aria-pressed="true"]) 스타일만 있고, 기본 모양(테두리·배경·크기
-   등)이 아예 없었다 — easy-mode-btn과 똑같은 알약 모양으로 맞춘다. */
-#low-vision-btn{
-    height:36px; padding:0 10px; border-radius:18px; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    font-family:'Noto Serif KR',serif; white-space:nowrap; flex:0 0 auto;
-}
-#low-vision-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #low-vision-btn[aria-pressed="true"]{background:var(--gold); color:#1a1408; border-color:var(--gold);}
 /* v-low-vision-mode — 참가자(저시력) 지적: "확대 상태에서는 작품 전체와
    조작 영역을 한눈에 확인하기 어렵다 / 확대와 음성 안내를 동시에
@@ -901,17 +890,6 @@ body.low-vision-mode #hint-row .btn{
     height:clamp(38px, 10vw, 48px) !important; min-height:clamp(38px, 10vw, 48px) !important;
     font-size:clamp(.76rem, 2.7vw, .88rem) !important;
     padding:0 clamp(10px, 2.8vw, 15px) !important;
-}
-/* v-low-vision-gate-fix — 참가자 요청: "room2 표지에도 큰 글씨 버튼을
-   넣어줘." 큰 글씨 모드가 지금까지 입장 후 화면에만 적용돼서, 가장
-   먼저 마주치는 표지 화면(제목·설명·버튼)은 그대로 작은 채로 남아
-   있었다. 표지 화면 요소도 함께 키운다. */
-body.low-vision-mode #intro-gate h1{font-size:clamp(1.7rem, 6.5vw, 2.5rem) !important;}
-body.low-vision-mode #intro-gate p{font-size:1.2em !important; line-height:1.5 !important;}
-body.low-vision-mode #intro-gate .gate-hint{font-size:1.2em !important;}
-body.low-vision-mode #intro-gate .intro-btn-row .btn{
-    font-size:clamp(.95rem, 3.6vw, 1.15rem) !important;
-    padding:clamp(10px, 2.6vw, 14px) clamp(14px, 3.4vw, 20px) !important;
 }
 #volume-control{
     height:36px; display:flex; align-items:center; gap:6px; padding:0 10px;
@@ -1237,10 +1215,6 @@ body.low-vision-mode #intro-gate .intro-btn-row .btn{
      붙여도 안내 음성에는 영향이 없다. -->
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 일엑스입니다.">속도 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
-<!-- v-low-vision-btn-missing-fix — 참가자 요청: "저시력자가 사용하기에
-     불편하지 않게 만들자." 큰 글씨 모드 CSS·JS는 이미 있었지만 정작
-     켜는 버튼이 없었다 — 실제 버튼을 추가한다. -->
-<button id="low-vision-btn" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="큰 글씨 모드, 현재 꺼짐">큰 글씨</button>
 
 <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
      기능."
@@ -1516,17 +1490,6 @@ body.low-vision-mode #intro-gate .intro-btn-row .btn{
                 aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
                 data-tap-name="배경음악"
                 onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
-        <!-- v-low-vision-gate-fix — 참가자 요청: "room2, room2-en 표지에도
-             큰 글씨 버튼을 넣어줘." index.html의 표지 화면과 같은
-             이유로, 이 표지 화면 자체(제목·설명·버튼)도 큰 글씨 모드
-             적용 대상이 아니었다 — 들어가기 전에 미리 켤 수 있게
-             한다. #intro-gate 전체가 터치하면 입장되므로, 다른
-             버튼들과 같은 방식으로 event.stopPropagation()을 먼저
-             부른다. -->
-        <button class="btn" id="btn-low-vision-gate" type="button" aria-pressed="false"
-                aria-label="큰 글씨 모드, 현재 꺼짐"
-                data-tap-name="큰 글씨 모드"
-                onclick="event.stopPropagation();toggleLowVisionMode();">큰 글씨</button>
         <!-- v-en-version — 참가자 요청: "표지에 EN 버튼을 두어 영문판으로
              들어가게 하자." #intro-gate 전체가 role="button"으로 터치하면
              입장되므로, 이 버튼도 event.stopPropagation()으로 그 클릭을
@@ -2352,21 +2315,15 @@ function toggleBgm(){
 // v-low-vision-mode — 참가자(저시력) 지적 대응: index.html과 동일한 이유로,
 // 브라우저 핀치줌 대신 화면 고정 레이아웃은 그대로 둔 채 글자·버튼만
 // 키우는 전용 모드.
-// v-low-vision-gate-fix — 표지 화면(#intro-gate)에도 같은 토글 버튼이
-// 생기면서, 이 함수가 두 버튼(#low-vision-btn, #btn-low-vision-gate)의
-// 상태를 함께 맞추도록 고쳤다.
 let lowVisionMode = false;
 function toggleLowVisionMode(){
     lowVisionMode = !lowVisionMode;
     document.body.classList.toggle('low-vision-mode', lowVisionMode);
-    const label = lowVisionMode ? '큰 글씨 모드, 현재 켜짐' : '큰 글씨 모드, 현재 꺼짐';
-    ['low-vision-btn', 'btn-low-vision-gate'].forEach(id=>{
-        const btn = document.getElementById(id);
-        if(btn){
-            btn.setAttribute('aria-pressed', String(lowVisionMode));
-            btn.setAttribute('aria-label', label);
-        }
-    });
+    const btn = document.getElementById('low-vision-btn');
+    if(btn){
+        btn.setAttribute('aria-pressed', String(lowVisionMode));
+        btn.setAttribute('aria-label', lowVisionMode ? '큰 글씨 모드, 현재 켜짐' : '큰 글씨 모드, 현재 꺼짐');
+    }
     speak(lowVisionMode ? '큰 글씨 모드를 켰습니다.' : '큰 글씨 모드를 껐습니다.');
 }
 // snd-arrival: 입장 직후 한 번만 차올랐다가, 첫 부위를 만지는 순간(또는
@@ -6560,18 +6517,17 @@ function toggleChatMic(){
         if(!panel.classList.contains('open')) toggleChat();
         document.getElementById('chat-input').value = '';
         _sttRetryCount = 0; // 사용자가 직접 마이크를 다시 눌렀으니 자동 재시도 횟수도 초기화
-        // v-mic-two-tap-immediate — 참가자 요청: "마이크 버튼을 두 번
-        // 클릭하면 바로 활성화되게 해줘." 원인: #chat-mic은 지금
-        // #chat-panel 안의 다른 버튼들과 달리 예외적으로 표준 두 번
-        // 탭 확인을 거치도록 되어 있다(첫 탭에서 data-tap-name="마이크"로
-        // 이름을 먼저 안내) — 그런데 이 함수는 그 확인이 끝난 뒤에도
-        // "사유의 상담소 입력창입니다. 질문을 말씀해 주세요."라는 또
-        // 다른 안내를 한 번 더 들려준 뒤에야 실제로 듣기 시작했다.
-        // 즉 두 번 탭 → 세 번째 안내 재생 → 그제서야 활성화, 총 3단계가
-        // 걸렸다. 이름 안내는 이미 첫 번째 탭에서 끝났으므로, 두 번째
-        // 탭에서 곧바로 듣기를 시작한다 — 두 번 탭으로 바로 활성화된다.
-        try{ chatRecognition.start(); }
-        catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        // v-mic-input-announce — 참가자 요청: "마이크 버튼을 누르면 '사유의
+        // 상담소 입력창입니다'라고 안내해줘." #chat-mic은 다른 토글
+        // 버튼들과 같은 이유(TWOTAP_HANDS_OFF_SELECTOR)로 눌렀을 때 바로
+        // 실행되어, 화면을 보기 어려운 관람객은 지금 무엇을 눌렀는지 음성
+        // 안내 없이는 알 수 없었다. 이 안내를 먼저 들려주고, 안내가 끝난
+        // 뒤에 실제로 듣기 시작한다 — 안내 음성 자체가 마이크에 함께
+        // 잡혀 인식을 방해하지 않도록 순서를 나눴다.
+        speak('사유의 상담소 입력창입니다. 질문을 말씀해 주세요.', ()=>{
+            try{ chatRecognition.start(); }
+            catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        });
     }
 }
 
@@ -7813,7 +7769,7 @@ const TWOTAP_ARM_WINDOW_MS = 2500;
    3가지나 있는데 돌아가기 하나만 남겨줘." #info-close·#info-return-btn
    두 버튼을 없애고 #info-back 하나로 합쳤으므로, 목록에서도 그 두
    이름을 뺀다. */
-const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn, #info-back, #btn-low-vision-gate';
+const TWOTAP_HANDS_OFF_SELECTOR = '#chat-panel, #speed-btn, #easy-mode-btn, #btn-bgm-toggle, #info-btn, #info-overlay .info-audio-btn, #low-vision-btn, #info-back';
 let _armedTwoTapEl = null;
 let _twoTapTimer = null;
 
