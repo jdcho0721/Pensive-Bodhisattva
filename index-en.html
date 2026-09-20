@@ -1214,7 +1214,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      Feel_the_Stillness.mp3." Supersedes the earlier stage-1/2,
      Between_Two_Icons request — now plays only during stage 0
      (orientation) and stage 1 (global composition) — see playLayer(). -->
-<audio id="snd-between" src="Feel_the_Stillness.mp3" preload="metadata" loop></audio>
+<audio id="snd-between" src="손끝에_맺힌_온기.mp3" preload="metadata" loop></audio>
 <!-- v-arrival-meeting-removed — 참가자 요청: matches index.html —
      snd-arrival·snd-meeting removed entirely to stop competing with
      the image for network connections. fadeArrivalIn()/fadeArrivalOut()/
@@ -1292,7 +1292,13 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
          here made this button read like "you are in Room 2 now."
          Demoted to the same plain button style as the EN button next to
          it — same function, no more misleading emphasis. -->
-    <button class="btn on-white" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2." data-tap-action="Moves to Room 2.">Room 2</button>
+    <!-- v-room2-nav-speed-fix — participant report: matches
+         index.html — the first tap announces the aria-label ("Moves to
+         Room 2."), and the confirm tap's data-tap-action held the
+         exact same sentence, reading it a second time before actually
+         navigating — hearing the same line twice made it feel slow.
+         Removed so the confirm tap navigates immediately. -->
+    <button class="btn on-white" id="btn-next-exhibit" onclick="window.speechSynthesis.cancel();location.href='room2-en.html'" aria-label="Moves to Room 2.">Room 2</button>
 </div>
 </div>
 

@@ -5,8 +5,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>전시실 2 · 침묵의 공명 - 사유 및 체화</title>
+<!-- v-room2-font-render-blocking-fix — participant report: matches
+     room2.html — same root cause already fixed in index.html: the
+     Google Fonts stylesheet below is render-blocking by default, and
+     this file is much larger (700KB+) than index.html so the delay
+     was more noticeable. Preconnect both font domains and load the
+     stylesheet asynchronously so it doesn't block first paint. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <!-- ── 손 추적(카메라 인터랙션) — MediaPipe Hands. 브라우저에서 바로 동작하는
      손 랜드마크 추적 라이브러리로, 실제 뎁스카메라 대신 웹캠으로 손끝 위치를
      추적해 pointerdown과 동일하게 touchPart()를 호출한다. CDN 로드 실패나
@@ -1463,7 +1471,10 @@ body.low-vision-mode #hint-row .btn{
      and the Bodhisattva's, which work — the most likely cause is that
      this file simply isn't uploaded to the server yet (404). onerror
      logs it to the console so it's visible in dev tools. -->
-<audio id="snd-meeting" src="Beneath_the_Bronze_Hall.mp3" preload="metadata" loop onerror="console.error('[snd-meeting] File not found — check that Beneath_the_Bronze_Hall.mp3 actually exists on the server.', this.error)"></audio>
+<!-- v-meeting-sound-file-change — participant request: matches
+     room2.html — same triggers (center-zone touch, chatbot), file
+     name changed to Feel_the_Stillness.mp3. -->
+<audio id="snd-meeting" src="Feel_the_Stillness.mp3" preload="metadata" loop onerror="console.error('[snd-meeting] File not found — check that Feel_the_Stillness.mp3 actually exists on the server.', this.error)"></audio>
 <audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="metadata" loop></audio>
 
 <div id="room-layout">
@@ -6279,14 +6290,19 @@ function toggleChatMic(){
         if(!panel.classList.contains('open')) toggleChat();
         document.getElementById('chat-input').value = '';
         _sttRetryCount = 0; // 사용자가 직접 마이크를 다시 눌렀으니 자동 재시도 횟수도 초기화
-        // v-mic-two-tap-immediate — participant request: matches
-        // room2.html — "make two taps on the mic button activate it
-        // right away." The name is already announced on the first tap
-        // (data-tap-name), so the second tap now starts listening
-        // immediately instead of playing another full announcement
-        // first.
-        try{ chatRecognition.start(); }
-        catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        // v-mic-input-announce — 참가자 요청: "마이크 버튼을 누르면 '사유의
+        // 상담소 입력창입니다'라고 안내해줘." #chat-mic은 다른 토글
+        // 버튼들과 같은 이유(TWOTAP_HANDS_OFF_SELECTOR)로 눌렀을 때 바로
+        // 실행되어, 화면을 보기 어려운 관람객은 지금 무엇을 눌렀는지 음성
+        // 안내 없이는 알 수 없었다. 이 안내를 먼저 들려주고, 안내가 끝난
+        // 뒤에 실제로 듣기 시작한다 — 안내 음성 자체가 마이크에 함께
+        // 잡혀 인식을 방해하지 않도록 순서를 나눴다.
+        // v-mic-revert — participant request: matches room2.html —
+        // reverted the two-tap-immediate change back to the original.
+        speak('This is the Contemplation Counsel input field. Please say your question.', ()=>{
+            try{ chatRecognition.start(); }
+            catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
+        });
     }
 }
 
