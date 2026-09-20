@@ -962,6 +962,9 @@ body.low-vision-mode #hint-row .btn{
 #refs-list.show{display:block;}
 #refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
 #refs-list p b{color:var(--gold-light);}
+/* v-refs-links — participant request: "connect links to the references." */
+#refs-list p a{color:var(--gold-light); text-decoration:underline;}
+#refs-list p a:hover, #refs-list p a:focus-visible{color:var(--gold);}
 #info-back{
     display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px;
@@ -1317,15 +1320,20 @@ body.low-vision-mode #hint-row .btn{
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="Opens the reference list">References</button>
         <!-- v-refs-sorted — participant report: matches room2.html —
              sorted numerically ([1] through [13]) instead of the
-             previous scrambled order. -->
+             previous scrambled order.
+             v-refs-links — participant request: matches room2.html —
+             only entries verifiable by search ([1][8][9][12]) got a
+             real link; the rest ([2][10][11][13], an older Korean
+             paper and classics with multiple editions) were left as
+             plain text rather than risk a wrong link. -->
         <div id="refs-list" role="region" aria-label="Reference list">
-            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
+            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, <a href="https://smarthistory.org/pensive-bodhisattvas/" target="_blank" rel="noopener">https://smarthistory.org/pensive-bodhisattvas/</a> (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
-            <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63.</p>
-            <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024.</p>
+            <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63. <a href="https://imrjournal.info/wp-content/uploads/2026/01/imrj.2001.45-1.pdf" target="_blank" rel="noopener">Full text</a></p>
+            <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024. <a href="https://doi.org/10.1093/oso/9780190878481.001.0001" target="_blank" rel="noopener">DOI: 10.1093/oso/9780190878481.001.0001</a></p>
             <p><b>[10]</b> S. Kierkegaard, The Concept of Anxiety, trans. R. Thomte, Princeton University Press, 1980 (orig. 1844).</p>
             <p><b>[11]</b> B. Spinoza, Ethics, in: E. Curley (Ed./Trans.), A Spinoza Reader, Princeton University Press, 1994 (orig. 1677), Part III.</p>
-            <p><b>[12]</b> Myeongbeop Sunim [명법 스님], interview, “Does Rodin's 'The Thinker' Resemble the Pensive Bodhisattva?”, Buddhist Newspaper, issue 3025, July 12, 2014.</p>
+            <p><b>[12]</b> Myeongbeop Sunim [명법 스님], interview, “Does Rodin's 'The Thinker' Resemble the Pensive Bodhisattva?”, Buddhist Newspaper, issue 3025, July 12, 2014. <a href="http://www.ibulgyo.com/news/articleView.html?idxno=134893" target="_blank" rel="noopener">Read article</a></p>
             <p><b>[13]</b> E. Conze, Buddhist Wisdom: The Diamond Sutra and The Heart Sutra, Vintage, New York, 2001.</p>
         </div>
 
@@ -1443,7 +1451,13 @@ body.low-vision-mode #hint-row .btn{
      없이 안전하다. -->
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
-<audio id="snd-meeting" src="Beneath_the_Bronze_Hall.mp3" preload="metadata" loop></audio>
+<!-- v-meeting-sound-debug — participant report: "touching the empty
+     space between the two statues plays no sound at all." The JS
+     wiring (play trigger, volume fade) is already identical to Rodin's
+     and the Bodhisattva's, which work — the most likely cause is that
+     this file simply isn't uploaded to the server yet (404). onerror
+     logs it to the console so it's visible in dev tools. -->
+<audio id="snd-meeting" src="Beneath_the_Bronze_Hall.mp3" preload="metadata" loop onerror="console.error('[snd-meeting] File not found — check that Beneath_the_Bronze_Hall.mp3 actually exists on the server.', this.error)"></audio>
 <audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="metadata" loop></audio>
 
 <div id="room-layout">
@@ -2052,7 +2066,7 @@ function _fadeStatueAudio(el, target){
         el.volume = 0;
         const p = el.play();
         if(p && typeof p.catch === 'function'){
-            p.catch(e => console.warn('[조각상 사운드] 자동재생 차단:', e.message));
+            p.catch(e => console.warn('[조각상 사운드]', el.id, '자동재생 차단 또는 재생 실패:', e.message));
         }
     }
     const step = effectiveTarget > el.volume ? 0.01 : -0.01;
@@ -5927,6 +5941,15 @@ function toggleChat(){
     const panel = document.getElementById('chat-panel');
     const willOpen = !panel.classList.contains('open');
     if(willOpen){
+        // v-chatbot-soundscape — participant request: matches
+        // room2.html — "play Beneath_the_Bronze_Hall when narration
+        // plays and for the chatbot." While the chat is open, fade
+        // down whichever statue sound was playing (Rodin/Bodhisattva)
+        // and bring up this dedicated sound (snd-meeting) instead —
+        // restored on close (see else-branch below).
+        _fadeStatueAudio(document.getElementById('snd-rodin'), 0);
+        _fadeStatueAudio(document.getElementById('snd-maitreya'), 0);
+        _fadeStatueAudio(document.getElementById('snd-meeting'), STATUE_SOUND_VOLUME);
         // v-chatmode-feedback — symmetric with the else-branch's
         // speak('Returning to the exhibit screen.') below: announce chat
         // entry with a dedicated vibration and voice line too.
@@ -5942,6 +5965,16 @@ function toggleChat(){
         const back = document.getElementById('chat-back-btn');
         if(back) back.focus();
     } else {
+        // v-chatbot-soundscape — closing the chat fades the dedicated
+        // sound back out, restoring whichever statue sound matches
+        // whatever's still being touched (_currentStatueSound); if
+        // nothing, it stays quiet until the next touch.
+        _fadeStatueAudio(document.getElementById('snd-meeting'), 0);
+        if(_currentStatueSound === 'rodin'){
+            _fadeStatueAudio(document.getElementById('snd-rodin'), STATUE_SOUND_VOLUME);
+        } else if(_currentStatueSound === 'maitreya'){
+            _fadeStatueAudio(document.getElementById('snd-maitreya'), STATUE_SOUND_VOLUME);
+        }
         // v-tap-action-announce — 참가자 요청: "사유의 상담소의 돌아가기
         // 버튼도 [다음 진행을 음성으로 안내]해줘야지." 다른 버튼들처럼
         // "안내 후 확인 탭" 2단계로 만들면, 바로 위 TalkBack 수정("눌렀을
@@ -7324,7 +7357,12 @@ function toggleRefsList(){
     // information value); closing just gets a short confirmation.
     if(show){
         const items = Array.from(list.querySelectorAll('p')).map(p => {
-            return p.textContent.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
+            // v-refs-links — since links now have their own visible
+            // label text ("Full text", "DOI: ...") that would read
+            // oddly aloud, strip the whole <a> before reading.
+            const clone = p.cloneNode(true);
+            clone.querySelectorAll('a').forEach(a => a.remove());
+            return clone.textContent.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
         });
         speak(`Reference list. There are ${items.length} entries in total. ${items.join('. ')}`);
     } else {

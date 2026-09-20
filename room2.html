@@ -976,6 +976,9 @@ body.low-vision-mode #hint-row .btn{
 #refs-list.show{display:block;}
 #refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
 #refs-list p b{color:var(--gold-light);}
+/* v-refs-links — 참가자 요청: "참고문헌은 링크를 연결해줘." */
+#refs-list p a{color:var(--gold-light); text-decoration:underline;}
+#refs-list p a:hover, #refs-list p a:focus-visible{color:var(--gold);}
 #info-back{
     display:block; margin:30px auto 0; background:var(--gold); color:#000; border:none;
     font-family:'Noto Serif KR',serif; font-weight:700; font-size:.9rem; padding:11px 30px;
@@ -1356,14 +1359,20 @@ body.low-vision-mode #hint-row .btn{
         <!-- v-refs-sorted — 참가자 지적: "참고문헌을 번호 순으로
              정렬해달라." 기존엔 [8],[1],[9],[2],[10]... 순서로 뒤섞여
              있었다 — 번호([1]~[13]) 순서대로 다시 배치했다. -->
+        <!-- v-refs-links — 참가자 요청: "참고문헌은 링크를 연결해줘."
+             실제로 검색해 확인 가능한 항목([1][8][9][12])만 실제
+             주소로 링크를 걸었다 — 확실한 단일 URL을 찾지 못한
+             나머지([2][10][11][13], 오래된 국문 논문이나 특정 판본이
+             여럿인 고전)는 잘못된 링크를 거는 대신 그대로 텍스트로
+             남겨뒀다. -->
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
-            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
+            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, <a href="https://smarthistory.org/pensive-bodhisattvas/" target="_blank" rel="noopener">https://smarthistory.org/pensive-bodhisattvas/</a> (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
-            <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63.</p>
-            <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024.</p>
+            <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63. <a href="https://imrjournal.info/wp-content/uploads/2026/01/imrj.2001.45-1.pdf" target="_blank" rel="noopener">전문 보기</a></p>
+            <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024. <a href="https://doi.org/10.1093/oso/9780190878481.001.0001" target="_blank" rel="noopener">DOI: 10.1093/oso/9780190878481.001.0001</a></p>
             <p><b>[10]</b> S. Kierkegaard, The Concept of Anxiety, trans. R. Thomte, Princeton University Press, 1980 (orig. 1844).</p>
             <p><b>[11]</b> B. Spinoza, Ethics, in: E. Curley (Ed./Trans.), A Spinoza Reader, Princeton University Press, 1994 (orig. 1677), Part III.</p>
-            <p><b>[12]</b> Myeongbeop Sunim [명법 스님], interview, "로댕의 &lt;생각하는 사람&gt;과 반가사유상이 닮았나", 불교신문, 제3025호, 2014.7.12.</p>
+            <p><b>[12]</b> Myeongbeop Sunim [명법 스님], interview, "로댕의 &lt;생각하는 사람&gt;과 반가사유상이 닮았나", 불교신문, 제3025호, 2014.7.12. <a href="http://www.ibulgyo.com/news/articleView.html?idxno=134893" target="_blank" rel="noopener">기사 보기</a></p>
             <p><b>[13]</b> E. Conze, Buddhist Wisdom: The Diamond Sutra and The Heart Sutra, Vintage, New York, 2001.</p>
         </div>
 
@@ -1519,7 +1528,13 @@ body.low-vision-mode #hint-row .btn{
      조용히 무시하므로 에러 없이 안전하다. -->
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
-<audio id="snd-meeting" src="Beneath_the_Bronze_Hall.mp3" preload="metadata" loop></audio>
+<!-- v-meeting-sound-debug — 참가자 지적: "두 조각상 사이 빈 자리를
+     터치해도 소리가 전혀 안 들린다." JS 연결(재생 트리거·볼륨 페이드)
+     자체는 로댕·반가사유상 소리와 완전히 같은 방식으로 이미 정상
+     동작하도록 되어 있어, 가장 유력한 원인은 이 파일 자체가 실제
+     서버에 아직 올라가 있지 않은 것(404)이다 — onerror를 달아 파일을
+     못 찾으면 콘솔에 바로 보이게 한다(개발자 도구로 확인 가능). -->
+<audio id="snd-meeting" src="Beneath_the_Bronze_Hall.mp3" preload="metadata" loop onerror="console.error('[snd-meeting] 파일을 찾을 수 없습니다 — Beneath_the_Bronze_Hall.mp3가 실제로 서버에 있는지 확인하세요.', this.error)"></audio>
 <audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="metadata" loop></audio>
 
 
@@ -2136,7 +2151,7 @@ function _fadeStatueAudio(el, target){
         el.volume = 0;
         const p = el.play();
         if(p && typeof p.catch === 'function'){
-            p.catch(e => console.warn('[조각상 사운드] 자동재생 차단:', e.message));
+            p.catch(e => console.warn('[조각상 사운드]', el.id, '자동재생 차단 또는 재생 실패:', e.message));
         }
     }
     const step = effectiveTarget > el.volume ? 0.01 : -0.01;
@@ -6169,6 +6184,14 @@ function toggleChat(){
     const panel = document.getElementById('chat-panel');
     const willOpen = !panel.classList.contains('open');
     if(willOpen){
+        // v-chatbot-soundscape — 참가자 요청: "전시2 해설이 나올 때와
+        // 챗봇에 Beneath_the_Bronze_Hall이 나오게 해줘." 챗봇을 여는
+        // 동안은 지금 만지고 있던 부위의 소리(로댕/반가사유상)를 잠시
+        // 내리고, 대신 이 전용 사운드(snd-meeting)를 올린다 — 닫으면
+        // 원래 상태로 돌아간다(아래 else 분기).
+        _fadeStatueAudio(document.getElementById('snd-rodin'), 0);
+        _fadeStatueAudio(document.getElementById('snd-maitreya'), 0);
+        _fadeStatueAudio(document.getElementById('snd-meeting'), STATUE_SOUND_VOLUME);
         // v-chatmode-feedback — 챗봇 진입 시에도 나갈 때(아래 else 분기의
         // speak('전시 화면으로 돌아갑니다'))와 대칭으로, 전용 진동과
         // 음성으로 "지금부터 챗봇 대화 모드"임을 명확히 알린다 — 시각
@@ -6186,6 +6209,16 @@ function toggleChat(){
         const back = document.getElementById('chat-back-btn');
         if(back) back.focus();
     } else {
+        // v-chatbot-soundscape — 챗봇을 닫으면 전용 사운드를 내리고,
+        // 지금 만지고 있는 부위가 있다면(_currentStatueSound) 그 소리로
+        // 되돌린다 — 없으면 조용한 상태로 남아 있다가 다음 터치에서
+        // updateStatueSound()가 알아서 다시 켠다.
+        _fadeStatueAudio(document.getElementById('snd-meeting'), 0);
+        if(_currentStatueSound === 'rodin'){
+            _fadeStatueAudio(document.getElementById('snd-rodin'), STATUE_SOUND_VOLUME);
+        } else if(_currentStatueSound === 'maitreya'){
+            _fadeStatueAudio(document.getElementById('snd-maitreya'), STATUE_SOUND_VOLUME);
+        }
         // v-tap-action-announce — 참가자 요청: "사유의 상담소의 돌아가기
         // 버튼도 [다음 진행을 음성으로 안내]해줘야지." 다른 버튼들처럼
         // "안내 후 확인 탭" 2단계로 만들면, 바로 위 TalkBack 수정("눌렀을
@@ -7566,7 +7599,12 @@ function toggleRefsList(){
     // 안내한다.
     if(show){
         const items = Array.from(list.querySelectorAll('p')).map(p => {
-            return p.textContent.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
+            // v-refs-links — 참가자 요청으로 링크를 추가하면서, 그 링크의
+            // 눈에 보이는 글자("전문 보기"/"DOI: ..." 등)까지 그대로
+            // 읽히면 어색하므로 <a> 태그 자체를 통째로 읽기 전에 지운다.
+            const clone = p.cloneNode(true);
+            clone.querySelectorAll('a').forEach(a => a.remove());
+            return clone.textContent.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
         });
         speak(`참고문헌 목록입니다. 총 ${items.length}개 항목이 있습니다. ${items.join('. ')}`);
     } else {

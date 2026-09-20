@@ -1196,10 +1196,12 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      요청은 그 반대로 각자 다른 곡을 다시 배정해달라는 것이므로
      되돌린다. -->
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
-<!-- v-stage12-soundscape — participant request: matches index.html —
-     dedicated background sound that plays only during stages 1 (global
-     composition) and 2 (posture and position) — see playLayer(). -->
-<audio id="snd-between" src="Between_Two_Icons.mp3" preload="metadata" loop></audio>
+<!-- v-orientation-stage1-soundscape — participant request (final):
+     matches index.html — "orientation and stage 1 should play
+     Feel_the_Stillness.mp3." Supersedes the earlier stage-1/2,
+     Between_Two_Icons request — now plays only during stage 0
+     (orientation) and stage 1 (global composition) — see playLayer(). -->
+<audio id="snd-between" src="Feel_the_Stillness.mp3" preload="metadata" loop></audio>
 <!-- v-arrival-meeting-removed — 참가자 요청: matches index.html —
      snd-arrival·snd-meeting removed entirely to stop competing with
      the image for network connections. fadeArrivalIn()/fadeArrivalOut()/
@@ -2480,10 +2482,11 @@ function playLayer(i){
     // 1단계(Global)로 넘어가는 이 시점에 조용히 내려보내, 다시는
     // 돌아오지 않게 한다(뒤로가기로 0단계로 되돌아가지 않는 한).
     if(i === 1) fadeArrivalOut();
-    // v-stage12-soundscape — participant request: matches index.html —
-    // turn on the dedicated stage 1/2 soundscape only during those
-    // stages, off otherwise (re-enters correctly if navigated back to).
-    _fadeStatueAudio(document.getElementById('snd-between'), (i === 1 || i === 2) ? STATUE_SOUND_VOLUME : 0);
+    // v-orientation-stage1-soundscape — participant request (final):
+    // matches index.html — turn on the dedicated soundscape only
+    // during stage 0 (orientation) and stage 1 (global composition),
+    // off otherwise (re-enters correctly if navigated back to).
+    _fadeStatueAudio(document.getElementById('snd-between'), (i === 0 || i === 1) ? STATUE_SOUND_VOLUME : 0);
     playLine();
 }
 

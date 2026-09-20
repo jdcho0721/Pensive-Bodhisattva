@@ -554,6 +554,9 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 #refs-list.show{display:block;}
 #refs-list p{font-size:.8rem; color:#ccc; margin:0 0 10px; line-height:1.6;}
 #refs-list p b{color:var(--gold-light);}
+/* v-refs-links — 참가자 요청: "참고문헌은 링크를 연결해줘." */
+#refs-list p a{color:var(--gold-light); text-decoration:underline;}
+#refs-list p a:hover, #refs-list p a:focus-visible{color:var(--gold);}
 #info-card .copyright{ margin-top:28px; padding-top:18px; border-top:1px solid var(--gold-dim); font-size:.78rem; color:#888; }
 #info-card figure{ margin:6px 0 16px; }
 #info-card figure img{ display:block; width:100%; max-width:320px; margin:0 auto; border-radius:4px; border:1px solid var(--gold-dim); }
@@ -1055,14 +1058,18 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
         </div>
 
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="참고문헌 보기" data-tap-action="참고문헌 목록을 엽니다">참고문헌 보기</button>
+        <!-- v-refs-links — 참가자 요청: "참고문헌은 링크를 연결해줘."
+             검색으로 실제 확인 가능한 항목([1][3][4][5][7])만 실제
+             주소로 링크를 걸었다. [2][6]은 1970·90년대 국문 단행본이라
+             단일한 정본 URL을 확인하지 못해 텍스트로 남겨뒀다. -->
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
-            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
+            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, <a href="https://smarthistory.org/pensive-bodhisattvas/" target="_blank" rel="noopener">https://smarthistory.org/pensive-bodhisattvas/</a> (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
-            <p><b>[3]</b> B. Vujanović, Rethinking Rodin's Thinker, Decorative Arts Society Journal 43 (2019) 61–71.</p>
-            <p><b>[4]</b> Musée Rodin, The Gates of Hell, collection notice, meudon.musee-rodin.fr, accessed 2026.</p>
-            <p><b>[5]</b> Musée Rodin, The Thinker, collection notice, musee-rodin.fr, accessed 2026.</p>
+            <p><b>[3]</b> B. Vujanović, Rethinking Rodin's Thinker, Decorative Arts Society Journal 43 (2019) 61–71. <a href="https://www.academia.edu/71052101/Rethinking_Rodin_s_Thinker" target="_blank" rel="noopener">전문 보기</a></p>
+            <p><b>[4]</b> Musée Rodin, The Gates of Hell, collection notice, <a href="https://www.meudon.musee-rodin.fr/en/musee/collections/oeuvres/porte-de-lenfer-meudon" target="_blank" rel="noopener">meudon.musee-rodin.fr</a>, accessed 2026.</p>
+            <p><b>[5]</b> Musée Rodin, The Thinker, collection notice, <a href="https://www.musee-rodin.fr/en/musee/collections/oeuvres/thinker" target="_blank" rel="noopener">musee-rodin.fr</a>, accessed 2026.</p>
             <p><b>[6]</b> W.B. Kang, Wonyung-gwa-Johwa [원융과 조화], Youlhwadang, Seoul, 1990.</p>
-            <p><b>[7]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청.</p>
+            <p><b>[7]</b> J.Y. Jeon, 「인류가 창조한 가장 빼어난 미소, 압도적인 깨달음」, 문화재사랑 2019년 1월호(통권 170호), 문화재청. <a href="https://www.cha.go.kr/cop/bbs/selectBoardArticle.do?nttId=73431&amp;bbsId=BBSMSTR_1008&amp;mn=NS_01_09_01" target="_blank" rel="noopener">기사 보기</a></p>
         </div>
 
         <!-- v-info-buttons-consolidated — 참가자 요청: "정보와 챗봇창에서
@@ -1266,11 +1273,12 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      요청은 그 반대로 각자 다른 곡을 다시 배정해달라는 것이므로
      되돌린다. -->
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
-<!-- v-stage12-soundscape — 참가자 요청: "전시1 단계1~2에
-     Between_Two_Icons.mp3가 사운드스케이프로 나오게 해줘." 1단계(전체
-     구도)·2단계(자세와 위치) 동안에만 켜지는 전용 배경음 — playLayer()
-     참고. -->
-<audio id="snd-between" src="Between_Two_Icons.mp3" preload="metadata" loop></audio>
+<!-- v-orientation-stage1-soundscape — 참가자 요청(최종): "전시1의
+     오리엔테이션, 1단계에 Feel_the_Stillness.mp3가 나오게 해줘." 이전
+     요청(1~2단계, Between_Two_Icons)을 대체한다 — 이제 0단계
+     (오리엔테이션)·1단계(전체 구도) 동안에만 켜지는 전용 배경음이다
+     (playLayer() 참고). -->
+<audio id="snd-between" src="Feel_the_Stillness.mp3" preload="metadata" loop></audio>
 <!-- v-arrival-meeting-removed — 참가자 요청: "snd-arrival·snd-meeting은
      모두 제거해줘. 이미지와 네트워크 연결을 경합하는 일이 안 생기지
      않을까?" 요청대로 두 <audio> 요소 자체를 없앤다 — 각각 담당하던
@@ -1742,6 +1750,11 @@ speak(gateText, ()=>{
 });
     startAmbientSound();
     fadeArrivalIn();
+    // v-orientation-stage1-soundscape — playLayer()가 1단계 이상으로
+    // 넘어갈 때만 이 사운드를 트리거하므로, 맨 처음 입장할 때(0단계,
+    // playLine(0)으로 시작해 playLayer()를 거치지 않는 경로)는 여기서
+    // 따로 한 번 켜준다.
+    _fadeStatueAudio(document.getElementById('snd-between'), STATUE_SOUND_VOLUME);
 }
 
 // v-bgm-toggle — room2.html과 동일한 취지: 첫 화면의 "배경음악" 버튼으로
@@ -2501,11 +2514,12 @@ function playLayer(i){
     // 1단계(Global)로 넘어가는 이 시점에 조용히 내려보내, 다시는
     // 돌아오지 않게 한다(뒤로가기로 0단계로 되돌아가지 않는 한).
     if(i === 1) fadeArrivalOut();
-    // v-stage12-soundscape — 참가자 요청: "전시1 단계1~2에
-    // Between_Two_Icons.mp3가 사운드스케이프로 나오게 해줘." 1·2단계
-    // 동안에만 켜고, 그 외 단계(0·3)로 넘어가면 끈다 — 뒤로가기로
-    // 다시 1·2단계에 들어와도 그대로 다시 켜진다.
-    _fadeStatueAudio(document.getElementById('snd-between'), (i === 1 || i === 2) ? STATUE_SOUND_VOLUME : 0);
+    // v-orientation-stage1-soundscape — 참가자 요청(최종): "전시1의
+    // 오리엔테이션, 1단계에 Feel_the_Stillness.mp3가 나오게 해줘." 0단계
+    // (오리엔테이션)·1단계(전체 구도) 동안에만 켜고, 그 외 단계(2·3)로
+    // 넘어가면 끈다 — 뒤로가기로 다시 0·1단계에 들어와도 그대로 다시
+    // 켜진다.
+    _fadeStatueAudio(document.getElementById('snd-between'), (i === 0 || i === 1) ? STATUE_SOUND_VOLUME : 0);
     playLine();
 }
 
