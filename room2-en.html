@@ -858,19 +858,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     flex:0 0 auto;
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
-/* v-exit-btn-size-fix — participant report: matches room2.html —
-   #btn-exit only had class="btn" and inherited the larger bottom-row
-   button style (min-height:44px, padding:9px 18px) instead of the
-   smaller top-controls sizing its neighbors use. Matched to
-   #info-btn's size (36×36px circle), the closest sibling — a single
-   icon in a round button. */
-#btn-exit{
-    width:36px; height:36px; min-height:36px; border-radius:50%; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    flex:0 0 auto; padding:0;
-}
-#btn-exit:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #speed-btn{
     height:36px; min-width:36px; padding:0 9px; border-radius:18px; background:rgba(0,0,0,.72);
     border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;

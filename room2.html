@@ -873,20 +873,6 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
     flex:0 0 auto;
 }
 #info-btn:focus-visible{outline:3px solid #fff; outline-offset:2px;}
-/* v-exit-btn-size-fix — 참가자 지적: "상단부 x 버튼이 다른 것에 비해서
-   크다. 같은 크기로 맞추어줘." 원인: #btn-exit는 class="btn"만 갖고
-   있어서 하단 큰 버튼들과 같은 일반 .btn 스타일(min-height:44px,
-   padding:9px 18px)을 그대로 물려받고 있었다 — 정작 같은 줄에 있는
-   #info-btn 등은 자기만의 더 작은 규칙을 따로 갖고 있어서 크기가
-   달라 보였다. 아이콘 하나만 있는 원형 버튼이라는 점이 #info-btn과
-   가장 비슷하므로, 그 크기(36×36px 원형)를 그대로 맞춘다. -->
-#btn-exit{
-    width:36px; height:36px; min-height:36px; border-radius:50%; background:rgba(0,0,0,.72);
-    border:1px solid var(--gold-dim); color:var(--gold); font-size:.8rem; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);
-    flex:0 0 auto; padding:0;
-}
-#btn-exit:focus-visible{outline:3px solid #fff; outline-offset:2px;}
 #speed-btn{
     height:36px; min-width:36px; padding:0 9px; border-radius:18px; background:rgba(0,0,0,.72);
     border:1px solid var(--gold-dim); color:var(--gold); font-size:.66rem; cursor:pointer;
