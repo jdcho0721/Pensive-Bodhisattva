@@ -1215,6 +1215,10 @@ body.low-vision-mode #hint-row .btn{
      붙여도 안내 음성에는 영향이 없다. -->
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="속도 일엑스입니다.">속도 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장, 현재 꺼짐">쉬운 문장</button>
+<!-- v-low-vision-btn-missing-fix — 참가자 요청: "저시력자가 사용하기에
+     불편하지 않게 만들자." 큰 글씨 모드 CSS·JS는 이미 있었지만 정작
+     켜는 버튼이 없었다 — 실제 버튼을 추가한다. -->
+<button id="low-vision-btn" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="큰 글씨 모드, 현재 꺼짐">큰 글씨</button>
 
 <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
      기능."

@@ -476,6 +476,22 @@ body.low-vision-mode #controls .btn{
     padding:0 clamp(13px, 3.4vw, 22px) !important;
 }
 body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !important;}
+/* v-low-vision-gate-fix — 참가자 요청: "저시력자가 사용하기에 불편하지
+   않게 만들자." 큰 글씨 모드가 지금까지 입장 후 화면에만 적용돼서,
+   저시력 사용자가 가장 먼저 마주치는 표지 화면(제목·설명·관람 순서
+   버튼·안내 문구)은 그대로 작은 채로 남아 있었다. 표지 화면 요소도
+   함께 키운다. */
+body.low-vision-mode .intro-gate h1{font-size:clamp(2.1rem, 9vw, 3.2rem) !important;}
+body.low-vision-mode .intro-gate .gate-eyebrow{font-size:1.25em !important;}
+body.low-vision-mode .intro-gate .intro-desc,
+body.low-vision-mode .intro-gate .gate-epigraph,
+body.low-vision-mode .intro-gate .gate-hint{font-size:1.25em !important; line-height:1.6 !important;}
+body.low-vision-mode .intro-gate .gate-route-title{font-size:1.2em !important;}
+body.low-vision-mode .intro-gate .gate-route-item,
+body.low-vision-mode .intro-gate .intro-btn-row .btn{
+    font-size:clamp(1rem, 4vw, 1.3rem) !important;
+    padding:clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px) !important;
+}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -912,6 +928,13 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     <button id="info-btn" onclick="openInfo()" aria-label="작품 및 작가 소개, 저작권 안내 열기" data-tap-action="작품과 저작권 안내를 엽니다"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="속도 일엑스입니다.">속도 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="쉬운 문장">쉬운 문장</button>
+    <!-- v-low-vision-btn-missing-fix — 참가자 요청: "저시력자가 사용하기에
+         불편하지 않게 만들자." 원인을 찾았다: 큰 글씨 모드를 위한
+         CSS(body.low-vision-mode ...)와 JS 함수(toggleLowVisionMode())는
+         이미 완성돼 있었지만, 정작 그것을 켜는 버튼 자체가 화면 어디에도
+         없었다 — 즉 저시력 사용자가 이 기능이 있다는 것도, 켤 방법도
+         전혀 없는 상태였다. 실제 버튼을 추가한다. -->
+    <button class="btn" id="btn-low-vision" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="큰 글씨 모드, 현재 꺼짐">큰 글씨</button>
     
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
@@ -1125,6 +1148,18 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
                 aria-label="배경음악이 켜져 있습니다. 누르면 끕니다."
                 data-tap-name="배경음악"
                 onclick="event.stopPropagation();toggleBgm()">🔊 배경음악</button>
+        <!-- v-low-vision-gate-fix — 참가자 요청: "저시력자가 사용하기에
+             불편하지 않게 만들자." 큰 글씨 모드 버튼이 지금까지 입장 후
+             상단 컨트롤에만 있었는데, 그건 이 표지 화면 자체는 전혀
+             적용 대상이 아니었다는 뜻이다 — 저시력 사용자가 정작 가장
+             먼저 마주치는 작은 글자(제목·설명·버튼)는 그대로 작은 채로
+             남아 있었다. 표지 화면에도 같은 토글을 둬서, 들어가기 전에
+             미리 켤 수 있게 한다(아래 스타일에서 .intro-gate에도 큰
+             글씨 모드가 적용되도록 함께 넓혔다). -->
+        <button class="btn" id="btn-low-vision-gate" type="button" aria-pressed="false"
+                aria-label="큰 글씨 모드, 현재 꺼짐"
+                data-tap-name="큰 글씨 모드"
+                onclick="event.stopPropagation();toggleLowVisionMode();">큰 글씨</button>
         <button class="btn" id="btn-lang-en" type="button"
                 aria-label="영어 버전으로 전환합니다"
                 data-tap-name="영문 버전"
@@ -1754,6 +1789,7 @@ speak(gateText, ()=>{
     // 넘어갈 때만 이 사운드를 트리거하므로, 맨 처음 입장할 때(0단계,
     // playLine(0)으로 시작해 playLayer()를 거치지 않는 경로)는 여기서
     // 따로 한 번 켜준다.
+    _betweenStageActive = true; // v-bgm-no-mixing-fix — 0단계이므로 켜져 있어야 하는 상태로 기록
     _fadeStatueAudio(document.getElementById('snd-between'), STATUE_SOUND_VOLUME);
 }
 
@@ -1895,6 +1931,15 @@ function startAmbientSound(){
 const STATUE_SOUND_VOLUME = 0.14;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
+// v-bgm-no-mixing-fix — snd-between은 0·1단계에서만 켜져 있어야 하는데
+// (playLayer() 참고), updateStatueSound()는 그와 별개로 "지금 조각상
+// 전용 소리가 없으면 배경음을 되살린다"는 판단을 문장 단위로 내린다 —
+// 이 둘이 서로의 사정을 모른 채 각자 snd-between의 볼륨을 정하면,
+// 2·3단계에서도 updateStatueSound()가 snd-between을 실수로 다시
+// 켜버릴 수 있다. 지금 snd-between이 "켜져 있어야 하는 단계"인지를
+// 여기 기록해두고, updateStatueSound()는 이 값을 확인한 뒤에만
+// 되살린다.
+let _betweenStageActive = false;
 
 const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15],
     // v-room-transition-haptic — 참가자 지적: "전시실 이동 시 진동을
@@ -1969,17 +2014,20 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
-    // v-bgm-no-mixing — 참가자 요청: "로댕 관련 해설이 나올 때는
-    // Where_Bamboo_Bends, 반가사유상 관련 해설이 나올 때는
-    // Temple_Bell_at_Daybreak, 그 이외는 기본 배경음(snd-base)으로
-    // Lotus_at_the_Gate. 두 가지 배경음이 섞여서 나오지 않게 해달라."
-    // snd-base는 이제 조각상 전용 소리와 다른 파일(Lotus_at_the_Gate)을
-    // 쓰므로 예전의 "같은 파일이라 안 들린다" 문제는 없지만, 대신 두
-    // 소리가 동시에 들리면 "섞여서" 나온다는 새 요청이 있어, 특정
-    // 조각상 소리가 켜지는 동안은 기본 배경음을 완전히 끈다(0으로
-    // 페이드) — 항상 한 번에 하나의 배경음만 들린다.
-    const baseEl = document.getElementById('snd-base');
-    _fadeStatueAudio(baseEl, target ? 0 : AMBIENT_VOLUME);
+    // v-bgm-no-mixing-fix — 참가자 요청: "각 조각상에 해당하는 사운드가
+    // 나올 때 베이스 사운드가 겹쳐서 나오지 않게 해줘." 원인을 찾았다:
+    // 예전에 snd-base를 완전히 없애고 그 자리를 snd-between(오리엔
+    // 테이션·1단계 전용 배경음, Feel_the_Stillness)으로 바꿨는데, 이
+    // 아래 줄은 그 사실을 반영하지 못한 채 이제는 존재하지 않는
+    // snd-base를 그대로 찾고 있었다 — _fadeStatueAudio()가 null 요소는
+    // 조용히 무시하므로 에러는 안 났지만, 실제로는 아무 효과도 없는
+    // 죽은 코드였다. 그 결과 오리엔테이션·1단계 중에(특히 반가사유상
+    // 개별 설명처럼 speaker가 지정된 문장에서) 로댕/반가사유상 소리가
+    // 켜져도 snd-between은 전혀 줄어들지 않고 계속 겹쳐 들렸다.
+    // snd-between을 가리키도록 고쳐, 조각상 전용 소리가 나오는 동안은
+    // 이 배경음도 완전히 꺼지게 한다.
+    const baseEl = document.getElementById('snd-between');
+    _fadeStatueAudio(baseEl, target ? 0 : (_betweenStageActive ? STATUE_SOUND_VOLUME : 0));
     const moodEl = document.getElementById('mood-overlay');
     if(moodEl){
         moodEl.classList.toggle('mood-rodin', target === 'rodin');
@@ -2519,7 +2567,11 @@ function playLayer(i){
     // (오리엔테이션)·1단계(전체 구도) 동안에만 켜고, 그 외 단계(2·3)로
     // 넘어가면 끈다 — 뒤로가기로 다시 0·1단계에 들어와도 그대로 다시
     // 켜진다.
-    _fadeStatueAudio(document.getElementById('snd-between'), (i === 0 || i === 1) ? STATUE_SOUND_VOLUME : 0);
+    // v-bgm-no-mixing-fix — 지금이 snd-between이 켜져 있어야 할
+    // 단계인지를 기록해둔다 — updateStatueSound()가 이 값을 보고
+    // 되살릴지 판단한다(위 주석 참고).
+    _betweenStageActive = (i === 0 || i === 1);
+    _fadeStatueAudio(document.getElementById('snd-between'), _betweenStageActive ? STATUE_SOUND_VOLUME : 0);
     playLine();
 }
 
@@ -2641,18 +2693,33 @@ function toggleEasyMode(){
 // 화면 자체의 고정 레이아웃은 그대로 둔 채 글자·버튼 크기만 키우는
 // 전용 모드. 버튼 위치가 화면 안에서 바뀌지 않으므로, 확대해도 컨트롤을
 // 다시 찾아 헤맬 필요가 없다.
+// v-low-vision-gate-fix — 표지 화면(#intro-gate)에도 같은 토글 버튼이
+// 생기면서, 이 함수가 두 버튼(#btn-low-vision, #btn-low-vision-gate)의
+// 상태를 함께 맞추도록 고쳤다. 표지 화면에서는 아직 재생 중인 내레이션이
+// 없으므로 _snapshotPlaybackState()/_resumeFromSnapshot() 없이 곧바로
+// 안내만 들려준다.
 let lowVisionMode = false;
 function toggleLowVisionMode(){
     lowVisionMode = !lowVisionMode;
     document.body.classList.toggle('low-vision-mode', lowVisionMode);
-    const btn = document.getElementById('btn-low-vision');
-    if(btn){
-        btn.setAttribute('aria-pressed', String(lowVisionMode));
-        btn.setAttribute('aria-label', lowVisionMode ? '큰 글씨 모드, 현재 켜짐' : '큰 글씨 모드, 현재 꺼짐');
-    }
+    const label = lowVisionMode ? '큰 글씨 모드, 현재 켜짐' : '큰 글씨 모드, 현재 꺼짐';
+    ['btn-low-vision', 'btn-low-vision-gate'].forEach(id=>{
+        const btn = document.getElementById(id);
+        if(btn){
+            btn.setAttribute('aria-pressed', String(lowVisionMode));
+            btn.setAttribute('aria-label', label);
+        }
+    });
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     const announceText = lowVisionMode ? '큰 글씨 모드를 켰습니다.' : '큰 글씨 모드를 껐습니다.';
-    const ctx = _snapshotPlaybackState();
-    speak(announceText, function(){ _resumeFromSnapshot(ctx); });
+    const gateEl = document.getElementById('intro-gate');
+    const onGate = gateEl && gateEl.style.display !== 'none';
+    if(onGate){
+        speak(announceText);
+    } else {
+        const ctx = _snapshotPlaybackState();
+        speak(announceText, function(){ _resumeFromSnapshot(ctx); });
+    }
 }
 
 function playTurn(i){

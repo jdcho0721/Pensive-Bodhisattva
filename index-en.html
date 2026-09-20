@@ -450,6 +450,21 @@ body.low-vision-mode #controls .btn{
     padding:0 clamp(13px, 3.4vw, 22px) !important;
 }
 body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !important;}
+/* v-low-vision-gate-fix — participant report: matches index.html —
+   large-text mode didn't cover the gate screen (title, description,
+   route buttons, hint text) — the very first, smallest text a
+   low-vision visitor meets. Enlarge it too. */
+body.low-vision-mode .intro-gate h1{font-size:clamp(2.1rem, 9vw, 3.2rem) !important;}
+body.low-vision-mode .intro-gate .gate-eyebrow{font-size:1.25em !important;}
+body.low-vision-mode .intro-gate .intro-desc,
+body.low-vision-mode .intro-gate .gate-epigraph,
+body.low-vision-mode .intro-gate .gate-hint{font-size:1.25em !important; line-height:1.6 !important;}
+body.low-vision-mode .intro-gate .gate-route-title{font-size:1.2em !important;}
+body.low-vision-mode .intro-gate .gate-route-item,
+body.low-vision-mode .intro-gate .intro-btn-row .btn{
+    font-size:clamp(1rem, 4vw, 1.3rem) !important;
+    padding:clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px) !important;
+}
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
     display:none; align-items:flex-start; justify-content:center; overflow-y:auto;
@@ -875,6 +890,11 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     <button id="info-btn" onclick="openInfo()" aria-label="Open artwork and artist introduction, copyright notice" data-tap-action="Opens the artwork and copyright notice"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor"/><rect x="10.8" y="10.6" width="2.4" height="7" rx="1.2" fill="currentColor"/></svg></button>
     <button class="btn" id="btn-speed" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
     <button class="btn" id="btn-easy-mode" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences">Easy sentences</button>
+    <!-- v-low-vision-btn-missing-fix — participant report: matches
+         index.html — the CSS and JS for large-text mode already
+         existed, but no actual button to turn it on was ever added
+         anywhere. Adding it here. -->
+    <button class="btn" id="btn-low-vision" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="Large text mode, currently off">Large text</button>
     
     <!-- v-in-app-volume — 참가자 요청: "화면 안에서 소리를 조절할 수 있는
          기능." TalkBack 사용자는 슬라이더에 초점을 맞춘 뒤 위/아래로
@@ -1048,6 +1068,15 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
                 aria-label="Background music is on. Press to turn it off."
                 data-tap-name="Background music"
                 onclick="event.stopPropagation();toggleBgm()">🔊 Music</button>
+        <!-- v-low-vision-gate-fix — participant report: matches
+             index.html — added the same toggle to the gate screen so
+             a low-vision visitor can turn on large text before
+             entering, since the gate screen's own title/description/
+             buttons weren't covered by large-text mode either. -->
+        <button class="btn" id="btn-low-vision-gate" type="button" aria-pressed="false"
+                aria-label="Large text mode, currently off"
+                data-tap-name="Large text mode"
+                onclick="event.stopPropagation();toggleLowVisionMode();">Large text</button>
         <button class="btn" id="btn-lang-ko" type="button"
                 aria-label="Switches to the Korean version"
                 data-tap-name="Korean version"
@@ -1819,6 +1848,10 @@ function startAmbientSound(){
 const STATUE_SOUND_VOLUME = 0.14;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
+// v-bgm-no-mixing-fix — matches index.html — tracks whether we're
+// currently in the stage (0/1) where snd-between should be playing at
+// all, so updateStatueSound() knows whether it's safe to restore it.
+let _betweenStageActive = false;
 
 const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15],
     // v-room-transition-haptic — participant note: "please also provide
@@ -1894,15 +1927,22 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
-    // v-bgm-no-mixing — participant request: matches index.html —
-    // Rodin narration plays Where_Bamboo_Bends, Bodhisattva narration
-    // plays Temple_Bell_at_Daybreak, and the base ambience (snd-base)
-    // is now Lotus_at_the_Gate, a different file from either — so the
-    // two backgrounds should never be heard mixed together. Fully
-    // mute the base ambience whenever a statue-specific sound is
-    // active, so only one background plays at a time.
-    const baseEl = document.getElementById('snd-base');
-    _fadeStatueAudio(baseEl, target ? 0 : AMBIENT_VOLUME);
+    // v-bgm-no-mixing-fix — participant request: matches index.html —
+    // "make sure the base sound doesn't overlap when each statue's
+    // sound plays." Root cause: snd-base was removed and replaced by
+    // snd-between (the orientation/stage-1 soundscape, Feel_the_
+    // Stillness), but this line never caught up — it kept looking up
+    // the now-nonexistent snd-base, so _fadeStatueAudio() silently
+    // no-op'd on a null element and snd-between was never ducked. That
+    // let it keep playing right through statue-specific narration
+    // (e.g. a speaker-tagged line during orientation), overlapping with
+    // Rodin's/the Bodhisattva's sound. Point this at snd-between
+    // instead, and only restore it if we're actually still in the
+    // stage where it belongs (_betweenStageActive, set by playLayer())
+    // — otherwise a null-speaker line in stage 2/3 would wrongly
+    // revive it.
+    const baseEl = document.getElementById('snd-between');
+    _fadeStatueAudio(baseEl, target ? 0 : (_betweenStageActive ? STATUE_SOUND_VOLUME : 0));
     const moodEl = document.getElementById('mood-overlay');
     if(moodEl){
         moodEl.classList.toggle('mood-rodin', target === 'rodin');
@@ -2486,7 +2526,10 @@ function playLayer(i){
     // matches index.html — turn on the dedicated soundscape only
     // during stage 0 (orientation) and stage 1 (global composition),
     // off otherwise (re-enters correctly if navigated back to).
-    _fadeStatueAudio(document.getElementById('snd-between'), (i === 0 || i === 1) ? STATUE_SOUND_VOLUME : 0);
+    // v-bgm-no-mixing-fix — record whether this is a stage where
+    // snd-between belongs, for updateStatueSound() to check.
+    _betweenStageActive = (i === 0 || i === 1);
+    _fadeStatueAudio(document.getElementById('snd-between'), _betweenStageActive ? STATUE_SOUND_VOLUME : 0);
     playLine();
 }
 
@@ -2607,18 +2650,33 @@ function toggleEasyMode(){
 // v-low-vision-mode — dedicated large-text mode instead of relying on
 // pinch-zoom (see CSS comment above). Layout stays fixed; only text/
 // button sizes grow.
+// v-low-vision-gate-fix — with a matching toggle now on the gate
+// screen too, this keeps both buttons (#btn-low-vision,
+// #btn-low-vision-gate) in sync. On the gate screen there's no
+// narration playing yet, so it announces directly instead of using
+// _snapshotPlaybackState()/_resumeFromSnapshot().
 let lowVisionMode = false;
 function toggleLowVisionMode(){
     lowVisionMode = !lowVisionMode;
     document.body.classList.toggle('low-vision-mode', lowVisionMode);
-    const btn = document.getElementById('btn-low-vision');
-    if(btn){
-        btn.setAttribute('aria-pressed', String(lowVisionMode));
-        btn.setAttribute('aria-label', lowVisionMode ? 'Large text mode, currently on' : 'Large text mode, currently off');
-    }
+    const label = lowVisionMode ? 'Large text mode, currently on' : 'Large text mode, currently off';
+    ['btn-low-vision', 'btn-low-vision-gate'].forEach(id=>{
+        const btn = document.getElementById(id);
+        if(btn){
+            btn.setAttribute('aria-pressed', String(lowVisionMode));
+            btn.setAttribute('aria-label', label);
+        }
+    });
+    try{ if(navigator.vibrate) navigator.vibrate(15); }catch(e){}
     const announceText = lowVisionMode ? 'Large text mode turned on.' : 'Large text mode turned off.';
-    const ctx = _snapshotPlaybackState();
-    speak(announceText, function(){ _resumeFromSnapshot(ctx); });
+    const gateEl = document.getElementById('intro-gate');
+    const onGate = gateEl && gateEl.style.display !== 'none';
+    if(onGate){
+        speak(announceText);
+    } else {
+        const ctx = _snapshotPlaybackState();
+        speak(announceText, function(){ _resumeFromSnapshot(ctx); });
+    }
 }
 
 function playTurn(i){

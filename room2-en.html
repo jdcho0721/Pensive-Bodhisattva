@@ -1198,6 +1198,10 @@ body.low-vision-mode #hint-row .btn{
      prepending an icon to the text doesn't affect the announcement. -->
 <button id="speed-btn" onclick="cycleSpeed()" aria-label="Speed 1.0x">Speed 1.0x</button>
 <button id="easy-mode-btn" onclick="toggleEasyMode()" aria-pressed="false" aria-label="Easy sentences, currently off">Easy sentences</button>
+<!-- v-low-vision-btn-missing-fix — participant report: matches
+     room2.html — the large-text mode CSS/JS already existed, but no
+     button to turn it on was ever added. Adding it here. -->
+<button id="low-vision-btn" onclick="toggleLowVisionMode()" aria-pressed="false" aria-label="Large text mode, currently off">Large text</button>
 
 <div id="volume-control" role="group" aria-label="Background music volume">
     <span aria-hidden="true">🔊</span>
