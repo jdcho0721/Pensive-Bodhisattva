@@ -1337,7 +1337,7 @@ body.low-vision-mode #hint-row .btn{
              "entering → viewing → playback controls → moving
              elsewhere" order. Same factual content, just reorganized. -->
         <p><b>① Entering</b> — Tap the first screen once, lightly, to begin right away (it also starts automatically after one minute if you don't tap). Use the <b>Music</b> button on this screen to turn background music on or off before starting.</p>
-        <p><b>② Viewing</b> — Touch (click/tap) any part you're curious about on the statues on screen, and a short explanation of that part plays immediately in voice and captions — touching is the one exception that responds on a single tap. When using a phone camera to recognize your hand instead of a physical statue, the vibration rhythm the moment your fingertip reaches a part tells you its rough shape — short and dense means a rounded, clustered part (like a fist), a long continuous buzz means an elongated part (arm, ear, robe fold), two very short pulses means a narrow, pointed part (finger, toe), and a slow, gentle wave means a broad, flat part (forehead, face). Press the <b>💬</b> button on the right-center of the screen to open the "Contemplation Counsel" chatbot (you can also press and drag this button to move it wherever you like). Tap a ready-made suggested question to ask without typing, or type or use the microphone button to ask freely about the part you just touched or either statue. Personal questions like worry or life are answered side by side, in each statue's own voice — if you're currently touching a part, the answer draws on that part's story, and this is not historical fact but a creative interpretation voiced by the two statues. Asking "summarize what I've touched so far" gives you your record so far, plus how many parts you still haven't touched.</p>
+        <p><b>② Viewing</b> — Touch (click/tap) any part you're curious about on the statues on screen, and a short explanation of that part plays immediately in voice and captions — touching is the one exception that responds on a single tap. When using a phone camera to recognize your hand instead of a physical statue, the vibration rhythm the moment your fingertip reaches a part tells you its rough shape — short and dense means a rounded, clustered part (like a fist), a long continuous buzz means an elongated part (arm, ear, robe fold), two very short pulses means a narrow, pointed part (finger, toe), and a slow, gentle wave means a broad, flat part (forehead, face). Press the <b>💬</b> button on the right-center of the screen to open the "Contemplation Counsel" chatbot (you can also press and drag this button to move it wherever you like). Tap a ready-made suggested question to ask without typing, or type or use the microphone button to ask freely about the part you just touched or either statue. Personal questions like worry or life are answered side by side, in each statue's own voice — if you're currently touching a part, the answer draws on that part's story, and this is not historical fact but a creative interpretation voiced by the two statues. Asking "summarize what I've touched so far" gives you your record so far, plus a rough direction (like "upper left, on the Rodin side") toward any part you haven't touched yet.</p>
         <p><b>③ Playback controls</b> — If you missed an explanation while focused on the touch itself, you can always hear it again by touching the same part again or pressing the <b>Replay</b> button at the bottom of the screen. Most other buttons (<b>Certificate</b>, <b>Serenity</b>, <b>Room 1</b>, <b>💬</b>, etc.) speak their name and glow gold on the first press; pressing the same button again within a few seconds actually activates it. The <b>ⓘ</b> info button, the <b>Speed</b> and <b>Easy sentences</b> buttons, and the <b>background music volume</b> slider respond immediately on press or movement, with no second press needed.</p>
         <p><b>④ Moving elsewhere</b> — Press the <b>Certificate</b> button (twice) any time to see your record of what you've encountered so far. Pressing the <b>Print</b> button on the certificate screen twice saves it as a PDF file. Pressing the <b>Serenity</b> button (twice) moves you to a mind-clearing screen — after listening to the guidance through to the end, you must press either the <b>Room 1</b> or <b>Room 2</b> button shown on that screen yourself to actually move. Pressing the <b>Room 1</b> button at the bottom (twice) skips this and goes straight to Room 1 any time. The chat panel closes when you press the <b>✕</b> button at its top, or by swiping from left to right. This info panel returns one step at a time — from a detail screen back to the menu, or from the menu back to the exhibit screen — when you press the <b>Return</b> button at the bottom, or swipe from left to right. If you're using a keyboard, <b>Esc</b> also closes either the info panel or the chat panel right away.</p>
 
@@ -1619,7 +1619,7 @@ body.low-vision-mode #hint-row .btn{
     <div id="chat-suggestions" role="group" aria-label="Suggested questions">
         <button type="button" class="chip" onclick="askSuggested('What are the two statues thinking?')">What are the two statues thinking?</button>
         <button type="button" class="chip" onclick="askSuggested('How’s the weather today? What’s today’s date?')">How’s the weather today? What’s today’s date?</button>
-        <button type="button" class="chip" onclick="askSuggested('Based on what I’ve touched so far, what’s different between the two statues?')">Based on what I’ve touched so far, what’s different between the two statues?</button>
+        <button type="button" class="chip" onclick="askSuggested('What’s different between the two statues?')">What’s different between the two statues?</button>
         <button type="button" class="chip" onclick="askSuggested('Summarize what I’ve touched so far')">Summarize what I’ve touched so far</button>
     </div>
     <form id="chat-form" onsubmit="return sendChat(event)">
@@ -3037,27 +3037,22 @@ function repeatCurrent(){
 // 더듬어 찾아갈 단서만 준다. 좌표는 이미 각 핫스팟 요소의 인라인
 // style(top/left/width/height, %)에 있으므로 새로 만들 필요 없이 그
 // 값을 그대로 읽는다.
-// v-direction-hint-wrong-fix — participant report: matches room2.html
-// — "'there's an untouched spot toward the upper-left on the Rodin
-// side' — that's wrong." Root cause: left/right was judged against
-// the whole screen (0-100%), but every one of Rodin's own hotspots
-// sits within the screen's left half (~12-35%) and every one of the
-// Bodhisattva's sits within the right half (~70-89%) — so cx is
-// always under 40 for any Rodin part (always "left") and always over
-// 60 for any Bodhisattva part (always "right"), regardless of which
-// specific part it is. Naming "the Rodin side" already says it's on
-// the left, so restating "left" adds no information and can be
-// misread as a position within that statue's own body (like left arm
-// vs. right arm). Top/bottom stays meaningful since both statues
-// share the same vertical range, so only left/right is dropped.
 function _describeRelativeDirection(key){
     const el = document.getElementById(key);
     if(!el) return '';
+    const leftPct = parseFloat(el.style.left) || 0;
     const topPct = parseFloat(el.style.top) || 0;
+    const wPct = parseFloat(el.style.width) || 0;
     const hPct = parseFloat(el.style.height) || 0;
+    const cx = leftPct + wPct / 2;
     const cy = topPct + hPct / 2;
-    if(cy < 35) return 'top';
-    if(cy > 65) return 'bottom';
+    let horiz = '', vert = '';
+    if(cx < 40) horiz = 'left';
+    else if(cx > 60) horiz = 'right';
+    if(cy < 35) vert = 'top';
+    else if(cy > 65) vert = 'bottom';
+    if(horiz && vert) return `${vert} ${horiz}`;
+    if(horiz || vert) return horiz || vert;
     return 'the middle';
 }
 
@@ -3136,11 +3131,13 @@ function buildRecapAnswer(){
     const remain = ORDER.length - visited.size;
     let tail;
     if(remain > 0){
-        // v-direction-hint-removed — participant report: matches
-        // room2.html — the direction hint kept surfacing as inaccurate
-        // even after removing the left/right component, so it's
-        // removed entirely here — just the remaining count now.
+        const nextUnvisited = ORDER.find(k => !visited.has(k));
+        const dir = nextUnvisited ? _describeRelativeDirection(nextUnvisited) : '';
+        const bodyName = nextUnvisited ? DETAILS[nextUnvisited].body : '';
         tail = ` There ${remain === 1 ? 'is' : 'are'} still ${remain} spot${remain === 1 ? '' : 's'} left.`;
+        if(nextUnvisited && dir){
+            tail += ` There’s one you haven’t touched yet, toward the ${dir} on the ${bodyName} side.`;
+        }
     } else {
         tail = ' You’ve touched all eleven spots.';
     }
@@ -4863,7 +4860,7 @@ function _getPhilosophyQA(){
   { q: ["what's the difference between meditation and contemplation"], rodin: "My contemplation is closer to a struggle, searching for an answer amid tension.", maitreya: "My contemplation is closer to a stillness, setting down judgment and watching things as they are." },
   { q: ["why do you never stop asking questions"], rodin: "Never stopping the questioning is the only proof I have that I am alive, that I am thinking.", maitreya: "Sometimes it matters more to quietly look at the mind holding the question, than the question itself." },
   { q: ["why don't the two statues face each other"], rodin: "I am absorbed in my own weight, and don't yet have the room to look aside.", maitreya: "I face no particular direction — I simply remain, quietly, exactly as I am." },
-  { q: ["what are you thinking about right now", "what are the two statues thinking", "what are the two statues thinking about", "what are both statues thinking"], rodin: "I am thinking about the weight of this world, and the fact that I must keep moving forward while carrying it.", maitreya: "Nothing in particular — I am simply resting quietly in this moment." },
+  { q: ["what are you thinking about right now"], rodin: "I am thinking about the weight of this world, and the fact that I must keep moving forward while carrying it.", maitreya: "Nothing in particular — I am simply resting quietly in this moment." },
   { q: ["are you happy"], rodin: "It's too soon to call it happiness. But I do believe this moment of enduring the tension is not in vain.", maitreya: "Yes — this place, now that everything has been set down, is itself peace, and happiness." },
   { q: ["why are the two of you so different"], rodin: "I am someone still tensing my muscles before a question not yet resolved.", maitreya: "I am in the place reached after passing through that question and setting the mind down. But we are alike in this: we are both beings who contemplate." },
   { q: ["what is humility"], rodin: "Humility is honestly acknowledging the limits of your own strength, while still refusing to give up enduring.", maitreya: "Humility is knowing that 'I' was never so large to begin with, and placing yourself in a lower seat." },
@@ -5926,20 +5923,11 @@ async function fetchDetailAI(prompt, ragBlock, onUpdate, systemPrompt, history){
 // and Rodin's Thinker were made") must not short-circuit into a
 // single-body KB answer. See room2.html's _mentionsBothStatues() for the
 // original bug writeup.
-// v-both-statues-generic-fix — participant report: matches room2.html
-// — the rule "a KB tier-1 hit was matched in one statue's dictionary,
-// so answer in that one voice only" was missing generic references to
-// both statues that don't name either one (e.g. "what are the two
-// statues thinking?"). Fixed at this shared helper — pickKBAnswer,
-// pickKBCandidates, and _hasReliableKBCandidate all use it, so one fix
-// here covers all three.
 function _mentionsBothStatues(query){
     const q = query.toLowerCase();
     const mentionsRodin = q.includes('rodin') || q.includes('thinker');
     const mentionsBodhisattva = q.includes('bodhisattva') || q.includes('maitreya');
-    if(mentionsRodin && mentionsBodhisattva) return true;
-    const mentionsBothGeneric = /both statues|the two statues|each (one|statue)/.test(q);
-    return mentionsBothGeneric && !mentionsRodin && !mentionsBodhisattva;
+    return mentionsRodin && mentionsBodhisattva;
 }
 
 function pickKBAnswer(query){
@@ -7092,11 +7080,6 @@ async function _processChatAnswer(q, forceLLM){
     // 답하도록 설계돼 있는 부분이므로, 그대로 물려받는 게 핵심이다.
     if(!forceLLM){
         // 1순위: 지식베이스 퍼지 매칭 — 즉시 응답
-        // v-both-statues-single-voice-fix — participant report: matches
-        // room2.html — fixed properly at the source now
-        // (_mentionsBothStatues(), used inside pickKBAnswer itself, now
-        // recognizes generic "both statues" phrasing too — see its
-        // comment for the full story). Just call pickKBAnswer directly.
         const kbHit = pickKBAnswer(q);
         if(kbHit){
             recordPartChatQA(q, kbHit.text); // 참가자 제안: 지금 만지고 있는 부위와 이 대화를 이어둔다
@@ -7525,28 +7508,6 @@ function _exitInfoOneLevel(){
         const dx = e.changedTouches[0].screenX - startX;
         const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
         if(dx > 60 && dyAbs < 60){ _exitInfoOneLevel(); } // swipe right → back/close
-    }, { passive:true });
-})();
-
-// v-all-panels-swipe — participant request: matches room2.html —
-// "apply screen transition (swipe) to all windows." The info panel,
-// serenity screen, and chat panel already had swipe-right-to-close;
-// only the certificate overlay was missing it. Same pattern, same
-// swipe-right threshold.
-(function initCertificateOverlaySwipeBack(){
-    const overlay = document.getElementById('certificate-overlay');
-    if(!overlay) return;
-    let startX = 0, startY = 0;
-    overlay.addEventListener('touchstart', (e)=>{
-        if(!overlay.classList.contains('show')) return;
-        startX = e.changedTouches[0].screenX;
-        startY = e.changedTouches[0].screenY;
-    }, { passive:true });
-    overlay.addEventListener('touchend', (e)=>{
-        if(!overlay.classList.contains('show')) return;
-        const dx = e.changedTouches[0].screenX - startX;
-        const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
-        if(dx > 60 && dyAbs < 60) closeCertificate(); // swipe right → back to previous screen
     }, { passive:true });
 })();
 
