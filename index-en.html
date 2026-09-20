@@ -2594,6 +2594,19 @@ function playLayer(i){
 }
 
 function playLine(){
+    // v-intro-screens-back-nav-fix — participant report: pressing back on
+    // "The National Treasure ~" jumps straight to the gate screen instead
+    // of the structure screen. Cause: introScreenStep was only set to 3
+    // inside STRUCTURE_TEXT's speak() callback — if the visitor skips
+    // ahead (e.g. tapping next before the gate/structure narration
+    // finishes) instead of letting it finish naturally, that callback is
+    // never reached and introScreenStep stays stuck at 1 or 2. Later,
+    // coming back to the very first line, back-navigation would then
+    // skip the structure screen and go straight to the gate. playLine()
+    // is the one place that actually shows LAYERS content, so setting
+    // introScreenStep = 3 here every time keeps it correct regardless of
+    // how we arrived.
+    introScreenStep = 3;
     const layer = LAYERS[layerIdx];
     // v22 — 참가자 스크린샷으로 확인된 버그: 뒤로가기로 단계 경계를 넘어갈
     // 때(예: 2단계 첫 문장 → 1단계 마지막 문장) 자막은 바뀌는데 위쪽

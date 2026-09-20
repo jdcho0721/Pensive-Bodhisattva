@@ -2667,6 +2667,18 @@ function playLayer(i){
 }
 
 function playLine(){
+    // v-intro-screens-back-nav-fix — 참가자 지적: "'우리나라 국보~' 화면에서
+    // 뒤로가기를 하면 구조안내 화면을 거치지 않고 곧장 표지로 간다."
+    // 원인: introScreenStep이 STRUCTURE_TEXT의 speak() 콜백 안에서만
+    // 3으로 설정돼 있었는데, 사용자가 그 안내를 끝까지 듣지 않고 "다음"
+    // 등으로 LAYERS 내용으로 곧장 건너뛰면(예: 게이트/구조 안내가 채
+    // 끝나기 전에 다음 화살표를 누르는 경우) 그 콜백을 거치지 않아
+    // introScreenStep이 1이나 2에 머문 채로 남아있었다 — 그 상태에서
+    // 다시 첫 줄(레이어0·줄0)로 돌아오면, 뒤로가기가 구조 안내 화면을
+    // 건너뛰고 곧장 표지로 가버렸다. playLine()은 실제로 LAYERS 내용을
+    // 보여주는 유일한 지점이므로, 여기서 매번 introScreenStep을 3으로
+    // 확정지어 어떤 경로로 들어오든 상태가 항상 정확하게 맞도록 한다.
+    introScreenStep = 3;
     const layer = LAYERS[layerIdx];
     // v22 — 참가자 스크린샷으로 확인된 버그: 뒤로가기로 단계 경계를 넘어갈
     // 때(예: 2단계 첫 문장 → 1단계 마지막 문장) 자막은 바뀌는데 위쪽
