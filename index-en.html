@@ -1599,34 +1599,6 @@ function onCaptionAreaClick(e){
     if(x < window.innerWidth / 2){ onBackClick(); } else { onNextClick(); }
 }
 
-// v-caption-swipe-nav — participant request: matches index.html —
-// "swipe right → previous screen, swipe left → next screen" on each
-// caption screen, in addition to the existing left/right tap zones.
-// preventDefault() on a confirmed swipe suppresses the click that
-// follows, so onCaptionAreaClick's tap handling doesn't also react to
-// the same gesture and advance two screens at once.
-(function initCaptionSwipeNav(){
-    const wrap = document.getElementById('caption-wrap');
-    if(!wrap) return;
-    let startX = 0, startY = 0, tracking = false;
-    wrap.addEventListener('touchstart', (e)=>{
-        if(e.target.closest('#controls')){ tracking = false; return; }
-        const t = e.changedTouches[0];
-        startX = t.screenX; startY = t.screenY; tracking = true;
-    }, { passive:true });
-    wrap.addEventListener('touchend', (e)=>{
-        if(!tracking) return;
-        tracking = false;
-        const t = e.changedTouches[0];
-        const dx = t.screenX - startX;
-        const dyAbs = Math.abs(t.screenY - startY);
-        if(Math.abs(dx) > 60 && dyAbs < 60){
-            e.preventDefault();
-            if(dx > 0) onBackClick(); else onNextClick(); // swipe right → previous, swipe left → next
-        }
-    }, { passive:false });
-})();
-
 // v-require-tap — 참가자 요청: "첫 페이지에서 시간이 지나 자동으로
 // 넘어가면, 그 다음 페이지의 소리가 나오지 않는다" — 브라우저의
 // 자동재생 정책상 speechSynthesis는 진짜 사용자 동작(클릭/탭) 안에서
@@ -1703,14 +1675,6 @@ function enterRoom(){
     try{ window.speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){}
     clearTimeout(_autoEnterTimer);
     document.getElementById('intro-gate').style.display='none';
-    // v-room1-entry-back-gesture — participant report: matches
-    // index.html — "the back gesture doesn't work on the screen where
-    // '전시실 1 조우입니다' plays, or the one where '화면 위쪽에는...'
-    // plays." Root cause: entering the room left no state in browser
-    // history, so a mobile back gesture (or browser back button) at
-    // this point had nothing to catch (or left the site entirely).
-    // Same pattern as the chat panel (v-chat-fullscreen).
-    history.pushState({ roomEntered:true }, '', '#room1');
     // v-first-screen-image-size-fix — participant report: "the image on
     // the screen starting with '전시실1, 조우입니다' looks smaller than
     // the image on the next screen." Cause: the 1.3x background zoom
@@ -1776,37 +1740,6 @@ speak(gateText, ()=>{
     startAmbientSound();
     fadeArrivalIn();
 }
-
-// v-room1-entry-back-gesture — matches index.html — restores the gate
-// screen whenever the history state pushed by enterRoom() is left
-// (back gesture/button, or hardware back) — same principle as the
-// chat panel's popstate handling (v-chat-fullscreen). Doesn't rewind
-// deep per-stage state (layerIdx etc.), but re-entering runs
-// enterRoom() fresh anyway.
-// v-back-to-gate-from-first-line — extracted into a function so both
-// the popstate handler and onBackClick() (when it reaches the very
-// first line) can reuse the same restore logic.
-function _returnToGateScreen(){
-    const gate = document.getElementById('intro-gate');
-    if(!gate) return;
-    try{ window.speechSynthesis.cancel(); }catch(err){}
-    speechGen++;
-    clearTimeout(autoTimer);
-    gate.style.display = '';
-    stageEl.classList.remove('lit');
-    ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
-        const el = document.getElementById(id);
-        if(el){ el.setAttribute('inert',''); el.setAttribute('aria-hidden','true'); }
-    });
-}
-window.addEventListener('popstate', function(e){
-    const gate = document.getElementById('intro-gate');
-    if(!gate) return;
-    const stillInRoom = !!(e.state && e.state.roomEntered);
-    if(!stillInRoom && gate.style.display === 'none'){
-        _returnToGateScreen();
-    }
-});
 
 // v-bgm-toggle — room2.html과 동일한 취지: 첫 화면의 "배경음악" 버튼으로
 // 계속 깔리는 배경 사운드(snd-base·snd-arrival·snd-rodin·snd-maitreya·
@@ -3077,19 +3010,8 @@ function onBackClick(){
             layerIdx--;
             lineIdx = Math.max(0, LAYERS[layerIdx].lines.length - 1);
             playLine();
-        } else {
-            // v-back-to-gate-from-first-line — participant report:
-            // matches index.html — swiping/tapping back on the screens
-            // where "전시실 1 조우입니다" or "화면 위쪽에는..." play
-            // never went further back than this very first line. Those
-            // two announcements live outside the lineIdx/layerIdx
-            // system entirely, so "further back" from here can only
-            // mean the gate screen. Calls the same restore function the
-            // popstate handler uses, directly (not history.back(),
-            // which risks navigating away to whatever page came before
-            // this one entirely).
-            _returnToGateScreen();
         }
+        // 전체 첫 문장이면 더 돌아갈 곳이 없으므로 이동 없이 그대로 멈춘다.
     } else if(announcing){
         // "다음 전시실로" 안내 화면 → 3단계 마지막 대화 문장으로 복귀.
         const last = DIALOGUE.length - 1;
