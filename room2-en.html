@@ -526,8 +526,13 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
    (.55) until hovered/focused/touched.
    v-chat-toggle-down-10px — participant request: "move the chat
    button's default position 10px lower." Lowered bottom from 200px to
-   190px. */
-#chat-toggle{position:fixed;right:16px;bottom:calc(190px + env(safe-area-inset-bottom));z-index:35;
+   190px.
+   v-chat-toggle-focus-tag-align — participant request: matches
+   room2.html — "move the chat button down a bit, to just above-right
+   of the '지금 만지신 곳' caption." #focus-tag starts right at the top
+   of #caption-wrap, offset by its 22px top padding — lowered bottom
+   further from 190px to 150px to land just above that row. */
+#chat-toggle{position:fixed;right:16px;bottom:calc(150px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
     touch-action:none;opacity:.55;transition:opacity .25s ease;}
