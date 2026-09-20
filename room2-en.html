@@ -78,7 +78,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    fits, but lets a visitor scroll down to reach the buttons on the
    rare device where it doesn't (horizontal scroll stays blocked). */
 #room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow-x:hidden; overflow-y:auto;}
-#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
+/* v-image-compression — participant request: matches index.html —
+   re-encoded as WebP (267KB → 63KB, 76% smaller, no visible quality
+   loss). */
+#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.webp') no-repeat center center;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
    JS가 매번 인라인 스타일로 덮어써서 맞춘다. */
@@ -1704,7 +1707,7 @@ function _loadBgImageNaturalSize(cb){
         cb(_bgImgNatural);
     };
     img.onerror = () => console.warn('[핫스팟 정렬] 배경 이미지 크기를 읽지 못했습니다 — 기본 배치를 유지합니다.');
-    img.src = '반가-로댕.png';
+    img.src = '반가-로댕.webp'; // v-image-compression: WebP로 교체(CSS 배경과 동일 파일 사용, 중복 다운로드 방지)
 }
 
 function fitHotspotLayer(){
@@ -4645,7 +4648,15 @@ const PART_MEANINGS = {
     }
 };
 
-const PHILOSOPHY_QA = [
+// v-lazy-loading — participant request: matches room2.html — this
+// ~65KB, 200-entry array is now built lazily inside a function
+// instead of a top-level const, so the JS engine can defer parsing
+// its body until the philosophy-matching code actually runs the
+// first time (cached after that).
+let _philosophyQACache = null;
+function _getPhilosophyQA(){
+    if(_philosophyQACache) return _philosophyQACache;
+    _philosophyQACache = [
   { q: ["who am i", "what is the self", "who am i really"], rodin: "I am this body bearing this weight right now, this very tension in the muscle. Existence is proven only by the effort of enduring itself.", maitreya: "There is nothing fixed you can call 'I' — only the five aggregates gathered for a moment, a passing stream. Knowing that lightens the mind." },
   { q: ["what is the meaning of existence", "what does it mean to exist"], rodin: "To exist is to take on the world's weight with your whole body, and to keep thinking even as that weight presses down on you.", maitreya: "Existence is a wave that appears and disappears according to conditions. Watching that wave exactly as it is — that is contemplation." },
   { q: ["does the self really exist", "is there really such a thing as me"], rodin: "At the very least, this effort of colliding with the world and enduring it, right now, is an undeniable reality.", maitreya: "Non-self — there is no fixed substance you could call 'I'. Strip away attachment, and only stillness remains." },
@@ -4848,7 +4859,9 @@ const PHILOSOPHY_QA = [
   { q: ["what does it mean that existence precedes essence"], rodin: "You are not born with a fixed essence already given — you make yourself into whatever you become as you live.", maitreya: "The idea that there is no fixed self also has something in common with the insight of non-self." },
   { q: ["what is the meaning of life", "what is life", "what does life mean", "what's life about", "what is the point of life", "what does it mean to live"], rodin: "Life is an unending time of thought, taking on the world's weight with your whole body, moment after moment, and enduring it. Facing that weight head-on, rather than avoiding it, is what it means to live.", maitreya: "Life is an impermanent flow, arising and passing according to conditions. When you accept that flow exactly as it is, without trying to grasp it, the mind grows light." },
   { q: ["if the two statues met, what would they say to each other first", "what would the two statues talk about if they met", "what would they say if the two statues had a conversation", "what would rodin and the bodhisattva talk about if they met", "what would these two statues say to each other", "what's the first thing the two statues would say if they met", "is there anything the two statues would want to say to each other"], rodin: "I would probably ask first — how did you manage to set that heavy question down? I am still searching for that answer with my body.", maitreya: "I would simply stay quietly by his side. Even without asking, sitting side by side is already a way of answering each other's contemplation." }
-];
+    ];
+    return _philosophyQACache;
+}
 
 /* ══════════════════════════════════════════════════════
    v42 — 참가자 요청: "철학과 관련된 질문 200개를 넣어서 반가사유상과
@@ -4865,6 +4878,7 @@ const PHILOSOPHY_QA = [
    다음에만 검사한다 — "로댕 재질이 뭐야" 같은 사실 질문이 철학
    문답과 헷갈릴 일은 없다. ══════════════════════════════════════ */
 function _searchPhilosophyQA(query){
+    const PHILOSOPHY_QA = _getPhilosophyQA();
     if(!PHILOSOPHY_QA || !PHILOSOPHY_QA.length) return null;
     const normQuery = _normalizeJosa(query);
     // 1순위: 정확 매칭 — 질문 별칭 중 하나와 원문/조사제거형이 그대로 겹치면.

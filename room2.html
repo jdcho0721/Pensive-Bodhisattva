@@ -83,7 +83,9 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    드문 경우에만 아래로 스크롤해 버튼까지 닿을 수 있는 안전장치로
    쓰인다(가로 스크롤은 계속 막아둔다). */
 #room-layout{position:relative; width:100vw; height:100vh; height:100dvh; display:flex; flex-direction:column; overflow-x:hidden; overflow-y:auto;}
-#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.png') no-repeat center center;background-size:contain;}
+/* v-image-compression — 참가자 요청: matches index.html — WebP로
+   재인코딩(267KB → 63KB, 76% 감소, 화질 차이 없음). */
+#stage{position:relative;flex:1 1 auto;min-height:0;width:100%;background:url('반가-로댕.webp') no-repeat center center;background-size:contain;}
 /* v12 — 위 background-size:contain은 fitHotspotLayer()가 실행되기 전
    (이미지 로드 직후 첫 프레임) 잠깐 보일 기본값이다. 실제 배치·축소는
    JS가 매번 인라인 스타일로 덮어써서 맞춘다. */
@@ -1794,7 +1796,7 @@ function _loadBgImageNaturalSize(cb){
         cb(_bgImgNatural);
     };
     img.onerror = () => console.warn('[핫스팟 정렬] 배경 이미지 크기를 읽지 못했습니다 — 기본 배치를 유지합니다.');
-    img.src = '반가-로댕.png';
+    img.src = '반가-로댕.webp'; // v-image-compression: WebP로 교체(CSS 배경과 동일 파일 사용, 중복 다운로드 방지)
 }
 
 function fitHotspotLayer(){
@@ -4810,7 +4812,17 @@ const PART_MEANINGS = {
     }
 };
 
-const PHILOSOPHY_QA = [
+// v-lazy-loading — 참가자 요청: "압축/지연로딩 작업을 진행해줘." 아래
+// PHILOSOPHY_QA는 200개 문답, 약 65KB에 달하는 데이터라 — 최상위
+// const로 그대로 두면 이 스크립트가 로드되는 즉시(챗봇을 한 번도 쓰지
+// 않아도) 파싱된다. 함수 안으로 옮겨 처음 실제로 필요할 때(철학
+// 문답 매칭이 처음 실행될 때)만 파싱·생성되도록 미룬다 — 자바스크립트
+// 엔진이 함수 본문은 실제 호출 전까지 지연 파싱(lazy parsing)하는
+// 점을 활용한다. 한 번 만든 뒤에는 캐시해 재호출 비용이 없다.
+let _philosophyQACache = null;
+function _getPhilosophyQA(){
+    if(_philosophyQACache) return _philosophyQACache;
+    _philosophyQACache = [
   { q: ["나는 누구인가", "자아란 무엇인가", "진짜 나는 뭘까"], rodin: "나는 지금 이 무게를 견디는 이 몸, 이 근육의 긴장 그 자체입니다. 존재란 스스로 버텨내는 노력으로만 증명됩니다.", maitreya: "'나'라고 붙들 만한 것은 오온이 잠시 모인 흐름일 뿐, 고정된 실체가 아닙니다. 그 사실을 알면 마음이 한결 가벼워집니다." },
   { q: ["존재의 의미가 뭐예요", "존재한다는 것은 무슨 뜻이에요"], rodin: "존재한다는 것은 세계의 무게를 온몸으로 떠맡고, 그 무게에 짓눌리면서도 계속 사유하기를 멈추지 않는 일입니다.", maitreya: "존재는 인연 따라 잠시 나타났다 사라지는 물결입니다. 그 물결 자체를 있는 그대로 지켜보는 것이 사유입니다." },
   { q: ["자아는 실체가 있나요", "나라는 존재는 진짜 있나요"], rodin: "적어도 지금 이 순간 세계와 부딪히며 버티는 이 노력만큼은 부정할 수 없는 실재입니다.", maitreya: "제법무아 — 나라 부를 만한 고정된 실체는 없습니다. 집착을 걷어내면 그 자리에 남는 건 고요뿐입니다." },
@@ -5022,7 +5034,9 @@ const PHILOSOPHY_QA = [
   // 조각상은 서로 마주 보지 않나요")으로는 답이 되지 않아 KB 오탐(반가사유상
   // 기원 등)이나 LLM 폴백으로 빠지고 있었다.
   { q: ["두 조각상이 만나면 처음 무슨 이야기를 할까요", "두 조각상이 만나면 무슨 이야기를 할까요", "두 조각상이 대화한다면 무슨 말을 할까요", "로댕과 반가사유상이 만나면 무슨 얘기를 나눌까요", "이 두 조각상은 서로에게 무슨 말을 할까요", "두 조각상이 서로 만난다면 처음 하는 말은 뭘까요", "두 조각상이 서로에게 하고 싶은 말이 있을까요"], rodin: "저는 아마 먼저 물을 것입니다 — 당신은 그 무거운 물음을 어떻게 내려놓았느냐고. 저는 아직 그 답을 몸으로 찾는 중입니다.", maitreya: "저는 그저 가만히 그의 곁에 머물 것입니다. 애써 묻지 않아도, 나란히 앉아 있는 것만으로 이미 서로의 사유에 응답하고 있으니까요." },
-];
+    ];
+    return _philosophyQACache;
+}
 
 /* ══════════════════════════════════════════════════════
    v42 — 참가자 요청: "철학과 관련된 질문 200개를 넣어서 반가사유상과
@@ -5039,6 +5053,7 @@ const PHILOSOPHY_QA = [
    다음에만 검사한다 — "로댕 재질이 뭐야" 같은 사실 질문이 철학
    문답과 헷갈릴 일은 없다. ══════════════════════════════════════ */
 function _searchPhilosophyQA(query){
+    const PHILOSOPHY_QA = _getPhilosophyQA();
     if(!PHILOSOPHY_QA || !PHILOSOPHY_QA.length) return null;
     const normQuery = _normalizeJosa(query);
     // 1순위: 정확 매칭 — 질문 별칭 중 하나와 원문/조사제거형이 그대로 겹치면.
