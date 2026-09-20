@@ -974,7 +974,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
         <h3>"Resonance of Silence" — Artist Introduction</h3>
         <p class="label">Jun-Dong Cho (趙浚東)</p>
         <p>Planning and interaction phygital platform production · Professor Emeritus, School of Electronic and Electrical Engineering, Sungkyunkwan University</p>
-        <p>Education — B.S. in Electronic Engineering, Sungkyunkwan University; M.S. in Computer Science, New York Institute of Technology; Ph.D. in Computer Science, Northwestern University</p>
+        <p>Education — B.S. in Electronic Engineering, Sungkyunkwan University;<br>M.S. in Computer Science, New York (Poly) University;<br>Ph.D. in Computer Science, Northwestern University</p>
         <p>Career highlights — Founded the Human-ICT Convergence graduate program at Sungkyunkwan University</p>
         <p>Main research interests — Human-computer interaction (HCI), UX design, and multimodal interface development. He coined the concept "Humartology," fusing humanities, art, and technology, and creates digital interactive artworks combining technology and art.</p>
 
@@ -1086,7 +1086,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     <p class="gate-hint">Tap the screen once to enter the room.<br>Once inside, tap the left side of the screen for the previous story, or the right side for the next.</p>
     <div class="intro-btn-row">
         <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
-                aria-label="Background music is on. Press to turn it off."
+                aria-label="Background music button. Press once more to turn it off."
                 data-tap-name="Background music"
                 onclick="event.stopPropagation();toggleBgm()">🔊 Music</button>
         <button class="btn" id="btn-lang-ko" type="button"
@@ -1298,11 +1298,21 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     <!-- v-replay-btn — 참가자 요청: "해당 페이지 내용을 처음부터 다시 들을
          수 있는 기능." 지금 있는 레이어(또는 대화 턴)의 시작으로 되돌아가
          다시 들려준다. -->
-    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button. Press to hear the caption you’re currently viewing again." data-tap-action="Plays the caption you’re currently viewing again.">Replay</button>
+    <!-- v-replay-dup-announce-fix — mirrors index.html: the phrase "Plays
+         the caption you're currently viewing again" was announced twice
+         (once from the full aria-label on the first tap, once from
+         data-tap-action on the confirm tap). Shortened the aria-label to
+         just the name so it's said once, matching btn-exit's pattern. -->
+    <button class="btn quiet" id="btn-replay" onclick="onReplayClick()" aria-label="Replay button." data-tap-action="Plays the caption you’re currently viewing again.">Replay</button>
     <!-- v-pause-btn — 참가자 요청: "중간에 잠시 일시정지." 기존에 화면을
          길게 누르면 동작하던 onPauseClick()을 그대로 재사용하되, 눈에
          보이는 버튼으로도 눌러 쓸 수 있게 되살렸다. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause." data-tap-action="Pauses or resumes playback.">Pause</button>
+    <!-- v-pause-remove-tap-action — participant request: remove "Pauses or
+         resumes playback now." from the Pause/Resume button. The button
+         label itself already shows the state ("Pause"/"Resume"), so this
+         extra confirm-tap narration felt redundant. Dropping
+         data-tap-action makes the second (confirm) tap execute right away. -->
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button. Press to pause.">Pause</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -1537,6 +1547,16 @@ const DIALOGUE = [
 
 let phase = 'screen'; 
 let layerIdx = 0, lineIdx = 0;
+// v-intro-screens-back-nav — matches index.html: two more screens exist
+// before "The National Treasure ~" (LAYERS[0].lines[0]) — the gate text
+// screen and the structure-orientation screen. Both are played via
+// speak() outside the LAYERS/lineIdx system, so phase/layerIdx/lineIdx
+// alone can't tell which of the two (or the actual first LAYERS line)
+// is currently showing. This tracks it: 1=gate text, 2=structure text,
+// 3=past both (in LAYERS).
+let introScreenStep = 0;
+const GATE_TEXT = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face.';
+const STRUCTURE_TEXT = 'At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that, the current story is shown as a caption. Below that are the replay, pause, and room 2 buttons.';
 let turnIdx = 0, dLineIdx = -1; // 초기값을 -1로 두어 intro부터 시작되도록 보완
 // v-skip-intro-fix — same bug as room1's Korean version: tapping "next"
 // while the stage-transition announcement ("From here on, what you'll
@@ -1655,6 +1675,33 @@ setTimeout(()=>{
     try{ speak('This is Resonance of Silence, Room 1, Encounter. On each caption, tap the left area to go back, or the right area to move forward.'); }catch(err){}
 }, 700);
 
+// v-intro-screens-back-nav — split into separate, re-callable functions
+// so onBackClick() can also step back to these screens, not just
+// enterRoom() stepping forward through them.
+function _showGateTextScreen(){
+    introScreenStep = 1;
+    // v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔
+    // speak()만 호출해서 자막이 비어있었음)
+    try{
+        const cw = document.getElementById('caption-wrap');
+        if(cw){ cw.removeAttribute('inert'); cw.removeAttribute('aria-hidden'); }
+    }catch(e){}
+    speakerTagEl.textContent = '';
+    tagEl.textContent = 'Orientation';
+    sourceEl.textContent = '';
+    captionEl.innerHTML = GATE_TEXT;
+    speak(GATE_TEXT, _showStructureTextScreen);
+}
+// v-screen-structure-orientation — participant (totally blind) note:
+// "the first screen needs an overview of the whole interface
+// structure." GATE_TEXT only covered the theme ("Encounter"), never the
+// screen's spatial layout — new information, not a repeat.
+function _showStructureTextScreen(){
+    introScreenStep = 2;
+    captionEl.innerHTML = STRUCTURE_TEXT;
+    speak(STRUCTURE_TEXT, ()=>{ introScreenStep = 3; playLayer(0); });
+}
+
 function enterRoom(){
     // v-first-entry-silent-fix — participant report: "voice narration
     // doesn't play on first entry to index-en." Root cause: speak() below
@@ -1713,30 +1760,7 @@ function enterRoom(){
     // 부가 문구는 빼고, 전시실 1의 이름이자 주제인 "조우"의 뜻풀이 한
     // 문장만 남겼다. 이어지는 두 조각상 소개(오리엔테이션)는 바로 다음
     // 단계(playLayer(0))에서 별도로 들려준다.
-    const gateText = 'Room 1, Encounter. Encounter means meeting by chance, or finally coming face to face.';
-
-// ✅ v.gate-caption — 진입 직후 첫 음성해설도 자막이 보이게(기존엔 speak()만 호출해서 자막이 비어있었음)
-try{
-  const cw = document.getElementById('caption-wrap');
-  if(cw){ cw.removeAttribute('inert'); cw.removeAttribute('aria-hidden'); }
-}catch(e){}
-speakerTagEl.textContent = '';
-tagEl.textContent = 'Orientation';
-sourceEl.textContent = '';
-captionEl.innerHTML = gateText;
-
-speak(gateText, ()=>{
-    // v-screen-structure-orientation — participant (totally blind) note:
-    // "the first screen needs an overview of the whole interface
-    // structure." gateText only covered the theme ("Encounter"), never
-    // the screen's spatial layout — new information, not a repeat.
-    // v-caption-missing-fix — participant report: matches index.html —
-    // this second announcement never set the caption before speaking,
-    // so it played while the caption still showed the earlier gateText.
-    const structureText = 'At the top of the screen are the artwork information, speed, easy sentences, and background music buttons. In the middle are the two statues. Below that, the current story is shown as a caption. Below that are the replay, pause, and room 2 buttons.';
-    captionEl.innerHTML = structureText;
-    speak(structureText, ()=> playLayer(0));
-});
+    _showGateTextScreen();
     startAmbientSound();
     fadeArrivalIn();
 }
@@ -1762,7 +1786,9 @@ function toggleBgm(){
     if(btn){
         btn.setAttribute('aria-pressed', String(bgmMuted));
         btn.textContent = bgmMuted ? '🔇 Music' : '🔊 Music';
-        btn.setAttribute('aria-label', bgmMuted ? 'Background music is off. Press to turn it on.' : 'Background music is on. Press to turn it off.');
+        // v-bgm-btn-wording — participant request: unify the wording as
+        // "Background music button. Press once more to turn it on/off."
+        btn.setAttribute('aria-label', bgmMuted ? 'Background music button. Press once more to turn it on.' : 'Background music button. Press once more to turn it off.');
     }
     // v-execute-haptic — participant request: "vibrate when a button
     // executes." Immediate toggle-style buttons (background music,
@@ -2974,6 +3000,36 @@ function onReplayClick(){
 // 이어받는다. 일시정지는 이제 오직 "멈춤" 버튼을 직접 눌렀을 때만
 // 발생한다.
 
+// v-back-to-gate-from-first-line — participant issue: touching the back
+// arrow on the screen starting with "The National Treasure ~" does
+// nothing and just stops. + follow-up: "there are actually 2 more
+// screens before that one" (the gate text screen, and the structure
+// screen). Cause: once onBackClick() reached the very first line (stage
+// 0, line 0 / LAYERS[0].lines[0]) it did nothing, as if there was
+// nowhere further back to go — but GATE_TEXT and STRUCTURE_TEXT each
+// play as their own screen before this one, and the intro gate screen
+// (#intro-gate) comes before those — three steps were being skipped.
+// introScreenStep tracks which of the three we were on (see
+// _showGateTextScreen/_showStructureTextScreen above), so onBackClick()
+// can step back through them one at a time. The gate screen itself has
+// nowhere further back to go, so this just shows it again.
+function _returnToGateScreen(){
+    const gate = document.getElementById('intro-gate');
+    if(!gate) return;
+    try{ window.speechSynthesis.cancel(); }catch(err){}
+    speechGen++;
+    clearTimeout(autoTimer);
+    introScreenStep = 0;
+    gate.style.display = '';
+    stageEl.classList.remove('lit');
+    // Mirrors v59 — re-apply the inert that enterRoom() had released, so
+    // screen readers skip the screen elements behind the gate while it's shown.
+    ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){ el.setAttribute('inert',''); el.setAttribute('aria-hidden','true'); }
+    });
+}
+
 function onBackClick(){
     clearTimeout(autoTimer);
     // v-nav-hint-first-time-fix — a real left/right tap means the
@@ -3010,8 +3066,20 @@ function onBackClick(){
             layerIdx--;
             lineIdx = Math.max(0, LAYERS[layerIdx].lines.length - 1);
             playLine();
+        } else {
+            // Before "The National Treasure ~" (LAYERS[0].lines[0]) there
+            // are two more screens: the structure screen (STRUCTURE_TEXT)
+            // and the gate screen (GATE_TEXT) — introScreenStep tells us
+            // which one we were on, so step back through them in order.
+            if(introScreenStep >= 3){
+                _showStructureTextScreen();
+            } else if(introScreenStep === 2){
+                _showGateTextScreen();
+            } else {
+                // Before the gate text screen — the actual #intro-gate.
+                _returnToGateScreen();
+            }
         }
-        // 전체 첫 문장이면 더 돌아갈 곳이 없으므로 이동 없이 그대로 멈춘다.
     } else if(announcing){
         // "다음 전시실로" 안내 화면 → 3단계 마지막 대화 문장으로 복귀.
         const last = DIALOGUE.length - 1;

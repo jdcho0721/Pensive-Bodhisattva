@@ -1300,7 +1300,7 @@ body.low-vision-mode #hint-row .btn{
         <h3>Resonance of Silence — Artist Introduction</h3>
         <p class="label">Jun-Dong Cho (趙浚東)</p>
         <p>Planning and interaction phygital platform production · Professor Emeritus, School of Electronic and Electrical Engineering, Sungkyunkwan University</p>
-        <p>Education — B.S. in Electronic Engineering, Sungkyunkwan University; M.S. in Computer Science, New York Institute of Technology; Ph.D. in Computer Science, Northwestern University</p>
+        <p>Education — B.S. in Electronic Engineering, Sungkyunkwan University;<br>M.S. in Computer Science, New York (Poly) University;<br>Ph.D. in Computer Science, Northwestern University</p>
         <p>Career highlights — Founded the Human-ICT Convergence graduate program at Sungkyunkwan University</p>
         <p>Main research interests — Human-computer interaction (HCI) and multimodal interface development. He coined the concept "Humartology," fusing humanities, art, and technology, and creates digital interactive artworks combining technology and art.</p>
 
@@ -1420,7 +1420,12 @@ body.low-vision-mode #hint-row .btn{
              그대로 활용한다 — 인쇄 대화상자가 열리면 "PDF로 저장"을 선택해 그대로
              파일로 저장할 수 있다. 인쇄되는 모습은 위 @media print 규칙이
              결정한다(수료증 카드만 하얀 바탕에 검게 남기고 나머지는 감춤). -->
-        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="Print the certificate as a PDF" data-tap-name="Print as PDF" data-tap-action="Opens the certificate print screen">Print</button>
+        <!-- v-print-btn-wording — participant request: change the wording
+             to "This is the Print button. Press once more to save it as a
+             PDF." (matches btn-exit's "This is the exit button." pattern).
+             The first tap now announces the name plus what will happen;
+             the confirm (second) tap executes right away. -->
+        <button class="btn" id="btn-cert-print" onclick="printCertificate()" aria-label="This is the Print button. Press once more to save it as a PDF." data-tap-name="This is the Print button. Press once more to save it as a PDF.">Print</button>
         <button class="btn" id="btn-cert-close" data-tap-name="Keep Exploring" data-tap-action="Returns to Room 2." onclick="closeCertificate()">Keep Exploring</button>
         <button class="btn primary" id="btn-cert-primary">나가기</button>
     </div>
@@ -1452,7 +1457,7 @@ body.low-vision-mode #hint-row .btn{
     <p class="gate-hint">Tap the screen once to enter the room.</p>
     <div class="intro-btn-row">
         <button class="btn" id="btn-bgm-toggle" type="button" aria-pressed="false"
-                aria-label="Background music is on. Press to turn it off."
+                aria-label="Background music button. Press once more to turn it off."
                 data-tap-name="Background music"
                 onclick="event.stopPropagation();toggleBgm()">🔊 Music</button>
         <button class="btn" id="btn-lang-ko" type="button"
@@ -2252,7 +2257,11 @@ function toggleBgm(){
         // 배경음악으로 바꿔줘." 아이콘(🔊/🔇)이 이미 상태를 나타내므로
         // 글자는 "배경음악"만 남긴다.
         btn.textContent = bgmMuted ? '🔇 배경음악' : '🔊 배경음악';
-        btn.setAttribute('aria-label', bgmMuted ? '배경음악이 꺼져 있습니다. 누르면 켭니다.' : '배경음악이 켜져 있습니다. 누르면 끕니다.');
+        // v-bgm-btn-wording — participant request: unify the wording as
+        // "Background music button. Press once more to turn it on/off."
+        // (this also fixes a pre-existing bug where this line was left in
+        // Korean in the English build, so English users heard Korean here.)
+        btn.setAttribute('aria-label', bgmMuted ? 'Background music button. Press once more to turn it on.' : 'Background music button. Press once more to turn it off.');
     }
     // v-bgm-toggle-speech — 참가자 요청: "배경음악이 켜질 때는 '배경음악이
     // 켜집니다.', 꺼질 때는 '배경음악이 꺼집니다.'라고 해달라." 이 버튼의
