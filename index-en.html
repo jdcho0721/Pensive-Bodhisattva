@@ -51,6 +51,16 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    WebP at 63KB (76% smaller, no visible quality loss). */
 #stage{position:fixed;inset:0;background:url('반가-로댕.webp') no-repeat center center;background-size:contain;filter:brightness(.88);transition:filter 0s;}
 /* v8.1 — 참가자 지적 반영: 처음 두 조각상을 비추는 안개 같은 빛의 투명도를 낮추어(알파값 조정) 조각상이 더 선명하고 뚜렷하게 보이도록 수정함 */
+/* v-fog-before-image-fix — participant report: matches index.html —
+   "the room image doesn't appear right away; something like fog
+   appears first, then the image." #spotlight-overlay and #veil are
+   pure CSS gradients that render the instant the page loads, while
+   #stage's actual photo needs network time — creating a brief window
+   where only the warm glow (and dark vignette) show without the
+   photo, looking like fog before the image. Hidden until the JS below
+   confirms the photo has actually loaded, so they appear together. */
+#spotlight-overlay, #veil{opacity:0; transition:opacity .4s ease;}
+body.stage-image-ready #spotlight-overlay, body.stage-image-ready #veil{opacity:1;}
 #spotlight-overlay{position:fixed;inset:0;z-index:1;pointer-events:none;mix-blend-mode:screen;
     background:
         radial-gradient(circle at 23% 46%, rgba(255,241,209,.38) 0%, rgba(255,241,209,.2) 15%, rgba(255,241,209,.06) 26%, transparent 40%),
@@ -1314,6 +1324,21 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 </div>
 
 <script>
+
+// v-fog-before-image-fix — participant report: matches index.html —
+// preloads the photo during the few seconds spent reading the gate
+// screen, so by the time a visitor actually enters, it's usually
+// already loaded and body.stage-image-ready is already set — no
+// window for the "fog" to be visible at all. If it's somehow still
+// loading, the class is added the instant it finishes, so the glow/
+// vignette appear together with the photo (see CSS opacity transition
+// above).
+(function _preloadStageImageEarly(){
+    const img = new Image();
+    img.onload = () => { document.body.classList.add('stage-image-ready'); };
+    img.onerror = () => { document.body.classList.add('stage-image-ready'); };
+    img.src = '반가-로댕.webp';
+})();
 
 // v-stray-speech-fix — 참가자 지적: "room2(전시실 2)에 갑자기 index
 // (전시실 1)의 해설이 튀어나온다." 기존에는 '전시2' 버튼의 onclick에만
