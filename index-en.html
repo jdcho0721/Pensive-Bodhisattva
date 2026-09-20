@@ -1783,20 +1783,28 @@ speak(gateText, ()=>{
 // chat panel's popstate handling (v-chat-fullscreen). Doesn't rewind
 // deep per-stage state (layerIdx etc.), but re-entering runs
 // enterRoom() fresh anyway.
+// v-back-to-gate-from-first-line — extracted into a function so both
+// the popstate handler and onBackClick() (when it reaches the very
+// first line) can reuse the same restore logic.
+function _returnToGateScreen(){
+    const gate = document.getElementById('intro-gate');
+    if(!gate) return;
+    try{ window.speechSynthesis.cancel(); }catch(err){}
+    speechGen++;
+    clearTimeout(autoTimer);
+    gate.style.display = '';
+    stageEl.classList.remove('lit');
+    ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el){ el.setAttribute('inert',''); el.setAttribute('aria-hidden','true'); }
+    });
+}
 window.addEventListener('popstate', function(e){
     const gate = document.getElementById('intro-gate');
     if(!gate) return;
     const stillInRoom = !!(e.state && e.state.roomEntered);
     if(!stillInRoom && gate.style.display === 'none'){
-        try{ window.speechSynthesis.cancel(); }catch(err){}
-        speechGen++;
-        clearTimeout(autoTimer);
-        gate.style.display = '';
-        stageEl.classList.remove('lit');
-        ['top-controls','stage-badge','caption-wrap'].forEach(id=>{
-            const el = document.getElementById(id);
-            if(el){ el.setAttribute('inert',''); el.setAttribute('aria-hidden','true'); }
-        });
+        _returnToGateScreen();
     }
 });
 
@@ -3069,8 +3077,19 @@ function onBackClick(){
             layerIdx--;
             lineIdx = Math.max(0, LAYERS[layerIdx].lines.length - 1);
             playLine();
+        } else {
+            // v-back-to-gate-from-first-line — participant report:
+            // matches index.html — swiping/tapping back on the screens
+            // where "전시실 1 조우입니다" or "화면 위쪽에는..." play
+            // never went further back than this very first line. Those
+            // two announcements live outside the lineIdx/layerIdx
+            // system entirely, so "further back" from here can only
+            // mean the gate screen. Calls the same restore function the
+            // popstate handler uses, directly (not history.back(),
+            // which risks navigating away to whatever page came before
+            // this one entirely).
+            _returnToGateScreen();
         }
-        // 전체 첫 문장이면 더 돌아갈 곳이 없으므로 이동 없이 그대로 멈춘다.
     } else if(announcing){
         // "다음 전시실로" 안내 화면 → 3단계 마지막 대화 문장으로 복귀.
         const last = DIALOGUE.length - 1;
