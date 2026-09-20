@@ -453,8 +453,14 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
 /* v-low-vision-gate-fix — participant report: matches index.html —
    large-text mode didn't cover the gate screen (title, description,
    route buttons, hint text) — the very first, smallest text a
-   low-vision visitor meets. Enlarge it too. */
-body.low-vision-mode .intro-gate h1{font-size:clamp(2.1rem, 9vw, 3.2rem) !important;}
+   low-vision visitor meets. Enlarge it too.
+   v-low-vision-size-tonedown — participant report: "index/index-en's
+   large text should be moderately large — not too big." The h1 and
+   button sizes here originally went well past the ~1.25-1.3x scale
+   the rest of this file's large-text rules use (up to 3.2rem against
+   an actual default max of 1.9rem) — brought back in line with that
+   same ratio. */
+body.low-vision-mode .intro-gate h1{font-size:clamp(1.7rem, 6vw, 2.5rem) !important;}
 body.low-vision-mode .intro-gate .gate-eyebrow{font-size:1.25em !important;}
 body.low-vision-mode .intro-gate .intro-desc,
 body.low-vision-mode .intro-gate .gate-epigraph,
@@ -462,8 +468,8 @@ body.low-vision-mode .intro-gate .gate-hint{font-size:1.25em !important; line-he
 body.low-vision-mode .intro-gate .gate-route-title{font-size:1.2em !important;}
 body.low-vision-mode .intro-gate .gate-route-item,
 body.low-vision-mode .intro-gate .intro-btn-row .btn{
-    font-size:clamp(1rem, 4vw, 1.3rem) !important;
-    padding:clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px) !important;
+    font-size:clamp(1rem, 3.2vw, 1.25rem) !important;
+    padding:clamp(9px, 2.4vw, 14px) clamp(14px, 3.4vw, 20px) !important;
 }
 #info-overlay{
     position:fixed; inset:0; z-index:80; background:rgba(0,0,0,.92);
