@@ -161,9 +161,10 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 .caption-nav-hint{
     position:absolute; top:50%; transform:translateY(-50%);
     font-family:'Cinzel Decorative',serif; font-size:1.7rem; line-height:1;
-    color:var(--gold-dim); opacity:.6; user-select:none;
+    color:var(--gold); opacity:.6; user-select:none;
     background:none; border:none; padding:12px; margin:0; cursor:pointer;
     -webkit-tap-highlight-color:transparent;
+    text-shadow:0 1px 4px rgba(0,0,0,.85), 0 0 10px rgba(0,0,0,.6);
 }
 .caption-nav-hint:focus-visible{outline:2px solid var(--gold); outline-offset:2px; opacity:1;}
 .caption-nav-hint:hover{opacity:1;}
@@ -175,8 +176,14 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
    좋겠다." 화살표 자체의 기본 불투명도를 올리고(.6 → .8), 화면 양쪽
    가장자리에 은은한 세로 그라데이션 띠를 추가해 "여기를 누르면
    넘어간다"는 것을 화살표를 미처 못 봐도 먼저 느낄 수 있게 한다.
-   순수 시각 안내이므로 클릭을 가로채지 않는다(pointer-events:none). */
-.caption-nav-hint{ opacity:.8; }
+   순수 시각 안내이므로 클릭을 가로채지 않는다(pointer-events:none).
+   v-nav-arrow-sharper — 참가자 요청: "바탕화면에 이전/다음 화살표를
+   좀 선명하게 보이게 해줘." 옅은 톤(--gold-dim)과 불투명도 .8로는
+   조각상 이미지 위에서 흐릿하게 묻혔다 — 더 밝은 색(--gold)으로
+   바꾸고 불투명도를 더 올렸으며, 이미지 배경이 밝을 때도 잘 보이도록
+   화살표 글자 자체에 그림자를 둘러 어떤 배경에서도 또렷하게
+   대비되게 했다. */
+.caption-nav-hint{ opacity:.92; }
 .caption-nav-edge{
     position:absolute; top:0; bottom:0; width:42px;
     pointer-events:none; z-index:1;
@@ -1057,13 +1064,25 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
             <p>생각하는 사람 © Auguste Rodin (공개 저작물)</p>
         </div>
 
-        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="참고문헌 보기" data-tap-action="참고문헌 목록을 엽니다">참고문헌 보기</button>
+        <!-- v-refs-btn-simplify — 참가자 요청: "참고문헌 보기 버튼 두번
+             클릭하면 들어가게 간편하게 만들어줘." 첫 번째 탭에서 이미
+             이름("참고문헌 보기")이 안내되는데, 두 번째 탭에서도
+             data-tap-action 문구("참고문헌 목록을 엽니다")를 다 읽고
+             나서야 실제로 열려서, 두 번 눌러도 곧바로 안 열리는
+             느낌이었다. data-tap-action을 없애 두 번째 탭에서 곧바로
+             열리게 한다(목록을 열면 그 안의 내용은 toggleRefsList()
+             자체가 읽어준다). -->
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" aria-label="참고문헌 보기">참고문헌 보기</button>
         <!-- v-refs-links — 참가자 요청: "참고문헌은 링크를 연결해줘."
              검색으로 실제 확인 가능한 항목([1][3][4][5][7])만 실제
              주소로 링크를 걸었다. [2][6]은 1970·90년대 국문 단행본이라
              단일한 정본 URL을 확인하지 못해 텍스트로 남겨뒀다. -->
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
-            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, <a href="https://smarthistory.org/pensive-bodhisattvas/" target="_blank" rel="noopener">https://smarthistory.org/pensive-bodhisattvas/</a> (accessed 29 July 2026).</p>
+            <!-- v-refs-link-broken-fix — 참가자 지적: "첫번째 참고문헌은
+                 링크 연결이 안되니까 링크 지워줘." 실제로 링크가 안
+                 열리는 것으로 확인돼, href를 없애고 일반 텍스트로
+                 되돌린다. -->
+            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
             <p><b>[3]</b> B. Vujanović, Rethinking Rodin's Thinker, Decorative Arts Society Journal 43 (2019) 61–71. <a href="https://www.academia.edu/71052101/Rethinking_Rodin_s_Thinker" target="_blank" rel="noopener">전문 보기</a></p>
             <p><b>[4]</b> Musée Rodin, The Gates of Hell, collection notice, <a href="https://www.meudon.musee-rodin.fr/en/musee/collections/oeuvres/porte-de-lenfer-meudon" target="_blank" rel="noopener">meudon.musee-rodin.fr</a>, accessed 2026.</p>
@@ -1754,7 +1773,16 @@ speak(gateText, ()=>{
     // 넘어갈 때만 이 사운드를 트리거하므로, 맨 처음 입장할 때(0단계,
     // playLine(0)으로 시작해 playLayer()를 거치지 않는 경로)는 여기서
     // 따로 한 번 켜준다.
-    _fadeStatueAudio(document.getElementById('snd-between'), STATUE_SOUND_VOLUME);
+    // v-between-image-speed-fix — 이 사운드(snd-between)에 입장하자마자
+    // 곧바로 .play()를 걸면, preload="metadata" 상태인 이 파일의 실제
+    // 데이터를 그 순간부터 받기 시작해 이미지 로딩과 대역폭을 다툰다.
+    // 이미지가 먼저 자리 잡을 시간을 아주 잠깐 벌어준 뒤 이 소리를 건다.
+    _betweenStageActive = true; // v-bgm-no-mixing-fix — 0단계이므로 켜져 있어야 하는 상태로 기록
+    setTimeout(()=>{
+        if(_betweenStageActive){
+            _fadeStatueAudio(document.getElementById('snd-between'), STATUE_SOUND_VOLUME);
+        }
+    }, 400);
 }
 
 // v-bgm-toggle — room2.html과 동일한 취지: 첫 화면의 "배경음악" 버튼으로
@@ -1895,6 +1923,15 @@ function startAmbientSound(){
 const STATUE_SOUND_VOLUME = 0.14;
 const _statueFadeTimers = {};   
 let _currentStatueSound = null; 
+// v-bgm-no-mixing-fix — snd-between은 0·1단계에서만 켜져 있어야 하는데
+// (playLayer() 참고), updateStatueSound()는 그와 별개로 "지금 조각상
+// 전용 소리가 없으면 배경음을 되살린다"는 판단을 문장 단위로 내린다 —
+// 이 둘이 서로의 사정을 모른 채 각자 snd-between의 볼륨을 정하면,
+// 2·3단계에서도 updateStatueSound()가 snd-between을 실수로 다시
+// 켜버릴 수 있다. 지금 snd-between이 "켜져 있어야 하는 단계"인지를
+// 여기 기록해두고, updateStatueSound()는 이 값을 확인한 뒤에만
+// 되살린다.
+let _betweenStageActive = false;
 
 const HAPTIC_PATTERNS = { stage:[20,50,20], turn:[15],
     // v-room-transition-haptic — 참가자 지적: "전시실 이동 시 진동을
@@ -1969,17 +2006,21 @@ function updateStatueSound(speaker){
     const maitreyaEl = document.getElementById('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
-    // v-bgm-no-mixing — 참가자 요청: "로댕 관련 해설이 나올 때는
-    // Where_Bamboo_Bends, 반가사유상 관련 해설이 나올 때는
-    // Temple_Bell_at_Daybreak, 그 이외는 기본 배경음(snd-base)으로
-    // Lotus_at_the_Gate. 두 가지 배경음이 섞여서 나오지 않게 해달라."
-    // snd-base는 이제 조각상 전용 소리와 다른 파일(Lotus_at_the_Gate)을
-    // 쓰므로 예전의 "같은 파일이라 안 들린다" 문제는 없지만, 대신 두
-    // 소리가 동시에 들리면 "섞여서" 나온다는 새 요청이 있어, 특정
-    // 조각상 소리가 켜지는 동안은 기본 배경음을 완전히 끈다(0으로
-    // 페이드) — 항상 한 번에 하나의 배경음만 들린다.
-    const baseEl = document.getElementById('snd-base');
-    _fadeStatueAudio(baseEl, target ? 0 : AMBIENT_VOLUME);
+    // v-bgm-no-mixing-fix — 참가자 요청: "각 조각상에 해당하는 사운드가
+    // 나올 때 베이스 사운드가 겹쳐서 나오지 않게 해줘." 원인: 예전에
+    // snd-base를 완전히 없애고 그 자리를 snd-between(오리엔테이션·
+    // 1단계 전용 배경음, Feel_the_Stillness)으로 바꿨는데, 이 줄은 그
+    // 사실을 반영하지 못한 채 이제는 존재하지 않는 snd-base를 그대로
+    // 찾고 있었다 — _fadeStatueAudio()가 null 요소는 조용히 무시하므로
+    // 에러는 안 났지만, 실제로는 아무 효과도 없는 죽은 코드였다. 그
+    // 결과 오리엔테이션·1단계 중에(특히 반가사유상 개별 설명처럼
+    // speaker가 지정된 문장에서) 로댕/반가사유상 소리가 켜져도
+    // snd-between은 전혀 줄어들지 않고 계속 겹쳐 들렸다. snd-between을
+    // 가리키도록 고치고, playLayer()가 정한 "지금 이 배경음이 켜져
+    // 있어야 할 단계인지"를 기록해두는 안전장치(_betweenStageActive)도
+    // 함께 둬 다른 단계에서 잘못 되살아나는 부작용도 막는다.
+    const baseEl = document.getElementById('snd-between');
+    _fadeStatueAudio(baseEl, target ? 0 : (_betweenStageActive ? STATUE_SOUND_VOLUME : 0));
     const moodEl = document.getElementById('mood-overlay');
     if(moodEl){
         moodEl.classList.toggle('mood-rodin', target === 'rodin');
@@ -2519,7 +2560,11 @@ function playLayer(i){
     // (오리엔테이션)·1단계(전체 구도) 동안에만 켜고, 그 외 단계(2·3)로
     // 넘어가면 끈다 — 뒤로가기로 다시 0·1단계에 들어와도 그대로 다시
     // 켜진다.
-    _fadeStatueAudio(document.getElementById('snd-between'), (i === 0 || i === 1) ? STATUE_SOUND_VOLUME : 0);
+    // v-bgm-no-mixing-fix — 지금이 snd-between이 켜져 있어야 할
+    // 단계인지를 기록해둔다 — updateStatueSound()가 이 값을 보고
+    // 되살릴지 판단한다(위 주석 참고).
+    _betweenStageActive = (i === 0 || i === 1);
+    _fadeStatueAudio(document.getElementById('snd-between'), _betweenStageActive ? STATUE_SOUND_VOLUME : 0);
     playLine();
 }
 

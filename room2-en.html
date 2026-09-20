@@ -1317,7 +1317,11 @@ body.low-vision-mode #hint-row .btn{
             <p>The Thinker © Auguste Rodin (public domain)</p>
         </div>
 
-        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="Opens the reference list">References</button>
+        <!-- v-refs-btn-simplify — participant request: matches
+             room2.html/index.html — removed data-tap-action so the
+             confirm tap opens it immediately instead of reading a
+             sentence first. -->
+        <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false">References</button>
         <!-- v-refs-sorted — participant report: matches room2.html —
              sorted numerically ([1] through [13]) instead of the
              previous scrambled order.
@@ -1327,7 +1331,9 @@ body.low-vision-mode #hint-row .btn{
              paper and classics with multiple editions) were left as
              plain text rather than risk a wrong link. -->
         <div id="refs-list" role="region" aria-label="Reference list">
-            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, <a href="https://smarthistory.org/pensive-bodhisattvas/" target="_blank" rel="noopener">https://smarthistory.org/pensive-bodhisattvas/</a> (accessed 29 July 2026).</p>
+            <!-- v-refs-link-broken-fix — participant report: matches
+                 room2.html/index.html — link doesn't work, removed. -->
+            <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
             <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63. <a href="https://imrjournal.info/wp-content/uploads/2026/01/imrj.2001.45-1.pdf" target="_blank" rel="noopener">Full text</a></p>
             <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024. <a href="https://doi.org/10.1093/oso/9780190878481.001.0001" target="_blank" rel="noopener">DOI: 10.1093/oso/9780190878481.001.0001</a></p>
@@ -6273,17 +6279,14 @@ function toggleChatMic(){
         if(!panel.classList.contains('open')) toggleChat();
         document.getElementById('chat-input').value = '';
         _sttRetryCount = 0; // 사용자가 직접 마이크를 다시 눌렀으니 자동 재시도 횟수도 초기화
-        // v-mic-input-announce — 참가자 요청: "마이크 버튼을 누르면 '사유의
-        // 상담소 입력창입니다'라고 안내해줘." #chat-mic은 다른 토글
-        // 버튼들과 같은 이유(TWOTAP_HANDS_OFF_SELECTOR)로 눌렀을 때 바로
-        // 실행되어, 화면을 보기 어려운 관람객은 지금 무엇을 눌렀는지 음성
-        // 안내 없이는 알 수 없었다. 이 안내를 먼저 들려주고, 안내가 끝난
-        // 뒤에 실제로 듣기 시작한다 — 안내 음성 자체가 마이크에 함께
-        // 잡혀 인식을 방해하지 않도록 순서를 나눴다.
-        speak('This is the Contemplation Counsel input field. Please say your question.', ()=>{
-            try{ chatRecognition.start(); }
-            catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
-        });
+        // v-mic-two-tap-immediate — participant request: matches
+        // room2.html — "make two taps on the mic button activate it
+        // right away." The name is already announced on the first tap
+        // (data-tap-name), so the second tap now starts listening
+        // immediately instead of playing another full announcement
+        // first.
+        try{ chatRecognition.start(); }
+        catch(e){ /* 이미 시작된 상태에서 재호출된 경우 등은 무시 */ }
     }
 }
 
