@@ -111,7 +111,11 @@ html,body{margin:0;height:100%;background:#000;color:#eee;font-family:'Noto Seri
 
 /* ── 상단: 단계 표시 ── */
 #eyebrow{position:fixed; top:calc(18px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
-    font-family:'Cinzel Decorative',serif; letter-spacing:.16em; font-size:.72rem; color:var(--gold-dim); text-transform:uppercase; text-align:center;}
+    /* v-wcag-contrast-fix — WCAG 2.1 AA 1.4.3 audit found --gold-dim
+       (30% opacity) at 1.72:1 on black, far under the 4.5:1 this
+       small (10.5px, not "large") text needs. Raised to 75% opacity
+       for 5.75:1. */
+    font-family:'Cinzel Decorative',serif; letter-spacing:.16em; font-size:.72rem; color:rgba(212,175,55,.75); text-transform:uppercase; text-align:center;}
 #stage-badge{position:fixed; top:calc(76px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%);
     display:flex; gap:6px; align-items:center; z-index:30;}
 #stage-badge .dot{
@@ -692,7 +696,9 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     font-weight:400;
     font-size:.66rem;
     text-transform:uppercase;
-    color:rgba(212,175,55,.6);
+    /* v-wcag-contrast-fix — matches index.html: 60% opacity was
+       3.94:1, under the 4.5:1 needed. Raised to 75% for 5.75:1. */
+    color:rgba(212,175,55,.75);
     letter-spacing:.3em;
     text-align:center;
 }
@@ -1085,7 +1091,9 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
     font-size:.62rem;
     letter-spacing:.34em;
     text-transform:uppercase;
-    color:rgba(212,175,55,.5);
+    /* v-wcag-contrast-fix — matches index.html: 50% opacity was
+       3.03:1, well under 4.5:1. Raised to 75% for 5.75:1. */
+    color:rgba(212,175,55,.75);
     margin:0 0 6px;
 }
 
