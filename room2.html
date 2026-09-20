@@ -500,12 +500,14 @@ button.twotap-armed{outline:2px solid var(--gold);outline-offset:2px;box-shadow:
 /* v-chat-toggle-draggable — 참가자 요청: "챗봇 버튼 위치를 이동할 수
    있게 해줘." 드래그로 옮길 수 있으려면 브라우저 기본 터치 제스처
    (스크롤 등)가 먼저 가로채지 않도록 touch-action:none이 필요하다. */
-/* v-chat-toggle-obtrusive-fix — 참가자 지적: "챗봇 버튼이 화면 가운데에
-   있어서 작품을 볼 때 조금 눈에 걸리는 느낌이 있었다." 위치는 그대로
-   두되(끌어서 옮길 수 있다는 이전 수정도 그대로 유지), 평소에는 옅게
-   비치다가 손을 가까이 대거나(hover) 포커스가 오면 또렷해지도록
-   투명도를 낮췄다 — 조각상 이미지를 볼 때 시선을 덜 가로챈다. */
-#chat-toggle{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
+/* v-chat-toggle-reposition — 참가자 요청: "챗봇 버튼이 화면 가운데서
+   시야를 가림 → 위치를 오른쪽 중앙 이미지 아래로 이동해줘." 가운데
+   정렬(left:50% + transform)을 없애고 오른쪽 가장자리로 옮긴다 —
+   세로 위치(이미지 아래쪽 부근)는 그대로 두어, 조각상 가운데를
+   가로막지 않으면서도 이미지 하단 언저리에 자연스럽게 자리한다.
+   드래그로 옮길 수 있다는 점과 평소 반투명(opacity .55) 처리는
+   그대로 유지된다. */
+#chat-toggle{position:fixed;right:16px;bottom:calc(200px + env(safe-area-inset-bottom));z-index:35;
     background:rgba(0,0,0,.8);border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
     min-width:44px;min-height:44px;padding:0.3em;font-size:1.1rem;line-height:1;cursor:pointer;
     touch-action:none;opacity:.55;transition:opacity .25s ease;}
@@ -1305,16 +1307,10 @@ body.low-vision-mode #hint-row .btn{
         <div class="info-section" data-kind="intro">
         <h3>전시2 작품 소개 — 부위별 의미와 사유</h3>
         <p class="label">작품명 — 《침묵의 공명 — 사유 및 체화》</p>
-        <!-- v-intro-room-split — 참가자 요청: "전시1·전시2 작품소개를 같은
-             작품 설명이되 강조점만 다르게 — 전시1은 형태·자세 중심,
-             전시2는 부위별 의미·사유 중심으로." 아래 첫 문단만 이
-             원칙에 맞춰 다시 썼다 — 이 전시실에서 실제로 손끝으로
-             하나씩 짚는 부위(이마·주먹·귀·미소·발가락 등)와 그 의미가
-             바로 아래 DETAILS/room2_자막_* 내레이션의 핵심 내용이므로,
-             그 톤(스피노자 코나투스·진인사대천명·번뇌와 적멸 등)을
-             요약해 미리보기로 얹었다. 그 아래 사실 정보 문단(제작
-             시기·특징 등)은 전시실 1과 공통되는 사실이라 손대지
-             않았다. -->
+        <!-- v-ux-philosophy-added — 참가자 요청: matches index.html —
+             도널드 노먼의 감성 UX 3단계를 확장한 조우·체화·여일 설명을
+             두 전시실 '작품 소개' 모두에 같은 문단으로 넣는다. -->
+        <p>이 전시는 도널드 노먼의 감성적 UX 3단계(본능적·행동적·회고적 반응)를 확장하여, 관람객이 작품과 교감하는 여정을 조우·체화·여일이라는 세 가지 미학적 단계로 구현했습니다. <b>조우</b>(감성적 접근)는 시각·촉각·청각이 함께 작동하는 다감각 인터페이스를 통해, 작품과 관람객이 처음 만나는 순간의 강렬한 감각적 울림을 선사합니다. <b>체화</b>(행동적 접근)는 조각상의 형태와 부위를 손끝으로 더듬고 몸소 따라 해보는 신체적 상호작용을 통해, 작품의 의미가 관람객의 몸과 행동에 자연스럽게 스며들게 합니다. <b>여일</b>(반성적 접근)은 옛 사유와 지금의 사유가 하나로 이어져(如一), 깊은 내면의 평온함과 영감으로 가득 찬 성찰의 시간을 완성합니다.</p>
         <p>전시실 2는 몸 전체의 형태가 아니라, 부위 하나하나에 담긴 의미와 사유를 손끝으로 짚어가는 공간입니다. 금동미륵보살반가사유상과 로댕의 &lt;생각하는 사람&gt;, 같은 부위(이마·손·자세·발)라도 두 조각상이 전혀 다른 마음을 새겨 넣었다는 것을 하나씩 확인하게 됩니다.</p>
         <p>&lt;생각하는 사람&gt;은 미간·주먹·팔꿈치·등 근육 하나하나에 아직 내려놓지 못한 무게가 응결돼 있습니다 — 스피노자가 말한, 자신의 존재 안에 머무르려는 근원적 노력(코나투스)이 아직 외부 세계와 격렬히 부딪히며 작동하는 순간들입니다. 반가사유상은 귀·미소·손가락·옷주름·자세·발가락 하나하나에 그 무게를 내려놓은 자리가 새겨져 있습니다 — 번뇌에서 놓여나 조건 없이 일어나는 '적멸의 즐거움'에 가닿은 순간들입니다. 옛말 '진인사대천명'의 두 단계처럼, 로댕의 발끝이 아직 내려놓지 못한 '진인사'라면 반가사유상의 발가락은 결과를 하늘에 맡긴 '대천명'입니다.</p>
         <p>전시실 2에서 부위 하나를 짚을 때마다, 이 서로 다른 두 마음의 결이 손끝으로 전해질 것입니다.</p>
@@ -1357,11 +1353,14 @@ body.low-vision-mode #hint-row .btn{
         </div>
 
         <button type="button" id="refs-toggle-btn" onclick="toggleRefsList()" aria-expanded="false" data-tap-action="참고문헌 목록을 엽니다">참고문헌</button>
+        <!-- v-refs-sorted — 참가자 지적: "참고문헌을 번호 순으로
+             정렬해달라." 기존엔 [8],[1],[9],[2],[10]... 순서로 뒤섞여
+             있었다 — 번호([1]~[13]) 순서대로 다시 배치했다. -->
         <div id="refs-list" role="region" aria-label="참고문헌 목록">
-            <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63.</p>
             <p><b>[1]</b> H. Kim, Pensive bodhisattvas, Smarthistory, https://smarthistory.org/pensive-bodhisattvas/ (accessed 29 July 2026).</p>
-            <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024.</p>
             <p><b>[2]</b> S.Y. Hwang, Baekje-banga-sayusang-sogo [백제반가사유상소고], in: Han'guk Bulsang-ui Yeon'gu [한국불상의 연구], 1973.</p>
+            <p><b>[8]</b> M.J. Valero Gisbert, D. Cosenza, Words for visual: eliminating barriers for communication, Int. Multidiscip. Res. J. 11 (2025) 51–63.</p>
+            <p><b>[9]</b> F. Moltmann, Objects and Attitudes, Oxford University Press, Oxford, 2024.</p>
             <p><b>[10]</b> S. Kierkegaard, The Concept of Anxiety, trans. R. Thomte, Princeton University Press, 1980 (orig. 1844).</p>
             <p><b>[11]</b> B. Spinoza, Ethics, in: E. Curley (Ed./Trans.), A Spinoza Reader, Princeton University Press, 1994 (orig. 1677), Part III.</p>
             <p><b>[12]</b> Myeongbeop Sunim [명법 스님], interview, "로댕의 &lt;생각하는 사람&gt;과 반가사유상이 닮았나", 불교신문, 제3025호, 2014.7.12.</p>
@@ -1498,55 +1497,30 @@ body.low-vision-mode #hint-row .btn{
 
 
 <!-- v36 — 참가자 지적: "사운드가 두세 개뿐이라 계속 들으면 지루하다."
-     room1과 같은 5종 사운드스케이프 구성을 여기서도 그대로 쓴다.
-     v37 — 참가자 지적: "처음에 나오는 종소리가 별로다." 반가사유상 쪽
-     소리로 쓰던 Temple_Bell_at_Daybreak(종소리)를 완전히 빼고, room1과
-     동일하게 그 자리에 연꽃 소리를 대신 돌려썼다.
-     v39 — 참가자 요청: "배경음악을 종소리로 바꾸고, 좀 더 작게." 종소리는
-     특정 조각상 전용 소리에서는 빼되, 입장 내내 은은하게 깔리는 배경음
-     (snd-base) 자리로 옮겼다. 볼륨도 0.18 → 0.09로 낮췄다.
-     v-bgm-unify — 참가자 요청: "전시1과 전시2의 생각하는 사람 배경음은
-     Where_Bamboo_Bends, 반가사유상 배경음은 Temple_Bell_at_Daybreak로
-     통일하고, 전시2 두 조각상 가운데는 Lotus_at_the_Gate, 여일 화면은
-     Echoes_of_the_Void로 해달라." 아래 다섯 파일명은 이제 이 최신 배정을
-     그대로 따른다 — 예전 주석에 남아 있던 옛 파일명(로댕 쪽 Echoes_of_
-     the_Void, 반가사유상 쪽 Lotus_at_the_Gate 등)은 이번 요청으로
-     서로 자리를 바꾼 것이니 혼동하지 않도록 주석도 함께 고쳤다.
-     ① snd-base(Temple_Bell_at_Daybreak) — 입장부터 끝까지 항상 켜져
-        있는 아주 낮은 배경음. 아무 부위도 만지지 않은 "빈 시간"에도
-        완전한 무음이 되지 않도록 이 방 자체의 공기를 깐다.
-     ② snd-arrival(Lotus_at_the_Gate) — 입장 직후 한 번만 차올랐다가, 첫
-        부위를 만지는 순간 조용히 사라지는 "도착"의 소리.
-     ③ snd-rodin(Where_Bamboo_Bends) — 로댕 쪽 부위를 만질 때 겹쳐지는
+     사운드스케이프를 여러 역할로 나눠 배치한다.
+     v-bgm-unify — 참가자 요청: "로댕 배경음은 Where_Bamboo_Bends,
+     반가사유상 배경음은 Temple_Bell_at_Daybreak로."
+     v-meeting-sound-restored — 참가자 요청: "전시2에서 조각상 사이를
+     터치하면 Beneath_the_Bronze_Hall.mp3가 나오게 해줘." 한때 없앴던
+     snd-meeting 요소를 이 새 파일로 다시 만든다.
+     ① snd-rodin(Where_Bamboo_Bends) — 로댕 쪽 부위를 만질 때 겹쳐지는
         소리.
-     ④ snd-maitreya(Temple_Bell_at_Daybreak) — 반가사유상 쪽 부위를
+     ② snd-maitreya(Temple_Bell_at_Daybreak) — 반가사유상 쪽 부위를
         만질 때 겹쳐지는 소리.
-     ⑤ snd-meeting(Lotus_at_the_Gate) — 두 조각상 "사이" 빈 자리
+     ③ snd-meeting(Beneath_the_Bronze_Hall) — 두 조각상 "사이" 빈 자리
         (center-zone)에 실제로 손이 들어섰을 때만 켜지는 소리.
-     ⑥ snd-yeoil(Echoes_of_the_Void) — "여일"(마음 비우기) 화면으로
+     ④ snd-yeoil(Echoes_of_the_Void) — "여일"(마음 비우기) 화면으로
         넘어가는 순간 다른 배경음을 모두 끄고 이 소리만 남긴다
-        (beginYeoilExit() 참고). -->
+        (beginYeoilExit() 참고).
+     snd-base(늘 켜진 기본 배경음)·snd-arrival(도착음)은 참가자 요청으로
+     완전히 없앴다 — 이미지와의 네트워크 경합을 줄이기 위해서였다.
+     startAmbientSound()·updateStatueSound()의 관련 호출은 그대로
+     남아 있지만, el이 없으면 즉시 return하거나 _fadeStatueAudio()가
+     조용히 무시하므로 에러 없이 안전하다. -->
 <audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
 <audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
+<audio id="snd-meeting" src="Beneath_the_Bronze_Hall.mp3" preload="metadata" loop></audio>
 <audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="metadata" loop></audio>
-<!-- v-base-removed — 참가자 요청: "snd-base(Lotus_at_the_Gate)도
-     제거하자." 이미지와의 네트워크 경합을 더 줄이기 위해 마지막 남은
-     배경음 요소도 없앤다 — 이제 특정 조각상 해설이 나올 때만 그
-     조각상 전용 소리가 들리고, 그 외 시간에는 배경음이 전혀 나오지
-     않는다. startAmbientSound()·updateStatueSound()의 baseEl 관련
-     호출은 그대로 남아 있지만 el이 없으면 즉시 return하거나
-     _fadeStatueAudio()가 조용히 무시하므로 에러 없이 안전하다.
-     여일(snd-yeoil) 전환 로직도 이미 el 존재 여부와 무관하게 항상
-     안전하게 동작한다. -->
-<!-- v-arrival-meeting-removed — 참가자 요청: "snd-arrival·snd-meeting은
-     모두 제거해줘. 이미지와 네트워크 연결을 경합하는 일이 안 생기지
-     않을까?" 요청대로 두 <audio> 요소 자체를 없앤다 — 두 조각상
-     "사이" 빈 자리를 짚었을 때의 종합 사유(text/AI 응답) 기능 자체는
-     그대로 남고, 그 순간에 곁들여지던 전용 소리만 없어진다.
-     fadeArrivalIn()·updateMeetingSound() 등은 그대로 남아 있지만,
-     _fadeStatueAudio()가 이미 el이 없으면 조용히 아무 일도 하지
-     않도록(if(!el) return;) 되어 있어 에러 없이 안전하게 아무 효과가
-     없는 호출이 된다. -->
 
 
 <div id="room-layout">
@@ -2290,7 +2264,7 @@ function startAmbientSound(){
 // 전혀 건드리지 않는다 — 다시 켜면 그 순간의 진짜 볼륨으로 바로
 // 돌아온다.
 let bgmMuted = false;
-const BGM_AUDIO_IDS = ['snd-rodin','snd-maitreya','snd-yeoil'];
+const BGM_AUDIO_IDS = ['snd-rodin','snd-maitreya','snd-meeting','snd-yeoil'];
 function _applyBgmMuteState(){
     BGM_AUDIO_IDS.forEach(id=>{
         const el = document.getElementById(id);
@@ -7480,7 +7454,7 @@ function infoStillOpen(){
 // 재생 중이던 음성은 멈추고 새로 시작한다.
 const INFO_SPEECH = {
     exhibit: '전시 소개입니다. 이 전시의 이름은 침묵의 공명이며, 시청각장애인을 위한 촉각·음성 인터랙티브 전시입니다. 손끝으로 완성하는 두 조각상의 대화, 반가사유상과 생각하는 사람을 만나는 전시로, 국보 금동미륵보살반가사유상과 로댕의 생각하는 사람을 실물보다 작은 촉각 복제품과 음성 해설로 함께 경험합니다. 9월 10일부터 12일까지 경주화백컨벤션센터에서 열리는 세계국가유산산업전에서, 그리고 9월 20일부터 21일까지 국회의원회관 2층 로비에서 선보입니다. 대부분의 전시는 본다는 것을 전제로 설계되지만, 이 전시는 반대로 시작합니다. 시각장애인 방문객이 스크린리더 없이도, 동행 없이도 혼자서 끝까지 관람을 완결할 수 있도록, 촉각 복제 조각상과 음성 내레이션, 터치 기반 AI 챗봇을 중심에 두고 설계했습니다. 전시실 1 조우에서는 두 조각상의 복제 청동상을 직접 만지며 형태와 자세를 먼저 파악하고, 전시실 2 사유 및 체화에서는 부위별로 짚으며 의미를 듣고 AI 챗봇에게 궁금한 점을 자유롭게 물어볼 수 있습니다. 전시 총괄과 디지털 인터랙션은 조준동이, 청동 복제품 제작은 김호용이, 장애인 접근성은 육근해가 맡았습니다.',
-    intro: '전시실 2 작품 소개입니다. 작품명은 침묵의 공명, 사유 및 체화입니다. 전시실 2는 몸 전체의 형태가 아니라, 부위 하나하나에 담긴 의미와 사유를 손끝으로 짚어가는 공간입니다. 생각하는 사람은 미간, 주먹, 팔꿈치, 등 근육 하나하나에 아직 내려놓지 못한 무게가 응결돼 있습니다. 스피노자가 말한, 자신의 존재 안에 머무르려는 근원적 노력인 코나투스가 아직 외부 세계와 격렬히 부딪히며 작동하는 순간들입니다. 반가사유상은 귀, 미소, 손가락, 옷주름, 자세, 발가락 하나하나에 그 무게를 내려놓은 자리가 새겨져 있습니다. 번뇌에서 놓여나 조건 없이 일어나는 적멸의 즐거움에 가닿은 순간들입니다. 부위 하나를 짚을 때마다 이 서로 다른 두 마음의 결이 손끝으로 전해질 것입니다. 금동미륵보살반가사유상은 삼국시대, 6세기에서 7세기 무렵 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 제작자는 삼국시대 장인으로 추정될 뿐, 이름은 전해지지 않습니다. 생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년경 지옥의 문 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.',
+    intro: '전시실 2 작품 소개입니다. 작품명은 침묵의 공명, 사유 및 체화입니다. 이 전시는 도널드 노먼의 감성적 UX 3단계를 확장하여, 관람객이 작품과 교감하는 여정을 조우, 체화, 여일이라는 세 가지 미학적 단계로 구현했습니다. 조우는 시각·촉각·청각이 함께 작동하는 다감각 인터페이스를 통해 작품과 처음 만나는 순간의 강렬한 감각적 울림을 선사합니다. 체화는 조각상의 형태와 부위를 손끝으로 더듬고 몸소 따라 해보는 신체적 상호작용을 통해 작품의 의미가 몸과 행동에 자연스럽게 스며들게 합니다. 여일은 옛 사유와 지금의 사유가 하나로 이어져, 깊은 내면의 평온함과 영감으로 가득 찬 성찰의 시간을 완성합니다. 전시실 2는 몸 전체의 형태가 아니라, 부위 하나하나에 담긴 의미와 사유를 손끝으로 짚어가는 공간입니다. 생각하는 사람은 미간, 주먹, 팔꿈치, 등 근육 하나하나에 아직 내려놓지 못한 무게가 응결돼 있습니다. 스피노자가 말한, 자신의 존재 안에 머무르려는 근원적 노력인 코나투스가 아직 외부 세계와 격렬히 부딪히며 작동하는 순간들입니다. 반가사유상은 귀, 미소, 손가락, 옷주름, 자세, 발가락 하나하나에 그 무게를 내려놓은 자리가 새겨져 있습니다. 번뇌에서 놓여나 조건 없이 일어나는 적멸의 즐거움에 가닿은 순간들입니다. 부위 하나를 짚을 때마다 이 서로 다른 두 마음의 결이 손끝으로 전해질 것입니다. 금동미륵보살반가사유상은 삼국시대, 6세기에서 7세기 무렵 제작된 것으로 추정되는 불교 조각으로, 미래에 중생을 구제할 미륵보살이 깊은 사유에 잠긴 모습을 표현합니다. 오른발을 왼쪽 무릎에 얹은 반가좌 자세와, 뺨에 살짝 댄 손가락이 특징입니다. 제작자는 삼국시대 장인으로 추정될 뿐, 이름은 전해지지 않습니다. 생각하는 사람은 프랑스 조각가 오귀스트 로댕이 1880년경 지옥의 문 상단부 인물로 처음 제작했으며, 1904년 독립된 대형 청동상으로 다시 제작되었습니다. 근육의 긴장과 웅크린 자세로 사람이 살면서 겪는 힘든 마음을 표현한 근대 조각의 대표작입니다.',
     artist: "'침묵의 공명' 작가 소개입니다. 조준동은 성균관대학교 전자전기공학부 명예교수입니다. 성균관대학교에서 전자공학을 전공하고, 뉴욕 폴리테크닉 대학교에서 컴퓨터공학 석사를, 노스웨스턴 대학교에서 컴퓨터공학 박사 학위를 받았습니다. 성균관대학교 일반대학원 휴먼아이씨티융합학과를 창설했으며, 인간과 컴퓨터의 상호작용과 멀티모달 인터페이스 개발에 관심을 갖고, 인문학과 예술, 기술을 결합한 휴마톨로지라는 개념을 창안하여 디지털 인터랙티브 아트 작품을 제작하고 있습니다.",
     usage: "전시실 2 이용 방법입니다. 첫째, 들어가기. 첫 화면을 한 번 가볍게 두드리면 바로 시작됩니다. 두드리지 않아도 1분 뒤 자동으로 시작됩니다. 이 화면의 배경음악 버튼으로 시작 전 배경음악을 켜고 끌 수 있습니다. 둘째, 감상하기. 화면 속 조각상에서 궁금한 부위를 손끝으로 짚으면 곧바로 그 부위에 대한 짧은 설명을 음성과 자막으로 들려드립니다. 화면 중앙의 버튼을 누르면 사유의 상담소 챗봇이 열려, 궁금한 점을 자유롭게 물어볼 수 있습니다. 이 버튼은 눌러서 끌면 원하는 자리로 옮길 수도 있습니다. 질문을 보내면 그 질문이 항상 창 맨 위에 고정되어, 답을 읽는 동안 스크롤해서 질문을 다시 찾지 않아도 됩니다. 걱정이나 인생처럼 개인적인 질문에는 두 조각상이 각자의 목소리로 나란히 답하며, 지금 만지고 있는 부위가 있다면 그 이야기를 참고해 대답합니다. 이는 역사적 사실이 아니라 창작된 해석입니다. 지금까지 만진 곳 요약해줘라고 물으면 지금까지의 기록과 함께, 아직 만지지 않은 곳이 있다면 대략적인 방향도 함께 안내해 드립니다. 셋째, 재생 조절하기. 화면 아래 다시듣기 버튼을 누르거나, 화면 아래 빈 공간을 옆으로 스와이프하거나, 같은 부위를 다시 만지면 방금 들은 설명을 처음부터 다시 들을 수 있습니다. 그 외 대부분의 버튼은 처음 누르면 이름을 음성으로 말해주고, 같은 버튼을 몇 초 안에 한 번 더 누르면 실제로 실행됩니다. 속도와 쉬운 문장 버튼, 그리고 배경음악 크기 슬라이더만 즉시 바로 반영됩니다. 배경음악 크기는 배경음악의 크기만 조절하며, 내레이션 음량은 별도로 고정되어 있습니다. 넷째, 다른 곳으로 이동하기. 화면 아래 수료증 버튼을 누르면 언제든 지금까지 만난 기록을 확인할 수 있습니다. 수료증 화면의 출력 버튼을 두 번 누르면 PDF 파일로 저장할 수 있습니다. 여일 버튼을 누르면 마음을 비우는 화면으로 이동하며, 그 화면에서 전시1 또는 전시2 버튼을 직접 눌러야 실제로 이동합니다. 하단의 전시1 버튼을 누르면 이 과정 없이 곧장 전시실 1로 이동합니다. 챗봇창은 오른쪽 위 닫기 버튼을 누르거나 왼쪽에서 오른쪽으로 스와이프하면 닫힙니다. 지금 보고 계신 이 안내창은 아래쪽 돌아가기 버튼을 누르거나 왼쪽에서 오른쪽으로 화면을 스와이프하면 이전 화면으로 돌아갑니다."
 };
@@ -7583,6 +7557,21 @@ function toggleRefsList(){
     btn.setAttribute('aria-expanded', String(show));
     // 라벨은 "참고문헌"으로 고정하고, 펼침/닫힘 상태는 aria-expanded로 전달한다.
     btn.textContent = '참고문헌';
+    // v-refs-list-no-voice-fix — 참가자 지적: "참고문헌 안에 음성해설이
+    // 빠져 있다." 원인: 이 함수가 목록을 펼치고 접는 시각적 토글만
+    // 하고, 어떤 speak() 호출도 없었다 — 시각장애인은 이 목록의 존재도,
+    // 내용도 전혀 들을 방법이 없었다. 목록을 펼칠 때, 각 항목의
+    // 텍스트를 그대로 이어 읽어준다(URL은 소리 내 읽기엔 어색하고
+    // 정보 가치도 낮아 제거한다). 접을 때는 닫혔다는 것만 짧게
+    // 안내한다.
+    if(show){
+        const items = Array.from(list.querySelectorAll('p')).map(p => {
+            return p.textContent.replace(/https?:\/\/\S+/g, '').replace(/\s+/g, ' ').trim();
+        });
+        speak(`참고문헌 목록입니다. 총 ${items.length}개 항목이 있습니다. ${items.join('. ')}`);
+    } else {
+        speak('참고문헌 목록을 닫았습니다.');
+    }
 }
 function _infoDialogKeydown(e){
     if(e.key === 'Escape'){ closeInfo(); return; }
