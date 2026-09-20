@@ -1211,7 +1211,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      updateStatueSound()'s baseEl calls remain but are harmless no-ops
      since _fadeStatueAudio() already returns immediately when given a
      missing element. -->
-<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
+<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="none" loop></audio>
 <!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
      Temple_Bell_at_Daybreak.mp3로, 생각하는 사람 부위는
      Where_Bamboo_Bends.mp3로 바꿔달라." room2.html과 같은 파일로
@@ -1219,13 +1219,13 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      한때 같은 파일(Echoes_of_the_Void.mp4)로 통일했었지만, 이번
      요청은 그 반대로 각자 다른 곡을 다시 배정해달라는 것이므로
      되돌린다. -->
-<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
+<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="none" loop></audio>
 <!-- v-orientation-stage1-soundscape — participant request (final):
      matches index.html — "orientation and stage 1 should play
      Feel_the_Stillness.mp3." Supersedes the earlier stage-1/2,
      Between_Two_Icons request — now plays only during stage 0
      (orientation) and stage 1 (global composition) — see playLayer(). -->
-<audio id="snd-between" src="손끝에_맺힌_온기.mp3" preload="metadata" loop></audio>
+<audio id="snd-between" src="손끝에_맺힌_온기.mp3" preload="none" loop></audio>
 <!-- v-arrival-meeting-removed — 참가자 요청: matches index.html —
      snd-arrival·snd-meeting removed entirely to stop competing with
      the image for network connections. fadeArrivalIn()/fadeArrivalOut()/

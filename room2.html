@@ -1553,9 +1553,16 @@ body.low-vision-mode #hint-row .btn{
      완전히 없앴다 — 이미지와의 네트워크 경합을 줄이기 위해서였다.
      startAmbientSound()·updateStatueSound()의 관련 호출은 그대로
      남아 있지만, el이 없으면 즉시 return하거나 _fadeStatueAudio()가
-     조용히 무시하므로 에러 없이 안전하다. -->
-<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
-<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
+     조용히 무시하므로 에러 없이 안전하다.
+     v-preload-none-fix — 참가자 지적: "최초 화면 진입이 여전히 느리다
+     — 사운드 작업 후에 느려진 것 같다." 원인: preload="metadata"도
+     페이지가 뜨자마자 각 파일의 재생 시간 등 메타데이터만큼은 곧바로
+     받아오기 시작한다 — 사운드 종류가 늘어날 때마다(현재 4개) 그만큼
+     이미지와 동시에 경쟁하는 네트워크 요청도 늘어난 것이다.
+     preload="none"으로 바꿔 실제로 처음 재생될 때까지 아무것도(메타
+     데이터조차) 미리 받지 않게 한다. -->
+<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="none" loop></audio>
+<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="none" loop></audio>
 <!-- v-meeting-sound-debug — 참가자 지적: "두 조각상 사이 빈 자리를
      터치해도 소리가 전혀 안 들린다." JS 연결(재생 트리거·볼륨 페이드)
      자체는 로댕·반가사유상 소리와 완전히 같은 방식으로 이미 정상
@@ -1565,8 +1572,8 @@ body.low-vision-mode #hint-row .btn{
 <!-- v-meeting-sound-file-change — 참가자 요청: "두 조각상 사이 클릭하면
      Feel_the_Stillness.mp3가 나오게 해줘." 같은 트리거(가운데 빈 자리
      터치·챗봇), 파일명만 교체. -->
-<audio id="snd-meeting" src="Feel_the_Stillness.mp3" preload="metadata" loop onerror="console.error('[snd-meeting] 파일을 찾을 수 없습니다 — Feel_the_Stillness.mp3가 실제로 서버에 있는지 확인하세요.', this.error)"></audio>
-<audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="metadata" loop></audio>
+<audio id="snd-meeting" src="Feel_the_Stillness.mp3" preload="none" loop onerror="console.error('[snd-meeting] 파일을 찾을 수 없습니다 — Feel_the_Stillness.mp3가 실제로 서버에 있는지 확인하세요.', this.error)"></audio>
+<audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="none" loop></audio>
 
 
 <div id="room-layout">

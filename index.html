@@ -1299,7 +1299,17 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      전혀 나오지 않는다. updateStatueSound()의 baseEl 관련 호출은 그대로
      남아 있지만, _fadeStatueAudio()가 el이 없으면 조용히 아무 일도
      하지 않으므로 에러 없이 무해하게 넘어간다. -->
-<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
+<!-- v-preload-none-fix — 참가자 지적: "이미지와 최초 화면 진입이
+     여전히 느리다 — 사운드 작업 후에 느려진 것 같다." 원인을 찾았다:
+     preload="metadata"도 완전히 "아무것도 안 받아온다"는 뜻이 아니라,
+     페이지가 뜨자마자 각 오디오 파일의 재생 시간 등 메타데이터만큼은
+     곧바로 조금씩 받아오기 시작한다 — 오디오 요소가 하나둘 늘어날
+     때마다(로댕·반가사유상·오리엔테이션 배경음 등) 그만큼 이미지와
+     동시에 경쟁하는 네트워크 요청도 늘어난 것이다. preload="none"으로
+     바꿔, 실제로 처음 재생될 때까지 어떤 데이터도(메타데이터조차)
+     미리 받아오지 않게 한다 — 그만큼 이미지가 페이지 로드 초반의
+     네트워크 대역폭을 독차지할 수 있다. -->
+<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="none" loop></audio>
 <!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
      Temple_Bell_at_Daybreak.mp3로, 생각하는 사람 부위는
      Where_Bamboo_Bends.mp3로 바꿔달라." room2.html과 같은 파일로
@@ -1307,7 +1317,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      한때 같은 파일(Echoes_of_the_Void.mp4)로 통일했었지만, 이번
      요청은 그 반대로 각자 다른 곡을 다시 배정해달라는 것이므로
      되돌린다. -->
-<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
+<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="none" loop></audio>
 <!-- v-orientation-stage1-soundscape — 참가자 요청(최종): "전시1의
      오리엔테이션, 1단계에 Feel_the_Stillness.mp3가 나오게 해줘." 이전
      요청(1~2단계, Between_Two_Icons)을 대체한다 — 이제 0단계
@@ -1315,7 +1325,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      (playLayer() 참고).
      v-file-rename — 참가자 요청: "Feel_the_Stillness.mp3를
      손끝에_맺힌_온기.mp3로 바꿔줘." 같은 배경음, 파일명만 교체. -->
-<audio id="snd-between" src="손끝에_맺힌_온기.mp3" preload="metadata" loop></audio>
+<audio id="snd-between" src="손끝에_맺힌_온기.mp3" preload="none" loop></audio>
 <!-- v-arrival-meeting-removed — 참가자 요청: "snd-arrival·snd-meeting은
      모두 제거해줘. 이미지와 네트워크 연결을 경합하는 일이 안 생기지
      않을까?" 요청대로 두 <audio> 요소 자체를 없앤다 — 각각 담당하던

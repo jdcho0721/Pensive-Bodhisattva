@@ -1472,8 +1472,8 @@ body.low-vision-mode #hint-row .btn{
      updateStatueSound()의 관련 호출은 그대로 남아 있지만, el이 없으면
      즉시 return하거나 _fadeStatueAudio()가 조용히 무시하므로 에러
      없이 안전하다. -->
-<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="metadata" loop></audio>
-<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="metadata" loop></audio>
+<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="none" loop></audio>
+<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="none" loop></audio>
 <!-- v-meeting-sound-debug — participant report: "touching the empty
      space between the two statues plays no sound at all." The JS
      wiring (play trigger, volume fade) is already identical to Rodin's
@@ -1483,8 +1483,8 @@ body.low-vision-mode #hint-row .btn{
 <!-- v-meeting-sound-file-change — participant request: matches
      room2.html — same triggers (center-zone touch, chatbot), file
      name changed to Feel_the_Stillness.mp3. -->
-<audio id="snd-meeting" src="Feel_the_Stillness.mp3" preload="metadata" loop onerror="console.error('[snd-meeting] File not found — check that Feel_the_Stillness.mp3 actually exists on the server.', this.error)"></audio>
-<audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="metadata" loop></audio>
+<audio id="snd-meeting" src="Feel_the_Stillness.mp3" preload="none" loop onerror="console.error('[snd-meeting] File not found — check that Feel_the_Stillness.mp3 actually exists on the server.', this.error)"></audio>
+<audio id="snd-yeoil" src="Echoes_of_the_Void.mp3" preload="none" loop></audio>
 
 <div id="room-layout">
 <!-- v-nonvisual-orientation — participant (totally blind) note: "there's
