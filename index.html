@@ -1433,7 +1433,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
          버튼 자체가 이미 "멈춤"/"다시 시작"으로 상태를 보여주고 있어
          군더더기로 느껴졌다. data-tap-action을 없애 두 번째 탭에서
          곧바로 실행되게 한다. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="멈춤 버튼입니다. 누르면 일시정지합니다.">멈춤</button>
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="멈춤 버튼입니다." data-tap-action="잠시 멈춥니다.">멈춤</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -2990,7 +2990,8 @@ function onPauseClick(){
         if(btnPause){
             btnPause.textContent = '다시 시작';
             btnPause.classList.add('primary');
-            btnPause.setAttribute('aria-label', '다시 시작 버튼입니다. 누르면 이어서 재생합니다.');
+            btnPause.setAttribute('aria-label', '다시 시작 버튼입니다.');
+            btnPause.setAttribute('data-tap-action', '다시 이어서 재생합니다.');
         }
         speak('일시정지합니다.');
         _setPlaybackStatus(false);
@@ -2999,7 +3000,8 @@ function onPauseClick(){
         if(btnPause){
             btnPause.textContent = '멈춤';
             btnPause.classList.remove('primary');
-            btnPause.setAttribute('aria-label', '멈춤 버튼입니다. 누르면 일시정지합니다.');
+            btnPause.setAttribute('aria-label', '멈춤 버튼입니다.');
+            btnPause.setAttribute('data-tap-action', '잠시 멈춥니다.');
         }
         // v-pause-voice — 참가자 요청으로 되살린 멈춤 버튼에 TalkBack 음성
         // 안내를 추가하면서, "다시 재생합니다." 안내가 끝난 뒤에야(콜백)
