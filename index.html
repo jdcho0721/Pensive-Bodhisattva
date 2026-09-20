@@ -1312,33 +1312,42 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
      전혀 나오지 않는다. updateStatueSound()의 baseEl 관련 호출은 그대로
      남아 있지만, _fadeStatueAudio()가 el이 없으면 조용히 아무 일도
      하지 않으므로 에러 없이 무해하게 넘어간다. -->
-<!-- v-preload-none-fix — 참가자 지적: "이미지와 최초 화면 진입이
-     여전히 느리다 — 사운드 작업 후에 느려진 것 같다." 원인을 찾았다:
-     preload="metadata"도 완전히 "아무것도 안 받아온다"는 뜻이 아니라,
-     페이지가 뜨자마자 각 오디오 파일의 재생 시간 등 메타데이터만큼은
-     곧바로 조금씩 받아오기 시작한다 — 오디오 요소가 하나둘 늘어날
-     때마다(로댕·반가사유상·오리엔테이션 배경음 등) 그만큼 이미지와
-     동시에 경쟁하는 네트워크 요청도 늘어난 것이다. preload="none"으로
-     바꿔, 실제로 처음 재생될 때까지 어떤 데이터도(메타데이터조차)
-     미리 받아오지 않게 한다 — 그만큼 이미지가 페이지 로드 초반의
-     네트워크 대역폭을 독차지할 수 있다. -->
-<audio id="snd-maitreya" src="Temple_Bell_at_Daybreak.mp3" preload="none" loop></audio>
-<!-- v-audio-match-room2 — 참가자 요청: "전시실1도 반가사유상 부위는
-     Temple_Bell_at_Daybreak.mp3로, 생각하는 사람 부위는
-     Where_Bamboo_Bends.mp3로 바꿔달라." room2.html과 같은 파일로
-     맞춘다 — 예전에 "두 조각상 배경음이 다르게 느껴진다"는 지적으로
-     한때 같은 파일(Echoes_of_the_Void.mp4)로 통일했었지만, 이번
-     요청은 그 반대로 각자 다른 곡을 다시 배정해달라는 것이므로
-     되돌린다. -->
-<audio id="snd-rodin" src="Where_Bamboo_Bends.mp3" preload="none" loop></audio>
-<!-- v-orientation-stage1-soundscape — 참가자 요청(최종): "전시1의
-     오리엔테이션, 1단계에 Feel_the_Stillness.mp3가 나오게 해줘." 이전
-     요청(1~2단계, Between_Two_Icons)을 대체한다 — 이제 0단계
-     (오리엔테이션)·1단계(전체 구도) 동안에만 켜지는 전용 배경음이다
-     (playLayer() 참고).
-     v-file-rename — 참가자 요청: "Feel_the_Stillness.mp3를
-     손끝에_맺힌_온기.mp3로 바꿔줘." 같은 배경음, 파일명만 교체. -->
-<audio id="snd-between" src="손끝에_맺힌_온기.mp3" preload="none" loop></audio>
+<!-- v-audio-fully-dynamic-fix — 참가자 지적: "index.html에 오디오 파일
+     3개(로댕·반가사유상·오리엔테이션)가 그림이 지연되어 나오는
+     원인인 것 같다." preload="none"으로도 여전히 의심을 사고 있어,
+     더 확실한 방법으로 바꾼다 — 이 세 <audio> 태그 자체를 처음
+     HTML에서 완전히 없애, 페이지가 파싱되는 시점에는 이 요소들이
+     DOM에 아예 존재하지 않게 한다. 브라우저·버전에 따라
+     preload="none"을 다르게 해석해 그래도 무언가를 미리 건드릴
+     가능성 자체를 원천 차단하는 것이다. 대신 아래 _getAudioEl()이
+     실제로 그 소리가 처음 필요해지는 순간(재생 함수가 최초로 호출될
+     때)에만 <audio> 요소를 새로 만들어 붙인다 — 그 전까지는 이
+     파일들의 존재 자체를 브라우저가 전혀 모른다. -->
+<script>
+window._AUDIO_SRC_MAP = {
+    'snd-maitreya': 'Temple_Bell_at_Daybreak.mp3',
+    'snd-rodin': 'Where_Bamboo_Bends.mp3',
+    'snd-between': '손끝에_맺힌_온기.mp3'
+};
+function _getAudioEl(id){
+    let el = document.getElementById(id);
+    if(el) return el;
+    const src = window._AUDIO_SRC_MAP[id];
+    if(!src) return null;
+    el = document.createElement('audio');
+    el.id = id;
+    el.src = src;
+    el.loop = true;
+    el.preload = 'none';
+    // v-audio-fully-dynamic-fix — 처음 만들어질 때 이미 설정돼 있던
+    // 음소거 상태를 그대로 물려받는다(예: 아무 부위도 만지기 전에
+    // 배경음악을 꺼둔 경우, 나중에 처음 소리가 생성될 때도 꺼진
+    // 채로 시작해야 한다).
+    try{ el.muted = (typeof bgmMuted !== 'undefined') ? bgmMuted : false; }catch(e){}
+    document.body.appendChild(el);
+    return el;
+}
+</script>
 <!-- v-arrival-meeting-removed — 참가자 요청: "snd-arrival·snd-meeting은
      모두 제거해줘. 이미지와 네트워크 연결을 경합하는 일이 안 생기지
      않을까?" 요청대로 두 <audio> 요소 자체를 없앤다 — 각각 담당하던
@@ -1842,7 +1851,7 @@ speak(gateText, ()=>{
     _betweenStageActive = true; // v-bgm-no-mixing-fix — 0단계이므로 켜져 있어야 하는 상태로 기록
     setTimeout(()=>{
         if(_betweenStageActive){
-            _fadeStatueAudio(document.getElementById('snd-between'), STATUE_SOUND_VOLUME);
+            _fadeStatueAudio(_getAudioEl('snd-between'), STATUE_SOUND_VOLUME);
         }
     }, 400);
 }
@@ -2064,8 +2073,8 @@ function updateStatueSound(speaker){
     const target = (speaker === 'rodin' || speaker === 'maitreya') ? speaker : null;
     if(target === _currentStatueSound) return;
     _currentStatueSound = target;
-    const rodinEl = document.getElementById('snd-rodin');
-    const maitreyaEl = document.getElementById('snd-maitreya');
+    const rodinEl = _getAudioEl('snd-rodin');
+    const maitreyaEl = _getAudioEl('snd-maitreya');
     _fadeStatueAudio(rodinEl, target === 'rodin' ? STATUE_SOUND_VOLUME : 0);
     _fadeStatueAudio(maitreyaEl, target === 'maitreya' ? STATUE_SOUND_VOLUME : 0);
     // v-bgm-no-mixing-fix — 참가자 요청: "각 조각상에 해당하는 사운드가
@@ -2081,7 +2090,7 @@ function updateStatueSound(speaker){
     // 가리키도록 고치고, playLayer()가 정한 "지금 이 배경음이 켜져
     // 있어야 할 단계인지"를 기록해두는 안전장치(_betweenStageActive)도
     // 함께 둬 다른 단계에서 잘못 되살아나는 부작용도 막는다.
-    const baseEl = document.getElementById('snd-between');
+    const baseEl = _getAudioEl('snd-between');
     _fadeStatueAudio(baseEl, target ? 0 : (_betweenStageActive ? STATUE_SOUND_VOLUME : 0));
     const moodEl = document.getElementById('mood-overlay');
     if(moodEl){
@@ -2626,7 +2635,7 @@ function playLayer(i){
     // 단계인지를 기록해둔다 — updateStatueSound()가 이 값을 보고
     // 되살릴지 판단한다(위 주석 참고).
     _betweenStageActive = (i === 0 || i === 1);
-    _fadeStatueAudio(document.getElementById('snd-between'), _betweenStageActive ? STATUE_SOUND_VOLUME : 0);
+    _fadeStatueAudio(_getAudioEl('snd-between'), _betweenStageActive ? STATUE_SOUND_VOLUME : 0);
     playLine();
 }
 
