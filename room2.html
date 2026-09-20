@@ -7790,6 +7790,28 @@ function _exitInfoOneLevel(){
     }, { passive:true });
 })();
 
+// v-all-panels-swipe — 참가자 요청: "모든 창에 화면 전환(swipe)을
+// 적용해줘." 점검해보니 정보창·여일 화면·챗봇창에는 이미 오른쪽
+// 스와이프로 닫는 제스처가 있었는데, 수료증 창(#certificate-overlay)
+// 하나만 빠져 있었다 — 같은 원리(오른쪽 스와이프 → closeCertificate())
+// 로 통일한다.
+(function initCertificateOverlaySwipeBack(){
+    const overlay = document.getElementById('certificate-overlay');
+    if(!overlay) return;
+    let startX = 0, startY = 0;
+    overlay.addEventListener('touchstart', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        startX = e.changedTouches[0].screenX;
+        startY = e.changedTouches[0].screenY;
+    }, { passive:true });
+    overlay.addEventListener('touchend', (e)=>{
+        if(!overlay.classList.contains('show')) return;
+        const dx = e.changedTouches[0].screenX - startX;
+        const dyAbs = Math.abs(e.changedTouches[0].screenY - startY);
+        if(dx > 60 && dyAbs < 60) closeCertificate(); // 오른쪽으로 스와이프 → 이전 화면으로
+    }, { passive:true });
+})();
+
 // v-yeoil-room-buttons — 참가자 요청: "여일 창에서 왼쪽에서 오른쪽으로
 // 스와이프하면 이전 창으로 돌아가게 해달라." #info-overlay의 스와이프
 // 닫기(v-info-exit-gestures)와 같은 원리 — 오른쪽 스와이프만 감지해
