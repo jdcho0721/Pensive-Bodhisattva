@@ -29,8 +29,19 @@
      appear. The Hands object is only needed once the camera feature is
      actually turned on (startHandTracking(), called asynchronously
      after a user action), so defer lets this download in the
-     background while the page renders immediately. -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous" defer></script>
+     background while the page renders immediately.
+     v-mediapipe-lazy-load-mobile-fix — participant report (on mobile):
+     "the initial screen is still slow to appear." Even with defer, the
+     browser still starts downloading this large library the moment the
+     page loads, competing with the image for bandwidth — far more
+     noticeable on mobile connections with fewer concurrent connections
+     and higher latency than desktop. Recognizing a hand via phone
+     camera is only an optional alternative to touching a real replica
+     — it's never needed for the basic touch interaction of tapping the
+     screen directly. This script tag is now removed entirely; the
+     library is only fetched dynamically the moment a visitor actually
+     turns on camera recognition (first call to startHandTracking()) —
+     most visitors, who just touch directly, never download it at all. -->
 <style>
 /* ══════════════════════════════════════════════════════
    전시실 2 · 실물 조각상 터치 인터랙션
@@ -3695,9 +3706,28 @@ function _pickCameraDevice(videoInputs){
     });
 }
 
+// v-mediapipe-lazy-load-mobile-fix — loads hands.js dynamically only
+// the moment it's actually needed (first call to startHandTracking()).
+// Caches the promise so repeated calls don't re-fetch it.
+let _handsLibPromise = null;
+function _loadMediaPipeHands(){
+    if(_handsLibPromise) return _handsLibPromise;
+    _handsLibPromise = new Promise((resolve, reject)=>{
+        if(typeof Hands !== 'undefined'){ resolve(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js';
+        s.crossOrigin = 'anonymous';
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error('MediaPipe 라이브러리를 불러오지 못했습니다(CDN 차단 또는 네트워크 오류).'));
+        document.head.appendChild(s);
+    });
+    return _handsLibPromise;
+}
+
 async function startHandTracking(){
     const btn = document.getElementById('cam-toggle-btn');
     try{
+        await _loadMediaPipeHands();
         if(typeof Hands === 'undefined'){
             throw new Error('MediaPipe 라이브러리를 불러오지 못했습니다(CDN 차단 또는 네트워크 오류).');
         }
