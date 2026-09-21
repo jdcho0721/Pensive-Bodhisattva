@@ -3195,6 +3195,25 @@ function onNextClick(){
     }
 
     if(phase === 'screen'){
+        // v-intro-screens-forward-nav-fix — matches index.html: pressing
+        // next while the gate/structure screens are showing used to skip
+        // straight past LAYERS[0].lines[0] to lines[1], because
+        // phase/layerIdx/lineIdx are already 'screen'/0/0 during those
+        // screens too — this couldn't tell "still on an intro screen"
+        // from "already on the first real line". introScreenStep (see
+        // onBackClick()) tells them apart, so step forward through the
+        // gate → structure → first-line sequence properly.
+        if(introScreenStep < 3){
+            if(introScreenStep <= 1){
+                _showStructureTextScreen();
+            } else {
+                // introScreenStep === 2: layerIdx/lineIdx are already 0/0,
+                // so playLine() correctly plays LAYERS[0].lines[0] and
+                // sets introScreenStep to 3 itself.
+                playLine();
+            }
+            return;
+        }
         const layer = LAYERS[layerIdx];
         if(lineIdx < layer.lines.length - 1){
             lineIdx++;

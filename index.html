@@ -3286,6 +3286,30 @@ function onNextClick(){
     }
 
     if(phase === 'screen'){
+        // v-intro-screens-forward-nav-fix — 참가자 지적: "'화면 위쪽에는~'
+        // (구조 안내) 화면에서 화살표를 터치하면 '우리나라 국보~'가 아니라
+        // '두 조각상 모두~'로 넘어간다." 원인: 게이트 문구·구조 안내
+        // 화면이 떠 있는 동안에도 phase/layerIdx/lineIdx는 이미
+        // 'screen'/0/0(LAYERS[0].lines[0]과 똑같은 값)이어서, 이 함수가
+        // 지금 정말 LAYERS[0].lines[0]을 보고 있는 건지 아직 그 앞
+        // 안내 화면인지 구분하지 못했다 — 그래서 "다음"을 누르면 무조건
+        // "lineIdx를 한 칸 전진"해버려, 아직 한 번도 보여준 적 없는
+        // LAYERS[0].lines[0]("우리나라 국보~")을 건너뛰고 곧장
+        // lines[1]("두 조각상 모두~")로 가버렸다. onBackClick()에 이미
+        // 있는 introScreenStep으로 지금 어느 안내 화면인지 구분해, 그
+        // 순서 그대로(게이트 → 구조 안내 → 실제 첫 줄) 한 단계씩만
+        // 앞으로 진행시킨다.
+        if(introScreenStep < 3){
+            if(introScreenStep <= 1){
+                _showStructureTextScreen();
+            } else {
+                // introScreenStep === 2: layerIdx/lineIdx가 이미 0/0이므로
+                // playLine()을 부르면 LAYERS[0].lines[0]이 정확히 재생되고,
+                // introScreenStep도 그 안에서 3으로 확정된다.
+                playLine();
+            }
+            return;
+        }
         const layer = LAYERS[layerIdx];
         if(lineIdx < layer.lines.length - 1){
             lineIdx++;
