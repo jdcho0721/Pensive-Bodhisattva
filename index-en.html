@@ -1312,7 +1312,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
          label itself already shows the state ("Pause"/"Resume"), so this
          extra confirm-tap narration felt redundant. Dropping
          data-tap-action makes the second (confirm) tap execute right away. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="Pause button." data-tap-action="Pauses briefly.">Pause</button>
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick(true)" aria-label="Pause button." data-tap-action="Pauses briefly.">Pause</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -2903,7 +2903,14 @@ function updateBadgeUI(){
     });
 }
 
-function onPauseClick(){
+function onPauseClick(skipAnnounce){
+    // v-pause-dup-announce-fix — matches index.html: the confirm (second)
+    // tap already speaks data-tap-action ("Pauses briefly."/"Resumes
+    // playback.") before this function runs, so speaking the same thing
+    // again here duplicated it. The screen long-press gesture below still
+    // calls this without going through that confirm step, so it still
+    // needs its own announcement — only the button's onclick passes
+    // skipAnnounce=true.
     if(!isPaused){
         isPaused = true;
         clearTimeout(autoTimer);
@@ -2914,7 +2921,7 @@ function onPauseClick(){
             btnPause.setAttribute('aria-label', 'Resume button.');
             btnPause.setAttribute('data-tap-action', 'Resumes playback.');
         }
-        speak('Pausing.');
+        if(!skipAnnounce){ speak('Pausing.'); }
     } else {
         isPaused = false;
         if(btnPause){
@@ -2929,7 +2936,7 @@ function onPauseClick(){
         // 겹치거나 서로를 잘라먹지 않도록 하기 위함이다(speak()는 호출될
         // 때마다 내부에서 cancel()을 부르므로, 두 speak()를 동시에 부르면
         // 먼저 것이 거의 즉시 끊긴다).
-        speak('Resuming playback.', ()=>{
+        const _resumeCore = ()=>{
             if(!pausedContext){ playLayer(0); return; }
             phase = pausedContext.phase;
             layerIdx = pausedContext.layerIdx;
@@ -2947,7 +2954,8 @@ function onPauseClick(){
             } else {
                 playTurn(turnIdx);
             }
-        });
+        };
+        if(skipAnnounce){ _resumeCore(); } else { speak('Resuming playback.', _resumeCore); }
     }
 }
 
@@ -2996,10 +3004,14 @@ function _replayCurrentCaption(){
     }
 }
 function onReplayClick(){
+    // v-replay-dup-announce-fix2 — matches index.html: the confirm tap's
+    // data-tap-action already speaks this same sentence before this runs,
+    // so speaking it again here duplicated it. Replay has no other call
+    // path (no long-press equivalent), so it's safe to just play directly.
     clearTimeout(autoTimer);
     speechGen++;
     try{ hapticPulse('turn'); }catch(err){}
-    speak('Playing the caption you’re currently viewing again.', _replayCurrentCaption);
+    _replayCurrentCaption();
 }
 
 // v18 — 참가자 요청: "뒤로가기 버튼은 바로 이전 해설창으로 돌아가도록."

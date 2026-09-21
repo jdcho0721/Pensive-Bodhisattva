@@ -1433,7 +1433,7 @@ body.low-vision-mode .caption-nav-hint{font-size:2.1rem !important; opacity:1 !i
          버튼 자체가 이미 "멈춤"/"다시 시작"으로 상태를 보여주고 있어
          군더더기로 느껴졌다. data-tap-action을 없애 두 번째 탭에서
          곧바로 실행되게 한다. -->
-    <button class="btn quiet" id="btn-pause" onclick="onPauseClick()" aria-label="멈춤 버튼입니다." data-tap-action="잠시 멈춥니다.">멈춤</button>
+    <button class="btn quiet" id="btn-pause" onclick="onPauseClick(true)" aria-label="멈춤 버튼입니다." data-tap-action="잠시 멈춥니다.">멈춤</button>
     <!-- v88 — 참가자 보고: "room2의 전시1 버튼은 잘 되는데, 이 전시2
          버튼은 잘 안 된다." 원인: 이 버튼만 아래 스크립트의
          TWO_PRESS_CONFIRM_IDS에 등록되어 "안내 후 재확인"(2탭) 절차를
@@ -2982,7 +2982,16 @@ function updateBadgeUI(){
     });
 }
 
-function onPauseClick(){
+function onPauseClick(skipAnnounce){
+    // v-pause-dup-announce-fix — 참가자 지적: "멈춤 버튼에서 '잠시
+    // 멈춥니다. 일시정지합니다.'가 겹쳐 나온다." 원인: 확인(두 번째)
+    // 탭에서 data-tap-action("잠시 멈춥니다."/"다시 이어서 재생합니다.")이
+    // 먼저 낭독된 뒤에야 이 함수가 실행되는데, 이 함수 자신도 별도로
+    // "일시정지합니다."/"다시 재생합니다."를 낭독해 같은 내용이 두 번
+    // 들렸다. 다만 화면을 길게 눌러 멈추는 제스처(아래 longPressTimer)는
+    // 이 확인 절차를 거치지 않으므로, 그 경로에서는 이 함수의 안내가
+    // 유일한 안내다 — 버튼 클릭 시(onclick="onPauseClick(true)")에만
+    // skipAnnounce를 켜 자체 안내를 생략한다.
     if(!isPaused){
         isPaused = true;
         clearTimeout(autoTimer);
@@ -2993,7 +3002,7 @@ function onPauseClick(){
             btnPause.setAttribute('aria-label', '다시 시작 버튼입니다.');
             btnPause.setAttribute('data-tap-action', '다시 이어서 재생합니다.');
         }
-        speak('일시정지합니다.');
+        if(!skipAnnounce){ speak('일시정지합니다.'); }
         _setPlaybackStatus(false);
     } else {
         isPaused = false;
@@ -3009,7 +3018,7 @@ function onPauseClick(){
         // 겹치거나 서로를 잘라먹지 않도록 하기 위함이다(speak()는 호출될
         // 때마다 내부에서 cancel()을 부르므로, 두 speak()를 동시에 부르면
         // 먼저 것이 거의 즉시 끊긴다).
-        speak('다시 재생합니다.', ()=>{
+        const _resumeCore = ()=>{
             if(!pausedContext){ playLayer(0); return; }
             phase = pausedContext.phase;
             layerIdx = pausedContext.layerIdx;
@@ -3027,7 +3036,8 @@ function onPauseClick(){
             } else {
                 playTurn(turnIdx);
             }
-        });
+        };
+        if(skipAnnounce){ _resumeCore(); } else { speak('다시 재생합니다.', _resumeCore); }
     }
 }
 
@@ -3076,10 +3086,17 @@ function _replayCurrentCaption(){
     }
 }
 function onReplayClick(){
+    // v-replay-dup-announce-fix2 — 참가자 지적: "다시듣기 버튼에서 '지금
+    // 보고 계신 자막을 다시 들려드립니다.'가 2번 나온다." 원인: 확인(두
+    // 번째) 탭에서 data-tap-action이 이미 이 문장을 낭독한 뒤에야 이
+    // 함수가 실행되는데, 이 함수가 다시 같은 문장을 speak()로 낭독해
+    // 두 번 들렸다. 다시듣기 버튼은 (길게 누르기 같은 별도 경로 없이)
+    // 항상 이 확인 절차를 거쳐서만 호출되므로, 여기서는 그냥 바로
+    // 재생하면 된다.
     clearTimeout(autoTimer);
     speechGen++;
     try{ hapticPulse('turn'); }catch(err){}
-    speak('지금 보고 계신 자막을 다시 들려드립니다.', _replayCurrentCaption);
+    _replayCurrentCaption();
 }
 
 // v18 — 참가자 요청: "뒤로가기 버튼은 바로 이전 해설창으로 돌아가도록."
