@@ -1,6 +1,6 @@
 # 침묵의 공명 · Resonance of Silence
 
-시청각장애인을 위한 촉각·음성 인터랙티브 전시.
+시청각장애인을 위한 촉각·음성 디지털 인터랙티브 전시.
 An interactive tactile & audio exhibition for blind and visually impaired visitors.
 
 ---
@@ -29,13 +29,11 @@ An interactive tactile & audio exhibition for blind and visually impaired visito
 - 실행 취소가 어려운 동작(나가기, 다음 전시실 이동 등)은 "한 번 탭 = 이름
   안내, 한 번 더 탭 = 실행"하는 2단계 확인 방식
 - 스크린리더와 함께 쓸 수 있도록 각 화면·버튼에 접근성 레이블 부여
-- 이 전시는 화면 전체를 읽어주는 자체 음성 안내를 제공합니다 — 기기
-  스크린리더를 함께 켜두면 두 음성이 겹쳐 들릴 수 있으니, 스크린리더는
-  꺼두고 이용하시길 권장합니다.
+- 이 전시는 화면 전체를 읽어주는 자체 음성 안내를 제공합니다.
 
+- 참가자들의 피드백(접근성 개선, 모바일 반응형 레이아웃, 오버레이 및 자막 정렬, 시각적 대비 등)이 충실하게 반영되어 이미 매우 고도화된 상태입니다.
 
-
-### 기획·제작
+### 기획·디지털 인터랙션 플랫폼 및 아트 제작
 
 조준동 (趙浚東) · Humartology Lab  jdcho@skku.edu
 
@@ -70,17 +68,15 @@ on hand for questions.
 - Hard-to-undo actions (exit, moving to the next room, etc.) use a two-tap
   confirm pattern: first tap announces the button's name, second tap executes
 - Accessible labels on every screen and control for use with screen readers
-- This exhibit provides its own built-in narration that reads the whole
-  screen aloud — running a device screen reader at the same time may cause
-  both voices to overlap, so we recommend turning the device screen reader
-  off while using it.
+- This exhibit provides its own built-in narration that reads the whole screen aloud.
+
+- It is already in a highly advanced state, with participants' feedback—such as accessibility improvements, mobile responsive layouts, overlay and subtitle alignment, and visual contrast—faithfully incorporated.
 
 ### Deployment
 
 The HTML files in this repository are **self-contained single files** with
 the background image and background music embedded directly as base64 data.
 No server or installation is required — just open the file in a browser.
-The links in the table above are copies published as Claude artifacts.
 
 ### Credits
 
