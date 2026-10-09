@@ -11,17 +11,17 @@ An interactive tactile & audio exhibition for blind and visually impaired visito
 
 국보 제83호 금동미륵보살반가사유상과 로댕의 청동 조각 〈생각하는 사람〉,
 두 조각상을 나란히 놓고 손끝과 음성 해설로 감상하는 촉각 전시입니다.
-전시실 1에서는 두 조각상을 전체에서 세부로 이어지는 순서로 소개하고,
-전시실 2에서는 손끝으로 부위를 하나씩 짚어가며 몸으로 사유하고, 궁금한
-점은 챗봇("사유의 상담소")에게 물어볼 수 있습니다.
+한 번의 감상 흐름 안에서 두 조각상을 전체에서 세부로 살펴본 뒤,
+3단계의 탐색순서에 따라 부위별 해설과 대화를 만납니다. 이어지는 손끝
+탐색에서는 핫스폿을 짚으며 앞서 들은 내용을 반복하지 않고 촉각 경험과
+새로운 해석을 이어갑니다. 궁금한 점은 챗봇("사유의 상담소")에게 물어볼 수 있습니다.
 
 ### 구성
 
-- **전시실 1 · 조우** — 순차 해설형. 화면을 눌러 이전/다음으로 넘기며
-  듣는 방식. 작품 전체 소개 → 세부 설명 → 부위별 대화로 이어집니다.
-- **전시실 2 · 사유 및 체화** — 터치 탐색형. 화면 위 반짝이는 점(핫스팟)을
-  손끝으로 짚으면 그 부위 해설이 나옵니다. 11곳을 모두 만나면 수료증이
-  뜹니다. 오른쪽 아래 챗봇 버튼으로 언제든 질문할 수 있습니다.
+- **통합 감상 흐름** — 작품 전체 소개에서 자세와 부위별 해설로 이어지고,
+  3단계에서는 탐색순서에 따라 작품을 살펴봅니다. 그 뒤 핫스폿 11곳을
+  손끝으로 짚으며 촉각 감상과 해석을 이어가고, 모두 만나면 수료증을
+  받을 수 있습니다. 오른쪽 아래 챗봇 버튼으로 언제든 질문할 수 있습니다.
 
 ### 접근성
 
@@ -46,20 +46,19 @@ An interactive tactile & audio exhibition for blind and visually impaired visito
 An interactive tactile exhibition pairing Korea's National Treasure No. 83,
 the Pensive Bodhisattva (Gilt-bronze Maitreya in Meditation), with Auguste
 Rodin's bronze *The Thinker* — experienced through touch and spoken narration.
-Room 1 introduces both figures from the overall composition down to fine
-detail; Room 2 lets visitors trace individual body parts by touch while
-thinking through the body itself, with a chatbot ("Room for Contemplation")
-on hand for questions.
+One continuous visit introduces both figures from the overall composition
+to detailed narration and a guided exploration order. Visitors then trace
+11 hotspots by touch, extending the interpretation without repeating the
+same explanations. A chatbot ("Room for Contemplation") is available for
+questions.
 
 ### Structure
 
-- **Room 1 · Encounter** — Sequential narration. Tap left/right to move
-  through the story: full introduction → detailed description → part-by-part
-  dialogue.
-- **Room 2 · Contemplation & Embodiment** — Touch exploration. Tapping a
-  glowing hotspot on screen plays that part's narration. Visiting all 11
-  spots reveals a certificate. A chatbot button (bottom right) answers
-  questions at any time.
+- **Unified visit** — Sequential narration moves from the full composition
+  to posture and part-by-part dialogue. The guided exploration order leads
+  into 11 touch hotspots, extending the interpretation without repeating
+  the same explanations. Visiting all 11 reveals a certificate. A chatbot
+  button (bottom right) answers questions at any time.
 
 ### Accessibility
 

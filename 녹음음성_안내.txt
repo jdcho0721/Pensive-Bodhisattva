@@ -1,0 +1,40 @@
+침묵의 공명 — 녹음 음성 안내 (v28)
+
+목소리 (기존 녹음과 같은 클로바 목소리)
+  해설 = 아라 · 생각하는 사람(로댕) = 지훈 · 반가사유상 = 민서
+  영어판 문장은 클로바 영어 목소리: 해설 danna · 로댕 matt · 반가사유상 clara
+
+이 판의 html에 들어 있는 것
+· 기존 녹음 146개: 음량을 같은 기준으로 맞추고 40kbps로 다시 넣었습니다.
+· 새 녹음 자리: 한국어 403문장(아직 비어 있어 지금은 기기 음성). 영문판은 기본으로 기기 음성을 씁니다.
+· 녹음은 html 안에 들어 있어 파일을 옮겨도 녹음으로 읽고, 읽을 차례의 문장만 꺼내 재생합니다.
+· 녹음이 없는 문장(챗봇 답변 등)은 기기 음성, 스크린 리더 방식이 켜져 있으면 녹음을 쓰지 않습니다.
+
+새 녹음 넣는 법 — 녹음도구 폴더
+클로바더빙에는 프로그램이 쓸 수 있는 연결(API)이 없어서, 같은 목소리를 내는
+NAVER Cloud Platform의 「CLOVA Voice (Premium)」 API를 씁니다(유료, 글자 수에 따라 요금).
+
+1. 키 받기(처음 한 번)
+   ncloud.com 가입 · 결제 수단 등록 → 콘솔에서 AI·NAVER API(Application) 만들기 → 「CLOVA Voice (Premium)」 선택
+   → 만든 Application의 「Client ID」와 「Client Secret」을 복사합니다.
+2. Python 3과 ffmpeg 설치(처음 한 번) — 지난번 안내와 같습니다.
+3. 이 폴더에서 명령 창을 열고 키를 넣습니다.
+     윈도우:  set NCP_CLIENT_ID=복사한ID
+              set NCP_CLIENT_SECRET=복사한Secret
+     맥:      export NCP_CLIENT_ID="복사한ID"
+              export NCP_CLIENT_SECRET="복사한Secret"
+4. 미리 듣기(권장):  python record_voice.py --audition   (맥은 python3)
+   미리듣기/ 폴더에 「기존녹음」과 같은 문장을 새로 녹음한 파일이 나란히 생깁니다.
+   해설은 아라 두 가지(nara, vara)가 있으니, 기존 녹음과 같은 쪽을 고릅니다.
+     vara가 맞으면:  set VOICE_NARRATOR=vara   (맥: export VOICE_NARRATOR=vara)
+   말 빠르기가 다르면:  set CLOVA_SPEED=-1 (조금 빠르게) / 1 (조금 느리게)
+5. 녹음하고 넣기:  python record_voice.py
+   - 문장마다 말하는 사람에 맞는 목소리로 녹음합니다. 키는 주소가 아니라 헤더로 보냅니다.
+   - 끝에 붙는 지직 잡음을 잘라 내고 기존 녹음과 같은 크기로 맞춥니다.
+   - 중간에 멈춰도 다시 실행하면 이어서 녹음합니다.
+6. 녹음도구/완성/ 폴더의 html 5개를 올립니다. 한국어만 넣으면 40kbps로 약 23MB입니다.
+   영문판까지 넣으려면 --with-english (합계가 30MB를 넘어 음질이 32kbps 이하로 내려갑니다).
+7. 이상하게 들리는 문장은 확인필요.txt를 보고:  python record_voice.py --redo A0012,A0040
+
+Gemini로 하고 싶을 때: set GEMINI_API_KEY=키  →  python record_voice.py --engine gemini
+ffmpeg가 없으면: python record_voice.py --record-only 로 녹음만 하고 wav 폴더를 압축해 보내 주세요.

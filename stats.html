@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>침묵의 공명 방문 통계</title>
+<style>
+:root{--bg:#0b0b0b;--card:#141414;--ink:#eee;--sub:#aaa;--line:rgba(212,175,55,.25);--gold:#d4af37;--bar:#d4af37;}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#faf8f2;--card:#fff;--ink:#222;--sub:#666;--line:rgba(140,110,20,.25);--gold:#8a6a10;--bar:#b8921f;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Serif KR','Apple SD Gothic Neo',serif;}
+main{max-width:860px;margin:0 auto;padding:24px 16px 48px;}
+h1{font-size:1.3rem;color:var(--gold);margin:0 0 4px;font-weight:600}
+.sub{color:var(--sub);font-size:.85rem;margin:0 0 20px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:22px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.tile b{display:block;font-size:1.6rem;font-variant-numeric:tabular-nums}
+.tile span{color:var(--sub);font-size:.8rem}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+h2{font-size:.95rem;margin:0 0 10px;color:var(--gold);font-weight:600}
+.bars{display:flex;align-items:flex-end;gap:3px;height:140px;border-bottom:1px solid var(--line);padding-top:8px}
+.bars div{flex:1;background:var(--bar);border-radius:3px 3px 0 0;min-height:1px;position:relative}
+.bars div:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--card);border:1px solid var(--line);padding:2px 6px;border-radius:6px;font-size:.75rem}
+.axis{display:flex;justify-content:space-between;color:var(--sub);font-size:.72rem;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.88rem;font-variant-numeric:tabular-nums}
+td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+td.n,th.n{text-align:right}
+.err{color:#e07a5f}
+form{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+input{flex:1;min-width:0;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+button{background:var(--gold);color:#111;border:none;border-radius:8px;padding:8px 14px;font-family:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <h1>침묵의 공명 — 방문 통계</h1>
+  <p class="sub" id="sub">익명 숫자만 모읍니다. 질문 내용이나 개인 정보는 없습니다.</p>
+  <form id="f"><label for="api" style="position:absolute;left:-9999px">집계 주소</label><input id="api"><button>새로고침</button></form>
+  <div id="out"></div>
+</main>
+<script>
+const qs = new URLSearchParams(location.search);
+const DEF = (qs.get('api') || 'https://claude-proxy-ochre.vercel.app/api/attention').replace(/\?.*$/,'');
+const apiIn = document.getElementById('api'); apiIn.value = DEF;
+const NAMES = {'rodin-forehead':'로댕 이마와 미간','rodin-fist':'로댕 주먹 쥔 손','rodin-elbow':'로댕 팔꿈치와 무릎','rodin-muscle':'로댕 등과 어깨 근육','rodin-toes':'로댕 발가락',
+ 'maitreya-ear':'반가사유상 귀','maitreya-smile':'반가사유상 얼굴의 미소','maitreya-fingers':'반가사유상 뺨에 댄 두 손가락','maitreya-robe':'반가사유상 옷주름','maitreya-leg':'반가사유상 반가좌 자세','maitreya-toes':'반가사유상 발가락'};
+const PAGES = {index:'입구(첫 화면)',room1:'전시실 1',room2:'전시실 2'};
+const EVENTS = {complete:'11곳 모두 만짐',cert:'수료증 열람',observe:'먼저 보기 사용',pose:'자세 따라 하기',chat:'부위 질문'};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct = (a,b) => b ? Math.round(a*100/b) + '%' : '—';
+function table(obj, names, total){
+  const rows = Object.keys(names).map(k => [names[k], obj[k]||0]);
+  return '<table><tr><th>항목</th><th class="n">수</th>' + (total!=null?'<th class="n">방문 대비</th>':'') + '</tr>' +
+    rows.map(r => `<tr><td>${esc(r[0])}</td><td class="n">${r[1].toLocaleString()}</td>${total!=null?`<td class="n">${pct(r[1],total)}</td>`:''}</tr>`).join('') + '</table>';
+}
+async function load(){
+  const out = document.getElementById('out'); out.textContent = '불러오는 중…';
+  try{
+    const r = await fetch(apiIn.value + '?stats=1', {cache:'no-store'});
+    if(!r.ok) throw new Error('서버 응답 ' + r.status);
+    const d = await r.json(); if(d.error) throw new Error(d.error === 'unavailable' ? '저장소(Upstash Redis)가 연결되지 않았습니다' : d.error);
+    const today = d.daily[d.daily.length-1], last7 = d.daily.slice(-7).reduce((a,x)=>a+x.visits,0), last30 = d.daily.reduce((a,x)=>a+x.visits,0);
+    const max = Math.max(1, ...d.daily.map(x=>x.visits));
+    const att = Object.entries(d.attention||{}).sort((a,b)=>b[1]-a[1]); const attTot = att.reduce((a,x)=>a+x[1],0);
+    const allDays = Object.entries(d.allDays||{}).sort((a,b)=>b[0].localeCompare(a[0]));
+    out.innerHTML = `
+    <div class="tiles">
+      <div class="tile"><b>${d.visitsTotal.toLocaleString()}</b><span>전체 관람(누적)</span></div>
+      <div class="tile"><b>${today.visits.toLocaleString()}</b><span>오늘 관람</span></div>
+      <div class="tile"><b>${last7.toLocaleString()}</b><span>최근 7일</span></div>
+      <div class="tile"><b>${last30.toLocaleString()}</b><span>최근 30일</span></div>
+    </div>
+    <section><h2>최근 30일 날짜별 관람 수</h2>
+      <div class="bars">${d.daily.map(x=>`<div style="height:${x.visits/max*100}%" data-t="${x.day}: ${x.visits}명" title="${x.day}: ${x.visits}명"></div>`).join('')}</div>
+      <div class="axis"><span>${d.daily[0].day}</span><span>${today.day}</span></div></section>
+    <section><h2>화면별 열람 (누적)</h2>${table(d.pages||{}, PAGES, d.visitsTotal)}</section>
+    <section><h2>기능 사용 (관람당 한 번씩, 누적)</h2>${table(d.events||{}, EVENTS, d.visitsTotal)}</section>
+    <section><h2>언어</h2>${table(d.lang||{}, {ko:'한국어',en:'영어'})}</section>
+    <section><h2>관람객이 주목(질문)한 부위</h2>${att.length ? '<table><tr><th>부위</th><th class="n">질문 수</th><th class="n">비율</th></tr>' + att.map(([k,n])=>`<tr><td>${esc(NAMES[k]||k)}</td><td class="n">${n}</td><td class="n">${pct(n,attTot)}</td></tr>`).join('') + '</table>' : '<p>아직 기록이 없습니다.</p>'}
+      <p class="sub">부위에 대해 질문한 관람객: ${d.askers.toLocaleString()}명</p></section>
+    <section><h2>날짜별 관람 수 (전체 기간)</h2>${allDays.length ? '<table><tr><th>날짜</th><th class="n">관람</th></tr>' + allDays.map(([k,n])=>`<tr><td>${k}</td><td class="n">${n}</td></tr>`).join('') + '</table>' : '<p>아직 기록이 없습니다.</p>'}</section>`;
+    document.getElementById('sub').textContent = '익명 숫자만 모읍니다 · 갱신 ' + new Date(d.generatedAt).toLocaleString('ko-KR');
+  }catch(e){ out.innerHTML = `<p class="err">통계를 불러오지 못했습니다: ${esc(e.message)}</p>`; }
+}
+document.getElementById('f').addEventListener('submit', e=>{ e.preventDefault(); load(); });
+load();
+</script>
+</body>
+</html>
